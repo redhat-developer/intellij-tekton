@@ -1,0 +1,43 @@
+
+plugins {
+    id "org.jetbrains.intellij" version "0.4.10"
+    id "idea"
+    id "java"
+    id "jacoco"
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+
+intellij {
+    version ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
+    pluginName 'com.redhat.devtools.intellij.tekton'
+    plugins 'terminal'
+    updateSinceUntilBuild false
+}
+
+dependencies {
+    compile 'io.fabric8:openshift-client:4.6.3'
+    compile 'org.apache.commons:commons-exec:1.3'
+    compile 'org.apache.commons:commons-compress:1.19'
+}
+
+configurations {
+    compile {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
+}
+
+publishPlugin {
+    token    jetBrainsToken
+    channels jetBrainsChannel
+}
+
+
+group 'com.redhat.devtools.intellij'
+version projectVersion // Plugin version
