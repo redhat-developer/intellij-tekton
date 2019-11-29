@@ -10,9 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd;
 
+import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.ui.PopupHandler;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.treeStructure.Tree;
@@ -27,7 +29,7 @@ public class WindowToolFactory implements ToolWindowFactory {
 
         Tree tree = new Tree(new TektonTreeModel(project));
         tree.setCellRenderer(new TektonTreeNodeCellRenderer());
-        //PopupHandler.installPopupHandler(tree, "com.redhat.devtools.intellij.tektoncd.tree", ActionPlaces.UNKNOWN);
+        PopupHandler.installPopupHandler(tree, "com.redhat.devtools.intellij.tektoncd.tree", ActionPlaces.UNKNOWN);
         toolWindow.getContentManager().addContent(contentFactory.createContent(new JBScrollPane(tree), "", false));
     }
 }

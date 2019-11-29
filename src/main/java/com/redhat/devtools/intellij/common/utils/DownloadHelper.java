@@ -162,8 +162,14 @@ public class DownloadHelper {
     }
 
     private boolean areCompatible(String version, String versionMatchRegExpr) {
-        Pattern pattern = Pattern.compile(versionMatchRegExpr);
-        return pattern.matcher(version).matches();
+        boolean compatible = true;
+        if (StringUtils.isNotBlank(versionMatchRegExpr)) {
+            Pattern pattern = Pattern.compile(versionMatchRegExpr);
+            compatible = pattern.matcher(version).matches();
+        } else if (StringUtils.isBlank(version)) {
+            compatible = false;
+        }
+        return compatible;
     }
 
     private String getVersionFromPath(ToolsConfig.Tool tool, ToolsConfig.Platform platform) {

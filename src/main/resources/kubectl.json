@@ -1,0 +1,28 @@
+{
+  "tools": {
+    "kubectl": {
+      "version": "1.6.3",
+      "versionCmd": "version --short --client",
+      "versionExtractRegExp": "Client version: (\\d+[\\.\\d+]*)\\s.*",
+      "baseDir": "$HOME/.kube",
+      "platforms": {
+        "win": {
+          "url": "https://storage.googleapis.com/kubernetes-release/release/v1.16.3/bin/windows/amd64/kubectl.exe",
+          "cmdFileName": "kubectl.exe",
+          "dlFileName": "kubectl.1.16.3.exe"
+        },
+        "osx": {
+          "url": "https://storage.googleapis.com/kubernetes-release/release/v1.16.3/bin/darwin/amd64/kubectl",
+          "cmdFileName": "kubectl",
+          "dlFileName": "kubectl.1.16.3"
+        },
+        "lnx": {
+          "url": "https://storage.googleapis.com/kubernetes-release/release/v1.16.3/bin/linux/amd64/kubectl",
+          "cmdFileName": "kubectl",
+          "dlFileName": "kubectl.1.16.3"
+        }
+      }
+    }
+  }
+}
+

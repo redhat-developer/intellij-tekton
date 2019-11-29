@@ -141,4 +141,8 @@ public class TektonTreeModel extends BaseTreeModel<Object> implements ConfigWatc
     public Object getRoot() {
         return ROOT;
     }
+
+    public Project getProject() {
+        return project;
+    }
 }
