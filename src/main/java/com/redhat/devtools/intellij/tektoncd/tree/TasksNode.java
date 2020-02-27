@@ -26,7 +26,7 @@ public class TasksNode extends LazyMutableTreeNode implements IconTreeNode {
         super.load();
         try {
             NamespaceNode namespaceNode = (NamespaceNode) getParent();
-            ((TektonRootNode)getRoot()).getTkn().getTasks(namespaceNode.toString()).forEach(task -> add(new TaskNode(task)));
+            ((TektonRootNode)getRoot()).getTkn().getTasks(namespaceNode.toString()).forEach(task -> { if(!task.isEmpty()) add(new TaskNode(task)); });
         } catch (IOException e) {
             add(new DefaultMutableTreeNode("Failed to load tasks"));
         }
