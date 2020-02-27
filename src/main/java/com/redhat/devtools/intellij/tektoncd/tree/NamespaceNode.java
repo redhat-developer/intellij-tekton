@@ -27,6 +27,7 @@ public class NamespaceNode extends LazyMutableTreeNode implements IconTreeNode {
         super.load();
         this.add(new PipelinesNode());
         this.add(new TasksNode());
+        this.add(new ClusterTasksNode());
         this.add(new ResourcesNode());
     }
 }

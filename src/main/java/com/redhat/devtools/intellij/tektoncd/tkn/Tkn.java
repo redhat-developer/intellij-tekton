@@ -25,6 +25,14 @@ public interface Tkn {
     boolean isTektonAware(KubernetesClient client);
 
     /**
+     * Returns the names of ClusterTask for a namespace
+     * @param namespace the namespace to use
+     * @return the list of ClusterTasks names
+     * @throws IOException if communication errored
+     */
+    List<String> getClusterTasks(String namespace) throws IOException;
+
+    /**
      * Return the names of the namespace (projects for OpenShift).
      *
      * @param client the cluster client object

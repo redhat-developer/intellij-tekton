@@ -64,6 +64,12 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public List<String> getClusterTasks(String namespace) throws IOException {
+        String output = ExecHelper.execute(command, "clustertask", "ls", "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    }
+
+    @Override
     public List<String> getNamespaces(KubernetesClient client) throws IOException {
         if (client.isAdaptable(OpenShiftClient.class)) {
             return client.adapt(OpenShiftClient.class).projects().list().getItems().stream().map(project -> project.getMetadata().getName()).collect(Collectors.toList());
