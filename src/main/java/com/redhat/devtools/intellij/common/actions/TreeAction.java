@@ -16,7 +16,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.ui.treeStructure.Tree;
 
 import javax.swing.tree.TreePath;
-import java.awt.Component;
+import java.awt.*;
 import java.util.stream.Stream;
 
 public abstract class TreeAction extends AnAction {

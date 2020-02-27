@@ -1,3 +1,5 @@
+package com.redhat.devtools.intellij.tektoncd.tree;
+
 /*******************************************************************************
  * Copyright (c) 2019 Red Hat, Inc.
  * Distributed under license by Red Hat, Inc. All rights reserved.
@@ -8,24 +10,30 @@
  * Contributors:
  * Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.tree;
-
 import com.redhat.devtools.intellij.common.tree.IconTreeNode;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 
-public class NamespaceNode extends LazyMutableTreeNode implements IconTreeNode {
-    public NamespaceNode(String name) {
-        super(name);
-    }
-    @Override
-    public String getIconName() {
-        return "/images/project.png";
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.io.IOException;
+
+public class PipelinesNode extends LazyMutableTreeNode implements IconTreeNode {
+    public PipelinesNode() {
+        super("Pipelines");
     }
 
     @Override
     public void load() {
         super.load();
-        this.add(new PipelinesNode());
-        this.add(new TasksNode());
+        try {
+            NamespaceNode namespaceNode = (NamespaceNode) getParent();
+            ((TektonRootNode)getRoot()).getTkn().getPipelines(namespaceNode.toString()).forEach(pipeline -> add(new PipelineNode(pipeline)));
+        } catch (IOException e) {
+            add(new DefaultMutableTreeNode("Failed to load pipelines"));
+        }
+    }
+
+    @Override
+    public String getIconName() {
+        return "/images/pipeline.png";
     }
 }

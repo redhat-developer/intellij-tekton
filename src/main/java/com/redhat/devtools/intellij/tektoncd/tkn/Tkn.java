@@ -34,6 +34,25 @@ public interface Tkn {
     List<String> getNamespaces(KubernetesClient client) throws IOException;
 
     /**
+     * Return the names of Tekton pipelines for a namespace
+     *
+     * @param namespace the namespace to use
+     * @return the list of pipelines names
+     * @throws IOException if communication errored
+     */
+    List<String> getPipelines(String namespace) throws IOException;
+
+    /**
+     * Return the list of pipeline runs for a pipeline
+     *
+     * @param namespace the namespace of the task
+     * @param pipeline  the pipeline to look pipeline runs for
+     * @return the list of pipeline runs
+     * @throws IOException if communication errored
+     */
+    List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException;
+
+    /**
      * Return the names of Tekton tasks for a namespace.
      *
      * @param namespace the namespace to use

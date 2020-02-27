@@ -12,20 +12,21 @@ package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.redhat.devtools.intellij.common.tree.IconTreeNode;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
+import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
 
-public class NamespaceNode extends LazyMutableTreeNode implements IconTreeNode {
-    public NamespaceNode(String name) {
-        super(name);
+public class PipelineRunNode extends LazyMutableTreeNode implements IconTreeNode {
+    public PipelineRunNode(PipelineRun pipelineRun) {
+        super(pipelineRun);
     }
+
+    @Override
+    public String toString() {
+        return ((PipelineRun)getUserObject()).getName();
+    }
+
     @Override
     public String getIconName() {
-        return "/images/project.png";
-    }
-
-    @Override
-    public void load() {
-        super.load();
-        this.add(new PipelinesNode());
-        this.add(new TasksNode());
+        PipelineRun run = (PipelineRun) getUserObject();
+        return run.isCompleted().isPresent()?run.isCompleted().get()?"/images/success.png":"/images/failed.png":"/images/running.png";
     }
 }
