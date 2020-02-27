@@ -22,6 +22,7 @@ import io.fabric8.openshift.client.OpenShiftClient;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,10 +81,8 @@ public class TknCli implements Tkn {
 
     @Override
     public List<String> getTasks(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, "task", "ls", "-n", namespace, "-o", "jsonpath={range .items[*]}{.metadata.name}{\'\\n\'}");
-        try (BufferedReader reader = new BufferedReader(new StringReader(output))) {
-            return reader.lines().filter(line -> !line.isEmpty()).collect(Collectors.toList());
-        }
+        String output = ExecHelper.execute(command, "task", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
 
     @Override
