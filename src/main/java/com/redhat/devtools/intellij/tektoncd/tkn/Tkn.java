@@ -45,12 +45,21 @@ public interface Tkn {
     /**
      * Return the list of pipeline runs for a pipeline
      *
-     * @param namespace the namespace of the task
+     * @param namespace the namespace of the pipeline
      * @param pipeline  the pipeline to look pipeline runs for
      * @return the list of pipeline runs
      * @throws IOException if communication errored
      */
     List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException;
+
+    /**
+     * Return the list of resources that can be used in a pipeline
+     *
+     * @param namespace the namespace to use
+     * @return the list of resources
+     * @throws IOException if communication errored
+     */
+    List<String> getResources(String namespace) throws IOException;
 
     /**
      * Return the names of Tekton tasks for a namespace.

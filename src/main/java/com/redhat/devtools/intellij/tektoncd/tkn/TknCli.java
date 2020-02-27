@@ -87,6 +87,12 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public List<String> getResources(String namespace) throws IOException {
+        String output = ExecHelper.execute(command, "resource", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    }
+
+    @Override
     public List<String> getTasks(String namespace) throws IOException {
         String output = ExecHelper.execute(command, "task", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
