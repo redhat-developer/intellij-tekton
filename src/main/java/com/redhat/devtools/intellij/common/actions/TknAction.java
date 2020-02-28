@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.common.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
+import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCli;
 
 import javax.swing.tree.TreePath;
@@ -23,11 +24,11 @@ public class TknAction extends TreeAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
         try {
-            this.actionPerformed(anActionEvent, path, selected, ((TknCli) TknCli.get()).getCommand());
+            this.actionPerformed(anActionEvent, path, selected, TknCli.get());
         } catch (IOException e) {
             Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error");
         }
     }
 
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, String tkncli) throws IOException { }
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) throws IOException { }
 }

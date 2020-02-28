@@ -177,4 +177,12 @@ public interface Tkn {
      * @throws IOException
      */
     void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
+
+    /**
+     *
+     * @param namespace the namespace of the task
+     * @param task the task that has to be run
+     * @throws IOException if communication errored
+     */
+    void runTask(String namespace, String task) throws IOException;
 }

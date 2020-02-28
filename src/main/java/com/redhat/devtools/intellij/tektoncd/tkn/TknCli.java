@@ -170,4 +170,8 @@ public class TknCli implements Tkn {
     public void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
         client.customResource(crdContext).create(namespace, objectAsString);
     }
+
+    public void runTask(String namespace, String task) throws IOException {
+        ExecHelper.execute(command, "task", "start", task, "-n", namespace);
+    }
 }
