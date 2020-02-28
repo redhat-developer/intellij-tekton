@@ -19,20 +19,23 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TknCli implements Tkn {
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final ObjectMapper TASKRUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final ObjectMapper PIPERUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
     static {
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(List.class, new TaskRunDeserializer());
-        JSON_MAPPER.registerModule(module);
+        SimpleModule tr_module = new SimpleModule();
+        tr_module.addDeserializer(List.class, new TaskRunDeserializer());
+        TASKRUN_JSON_MAPPER.registerModule(tr_module);
+
+        SimpleModule pr_module = new SimpleModule();
+        pr_module.addDeserializer(List.class, new PipelineRunDeserializer());
+        PIPERUN_JSON_MAPPER.registerModule(pr_module);
     }
     /**
      * Home sub folder for the plugin
@@ -71,12 +74,36 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public List<String> getClusterTasks(String namespace) throws IOException {
+        String output = ExecHelper.execute(command, "clustertask", "ls", "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    }
+
+    @Override
     public List<String> getNamespaces(KubernetesClient client) throws IOException {
         if (client.isAdaptable(OpenShiftClient.class)) {
             return client.adapt(OpenShiftClient.class).projects().list().getItems().stream().map(project -> project.getMetadata().getName()).collect(Collectors.toList());
         } else {
             return client.namespaces().list().getItems().stream().map(namespace -> namespace.getMetadata().getName()).collect(Collectors.toList());
         }
+    }
+
+    @Override
+    public List<String> getPipelines(String namespace) throws IOException {
+        String output = ExecHelper.execute(command, "pipeline", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
+        String json = ExecHelper.execute(command, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
+        return PIPERUN_JSON_MAPPER.readValue(json, new TypeReference<List<PipelineRun>>() {});
+    }
+
+    @Override
+    public List<String> getResources(String namespace) throws IOException {
+        String output = ExecHelper.execute(command, "resource", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
 
     @Override
@@ -88,6 +115,6 @@ public class TknCli implements Tkn {
     @Override
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
         String json = ExecHelper.execute(command, "taskrun", "ls", task, "-n", namespace, "-o", "json");
-        return JSON_MAPPER.readValue(json, new TypeReference<List<TaskRun>>() {});
+        return TASKRUN_JSON_MAPPER.readValue(json, new TypeReference<List<TaskRun>>() {});
     }
 }

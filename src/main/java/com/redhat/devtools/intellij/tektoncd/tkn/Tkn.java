@@ -25,6 +25,14 @@ public interface Tkn {
     boolean isTektonAware(KubernetesClient client);
 
     /**
+     * Returns the names of ClusterTask for a namespace
+     * @param namespace the namespace to use
+     * @return the list of ClusterTasks names
+     * @throws IOException if communication errored
+     */
+    List<String> getClusterTasks(String namespace) throws IOException;
+
+    /**
      * Return the names of the namespace (projects for OpenShift).
      *
      * @param client the cluster client object
@@ -32,6 +40,34 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     List<String> getNamespaces(KubernetesClient client) throws IOException;
+
+    /**
+     * Return the names of Tekton pipelines for a namespace
+     *
+     * @param namespace the namespace to use
+     * @return the list of pipelines names
+     * @throws IOException if communication errored
+     */
+    List<String> getPipelines(String namespace) throws IOException;
+
+    /**
+     * Return the list of pipeline runs for a pipeline
+     *
+     * @param namespace the namespace of the pipeline
+     * @param pipeline  the pipeline to look pipeline runs for
+     * @return the list of pipeline runs
+     * @throws IOException if communication errored
+     */
+    List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException;
+
+    /**
+     * Return the list of resources that can be used in a pipeline
+     *
+     * @param namespace the namespace to use
+     * @return the list of resources
+     * @throws IOException if communication errored
+     */
+    List<String> getResources(String namespace) throws IOException;
 
     /**
      * Return the names of Tekton tasks for a namespace.
