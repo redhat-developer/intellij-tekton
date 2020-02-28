@@ -1,7 +1,5 @@
-package com.redhat.devtools.intellij.tektoncd.tree;
-
 /*******************************************************************************
- * Copyright (c) 2019 Red Hat, Inc.
+ * Copyright (c) 2020 Red Hat, Inc.
  * Distributed under license by Red Hat, Inc. All rights reserved.
  * This program is made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution,
@@ -10,6 +8,8 @@ package com.redhat.devtools.intellij.tektoncd.tree;
  * Contributors:
  * Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
+package com.redhat.devtools.intellij.tektoncd.tree;
+
 import com.redhat.devtools.intellij.common.tree.IconTreeNode;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 

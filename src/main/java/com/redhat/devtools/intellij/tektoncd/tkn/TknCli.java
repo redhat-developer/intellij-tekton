@@ -25,8 +25,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TknCli implements Tkn {
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final ObjectMapper TASKRUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final ObjectMapper PIPERUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
+    static {
+        SimpleModule tr_module = new SimpleModule();
+        tr_module.addDeserializer(List.class, new TaskRunDeserializer());
+        TASKRUN_JSON_MAPPER.registerModule(tr_module);
+
+        SimpleModule pr_module = new SimpleModule();
+        pr_module.addDeserializer(List.class, new PipelineRunDeserializer());
+        PIPERUN_JSON_MAPPER.registerModule(pr_module);
+    }
     /**
      * Home sub folder for the plugin
      */
@@ -87,9 +97,7 @@ public class TknCli implements Tkn {
     @Override
     public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
         String json = ExecHelper.execute(command, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
-        return JSON_MAPPER.
-                registerModule(new SimpleModule().addDeserializer(List.class, new PipelineRunDeserializer())).
-                readValue(json, new TypeReference<List<PipelineRun>>() {});
+        return PIPERUN_JSON_MAPPER.readValue(json, new TypeReference<List<PipelineRun>>() {});
     }
 
     @Override
@@ -107,8 +115,6 @@ public class TknCli implements Tkn {
     @Override
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
         String json = ExecHelper.execute(command, "taskrun", "ls", task, "-n", namespace, "-o", "json");
-        return JSON_MAPPER.
-                registerModule(new SimpleModule().addDeserializer(List.class, new TaskRunDeserializer())).
-                readValue(json, new TypeReference<List<TaskRun>>() {});
+        return TASKRUN_JSON_MAPPER.readValue(json, new TypeReference<List<TaskRun>>() {});
     }
 }
