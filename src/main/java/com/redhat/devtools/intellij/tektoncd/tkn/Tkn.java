@@ -87,4 +87,31 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     List<TaskRun> getTaskRuns(String namespace, String task) throws IOException;
+
+    /**
+     * Open pipeline in the editor
+     *
+     * @param namespace the namespace of the task
+     * @param pipeline the pipeline that has to be opened in editor
+     * @throws IOException if communication errored
+     */
+    String openPipelineInEditor(String namespace, String pipeline) throws IOException;
+
+    /**
+     * Open pipeline resource in the editor
+     *
+     * @param namespace the namespace of the task
+     * @param resource the pipeline resource that has to be opened in editor
+     * @throws IOException if communication errored
+     */
+    String openResourceInEditor(String namespace, String resource) throws IOException;
+
+    /**
+     * Open task in the editor
+     *
+     * @param namespace the namespace of the task
+     * @param task the task that has to be opened in editor
+     * @throws IOException if communication errored
+     */
+    String openTaskInEditor(String namespace, String task) throws IOException;
 }
