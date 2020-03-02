@@ -141,5 +141,4 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void deleteResource(String namespace, String resource) throws IOException;
-
 }
