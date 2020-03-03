@@ -43,7 +43,6 @@ jobs:
         - ./oc apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.notags.yaml
         - cd ..
         - ./gradlew integrationTest
-        - ./oc cluster down
 notifications:
   on_success: change # default: always
   on_failure: always # default: always
