@@ -119,17 +119,17 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String openPipelineInEditor(String namespace, String pipeline) throws IOException {
+    public String getPipelineJSON(String namespace, String pipeline) throws IOException {
         return ExecHelper.execute(command, "pipeline", "describe", pipeline, "-n", namespace, "-o", "json");
     }
 
     @Override
-    public String openResourceInEditor(String namespace, String resource) throws IOException {
+    public String getResourceJSON(String namespace, String resource) throws IOException {
         return ExecHelper.execute(command, "resource", "describe", resource, "-n", namespace, "-o", "json");
     }
 
     @Override
-    public String openTaskInEditor(String namespace, String task) throws IOException {
+    public String getTaskJSON(String namespace, String task) throws IOException {
         return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "json");
     }
 }
