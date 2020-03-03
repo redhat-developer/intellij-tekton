@@ -18,6 +18,7 @@ jobs:
     - stage: integration-test-kubernetes
       script:
         - curl https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64 --location --output kind
+        - chmod u+x ./kind
         - ./kind create cluster
         - ./kind delete cluster
 notifications:
