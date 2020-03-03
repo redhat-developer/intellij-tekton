@@ -8,12 +8,18 @@ cache:
 stages:
   - build
   - test
+  - integration-test-kubernetes
 jobs:
   include:
     - stage: build
       script: ./gradlew assemble
     - stage: test
       script: ./gradlew check
+    - stage: integration-test-kubernetes
+      script:
+        - curl https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64 --location --output kind
+        - ./kind create cluster
+        - ./kind delete cluster
 notifications:
   on_success: change # default: always
   on_failure: always # default: always
