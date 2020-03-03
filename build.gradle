@@ -31,13 +31,33 @@ configurations {
     compile {
         exclude group: 'org.slf4j', module: 'slf4j-api'
     }
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
+
+sourceSets {
+    integrationTest {
+        java.srcDir file('src/it/java')
+        resources.srcDir file('src/it/resources')
+        compileClasspath += sourceSets.main.output + configurations.testRuntime
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+task integrationTest(type: Test) {
+    description = 'Runs the integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+    mustRunAfter test
+}
+
 
 publishPlugin {
     token    jetBrainsToken
     channels jetBrainsChannel
 }
-
 
 group 'com.redhat.devtools.intellij'
 version projectVersion // Plugin version
