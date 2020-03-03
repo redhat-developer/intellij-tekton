@@ -20,6 +20,9 @@ jobs:
         - curl https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64 --location --output kind
         - chmod u+x ./kind
         - ./kind create cluster
+        - curl --location https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl --output kubectl
+        - chmod u+x ./kubectl
+        - ./kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
         - ./kind delete cluster
 notifications:
   on_success: change # default: always
