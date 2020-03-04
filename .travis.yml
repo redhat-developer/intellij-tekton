@@ -8,12 +8,43 @@ cache:
 stages:
   - build
   - test
+  - integration-test-kubernetes
+  - integration-test-openshift
 jobs:
   include:
     - stage: build
       script: ./gradlew assemble
     - stage: test
       script: ./gradlew check
+    - stage: integration-test-kubernetes
+      script:
+        - curl https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64 --location --output kind
+        - chmod u+x ./kind
+        - ./kind create cluster
+        - curl --location https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl --output kubectl
+        - chmod u+x ./kubectl
+        - ./kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+        - ./kubectl create ns testns
+        - ./gradlew integrationTest
+        - ./kind delete cluster
+    - stage: integration-test-openshift
+      script:
+        - curl https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz --location --output oc-client.tgz
+        - tar -xzvf oc-client.tgz
+        - cd openshift-origin-client*
+        - echo '{"insecure-registries":["172.30.0.0/16"]}' > daemon.json
+        - sudo mv daemon.json /etc/docker
+        - sudo cat /etc/docker/daemon.json
+        - sudo service docker restart
+        - ./oc cluster up
+        - ./oc new-project testns
+        - ./oc login -u system:admin
+        - ./oc adm policy add-scc-to-user anyuid -z tekton-pipelines-controller
+        - ./oc apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.notags.yaml
+        - cd ..
+        - ./gradlew integrationTest
+        - cd openshift-origin-client*
+        - ./oc cluster down
 notifications:
   on_success: change # default: always
   on_failure: always # default: always
