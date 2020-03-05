@@ -56,15 +56,4 @@ public class KubectlCli implements Kubectl {
             ExecHelper.execute(command, "create", "-f", path, "-n", namespace);
         }
     }
-
-    @Override
-    public void apply(String namespace, String path) throws IOException {
-        if (StringUtils.isBlank(namespace)) {
-            ExecHelper.execute(command, "patch", "pipeline", "petclinic-deploy-pipeline", "--type", "merge", "-p", path);
-            //ExecHelper.executeWithTerminal(command, "patch", "pipeline", "petclinic-deploy-pipeline", "--type", "merge", "-p", "'{\"spec\":{\"resources\":[{\"name\":\"app-git\",\"type\":\"git\"},{\"name\":\"app-image\",\"type\":\"image\"}],\"tasks\":[{\"name\":\"tekton\",\"taskRef\":{\"name\":\"tkn\",\"kind\":\"Task\"},\"resources\":{\"inputs\":[{\"name\":\"source\",\"resource\":\"app-git\"}],\"outputs\":[{\"name\":\"image\",\"resource\":\"app-image\"}]},\"params\":[{\"name\":\"ARGS\",\"value\":[\"version -o v\"]}]}]}}'");
-            //ExecHelper.execute(command, "apply", "-f", path);
-        } else {
-            ExecHelper.execute(command, "patch", "-f", path, "-n", namespace);
-        }
-    }
 }
