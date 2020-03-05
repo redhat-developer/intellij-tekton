@@ -22,4 +22,14 @@ public interface Kubectl {
      * @throws IOException if communication errored
      */
     void create(String namespace, String path) throws IOException;
+
+    /**
+     *  Apply a configuration to Tekton resource in the cluster. Namespace parameter may be null
+     *  for CusterTask resources.
+     *
+     * @param namespace the namespace to update the resource in or null for ClusterTask
+     * @param path the path to the resource definition file
+     * @throws IOException if communication errored
+     */
+    void apply(String namespace, String path) throws IOException;
 }

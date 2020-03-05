@@ -10,20 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.kubectl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.openshift.client.OpenShiftClient;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class KubectlCli implements Kubectl {
     /**
@@ -63,6 +54,17 @@ public class KubectlCli implements Kubectl {
             ExecHelper.execute(command, "crete", "-f", path);
         } else {
             ExecHelper.execute(command, "create", "-f", path, "-n", namespace);
+        }
+    }
+
+    @Override
+    public void apply(String namespace, String path) throws IOException {
+        if (StringUtils.isBlank(namespace)) {
+            ExecHelper.execute(command, "patch", "pipeline", "petclinic-deploy-pipeline", "--type", "merge", "-p", path);
+            //ExecHelper.executeWithTerminal(command, "patch", "pipeline", "petclinic-deploy-pipeline", "--type", "merge", "-p", "'{\"spec\":{\"resources\":[{\"name\":\"app-git\",\"type\":\"git\"},{\"name\":\"app-image\",\"type\":\"image\"}],\"tasks\":[{\"name\":\"tekton\",\"taskRef\":{\"name\":\"tkn\",\"kind\":\"Task\"},\"resources\":{\"inputs\":[{\"name\":\"source\",\"resource\":\"app-git\"}],\"outputs\":[{\"name\":\"image\",\"resource\":\"app-image\"}]},\"params\":[{\"name\":\"ARGS\",\"value\":[\"version -o v\"]}]}]}}'");
+            //ExecHelper.execute(command, "apply", "-f", path);
+        } else {
+            ExecHelper.execute(command, "patch", "-f", path, "-n", namespace);
         }
     }
 }
