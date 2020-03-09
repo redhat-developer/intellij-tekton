@@ -14,5 +14,5 @@ import com.intellij.openapi.util.Key;
 
 public class CommonConstants {
     public static final String HOME_FOLDER = System.getProperty("user.home");
-    public static final Key<String> TEKTON = Key.create("tekton.file");
+    public static final Key<String> DELETEFLAG = Key.create("delete.flag");
 }

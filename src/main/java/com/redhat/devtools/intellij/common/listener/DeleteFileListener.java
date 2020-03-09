@@ -22,13 +22,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static com.redhat.devtools.intellij.common.CommonConstants.TEKTON;
+import static com.redhat.devtools.intellij.common.CommonConstants.DELETEFLAG;
 
-public class FileEditorListener implements FileEditorManagerListener {
-    Logger logger = LoggerFactory.getLogger(FileEditorListener.class);
+public class DeleteFileListener implements FileEditorManagerListener {
+    Logger logger = LoggerFactory.getLogger(DeleteFileListener.class);
     @Override
     public void fileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-        String tknProperty = file.getUserData(TEKTON);
+        String tknProperty = file.getUserData(DELETEFLAG);
         if (tknProperty != null && tknProperty.equals("file")) {
             ApplicationManager.getApplication().runWriteAction(new Runnable() {
                 @Override

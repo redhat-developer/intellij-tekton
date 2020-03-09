@@ -17,7 +17,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.redhat.devtools.intellij.common.listener.FileEditorListener;
+import com.redhat.devtools.intellij.common.listener.DeleteFileListener;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -29,7 +29,7 @@ import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static com.redhat.devtools.intellij.common.CommonConstants.TEKTON;
+import static com.redhat.devtools.intellij.common.CommonConstants.DELETEFLAG;
 
 public class OpenEditorTaskAction extends TektonAction {
     public OpenEditorTaskAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
@@ -54,18 +54,14 @@ public class OpenEditorTaskAction extends TektonAction {
 
         if (!content.isEmpty()) {
             Project project = anActionEvent.getProject();
-
-            VirtualFile fv = ScratchRootType.getInstance().createScratchFile(project, selected.toString() + ".json", Language.ANY, content);
-            fv.putUserData(TEKTON, "file");
-
             boolean fileAlreadyOpened = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
-                                               anyMatch(fileEditor -> fileEditor.getFile().getName().startsWith(selected.toString()) &&
+                                               anyMatch(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + selected.toString()) &&
                                                                       fileEditor.getFile().getExtension().equals("json"));
             if (!fileAlreadyOpened) {
-                project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorListener());
+                VirtualFile fv = ScratchRootType.getInstance().createScratchFile(project, namespace + "-" + selected.toString() + ".json", Language.ANY, content);
+                fv.putUserData(DELETEFLAG, "file");
+                project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new DeleteFileListener());
                 FileEditorManager.getInstance(project).openFile(fv, true);
-            } else {
-                fv.delete(this);
             }
         }
     }
