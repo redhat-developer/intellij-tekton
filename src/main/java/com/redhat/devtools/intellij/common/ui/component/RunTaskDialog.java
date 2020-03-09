@@ -30,6 +30,7 @@ public class RunTaskDialog extends DialogWrapper {
     private JButton previewRefreshBtn;
     private JLabel pathsTxtLabel;
     private JTextField pathsInputTxtField;
+    private JTextField pathsOutputTxtField;
     private List<Input> inputs;
     private List<Resource> resources;
     private List<Output> outputs;
@@ -55,7 +56,6 @@ public class RunTaskDialog extends DialogWrapper {
         initOutputsArea();
         updatePreview();
         registerListeners();
-
     }
 
     public static void main(String[] args) {
@@ -183,7 +183,7 @@ public class RunTaskDialog extends DialogWrapper {
     private void updatePreview() {
         String preview = "";
         try {
-            preview = JSONHelper.createInputJson(inputs, resources);
+            preview = JSONHelper.createPreviewJson(inputs, outputs, resources);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -253,6 +253,26 @@ public class RunTaskDialog extends DialogWrapper {
             if (itemEvent.getStateChange() == 1) {
                 Output currentOutput = (Output) itemEvent.getItem();
                 fillOutResourcesComboBox(currentOutput);
+            }
+        });
+
+        outResourcesComboBox.addItemListener(itemEvent -> {
+            if (itemEvent.getStateChange() == 1) {
+                int outputSelectedIndex = outputsComboBox.getSelectedIndex();
+                Resource resourceSelected = (Resource) itemEvent.getItem();
+                outputs.get(outputSelectedIndex).setValue(resourceSelected.name());
+                if (resourceSelected.paths() != null) {
+                    pathsOutputTxtField.setText(resourceSelected.paths());
+                }
+            }
+        });
+
+        pathsOutputTxtField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                super.focusLost(e);
+                int resourceSelectedIndex = outResourcesComboBox.getSelectedIndex();
+                resources.get(resourceSelectedIndex).setPaths(pathsOutputTxtField.getText());
             }
         });
     }

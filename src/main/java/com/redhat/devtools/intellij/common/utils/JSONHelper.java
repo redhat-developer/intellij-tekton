@@ -80,13 +80,21 @@ public class JSONHelper {
         }
         JsonNode defaultItem = item.get(0).get("default");
         if (defaultItem != null) {
-            defaultValue = Optional.of(defaultItem.toString());
+            defaultValue = Optional.of(defaultItem.asText());
         }
         return new Input(name, type, kind, description, defaultValue);
     }
 
-    public static String createInputJson(List<Input> inputs, List<Resource> resources) throws IOException {
+    public static String createPreviewJson(List<Input> inputs, List<Output> outputs, List<Resource> resources) throws IOException {
         JsonNode rootNode = JSON_MAPPER.createObjectNode();
+        JsonNode inputsNode = JSONHelper.createInputJson(inputs, resources);
+        JsonNode outputsNode = JSONHelper.createOutputJson(outputs, resources);
+        ((ObjectNode) rootNode).set("inputs", inputsNode);
+        ((ObjectNode) rootNode).set("outputs", outputsNode);
+        return JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+    }
+
+    public static JsonNode createInputJson(List<Input> inputs, List<Resource> resources) {
         JsonNode inputsNode = JSON_MAPPER.createObjectNode();
         ArrayNode paramsNode = JSON_MAPPER.createArrayNode();
         ArrayNode resourcesNode = JSON_MAPPER.createArrayNode();
@@ -126,8 +134,43 @@ public class JSONHelper {
 
         if (paramsNode.size() > 0) ((ObjectNode) inputsNode).set("params", paramsNode);
         if (resourcesNode.size() > 0) ((ObjectNode) inputsNode).set("resources", resourcesNode);
-        ((ObjectNode) rootNode).set("inputs", inputsNode);
-        return JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        return inputsNode;
+    }
+
+    public static JsonNode createOutputJson(List<Output> outputs, List<Resource> resources) {
+        JsonNode outputsNode = JSON_MAPPER.createObjectNode();
+        ArrayNode resourcesNode = JSON_MAPPER.createArrayNode();
+        JsonNode outputNode = null;
+        for (Output output: outputs) {
+            outputNode = JSON_MAPPER.createObjectNode();
+            ((ObjectNode) outputNode).put("name", output.name());
+            // paths node
+            if (output.value() != null) {
+                for (Resource resource: resources) {
+                    if (resource.name().equals(output.value())) {
+                        if (resource.paths() == null) {
+                            break;
+                        }
+                        ArrayNode pathsNode = JSON_MAPPER.createArrayNode();
+                        String[] paths = resource.paths().split(",");
+                        for (String path: paths) {
+                            pathsNode.add(path);
+                        }
+                        ((ObjectNode) outputNode).set("paths", pathsNode);
+                        break;
+                    }
+                }
+            }
+
+            // resourceRef node
+            JsonNode resourceRefNode = JSON_MAPPER.createObjectNode();
+            ((ObjectNode) resourceRefNode).put("name", output.value() == null ? "Resource has not yet been inserted" : output.value());
+            ((ObjectNode) outputNode).set("resourceRef", resourceRefNode);
+            resourcesNode.add(outputNode);
+        }
+
+        if (resourcesNode.size() > 0) ((ObjectNode) outputsNode).set("resources", resourcesNode);
+        return outputsNode;
     }
 
     public static List<Output> getOutputs(String json) throws IOException {
