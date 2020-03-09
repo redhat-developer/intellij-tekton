@@ -33,10 +33,8 @@ public class DeleteAction extends TektonAction {
         CompletableFuture.runAsync(() -> {
             try {
                 DeleteDialog deleteDialog = UIHelper.executeInUI(() -> {
-                    DeleteDialog dialog = null;
-                    String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
                     String kind = selected.getClass().getSimpleName().toLowerCase().replace("node", "");
-                    dialog = new DeleteDialog(null,
+                    DeleteDialog dialog = new DeleteDialog(null,
                             "Delete " + selected.toString(),
                             "Are you sure you want to delete " + kind + " " + selected.toString() + " ?");
                     dialog.show();
