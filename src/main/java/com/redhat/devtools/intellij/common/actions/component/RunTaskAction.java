@@ -11,19 +11,46 @@
 package com.redhat.devtools.intellij.common.actions.component;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.common.actions.TknAction;
+
+import com.intellij.openapi.ui.Messages;
+import com.redhat.devtools.intellij.common.ui.component.RunTaskDialog;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
-public class RunTaskAction extends TknAction {
+public class RunTaskAction extends TektonAction {
     public RunTaskAction() { super(TaskNode.class); }
 
     @Override
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) throws IOException {
-        tkncli.runTask(((TaskNode)selected).getParent().getParent().toString(), selected.toString());
-        ((TaskNode) selected).reload();
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                RunTaskDialog loginDialog = UIHelper.executeInUI(() -> {
+                    RunTaskDialog dialog = null;
+                    try {
+                        String namespace = ((TaskNode)selected).getParent().getParent().toString();
+                        dialog = new RunTaskDialog(null,
+                                                    tkncli.getTaskJSON(namespace, selected.toString()),
+                                                    tkncli.getResources(namespace));
+                        dialog.show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return dialog;
+                });
+                if (loginDialog.isOK()) {
+                    tkncli.runTask(((TaskNode)selected).getParent().getParent().toString(), selected.toString());
+                    ((TaskNode) selected).reload();
+                }
+            } catch (IOException e) {
+                UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Login"));
+            }
+        });
+
     }
 }

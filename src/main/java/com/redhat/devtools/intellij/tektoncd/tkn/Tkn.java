@@ -69,7 +69,7 @@ public interface Tkn {
      * @return the list of resources
      * @throws IOException if communication errored
      */
-    List<String> getResources(String namespace) throws IOException;
+    List<Resource> getResources(String namespace) throws IOException;
 
     /**
      * Return the names of Tekton tasks for a namespace.
@@ -186,4 +186,7 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void runTask(String namespace, String task) throws IOException;
+
+    public String getTaskJSON(String namespace, String task) throws IOException;
+
 }

@@ -26,7 +26,7 @@ public class ResourcesNode extends LazyMutableTreeNode implements IconTreeNode {
         super.load();
         try {
             NamespaceNode namespaceNode = (NamespaceNode) getParent();
-            ((TektonRootNode)getRoot()).getTkn().getResources(namespaceNode.toString()).forEach(resource -> add(new ResourceNode(resource)));
+            ((TektonRootNode)getRoot()).getTkn().getResources(namespaceNode.toString()).forEach(resource -> add(new ResourceNode(resource.name())));
         } catch (IOException e) {
             add(new DefaultMutableTreeNode("Failed to load pipeline resources"));
         }
