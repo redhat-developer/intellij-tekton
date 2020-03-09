@@ -11,7 +11,10 @@
 package com.redhat.devtools.intellij.tektoncd.actions.component;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
+import com.redhat.devtools.intellij.common.ui.delete.DeleteDialog;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
@@ -20,25 +23,46 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 public class DeleteAction extends TektonAction {
     public DeleteAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) throws IOException {
-        String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
-        switch (selected.getClass().getSimpleName()) {
-            case "PipelineNode":
-                tkncli.deletePipeline(namespace, selected.toString());
-                break;
-            case "ResourceNode":
-                tkncli.deleteResource(namespace, selected.toString());
-                break;
-            case "TaskNode":
-                tkncli.deleteTask(namespace, selected.toString());
-                break;
-            default:
-                break;
-        }
+        CompletableFuture.runAsync(() -> {
+            try {
+                DeleteDialog deleteDialog = UIHelper.executeInUI(() -> {
+                    DeleteDialog dialog = null;
+                    String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
+                    String kind = selected.getClass().getSimpleName().toLowerCase().replace("node", "");
+                    dialog = new DeleteDialog(null,
+                            "Delete " + selected.toString(),
+                            "Are you sure you want to delete " + kind + " " + selected.toString() + " ?");
+                    dialog.show();
+                    return dialog;
+                });
+                if (deleteDialog.isOK()) {
+                    String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
+                    switch (selected.getClass().getSimpleName()) {
+                        case "PipelineNode":
+                            tkncli.deletePipeline(namespace, selected.toString());
+                            break;
+                        case "ResourceNode":
+                            tkncli.deleteResource(namespace, selected.toString());
+                            break;
+                        case "TaskNode":
+                            tkncli.deleteTask(namespace, selected.toString());
+                            break;
+                        default:
+                            break;
+                    }
+                    ((LazyMutableTreeNode)((LazyMutableTreeNode) selected).getParent()).reload();
+                }
+            } catch (IOException e) {
+                UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Login"));
+            }
+        });
+
     }
 }
