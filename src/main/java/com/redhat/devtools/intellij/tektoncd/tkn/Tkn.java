@@ -114,4 +114,32 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     String getTaskJSON(String namespace, String task) throws IOException;
+
+    /**
+     * Delete a pipeline
+     *
+     * @param namespace the namespace to use
+     * @param pipeline the pipeline to delete
+     * @throws IOException if communication errored
+     */
+    void deletePipeline(String namespace, String pipeline) throws IOException;
+
+    /**
+     * Delete a task
+     *
+     * @param namespace the namespace to use
+     * @param task the task to delete
+     * @throws IOException if communication errored
+     */
+    void deleteTask(String namespace, String task) throws IOException;
+
+    /**
+     * Delete a resource
+     *
+     * @param namespace the namespace to use
+     * @param resource the resource to delete
+     * @throws IOException if communication errored
+     */
+    void deleteResource(String namespace, String resource) throws IOException;
+
 }

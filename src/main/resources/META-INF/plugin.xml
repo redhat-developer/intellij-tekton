@@ -25,6 +25,8 @@
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.CreateResourceAction" text="Create resource"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.DeleteAction" text="Delete"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.component.OpenEditorTaskAction" text="Open in Editor"/>
     </group>
   </actions>

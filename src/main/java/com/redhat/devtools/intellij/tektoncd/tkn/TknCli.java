@@ -132,4 +132,19 @@ public class TknCli implements Tkn {
     public String getTaskJSON(String namespace, String task) throws IOException {
         return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "json");
     }
+
+    @Override
+    public void deletePipeline(String namespace, String pipeline) throws IOException {
+        ExecHelper.execute(command, "pipeline", "delete", "-f", pipeline, "-n", namespace);
+    }
+
+    @Override
+    public void deleteTask(String namespace, String task) throws IOException {
+        ExecHelper.execute(command, "task", "delete", "-f", task, "-n", namespace);
+    }
+
+    @Override
+    public void deleteResource(String namespace, String resource) throws IOException {
+        ExecHelper.execute(command, "resource", "delete", "-f", resource, "-n", namespace);
+    }
 }
