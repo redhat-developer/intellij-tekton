@@ -11,10 +11,12 @@
 package com.redhat.devtools.intellij.common.utils;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
@@ -39,11 +41,19 @@ public class JSONHelper {
         return JSON_MAPPER.readTree(JSON_MAPPER.writeValueAsString(map));
     }
 
+    public static String getNamespace(String json) throws IOException {
+        return JSON_MAPPER.readTree(json).get("metadata").get("namespace").asText();
+    }
+
     public static String getName(String json) throws IOException {
         return JSON_MAPPER.readTree(json).get("metadata").get("name").asText();
     }
 
     public static List<Input> getInputs(String json) throws IOException {
+        if (!JSON_MAPPER.readTree(json).has("spec") ||
+                !JSON_MAPPER.readTree(json).get("spec").has("inputs")) {
+            return null;
+        }
         List<Input> result = new ArrayList<>();
         List<JsonNode> params = JSON_MAPPER.readTree(json).get("spec").get("inputs").findValues("params");
         List<JsonNode> resources = JSON_MAPPER.readTree(json).get("spec").get("inputs").findValues("resources");
@@ -85,13 +95,25 @@ public class JSONHelper {
         return new Input(name, type, kind, description, defaultValue);
     }
 
-    public static String createPreviewJson(List<Input> inputs, List<Output> outputs, List<Resource> resources) throws IOException {
+    public static String JSONToYAML(JsonNode json) throws JsonProcessingException {
+        if (json == null) {
+            return "";
+        }
+        return new YAMLMapper().writeValueAsString(json);
+    }
+
+    public static JsonNode createPreviewJsonNode(List<Input> inputs, List<Output> outputs, List<Resource> resources) {
         JsonNode rootNode = JSON_MAPPER.createObjectNode();
-        JsonNode inputsNode = JSONHelper.createInputJson(inputs, resources);
-        JsonNode outputsNode = JSONHelper.createOutputJson(outputs, resources);
-        ((ObjectNode) rootNode).set("inputs", inputsNode);
-        ((ObjectNode) rootNode).set("outputs", outputsNode);
-        return JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        if (inputs != null) {
+            JsonNode inputsNode = JSONHelper.createInputJson(inputs, resources);
+            ((ObjectNode) rootNode).set("inputs", inputsNode);
+        }
+        if (outputs != null) {
+            JsonNode outputsNode = JSONHelper.createOutputJson(outputs, resources);
+            ((ObjectNode) rootNode).set("outputs", outputsNode);
+        }
+        return rootNode;
+        //return JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
     }
 
     public static JsonNode createInputJson(List<Input> inputs, List<Resource> resources) {
@@ -103,7 +125,17 @@ public class JSONHelper {
             inputNode = JSON_MAPPER.createObjectNode();
             ((ObjectNode) inputNode).put("name", input.name());
             if (input.kind() == Input.Kind.PARAMETER) {
-                ((ObjectNode) inputNode).put("value", input.value() == null ? input.defaultValue().orElse("") : input.value());
+                String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
+                if (input.type().equals("array")) {
+                    ArrayNode paramValuesNode = JSON_MAPPER.createArrayNode();
+                    String[] paramValues = value.split(",");
+                    for (String paramValue: paramValues) {
+                        paramValuesNode.add(paramValue);
+                    }
+                    ((ObjectNode) inputNode).set("value", paramValuesNode);
+                } else {
+                    ((ObjectNode) inputNode).put("value", value);
+                }
                 paramsNode.add(inputNode);
             } else {
                 // paths node
@@ -174,6 +206,10 @@ public class JSONHelper {
     }
 
     public static List<Output> getOutputs(String json) throws IOException {
+        if (!JSON_MAPPER.readTree(json).has("spec") ||
+                !JSON_MAPPER.readTree(json).get("spec").has("outputs")) {
+            return null;
+        }
         List<Output> result = new ArrayList<>();
         List<JsonNode> resources = JSON_MAPPER.readTree(json).get("spec").get("outputs").findValues("resources");
 

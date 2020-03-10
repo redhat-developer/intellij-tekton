@@ -32,7 +32,7 @@
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
       <action class="com.redhat.devtools.intellij.tektoncd.actions.component.CreatePipelineAction" text="New Pipeline"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.component.OpenEditorTaskAction" text="Open in Editor"/>
-      <action class="com.redhat.devtools.intellij.common.actions.component.RunTaskAction" text="Run Task"/>
+        <action class="com.redhat.devtools.intellij.tektoncd.actions.component.StartTaskDialogAction" text="Start Task"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.component.DeleteAction" text="Delete"/>
       <action class="com.redhat.devtools.intellij.common.actions.RefreshAction" text="Refresh"/>
     </group>

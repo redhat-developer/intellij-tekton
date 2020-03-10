@@ -34,10 +34,10 @@ public class TektonAction extends TreeAction {
         }
     }
 
-    private Tkn getTkn(AnActionEvent anActionEvent) throws IOException {
-        Tree tree = getTree(anActionEvent);
-        return ((TektonRootNode)tree.getModel().getRoot()).getTkn();
-    }
+  private Tkn getTkn(AnActionEvent anActionEvent) throws IOException {
+      Tree tree = getTree(anActionEvent);
+      return ((TektonRootNode)tree.getModel().getRoot()).getTkn();
+  }
 
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkn) {
 

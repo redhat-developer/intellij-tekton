@@ -176,12 +176,13 @@ public class TknCli implements Tkn {
         client.customResource(crdContext).create(namespace, objectAsString);
     }
 
-    public void runTask(String namespace, String task) throws IOException {
-        ExecHelper.execute(command, "task", "start", task, "-n", namespace);
-    }
-
     @Override
     public String getTaskJSON(String namespace, String task) throws IOException {
         return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "json");
+    }
+
+    public void runTask(String namespace, String task, String args) throws IOException {
+        ExecHelper.execute(command, "task", "start", task, "-n", namespace, args);
+
     }
 }
