@@ -25,7 +25,7 @@
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
-      <action class="com.redhat.devtools.intellij.common.actions.component.OpenEditorTaskAction" text="Open in Editor"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.OpenEditorTaskAction" text="Open in Editor"/>
     </group>
   </actions>
 

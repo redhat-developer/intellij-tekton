@@ -8,16 +8,14 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.common.actions.component;
+package com.redhat.devtools.intellij.tektoncd.actions.component;
 
 import com.intellij.ide.scratch.ScratchRootType;
 import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.redhat.devtools.intellij.common.listener.DeleteFileListener;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -26,10 +24,9 @@ import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 
 import javax.swing.tree.TreePath;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-
-import static com.redhat.devtools.intellij.common.CommonConstants.DELETEFLAG;
 
 public class OpenEditorTaskAction extends TektonAction {
     public OpenEditorTaskAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
@@ -59,8 +56,8 @@ public class OpenEditorTaskAction extends TektonAction {
                                                                       fileEditor.getFile().getExtension().equals("json"));
             if (!fileAlreadyOpened) {
                 VirtualFile fv = ScratchRootType.getInstance().createScratchFile(project, namespace + "-" + selected.toString() + ".json", Language.ANY, content);
-                fv.putUserData(DELETEFLAG, "file");
-                project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new DeleteFileListener());
+                File fileToDelete = new File(fv.getPath());
+                fileToDelete.deleteOnExit();
                 FileEditorManager.getInstance(project).openFile(fv, true);
             }
         }
