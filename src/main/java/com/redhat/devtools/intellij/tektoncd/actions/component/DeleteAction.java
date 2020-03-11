@@ -30,35 +30,31 @@ public class DeleteAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) throws IOException {
+        DeleteDialog deleteDialog = UIHelper.executeInUI(() -> {
+            String kind = selected.getClass().getSimpleName().toLowerCase().replace("node", "");
+            DeleteDialog dialog = new DeleteDialog(null,
+                    "Delete " + selected.toString(),
+                    "Are you sure you want to delete " + kind + " " + selected.toString() + " ?");
+            dialog.show();
+            return dialog;
+        });
+
         CompletableFuture.runAsync(() -> {
             try {
-                DeleteDialog deleteDialog = UIHelper.executeInUI(() -> {
-                    String kind = selected.getClass().getSimpleName().toLowerCase().replace("node", "");
-                    DeleteDialog dialog = new DeleteDialog(null,
-                            "Delete " + selected.toString(),
-                            "Are you sure you want to delete " + kind + " " + selected.toString() + " ?");
-                    dialog.show();
-                    return dialog;
-                });
                 if (deleteDialog.isOK()) {
                     String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
-                    switch (selected.getClass().getSimpleName()) {
-                        case "PipelineNode":
-                            tkncli.deletePipeline(namespace, selected.toString());
-                            break;
-                        case "ResourceNode":
-                            tkncli.deleteResource(namespace, selected.toString());
-                            break;
-                        case "TaskNode":
-                            tkncli.deleteTask(namespace, selected.toString());
-                            break;
-                        default:
-                            break;
+                    Class<?> nodeClass = selected.getClass();
+                    if (PipelineNode.class.equals(nodeClass)) {
+                        tkncli.deletePipeline(namespace, selected.toString());
+                    } else if (ResourceNode.class.equals(nodeClass)) {
+                        tkncli.deleteResource(namespace, selected.toString());
+                    } else if (TaskNode.class.equals(nodeClass)) {
+                        tkncli.deleteTask(namespace, selected.toString());
                     }
                     ((LazyMutableTreeNode)((LazyMutableTreeNode) selected).getParent()).reload();
                 }
             } catch (IOException e) {
-                UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Login"));
+                UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
             }
         });
 
