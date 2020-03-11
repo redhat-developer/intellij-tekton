@@ -15,8 +15,10 @@ import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
@@ -32,21 +34,20 @@ public class OpenEditorTaskAction extends TektonAction {
     public OpenEditorTaskAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
 
     @Override
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) throws IOException {
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String content = "";
         String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
-        switch (selected.getClass().getSimpleName()) {
-            case "PipelineNode":
+        try {
+            if (PipelineNode.class.equals(selected.getClass())) {
                 content = tkncli.getPipelineJSON(namespace, selected.toString());
-                break;
-            case "ResourceNode":
+            } else if (ResourceNode.class.equals(selected.getClass())) {
                 content = tkncli.getResourceJSON(namespace, selected.toString());
-                break;
-            case "TaskNode":
+            } else if (TaskNode.class.equals(selected.getClass())) {
                 content = tkncli.getTaskJSON(namespace, selected.toString());
-                break;
-            default:
-                break;
+            }
+        }
+        catch (IOException e) {
+            UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
         }
 
         if (!content.isEmpty()) {
