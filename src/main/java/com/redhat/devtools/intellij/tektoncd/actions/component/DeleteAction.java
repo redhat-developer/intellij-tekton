@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.actions.component;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
-import com.redhat.devtools.intellij.common.ui.delete.DeleteDialog;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -30,18 +29,17 @@ public class DeleteAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        DeleteDialog deleteDialog = UIHelper.executeInUI(() -> {
+        int resultDialog = UIHelper.executeInUI(() -> {
             String kind = selected.getClass().getSimpleName().toLowerCase().replace("node", "");
-            DeleteDialog dialog = new DeleteDialog(null,
+            return Messages.showYesNoDialog("Are you sure you want to delete " + kind + " " + selected.toString() + " ?",
                     "Delete " + selected.toString(),
-                    "Are you sure you want to delete " + kind + " " + selected.toString() + " ?");
-            dialog.show();
-            return dialog;
+                    null
+            );
         });
 
         CompletableFuture.runAsync(() -> {
             try {
-                if (deleteDialog.isOK()) {
+                if (resultDialog == Messages.OK) {
                     String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
                     Class<?> nodeClass = selected.getClass();
                     if (PipelineNode.class.equals(nodeClass)) {
