@@ -39,6 +39,6 @@ public class TektonAction extends TreeAction {
         return ((TektonRootNode)tree.getModel().getRoot()).getTkn();
     }
 
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkn) {
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkn)  {
   }
 }

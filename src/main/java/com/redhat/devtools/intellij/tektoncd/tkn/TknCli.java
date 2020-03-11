@@ -117,4 +117,19 @@ public class TknCli implements Tkn {
         String json = ExecHelper.execute(command, "taskrun", "ls", task, "-n", namespace, "-o", "json");
         return TASKRUN_JSON_MAPPER.readValue(json, new TypeReference<List<TaskRun>>() {});
     }
+
+    @Override
+    public String getPipelineJSON(String namespace, String pipeline) throws IOException {
+        return ExecHelper.execute(command, "pipeline", "describe", pipeline, "-n", namespace, "-o", "json");
+    }
+
+    @Override
+    public String getResourceJSON(String namespace, String resource) throws IOException {
+        return ExecHelper.execute(command, "resource", "describe", resource, "-n", namespace, "-o", "json");
+    }
+
+    @Override
+    public String getTaskJSON(String namespace, String task) throws IOException {
+        return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "json");
+    }
 }

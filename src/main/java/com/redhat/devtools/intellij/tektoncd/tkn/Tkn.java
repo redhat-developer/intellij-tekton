@@ -87,4 +87,31 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     List<TaskRun> getTaskRuns(String namespace, String task) throws IOException;
+
+    /**
+     * Get pipeline configuration in JSON
+     *
+     * @param namespace the namespace of the task
+     * @param pipeline the pipeline to use
+     * @throws IOException if communication errored
+     */
+    String getPipelineJSON(String namespace, String pipeline) throws IOException;
+
+    /**
+     * Get pipeline resource configuration in JSON
+     *
+     * @param namespace the namespace of the task
+     * @param resource the pipeline resource to use
+     * @throws IOException if communication errored
+     */
+    String getResourceJSON(String namespace, String resource) throws IOException;
+
+    /**
+     * Get task configuration in JSON
+     *
+     * @param namespace the namespace of the task
+     * @param task the task to use
+     * @throws IOException if communication errored
+     */
+    String getTaskJSON(String namespace, String task) throws IOException;
 }
