@@ -29,7 +29,7 @@ public class DeleteAction extends TektonAction {
     public DeleteAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
 
     @Override
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) throws IOException {
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         DeleteDialog deleteDialog = UIHelper.executeInUI(() -> {
             String kind = selected.getClass().getSimpleName().toLowerCase().replace("node", "");
             DeleteDialog dialog = new DeleteDialog(null,
