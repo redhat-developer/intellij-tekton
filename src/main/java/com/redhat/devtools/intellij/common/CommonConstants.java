@@ -14,7 +14,5 @@ import com.intellij.openapi.util.Key;
 
 public class CommonConstants {
     public static final String HOME_FOLDER = System.getProperty("user.home");
-    public static final Key<String> TEKTON_RS = Key.create("tekton.resource");
-    public static final Key<String> TEKTON_NS = Key.create("tekton.namespace");
-    public static final Key<String> TEKTON_PLURAL = Key.create("tekton.plural");
+    public static final Key<String> KIND_PLURAL = Key.create("tekton.plural");
 }

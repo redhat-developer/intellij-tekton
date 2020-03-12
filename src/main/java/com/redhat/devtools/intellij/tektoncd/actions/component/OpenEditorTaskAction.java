@@ -64,10 +64,8 @@ public class OpenEditorTaskAction extends TektonAction {
                                                                       fileEditor.getFile().getExtension().equals("json"));
             if (!fileAlreadyOpened) {
                 VirtualFile fv = ScratchRootType.getInstance().createScratchFile(project, namespace + "-" + selected.toString() + ".json", Language.ANY, content);
-                // append some info to the virtualFile to be used during saving
-                fv.putUserData(TEKTON_RS, selected.toString());
-                fv.putUserData(TEKTON_NS, namespace);
-                fv.putUserData(TEKTON_PLURAL, kind);
+                // append info to the virtualFile to be used during saving
+                fv.putUserData(KIND_PLURAL, kind);
                 File fileToDelete = new File(fv.getPath());
                 fileToDelete.deleteOnExit();
                 FileEditorManager.getInstance(project).openFile(fv, true);
