@@ -12,11 +12,17 @@ public class JSONHelper {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
     public static String getNamespace(String json) throws IOException {
+        if (!JSONHelper.hasMetadata(json)) return null;
         return JSON_MAPPER.readTree(json).get("metadata").get("namespace").asText();
     }
 
     public static String getName(String json) throws IOException {
+        if (!JSONHelper.hasMetadata(json)) return null;
         return JSON_MAPPER.readTree(json).get("metadata").get("name").asText();
+    }
+
+    private static boolean hasMetadata(String json) throws IOException {
+        return JSON_MAPPER.readTree(json).has("metadata");
     }
 
     public static JsonNode getSpecJSON(String json) throws IOException {
