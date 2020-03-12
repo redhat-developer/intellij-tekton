@@ -1,14 +1,15 @@
 <idea-plugin>
   <id>com.redhat.devtools.intellij.tekton</id>
-  <name>Tekton by Red Hat</name>
+  <name>Tekton Pipelines by Red Hat</name>
   <version>1.0</version>
   <vendor email="support@redhat.com" url="http://www.redhat.com">Red Hat</vendor>
 
   <description><![CDATA[
-      <img src="https://raw.githubusercontent.com/redhat-developer/intellij-openshift-connector/master/src/main/resources/images/openshift_extension.png" width="32" height="32"/>
+      <img src="https://raw.githubusercontent.com/redhat-developer/intellij-tekton/master/src/main/resources/images/tekton.png" width="32" height="32"/>
       <h2>Overview</h2>
-      <p>A plugin for interacting with Red Hat OpenShift using a local or remote instance of OpenShift clusters providing a streamlined developer experience. This extension is currently in Preview Mode and supports only Java and Node.js components. We will be supporting other languages in the future releases.</p>
-      <p>To run the instance of OpenShift cluster locally, developers can use <a href="https://github.com/minishift/minishift/releases">minishift</a> / <a href="https://developers.redhat.com/products/cdk/download/">CDK</a>. Currently all clusters are supported, but with some limitations for OpenShift Online Pro where additional storage might be required to create more than two components.</p>
+      <p>A plugin for interacting with Tekton Pipelines using a local or remote instance of Kubernetes or OpenShift clusters providing a streamlined developer experience. This extension is currently in Preview Mode.</p>
+      <p>To run the instance of a Kubernetes cluster locally, developers can use <a href="https://github.com/kubernetes/minikube">Minikube</a>.</p>
+      <p>To run the instance of an OpenShift cluster locally, developers can use <a href="https://developers.redhat.com/products/crc/download/">CRC</a> / <a href="https://developers.redhat.com/products/cdk/download/">CDK</a> / <a href="https://github.com/minishift/minishift/releases">minishift</a>. Currently all clusters are supported, but with some limitations for OpenShift Online Pro where additional storage might be required to create more than two components.</p>
     ]]></description>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
