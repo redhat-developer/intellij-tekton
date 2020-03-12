@@ -1,4 +1,4 @@
-package com.redhat.devtools.intellij.common.listener;
+package com.redhat.devtools.intellij.tektoncd.listener;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

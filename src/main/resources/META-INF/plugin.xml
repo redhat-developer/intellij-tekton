@@ -22,7 +22,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
-    <fileDocumentSynchronizationVetoer implementation="com.redhat.devtools.intellij.common.listener.SaveInEditorListener" order="first" />
+    <fileDocumentSynchronizationVetoer implementation="com.redhat.devtools.intellij.tektoncd.listener.SaveInEditorListener" order="first" />
     <toolWindow id="Tekton" anchor="left" factoryClass="com.redhat.devtools.intellij.tektoncd.WindowToolFactory"/>
   </extensions>
   <actions>

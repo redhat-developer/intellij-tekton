@@ -30,11 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-<<<<<<< HEAD:src/main/java/com/redhat/devtools/intellij/tektoncd/actions/component/OpenEditorTaskAction.java
-=======
 import static com.redhat.devtools.intellij.common.CommonConstants.*;
 
->>>>>>> add support for uploading resources edited in ide to cluster (#16):src/main/java/com/redhat/devtools/intellij/common/actions/component/OpenEditorTaskAction.java
 public class OpenEditorTaskAction extends TektonAction {
     public OpenEditorTaskAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
 
