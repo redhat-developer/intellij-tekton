@@ -1,7 +1,6 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -12,11 +11,11 @@ public class JSONHelper {
 
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
-    public static String getNamespace(String json) throws JsonProcessingException {
+    public static String getNamespace(String json) throws IOException {
         return JSON_MAPPER.readTree(json).get("metadata").get("namespace").asText();
     }
 
-    public static String getName(String json) throws JsonProcessingException {
+    public static String getName(String json) throws IOException {
         return JSON_MAPPER.readTree(json).get("metadata").get("name").asText();
     }
 
