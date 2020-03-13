@@ -11,7 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.actions.component;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.common.ui.component.StartTaskDialog;
+import com.redhat.devtools.intellij.tektoncd.ui.component.StartTaskDialog;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
