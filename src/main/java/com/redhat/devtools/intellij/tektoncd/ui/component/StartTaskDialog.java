@@ -51,6 +51,12 @@ public class StartTaskDialog extends DialogWrapper {
     private JPanel inputParamsPanel;
     private JPanel inputResourcesPanel;
     private JPanel outputsPanel;
+    private JLabel inputParamsLbl;
+    private JLabel inputParamValueLbl;
+    private JLabel outputsLbl;
+    private JLabel outputsResourceLbl;
+    private JLabel inputResourceValuesLbl;
+    private JLabel inputResourcesLbl;
     private List<Input> inputs;
     private List<Resource> resources;
     private List<Output> outputs;
