@@ -30,23 +30,23 @@ public class StartTaskDialogAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        CompletableFuture.runAsync(() -> {
-            String namespace = ((TaskNode)selected).getParent().getParent().toString();
-            StartTaskDialog rtdialog = UIHelper.executeInUI(() -> {
-                StartTaskDialog dialog = null;
+        String namespace = ((TaskNode)selected).getParent().getParent().toString();
+        StartTaskDialog stdialog = UIHelper.executeInUI(() -> {
+            StartTaskDialog dialog = null;
+            try {
+                dialog = new StartTaskDialog(null,
+                        tkncli.getTaskJSON(namespace, selected.toString()),
+                        tkncli.getResources(namespace));
+                dialog.show();
+            } catch (IOException e) {
+                logger.error("Error: " + e.getLocalizedMessage());
+            }
+            return dialog;
+        });
+        CompletableFuture.runAsync(() -> {            
+            if (stdialog.isOK()) {
                 try {
-                    dialog = new StartTaskDialog(null,
-                                                tkncli.getTaskJSON(namespace, selected.toString()),
-                                                tkncli.getResources(namespace));
-                    dialog.show();
-                } catch (IOException e) {
-                    logger.error("Error: " + e.getLocalizedMessage());
-                }
-                return dialog;
-            });
-            if (rtdialog.isOK()) {
-                try {
-                    tkncli.runTask(namespace, selected.toString(), rtdialog.args());
+                    tkncli.runTask(namespace, selected.toString(), stdialog.args());
                     ((TaskNode)selected).reload();
                 } catch (IOException e) {
                     logger.error("Error: " + e.getLocalizedMessage());

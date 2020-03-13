@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.common.utils;
+package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,10 +42,16 @@ public class JSONHelper {
     }
 
     public static String getNamespace(String json) throws IOException {
+        if (!hasMetadata(json)) {
+            return null;
+        }
         return JSON_MAPPER.readTree(json).get("metadata").get("namespace").asText();
     }
 
     public static String getName(String json) throws IOException {
+        if (!hasMetadata(json)) {
+            return null;
+        }
         return JSON_MAPPER.readTree(json).get("metadata").get("name").asText();
     }
 
@@ -241,6 +247,10 @@ public class JSONHelper {
             optional = Optional.of(optionalItem.asBoolean());
         }
         return new Output(name, type, description, optional);
+    }
+
+    private static boolean hasMetadata(String json) throws IOException {
+        return JSON_MAPPER.readTree(json).has("metadata");
     }
 
 }

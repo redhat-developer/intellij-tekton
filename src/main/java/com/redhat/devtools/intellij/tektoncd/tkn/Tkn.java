@@ -188,6 +188,4 @@ public interface Tkn {
      */
     void runTask(String namespace, String task, String args) throws IOException;
 
-    public String getTaskJSON(String namespace, String task) throws IOException;
-
 }

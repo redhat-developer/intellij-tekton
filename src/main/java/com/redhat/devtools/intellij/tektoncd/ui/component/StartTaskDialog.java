@@ -10,9 +10,10 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.component;
 
+import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.redhat.devtools.intellij.common.utils.JSONHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.JSONHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
@@ -34,26 +35,22 @@ import java.util.TimerTask;
 public class StartTaskDialog extends DialogWrapper {
     Logger logger = LoggerFactory.getLogger(StartTaskDialog.class);
     private JPanel contentPane;
-    private JTextField inputTxtField;
-    private JComboBox inResourcesComboBox;
-    private JComboBox inputsComboBox;
-    private JLabel resourcesComboLabel;
-    private JLabel valueTxtLabel;
-    private JComboBox outputsComboBox;
-    private JComboBox outResourcesComboBox;
+    private JTextField inputParamValueTxt;
+    private JComboBox inputResourceValuesCB;
+    private JComboBox inputParamsCB;
+    private JComboBox outputsCB;
+    private JComboBox outputsResourcesCB;
     private JTextArea previewTextArea;
     private JButton previewRefreshBtn;
-    private JLabel pathsTxtLabel;
-    private JTextField pathsInputTxtField;
-    private JTextField pathsOutputTxtField;
     private JLabel outInfoMessage;
     private JLabel inInfoMessage;
-    private JLabel outputLbl;
-    private JLabel outResourceLbl;
-    private JLabel outPathsLbl;
     private JButton startTaskButton;
     private JLabel errorLbl;
     private JButton cancelButton;
+    private JComboBox inputResourcesCB;
+    private JPanel inputParamsPanel;
+    private JPanel inputResourcesPanel;
+    private JPanel outputsPanel;
     private List<Input> inputs;
     private List<Resource> resources;
     private List<Output> outputs;
@@ -67,6 +64,9 @@ public class StartTaskDialog extends DialogWrapper {
         try {
             this.namespace = JSONHelper.getNamespace(task);
             this.taskName = JSONHelper.getName(task);
+            if (Strings.isNullOrEmpty(this.namespace) || Strings.isNullOrEmpty(this.taskName)) {
+                throw new IOException("Tekton file has not a valid format. Namespace and/or name properties are invalid.");
+            }
         } catch (IOException e) {
             logger.error("Error: " + e.getLocalizedMessage());
             return;
@@ -91,8 +91,6 @@ public class StartTaskDialog extends DialogWrapper {
         initOutputsArea();
         updatePreview();
         registerListeners();
-
-
     }
 
     public static void main(String[] args) {
@@ -171,10 +169,9 @@ public class StartTaskDialog extends DialogWrapper {
             return;
         }
         String defaultValue = null;
-        Input input = null;
+        int n = 0;
         // if only a resource of the type requested exists, set that resource as value
-        for (int i=0; i<inputs.size(); i++) {
-            input = inputs.get(i);
+        for (Input input: inputs) {
             if (input.kind() == Input.Kind.RESOURCE) {
                 for (Resource resource: resources) {
                     if (resource.type().equals((input.type()))) {
@@ -183,9 +180,10 @@ public class StartTaskDialog extends DialogWrapper {
                             break;
                         }
                         defaultValue = resource.name();
-                        // if first input is a resource, set the value with the first resource of the type requested
+                        // set the value of the first resource
                         // this is needed to prevent an issue with combobox (if only one element is visible cannot be selected)
-                        if (i == 0) {
+                        if (n == 0) {
+                            n++;
                             break;
                         }
                     }
@@ -202,7 +200,7 @@ public class StartTaskDialog extends DialogWrapper {
             return;
         }
         String defaultValue = null;
-        Output output = null;
+        Output output;
         for (int i=0; i<outputs.size(); i++) {
             output = outputs.get(i);
             for (Resource resource: resources) {
@@ -212,7 +210,7 @@ public class StartTaskDialog extends DialogWrapper {
                         break;
                     }
                     defaultValue = resource.name();
-                    // if first input is a resource, set the value with the first resource of the type requested
+                    // if first output, set the value with the first resource of the type requested and leave
                     // this is needed to prevent an issue with combobox (if only one element is visible cannot be selected)
                     if (i == 0) {
                         break;
@@ -225,101 +223,85 @@ public class StartTaskDialog extends DialogWrapper {
         }
     }
 
-    private void changeInputComponentVisibility(boolean hasInput, boolean isResource) {
-        if (!hasInput) {
+    private void changeInputComponentVisibility(boolean hasInputs, boolean hasParams, boolean hasResources) {
+        if (!hasInputs) {
             inInfoMessage.setVisible(true);
-            valueTxtLabel.setVisible(false);
-            inputTxtField.setVisible(false);
-            resourcesComboLabel.setVisible(false);
-            inResourcesComboBox.setVisible(false);
-            pathsTxtLabel.setVisible(false);
-            pathsInputTxtField.setVisible(false);
             return;
         }
-        if (isResource) {
-            resourcesComboLabel.setVisible(true);
-            inResourcesComboBox.setVisible(true);
-            pathsTxtLabel.setVisible(true);
-            pathsInputTxtField.setVisible(true);
-            valueTxtLabel.setVisible(false);
-            inputTxtField.setVisible(false);
-        } else {
-            valueTxtLabel.setVisible(true);
-            inputTxtField.setVisible(true);
-            resourcesComboLabel.setVisible(false);
-            inResourcesComboBox.setVisible(false);
-            pathsTxtLabel.setVisible(false);
-            pathsInputTxtField.setVisible(false);
+        if (hasResources) {
+            inputResourcesPanel.setVisible(true);
+        }
+        if (hasParams) {
+            inputParamsPanel.setVisible(true);
         }
     }
 
     private void initInputsArea() {
         if (inputs == null) {
-            changeInputComponentVisibility(false, false);
+            changeInputComponentVisibility(false, false, false);
             return;
         }
-        // TODO check if there is a way to add multiple items at once???
         for (Input input: inputs) {
-            inputsComboBox.addItem(input);
+            if (input.kind() == Input.Kind.PARAMETER) {
+                inputParamsCB.addItem(input);
+            } else {
+                inputResourcesCB.addItem(input);
+            }
         }
-        Input firstInput = inputs.get(0);
-        if (firstInput.type().equals("string") ||
-                firstInput.type().equals("array")) {
-            changeInputComponentVisibility(true, false);
-            inputTxtField.setText(firstInput.defaultValue().orElse(""));
-        } else {
-            changeInputComponentVisibility(true, true);
-            fillInputResourceComboBox(firstInput);
+
+        if (inputParamsCB.getItemCount() > 0) {
+            inputParamValueTxt.setText(((Input)inputParamsCB.getItemAt(0)).defaultValue().orElse(""));
         }
+
+        if (inputResourcesCB.getItemCount() > 0) {
+            fillInputResourceComboBox((Input)inputResourcesCB.getItemAt(0));
+        }
+
+        changeInputComponentVisibility(true, inputParamsCB.getItemCount() > 0, inputResourcesCB.getItemCount() > 0);
     }
 
     private void fillInputResourceComboBox(Input inputSelected) {
-        inResourcesComboBox.removeAll();
+        inputResourceValuesCB.removeAll();
         for (Resource resource: resources) {
             if (resource.type().equals(inputSelected.type())) {
-                inResourcesComboBox.addItem(resource);
+                inputResourceValuesCB.addItem(resource);
             }
         }
         if (inputSelected.value() != null) {
-            inResourcesComboBox.setSelectedItem(inputSelected.value());
+            inputResourceValuesCB.setSelectedItem(inputSelected.value());
         }
     }
 
     private void initOutputsArea() {
+        changeOutputComponentVisibility(outputs != null);
         if (outputs == null) {
-            changeOutputComponentVisibility(false);
             return;
         }
         // TODO check if there is a way to add multiple items at once???
         for (Output output: outputs) {
-            outputsComboBox.addItem(output);
+            outputsCB.addItem(output);
         }
-        Output firstOutput = outputs.get(0);
-        fillOutResourcesComboBox(firstOutput);
+
+        fillOutResourcesComboBox(outputs.get(0));
     }
 
     private void changeOutputComponentVisibility(boolean hasOutput) {
         if (!hasOutput) {
             outInfoMessage.setVisible(true);
-            outputsComboBox.setVisible(false);
-            outResourcesComboBox.setVisible(false);
-            pathsOutputTxtField.setVisible(false);
-            outputLbl.setVisible(false);
-            outResourceLbl.setVisible(false);
-            outPathsLbl.setVisible(false);
-            return;
+        } else {
+            outputsPanel.setVisible(true);
         }
     }
 
     private void fillOutResourcesComboBox(Output outputSelected) {
-        outResourcesComboBox.removeAll();
+        outputsResourcesCB.removeAll();
         for (Resource resource: resources) {
             if (resource.type().equals(outputSelected.type())) {
-                outResourcesComboBox.addItem(resource);
+                outputsResourcesCB.addItem(resource);
             }
         }
         if (outputSelected.value() != null) {
-            outResourcesComboBox.setSelectedItem(outputSelected.value());
+            outputsResourcesCB.setSelectedItem(outputSelected.value());
         }
     }
 
@@ -345,92 +327,62 @@ public class StartTaskDialog extends DialogWrapper {
         }
     }
 
-    private void setPathsResource(String resourceName, String paths) {
-        for (Resource resource: resources) {
-            if (resource.name().equals(resourceName)) {
-                resource.setPaths(paths);
-                break;
-            }
-        }
-    }
-
     private void registerListeners() {
         previewRefreshBtn.addActionListener(actionEvent -> updatePreview());
 
-        inputsComboBox.addItemListener(itemEvent -> {
+        inputParamsCB.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
                 Input currentInput = (Input) itemEvent.getItem();
-                if (currentInput.type().toString().equals("string") ||
-                        currentInput.type().toString().equals("array")) {
-                    changeInputComponentVisibility(true, false);
-                    String value = currentInput.value() != null ? currentInput.value() : currentInput.defaultValue().orElse("");
-                    inputTxtField.setText(value);
-                } else {
-                    changeInputComponentVisibility(true, true);
-                    fillInputResourceComboBox(currentInput);
-                    if (currentInput.value() == null) {
-                        setInputValue(currentInput.name(), ((Resource) inResourcesComboBox.getItemAt(0)).name());
-                    }
+                String value = currentInput.value() != null ? currentInput.value() : currentInput.defaultValue().orElse("");
+                inputParamValueTxt.setText(value);
+            }
+        });
+
+        inputParamValueTxt.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                super.focusLost(e);
+                Input inputSelected = (Input) inputParamsCB.getSelectedItem();
+                setInputValue(inputSelected.name(), inputParamValueTxt.getText());
+                updatePreview();
+            }
+        });
+
+        inputResourcesCB.addItemListener(itemEvent -> {
+            if (itemEvent.getStateChange() == 1) {
+                Input currentInput = (Input) itemEvent.getItem();
+                fillInputResourceComboBox(currentInput);
+                if (currentInput.value() == null && inputResourceValuesCB.getItemCount() > 0) {
+                    setInputValue(currentInput.name(), ((Resource) inputResourceValuesCB.getItemAt(0)).name());
                 }
             }
         });
 
-        inResourcesComboBox.addItemListener(itemEvent -> {
+        inputResourceValuesCB.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
-                Input inputSelected = (Input) inputsComboBox.getSelectedItem();
+                Input inputSelected = (Input) inputResourcesCB.getSelectedItem();
                 Resource resourceSelected = (Resource) itemEvent.getItem();
                 setInputValue(inputSelected.name(), resourceSelected.name());
-                if (resourceSelected.paths() != null) {
-                    pathsInputTxtField.setText(resourceSelected.paths());
-                }
+                updatePreview();
             }
         });
 
-        inputTxtField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-            super.focusLost(e);
-            Input inputSelected = (Input) inputsComboBox.getSelectedItem();
-            setInputValue(inputSelected.name(), inputTxtField.getText());
-            updatePreview();
-            }
-        });
-
-        pathsInputTxtField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-            super.focusLost(e);
-            Resource resourceSelected = (Resource) inResourcesComboBox.getSelectedItem();
-            setPathsResource(resourceSelected.name(), pathsInputTxtField.getText());
-            updatePreview();
-            }
-        });
-
-        outputsComboBox.addItemListener(itemEvent -> {
+        outputsCB.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
                 Output currentOutput = (Output) itemEvent.getItem();
                 fillOutResourcesComboBox(currentOutput);
-            }
-        });
-
-        outResourcesComboBox.addItemListener(itemEvent -> {
-            if (itemEvent.getStateChange() == 1) {
-                int outputSelectedIndex = outputsComboBox.getSelectedIndex();
-                Resource resourceSelected = (Resource) itemEvent.getItem();
-                outputs.get(outputSelectedIndex).setValue(resourceSelected.name());
-                if (resourceSelected.paths() != null) {
-                    pathsOutputTxtField.setText(resourceSelected.paths());
+                if (currentOutput.value() == null && outputsResourcesCB.getItemCount() > 0) {
+                    outputs.get(outputsCB.getSelectedIndex()).setValue(((Resource) outputsResourcesCB.getItemAt(0)).name());
                 }
             }
         });
 
-        pathsOutputTxtField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-            super.focusLost(e);
-            Resource resourceSelected = (Resource) outResourcesComboBox.getSelectedItem();
-            setPathsResource(resourceSelected.name(), pathsOutputTxtField.getText());
-            updatePreview();
+        outputsResourcesCB.addItemListener(itemEvent -> {
+            if (itemEvent.getStateChange() == 1) {
+                int outputSelectedIndex = outputsCB.getSelectedIndex();
+                Resource resourceSelected = (Resource) itemEvent.getItem();
+                outputs.get(outputSelectedIndex).setValue(resourceSelected.name());
+                updatePreview();
             }
         });
 
