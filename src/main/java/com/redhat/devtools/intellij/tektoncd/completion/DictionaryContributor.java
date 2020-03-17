@@ -1,0 +1,30 @@
+/*******************************************************************************
+ * Copyright (c) 2020 Red Hat, Inc.
+ * Distributed under license by Red Hat, Inc. All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v20.html
+ *
+ * Contributors:
+ * Red Hat, Inc.
+ ******************************************************************************/
+package com.redhat.devtools.intellij.tektoncd.completion;
+
+import com.intellij.codeInsight.completion.CompletionContributor;
+import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PlainTextTokenTypes;
+
+public class DictionaryContributor extends CompletionContributor {
+    public DictionaryContributor() {
+        // completions for plain text files
+        extend(CompletionType.BASIC,
+                PlatformPatterns.psiElement(PlainTextTokenTypes.PLAIN_TEXT),
+                new DictionaryCompletionProvider());
+
+        // always suggest when invoked manually
+        extend(CompletionType.BASIC,
+                PlatformPatterns.not(PlatformPatterns.alwaysFalse()),
+                new DictionaryCompletionProvider());
+    }
+}

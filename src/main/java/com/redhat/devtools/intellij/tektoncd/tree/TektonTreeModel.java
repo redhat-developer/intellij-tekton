@@ -23,8 +23,6 @@ import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
 import org.apache.commons.codec.binary.StringUtils;
 
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.nio.file.Paths;
 import java.util.Collections;
