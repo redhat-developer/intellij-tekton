@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 20 Red Hat, Inc.
+ * Copyright (c) 2020 Red Hat, Inc.
  * Distributed under license by Red Hat, Inc. All rights reserved.
  * This program is made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution,
@@ -30,7 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static com.redhat.devtools.intellij.common.CommonConstants.*;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 
 public class OpenEditorTaskAction extends TektonAction {
     public OpenEditorTaskAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
