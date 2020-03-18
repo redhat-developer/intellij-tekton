@@ -13,5 +13,6 @@ package com.redhat.devtools.intellij.tektoncd;
 import com.intellij.openapi.util.Key;
 
 public class Constants {
+    public static final String NOTIFICATION_ID = "Tekton Pipelines";
     public static final Key<String> KIND_PLURAL = Key.create("tekton.plural");
 }

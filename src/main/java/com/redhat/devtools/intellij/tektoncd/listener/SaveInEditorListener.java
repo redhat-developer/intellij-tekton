@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
+import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
     Logger logger = LoggerFactory.getLogger(SaveInEditorListener.class);
@@ -81,14 +82,14 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             client.customResource(crdContext).edit(namespace, name, customResource.toString());
         } catch (IOException e) {
             // give a visual notification to user if an error occurs during saving
-            notification = new Notification("SaveNotification", "Error", "An error occurred while saving " + vf.getUserData(KIND_PLURAL) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
+            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + vf.getUserData(KIND_PLURAL) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
             logger.error("Error: " + e.getLocalizedMessage());
             return false;
         }
 
         // notify user if saving was completed successfully
-        notification = new Notification("SaveNotification", "Save Successful", StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + " has been saved!", NotificationType.INFORMATION);
+        notification = new Notification(NOTIFICATION_ID, "Save Successful", StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + " has been saved!", NotificationType.INFORMATION);
         Notifications.Bus.notify(notification);
         return true;
     }
