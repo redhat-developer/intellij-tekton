@@ -13,7 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.component;
 import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.redhat.devtools.intellij.tektoncd.utils.JSONHelper;
+import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
@@ -29,6 +29,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
@@ -63,7 +64,7 @@ public class StartTaskDialog extends DialogWrapper {
 
     private String namespace;
     private String taskName;
-    private String args;
+    private List<String> args;
 
     public StartTaskDialog(Component parent, String task, List<Resource> resources) {
         super((Project) null, parent, false, IdeModalityType.IDE);
@@ -78,7 +79,7 @@ public class StartTaskDialog extends DialogWrapper {
             return;
         }
         this.resources = resources;
-        this.args = "";
+        this.args = new ArrayList<>();
         setTitle("Run Task " + taskName);
         init();
 
@@ -106,30 +107,30 @@ public class StartTaskDialog extends DialogWrapper {
         System.exit(0);
     }
 
-    public String args() {
+    public List<String> args() {
         return args;
     }
 
     private void calculateArgs() {
-        String args = "";
         if (inputs != null) {
             for (Input input : inputs) {
                 if (input.kind() == Input.Kind.PARAMETER) {
                     String value = input.value() == null ? input.defaultValue().get() : input.value();
-                    args += "-p " + input.name() + "=" + value + " ";
+                    args.add("-p");
+                    args.add(input.name() + "=" + value);
                 } else {
-                    args += "-i " + input.name() + "=" + input.value() + " ";
+                    args.add("-i");
+                    args.add(input.name() + "=" + input.value());
                 }
             }
         }
 
         if (outputs != null) {
             for (Output output : outputs) {
-                args += "-o " + output.name() + "=" + output.value() + " ";
+                args.add("-o");
+                args.add(output.name() + "=" + output.value());
             }
         }
-
-        this.args = args;
     }
 
     private String validateInputs() {

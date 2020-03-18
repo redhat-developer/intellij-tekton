@@ -186,6 +186,6 @@ public interface Tkn {
      * @param args args to start task (contains input/output params/resources)
      * @throws IOException if communication errored
      */
-    void runTask(String namespace, String task, String args) throws IOException;
+    void startTask(String namespace, String task, List<String> args) throws IOException;
 
 }

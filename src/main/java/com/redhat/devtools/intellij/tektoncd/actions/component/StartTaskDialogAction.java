@@ -11,17 +11,19 @@
 package com.redhat.devtools.intellij.tektoncd.actions.component;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.tektoncd.ui.component.StartTaskDialog;
+import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
+import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.ui.component.StartTaskDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 public class StartTaskDialogAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(StartTaskDialogAction.class);
@@ -31,29 +33,29 @@ public class StartTaskDialogAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((TaskNode)selected).getParent().getParent().toString();
-        StartTaskDialog stdialog = UIHelper.executeInUI(() -> {
-            StartTaskDialog dialog = null;
+        ExecHelper.submit(() -> {
+            String task;
+            List<Resource> resources;
             try {
-                dialog = new StartTaskDialog(null,
-                        tkncli.getTaskJSON(namespace, selected.toString()),
-                        tkncli.getResources(namespace));
-                dialog.show();
+                task = tkncli.getTaskYAML(namespace, selected.toString());
+                resources = tkncli.getResources(namespace);
             } catch (IOException e) {
                 logger.error("Error: " + e.getLocalizedMessage());
+                return;
             }
-            return dialog;
-        });
-        CompletableFuture.runAsync(() -> {            
+            StartTaskDialog stdialog = UIHelper.executeInUI(() -> {
+                StartTaskDialog dialog = new StartTaskDialog(null, task, resources);
+                dialog.show();
+                return dialog;
+            });
             if (stdialog.isOK()) {
                 try {
-                    tkncli.runTask(namespace, selected.toString(), stdialog.args());
+                    tkncli.startTask(namespace, selected.toString(), stdialog.args());
                     ((TaskNode)selected).reload();
                 } catch (IOException e) {
                     logger.error("Error: " + e.getLocalizedMessage());
                 }
             }
         });
-
-
     }
 }

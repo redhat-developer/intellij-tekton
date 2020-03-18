@@ -177,12 +177,9 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getTaskJSON(String namespace, String task) throws IOException {
-        return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "json");
-    }
-
-    public void runTask(String namespace, String task, String args) throws IOException {
-        ExecHelper.execute(command, "task", "start", task, "-n", namespace, args);
-
+    public void startTask(String namespace, String task, List<String> args) throws IOException {
+        List<String> startCmdArgs = Arrays.asList("task", "start", task, "-n", namespace);
+        args.addAll(0, startCmdArgs);
+        ExecHelper.execute(command, args.toArray(new String[0]));
     }
 }
