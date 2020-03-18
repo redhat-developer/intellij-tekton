@@ -89,31 +89,31 @@ public interface Tkn {
     List<TaskRun> getTaskRuns(String namespace, String task) throws IOException;
 
     /**
-     * Get pipeline configuration in JSON
+     * Get pipeline configuration in YAML
      *
      * @param namespace the namespace of the task
      * @param pipeline the pipeline to use
      * @throws IOException if communication errored
      */
-    String getPipelineJSON(String namespace, String pipeline) throws IOException;
+    String getPipelineYAML(String namespace, String pipeline) throws IOException;
 
     /**
-     * Get pipeline resource configuration in JSON
+     * Get pipeline resource configuration in YAML
      *
      * @param namespace the namespace of the task
      * @param resource the pipeline resource to use
      * @throws IOException if communication errored
      */
-    String getResourceJSON(String namespace, String resource) throws IOException;
+    String getResourceYAML(String namespace, String resource) throws IOException;
 
     /**
-     * Get task configuration in JSON
+     * Get task configuration in YAML
      *
      * @param namespace the namespace of the task
      * @param task the task to use
      * @throws IOException if communication errored
      */
-    String getTaskJSON(String namespace, String task) throws IOException;
+    String getTaskYAML(String namespace, String task) throws IOException;
 
     /**
      * Delete a pipeline

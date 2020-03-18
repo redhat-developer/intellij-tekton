@@ -119,18 +119,18 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getPipelineJSON(String namespace, String pipeline) throws IOException {
-        return ExecHelper.execute(command, "pipeline", "describe", pipeline, "-n", namespace, "-o", "json");
+    public String getPipelineYAML(String namespace, String pipeline) throws IOException {
+        return ExecHelper.execute(command, "pipeline", "describe", pipeline, "-n", namespace, "-o", "yaml");
     }
 
     @Override
-    public String getResourceJSON(String namespace, String resource) throws IOException {
-        return ExecHelper.execute(command, "resource", "describe", resource, "-n", namespace, "-o", "json");
+    public String getResourceYAML(String namespace, String resource) throws IOException {
+        return ExecHelper.execute(command, "resource", "describe", resource, "-n", namespace, "-o", "yaml");
     }
 
     @Override
-    public String getTaskJSON(String namespace, String task) throws IOException {
-        return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "json");
+    public String getTaskYAML(String namespace, String task) throws IOException {
+        return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "yaml");
     }
 
     @Override

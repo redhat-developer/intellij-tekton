@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.JSONHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.YAMLHelper;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
@@ -37,13 +38,17 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             return true;
         }
 
-        String namespace = null;
-        String name = null;
+        String namespace, name;
+        JsonNode spec;
         try {
-           namespace = JSONHelper.getNamespace(document.getText());
-           name = JSONHelper.getName(document.getText());
+            namespace = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "namespace"});
+            name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "name"});
             if (Strings.isNullOrEmpty(namespace) || Strings.isNullOrEmpty(name)) {
-                throw new IOException("Tekton file has not a valid format. Namespace and/or name properties are invalid.");
+                throw new IOException("Tekton file has not a valid format. Namespace and/or name fields are invalid.");
+            }
+            spec = YAMLHelper.getValueFromYAML(document.getText(), new String[] {"spec"});
+            if (spec == null) {
+                throw new IOException("Tekton file has not a valid format. Spec field is not found.");
             }
         } catch (IOException e) {
             UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
@@ -52,14 +57,13 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         Notification notification;
         try (final KubernetesClient client = new DefaultKubernetesClient()) {
-            JsonNode specToUpload = JSONHelper.getSpecJSON(document.getText());
             CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(vf.getUserData(KIND_PLURAL));
             JsonNode customResource = JSONHelper.MapToJSON(client.customResource(crdContext).get(namespace, name));
-            ((ObjectNode) customResource).set("spec", specToUpload);
+            ((ObjectNode) customResource).set("spec", spec);
             client.customResource(crdContext).edit(namespace, name, customResource.toString());
         } catch (IOException e) {
             // give a visual notification to user if an error occurs during saving
-            notification = new Notification("SaveNotification", "Error", "An error occurred while saving " + vf.getUserData(KIND_PLURAL) + " " + name, NotificationType.ERROR);
+            notification = new Notification("SaveNotification", "Error", "An error occurred while saving " + vf.getUserData(KIND_PLURAL) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
             notification.notify(ProjectManager.getInstance().getDefaultProject());
             logger.error("Error: " + e.getLocalizedMessage());
             return false;
