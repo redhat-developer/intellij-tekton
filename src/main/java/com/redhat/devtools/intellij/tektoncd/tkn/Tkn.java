@@ -204,4 +204,14 @@ public interface Tkn {
      * @param taskRun name of the TaskRun
      */
     void showLogsTaskRun(String namespace, String taskRun) throws IOException;
+
+    /**
+     * Start the execution of a pipeline
+     *
+     * @param namespace the namespace of the pipeline
+     * @param pipeline the pipeline that has to be run
+     * @throws IOException if communication errored
+     */
+    void startPipeline(String namespace, String pipeline) throws IOException;
+
 }
