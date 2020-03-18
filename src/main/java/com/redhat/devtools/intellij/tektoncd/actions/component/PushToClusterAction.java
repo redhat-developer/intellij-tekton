@@ -13,7 +13,13 @@ import com.intellij.openapi.keymap.KeymapManager;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.treeStructure.Tree;
+import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.JSONHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLHelper;
@@ -104,5 +110,20 @@ public class PushToClusterAction extends AnAction {
         // notify user if saving was completed successfully
         notification = new Notification("SaveNotification", "Save Successful", StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + " has been saved!", NotificationType.INFORMATION);
         notification.notify(ProjectManager.getInstance().getDefaultProject());
+
+        // refresh tree
+        try {
+            ToolWindow window = ToolWindowManager.getInstance(e.getProject()).getToolWindow("Tekton");
+            if (window == null) return;
+            JBScrollPane pane = (JBScrollPane) window.getContentManager().findContent("").getComponent();
+            if (pane == null) return;
+            Tree tree = (Tree) pane.getViewport().getView();
+            if (tree == null) return;
+            LazyMutableTreeNode[] nodes = tree.getSelectedNodes(PipelinesNode.class, null);
+            if (nodes != null && nodes.length > 0) nodes[0].reload();
+        } catch (Exception ex) {
+            logger.error("Error: " + ex.getLocalizedMessage());
+        }
+
     }
 }
