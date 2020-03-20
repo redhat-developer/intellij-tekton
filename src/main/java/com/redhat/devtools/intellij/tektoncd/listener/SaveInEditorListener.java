@@ -17,15 +17,21 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import org.apache.commons.lang.StringUtils;
@@ -44,6 +50,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
     @Override
     public boolean maySaveDocument(@NotNull Document document, boolean isSaveExplicit) {
         VirtualFile vf = FileDocumentManager.getInstance().getFile(document);
+
         // if file is not related to tekton we can skip it
         if (vf == null || vf.getUserData(KIND_PLURAL).isEmpty()) {
             return true;
@@ -75,14 +82,40 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             return false;
         }
 
+        int resultDialog = UIHelper.executeInUI(() ->
+                Messages.showYesNoDialog(
+                        "The file has been saved. Do you want to push the changes to the cluster?",
+                        "Save to cluster",
+                        null
+                ));
+
+        if (resultDialog != Messages.OK) return false;
+
         Notification notification;
-        try (final KubernetesClient client = new DefaultKubernetesClient()) {
+        KubernetesClient client;
+        try {
+            Project project = EditorFactory.getInstance().getEditors(document)[0].getProject();
+            ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow("Tekton");
+            JBScrollPane pane = (JBScrollPane) window.getContentManager().findContent("").getComponent();
+            Tree tree = (Tree) pane.getViewport().getView();
+            client = ((TektonRootNode) tree.getModel().getRoot()).getClient();
+            if (client == null) {
+                throw new IOException("Unable to find valid kubernetes client.");
+            }
+        } catch (Exception e) {
+            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
+            Notifications.Bus.notify(notification);
+            logger.error("Error: " + e.getLocalizedMessage());
+            return false;
+        }
+
+        try {
             JsonNode customResource = JSONHelper.MapToJSON(client.customResource(crdContext).get(namespace, name));
             ((ObjectNode) customResource).set("spec", spec);
             client.customResource(crdContext).edit(namespace, name, customResource.toString());
         } catch (IOException e) {
             // give a visual notification to user if an error occurs during saving
-            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + vf.getUserData(KIND_PLURAL) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
+            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
             logger.error("Error: " + e.getLocalizedMessage());
             return false;
