@@ -30,6 +30,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -93,14 +94,20 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         Notification notification;
         KubernetesClient client;
+        Tkn tknCli;
         try {
             Project project = EditorFactory.getInstance().getEditors(document)[0].getProject();
             ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow("Tekton");
             JBScrollPane pane = (JBScrollPane) window.getContentManager().findContent("").getComponent();
             Tree tree = (Tree) pane.getViewport().getView();
-            client = ((TektonRootNode) tree.getModel().getRoot()).getClient();
+            TektonRootNode root = ((TektonRootNode) tree.getModel().getRoot());
+            client = root.getClient();
             if (client == null) {
                 throw new IOException("Kubernetes client has not been initialized.");
+            }
+            tknCli = root.getTkn();
+            if (client == null) {
+                throw new IOException("Tekton Cli not found.");
             }
         } catch (Exception e) {
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
@@ -110,9 +117,9 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         }
 
         try {
-            JsonNode customResource = JSONHelper.MapToJSON(client.customResource(crdContext).get(namespace, name));
+            JsonNode customResource = JSONHelper.MapToJSON(tknCli.getCustomResource(client, namespace, name, crdContext));
             ((ObjectNode) customResource).set("spec", spec);
-            client.customResource(crdContext).edit(namespace, name, customResource.toString());
+            tknCli.editResource(client, namespace, name, crdContext, customResource.toString());
         } catch (IOException e) {
             // give a visual notification to user if an error occurs during saving
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);

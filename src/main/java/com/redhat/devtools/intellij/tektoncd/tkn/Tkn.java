@@ -11,9 +11,11 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface Tkn {
     /**
@@ -141,4 +143,27 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void deleteResource(String namespace, String resource) throws IOException;
+
+    /**
+     * Get a custom resource from the cluster which is namespaced.
+     *
+     * @param client the cluster client object
+     * @param namespace the namespace to use
+     * @param name name of custom resource
+     * @param crdContext the custom resource definition context of the resource kind
+     * @return Object as HashMap
+     */
+    Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext);
+
+    /**
+     * Edit a custom resource object which is a namespaced object
+     *
+     * @param client the cluster client object
+     * @param namespace the namespace to use
+     * @param name name of custom resource
+     * @param crdContext the custom resource definition context of the resource kind
+     * @param objectAsString new object as a JSON string
+     * @throws IOException
+     */
+    void editResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
 }
