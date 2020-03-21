@@ -21,13 +21,9 @@ public class YAMLHelper {
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
 
     public static String getStringValueFromYAML(String yamlAsString, String[] fieldnames) throws IOException {
-        if (yamlAsString == null) return null;
-        JsonNode node = YAML_MAPPER.readTree(yamlAsString);
-        for (String fieldname: fieldnames) {
-            if (!node.has(fieldname)) return null;
-            node = node.get(fieldname);
-        }
-        return node.asText();
+        JsonNode nodeValue = YAMLHelper.getValueFromYAML(yamlAsString, fieldnames);
+        if (nodeValue == null && !nodeValue.isTextual()) return null;
+        return nodeValue.asText();
     }
 
     public static JsonNode getValueFromYAML(String yamlAsString, String[] fieldnames) throws IOException {

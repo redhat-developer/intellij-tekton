@@ -100,7 +100,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             Tree tree = (Tree) pane.getViewport().getView();
             client = ((TektonRootNode) tree.getModel().getRoot()).getClient();
             if (client == null) {
-                throw new IOException("Unable to find valid kubernetes client.");
+                throw new IOException("Kubernetes client has not been initialized.");
             }
         } catch (Exception e) {
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
