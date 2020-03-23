@@ -10,20 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.kubectl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.openshift.client.OpenShiftClient;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class KubectlCli implements Kubectl {
     /**

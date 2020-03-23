@@ -17,11 +17,13 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.client.OpenShiftClient;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TknCli implements Tkn {
@@ -119,18 +121,18 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getPipelineJSON(String namespace, String pipeline) throws IOException {
-        return ExecHelper.execute(command, "pipeline", "describe", pipeline, "-n", namespace, "-o", "json");
+    public String getPipelineYAML(String namespace, String pipeline) throws IOException {
+        return ExecHelper.execute(command, "pipeline", "describe", pipeline, "-n", namespace, "-o", "yaml");
     }
 
     @Override
-    public String getResourceJSON(String namespace, String resource) throws IOException {
-        return ExecHelper.execute(command, "resource", "describe", resource, "-n", namespace, "-o", "json");
+    public String getResourceYAML(String namespace, String resource) throws IOException {
+        return ExecHelper.execute(command, "resource", "describe", resource, "-n", namespace, "-o", "yaml");
     }
 
     @Override
-    public String getTaskJSON(String namespace, String task) throws IOException {
-        return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "json");
+    public String getTaskYAML(String namespace, String task) throws IOException {
+        return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "yaml");
     }
 
     @Override
@@ -146,5 +148,15 @@ public class TknCli implements Tkn {
     @Override
     public void deleteResource(String namespace, String resource) throws IOException {
         ExecHelper.execute(command, "resource", "delete", "-f", resource, "-n", namespace);
+    }
+
+    @Override
+    public Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext) {
+        return client.customResource(crdContext).get(namespace, name);
+    }
+
+    @Override
+    public void editResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
+        client.customResource(crdContext).edit(namespace, name, objectAsString);
     }
 }

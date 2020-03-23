@@ -22,12 +22,13 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
+    <fileDocumentSynchronizationVetoer implementation="com.redhat.devtools.intellij.tektoncd.listener.SaveInEditorListener" order="first" />
     <toolWindow id="Tekton" anchor="left" factoryClass="com.redhat.devtools.intellij.tektoncd.WindowToolFactory"/>
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.DeleteAction" text="Delete"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.component.OpenEditorTaskAction" text="Open in Editor"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.DeleteAction" text="Delete"/>
       <action class="com.redhat.devtools.intellij.common.actions.RefreshAction" text="Refresh"/>
     </group>
   </actions>

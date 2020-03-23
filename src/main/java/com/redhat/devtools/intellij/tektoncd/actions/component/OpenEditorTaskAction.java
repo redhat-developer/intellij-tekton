@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
+
 public class OpenEditorTaskAction extends TektonAction {
     public OpenEditorTaskAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
 
@@ -37,13 +39,17 @@ public class OpenEditorTaskAction extends TektonAction {
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String content = "";
         String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
+        String kind = "";
         try {
             if (PipelineNode.class.equals(selected.getClass())) {
-                content = tkncli.getPipelineJSON(namespace, selected.toString());
+                content = tkncli.getPipelineYAML(namespace, selected.toString());
+                kind = "pipelines";
             } else if (ResourceNode.class.equals(selected.getClass())) {
-                content = tkncli.getResourceJSON(namespace, selected.toString());
+                content = tkncli.getResourceYAML(namespace, selected.toString());
+                kind = "pipelineresources";
             } else if (TaskNode.class.equals(selected.getClass())) {
-                content = tkncli.getTaskJSON(namespace, selected.toString());
+                content = tkncli.getTaskYAML(namespace, selected.toString());
+                kind = "tasks";
             }
         }
         catch (IOException e) {
@@ -52,11 +58,14 @@ public class OpenEditorTaskAction extends TektonAction {
 
         if (!content.isEmpty()) {
             Project project = anActionEvent.getProject();
+
             boolean fileAlreadyOpened = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
                                                anyMatch(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + selected.toString()) &&
-                                                                      fileEditor.getFile().getExtension().equals("json"));
+                                                                      fileEditor.getFile().getExtension().equals("yaml"));
             if (!fileAlreadyOpened) {
-                VirtualFile fv = ScratchRootType.getInstance().createScratchFile(project, namespace + "-" + selected.toString() + ".json", Language.ANY, content);
+                VirtualFile fv = ScratchRootType.getInstance().createScratchFile(project, namespace + "-" + selected.toString() + ".yaml", Language.ANY, content);
+                // append info to the virtualFile to be used during saving
+                fv.putUserData(KIND_PLURAL, kind);
                 File fileToDelete = new File(fv.getPath());
                 fileToDelete.deleteOnExit();
                 FileEditorManager.getInstance(project).openFile(fv, true);
