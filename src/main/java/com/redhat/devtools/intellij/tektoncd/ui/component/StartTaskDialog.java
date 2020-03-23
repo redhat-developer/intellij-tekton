@@ -10,10 +10,10 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.component;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.redhat.devtools.intellij.common.utils.JSONHelper;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
@@ -29,9 +29,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.TimerTask;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class StartTaskDialog extends DialogWrapper {
     Logger logger = LoggerFactory.getLogger(StartTaskDialog.class);
@@ -67,12 +67,15 @@ public class StartTaskDialog extends DialogWrapper {
     private List<String> args;
 
     public StartTaskDialog(Component parent, String task, List<Resource> resources) {
-        super((Project) null, parent, false, IdeModalityType.IDE);
+        super(null, parent, false, IdeModalityType.IDE);
         try {
-            this.namespace = JSONHelper.getNamespace(task);
-            this.taskName = JSONHelper.getName(task);
-            if (Strings.isNullOrEmpty(this.namespace) || Strings.isNullOrEmpty(this.taskName)) {
-                throw new IOException("Tekton file has not a valid format. Namespace and/or name properties are invalid.");
+            this.namespace = YAMLHelper.getStringValueFromYAML(task, new String[] {"metadata", "namespace"});
+            if (Strings.isNullOrEmpty(namespace)) {
+                throw new IOException("Tekton task has not a valid format. Namespace field is not found or its value is not valid.");
+            }
+            this.taskName = YAMLHelper.getStringValueFromYAML(task, new String[] {"metadata", "name"});
+            if (Strings.isNullOrEmpty(this.taskName)) {
+                throw new IOException("Tekton task has not a valid format. Name field is not found or its value is not valid.");
             }
         } catch (IOException e) {
             logger.error("Error: " + e.getLocalizedMessage());
@@ -84,15 +87,20 @@ public class StartTaskDialog extends DialogWrapper {
         init();
 
         try {
-            inputs = JSONHelper.getInputs(task);
-            outputs = JSONHelper.getOutputs(task);
+            JsonNode inputsNode = YAMLHelper.getValueFromYAML(task, new String[] {"spec", "inputs"});
+            if (inputsNode != null) {
+                inputs = getInputs(inputsNode);
+            }
+            JsonNode outputsNode = YAMLHelper.getValueFromYAML(task, new String[] {"spec", "outputs"});
+            if (outputsNode != null) {
+                outputs = getOutputs(outputsNode);
+            }
         } catch (IOException e) {
             logger.error("Error: " + e.getLocalizedMessage());
         }
 
-        // check if only one resource of the same input/output resource type exists and set it as value
-        setFixedValueInputResources();
-        setFixedValueOutputResources();
+        // if for a specific input/output type (git, image, ...) only a resource exists, set that resource as default value for input/output
+        setDefaultValueResources();
         // init dialog
         initInputsArea();
         initOutputsArea();
@@ -171,76 +179,69 @@ public class StartTaskDialog extends DialogWrapper {
         return contentPane;
     }
 
-    private void setFixedValueInputResources() {
-        if (inputs == null) {
-            return;
-        }
-        String defaultValue = null;
-        int n = 0;
-        // if only a resource of the type requested exists, set that resource as value
-        for (Input input: inputs) {
-            if (input.kind() == Input.Kind.RESOURCE) {
-                for (Resource resource: resources) {
-                    if (resource.type().equals((input.type()))) {
-                        if (defaultValue != null) {
-                            defaultValue = null;
-                            break;
-                        }
-                        defaultValue = resource.name();
-                        // set the value of the first resource
-                        // this is needed to prevent an issue with combobox (if only one element is visible cannot be selected)
-                        if (n == 0) {
-                            n++;
-                            break;
-                        }
-                    }
-                }
-                if (defaultValue != null) {
-                    input.setValue(defaultValue);
-                }
+    private List<Input> getInputs(JsonNode inputsNode) {
+        List<Input> result = new ArrayList<>();
+        List<JsonNode> params = inputsNode.findValues("params");
+        List<JsonNode> resources = inputsNode.findValues("resources");
+
+        if (params != null) {
+            for (Iterator<JsonNode> it = params.iterator(); it.hasNext(); ) {
+                JsonNode item = it.next();
+                result.add(new Input().fromJson(item.get(0), Input.Kind.PARAMETER));
             }
         }
+
+        if (resources != null) {
+            for (Iterator<JsonNode> it = resources.iterator(); it.hasNext(); ) {
+                JsonNode item = it.next();
+                result.add(new Input().fromJson(item.get(0), Input.Kind.RESOURCE));
+            }
+        }
+
+        return result;
     }
 
-    private void setFixedValueOutputResources() {
-        if (outputs == null) {
-            return;
-        }
-        String defaultValue = null;
-        Output output;
-        for (int i=0; i<outputs.size(); i++) {
-            output = outputs.get(i);
-            for (Resource resource: resources) {
-                if (resource.type().equals((output.type()))) {
-                    if (defaultValue != null) {
-                        defaultValue = null;
-                        break;
-                    }
-                    defaultValue = resource.name();
-                    // if first output, set the value with the first resource of the type requested and leave
-                    // this is needed to prevent an issue with combobox (if only one element is visible cannot be selected)
-                    if (i == 0) {
-                        break;
-                    }
-                }
-            }
-            if (defaultValue != null) {
-                output.setValue(defaultValue);
+    private List<Output> getOutputs(JsonNode outputsNode) {
+        List<Output> result = new ArrayList<>();
+        List<JsonNode> resources = outputsNode.findValues("resources");
+
+        if (resources != null) {
+            for (Iterator<JsonNode> it = resources.iterator(); it.hasNext(); ) {
+                JsonNode item = it.next();
+                result.add(new Output().fromJson(item.get(0)));
             }
         }
+
+        return result;
     }
 
-    private void changeInputComponentVisibility(boolean hasInputs, boolean hasParams, boolean hasResources) {
-        if (!hasInputs) {
-            inInfoMessage.setVisible(true);
+    private void setDefaultValueResources() {
+        if (inputs == null && outputs == null) {
             return;
         }
-        if (hasResources) {
-            inputResourcesPanel.setVisible(true);
+        int resourcesCount;
+        // if for a specific type (git, image, ...) only a resource exists, set that resource as default value for input/output
+        Map<String, List<Resource>> resourceGroupedByType = resources.stream().collect(Collectors.groupingBy(Resource::type));
+
+        if (inputs != null) {
+            Input[] resourceInputs = inputs.stream().filter(input -> input.kind() == Input.Kind.RESOURCE).toArray(Input[]::new);
+            for (Input input: resourceInputs) {
+                resourcesCount = resourceGroupedByType.get(input.type()).size();
+                if (resourcesCount == 1) {
+                    input.setValue(resourceGroupedByType.get(input.type()).get(0).name());
+                }
+            }
         }
-        if (hasParams) {
-            inputParamsPanel.setVisible(true);
+
+        if (outputs != null) {
+            for (Output output: outputs) {
+                resourcesCount = resourceGroupedByType.get(output.type()).size();
+                if (resourcesCount == 1) {
+                    output.setValue(resourceGroupedByType.get(output.type()).get(0).name());
+                }
+            }
         }
+
     }
 
     private void initInputsArea() {
@@ -267,6 +268,19 @@ public class StartTaskDialog extends DialogWrapper {
         changeInputComponentVisibility(true, inputParamsCB.getItemCount() > 0, inputResourcesCB.getItemCount() > 0);
     }
 
+    private void changeInputComponentVisibility(boolean hasInputs, boolean hasParams, boolean hasResources) {
+        if (!hasInputs) {
+            inInfoMessage.setVisible(true);
+            return;
+        }
+        if (hasResources) {
+            inputResourcesPanel.setVisible(true);
+        }
+        if (hasParams) {
+            inputParamsPanel.setVisible(true);
+        }
+    }
+
     private void fillInputResourceComboBox(Input inputSelected) {
         inputResourceValuesCB.removeAll();
         for (Resource resource: resources) {
@@ -281,23 +295,17 @@ public class StartTaskDialog extends DialogWrapper {
 
     private void initOutputsArea() {
         changeOutputComponentVisibility(outputs != null);
-        if (outputs == null) {
-            return;
-        }
-        // TODO check if there is a way to add multiple items at once???
+        if (outputs == null) return;
+
         for (Output output: outputs) {
             outputsCB.addItem(output);
         }
-
         fillOutResourcesComboBox(outputs.get(0));
     }
 
     private void changeOutputComponentVisibility(boolean hasOutput) {
-        if (!hasOutput) {
-            outInfoMessage.setVisible(true);
-        } else {
-            outputsPanel.setVisible(true);
-        }
+        outInfoMessage.setVisible(!hasOutput);
+        outputsPanel.setVisible(hasOutput);
     }
 
     private void fillOutResourcesComboBox(Output outputSelected) {
@@ -315,7 +323,7 @@ public class StartTaskDialog extends DialogWrapper {
     private void updatePreview() {
         String preview = "";
         try {
-            preview = JSONHelper.JSONToYAML(JSONHelper.createPreviewJsonNode(inputs, outputs, resources));
+            preview = YAMLHelper.createPreviewInYAML(inputs, outputs);
         } catch (IOException e) {
             logger.error("Error: " + e.getLocalizedMessage());
         }
@@ -335,9 +343,12 @@ public class StartTaskDialog extends DialogWrapper {
     }
 
     private void registerListeners() {
+        // listener for when preview refresh button is clicked
         previewRefreshBtn.addActionListener(actionEvent -> updatePreview());
 
+        // listener for when value in parameters input combo box changes
         inputParamsCB.addItemListener(itemEvent -> {
+            // when combo box value change update input value textbox
             if (itemEvent.getStateChange() == 1) {
                 Input currentInput = (Input) itemEvent.getItem();
                 String value = currentInput.value() != null ? currentInput.value() : currentInput.defaultValue().orElse("");
@@ -345,18 +356,22 @@ public class StartTaskDialog extends DialogWrapper {
             }
         });
 
+        // listener for when focus is lost in textbox with parameter input's value
         inputParamValueTxt.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 super.focusLost(e);
+                // when focus is lost, value in textbox is saved in input's value and preview is updated
                 Input inputSelected = (Input) inputParamsCB.getSelectedItem();
                 setInputValue(inputSelected.name(), inputParamValueTxt.getText());
                 updatePreview();
             }
         });
 
+        // listener for when value in resources input combo box changes
         inputResourcesCB.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
+                // when inputResourcesCB combo box value changes, inputResourceValuesCB combo box is filled with all resources of the same type as the currentInput
                 Input currentInput = (Input) itemEvent.getItem();
                 fillInputResourceComboBox(currentInput);
                 if (currentInput.value() == null && inputResourceValuesCB.getItemCount() > 0) {
@@ -365,8 +380,10 @@ public class StartTaskDialog extends DialogWrapper {
             }
         });
 
+        // listener for when value in resources value input combo box changes
         inputResourceValuesCB.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
+                // when inputResourceValuesCB combo box value changes, the new value is saved and preview is updated
                 Input inputSelected = (Input) inputResourcesCB.getSelectedItem();
                 Resource resourceSelected = (Resource) itemEvent.getItem();
                 setInputValue(inputSelected.name(), resourceSelected.name());
@@ -374,8 +391,10 @@ public class StartTaskDialog extends DialogWrapper {
             }
         });
 
+        // listener for when value in outputs combo box changes
         outputsCB.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
+                // when outputsCB combo box value changes, outputsResourcesCB combo box is filled with all resources of the same type as the currentOutput
                 Output currentOutput = (Output) itemEvent.getItem();
                 fillOutResourcesComboBox(currentOutput);
                 if (currentOutput.value() == null && outputsResourcesCB.getItemCount() > 0) {
@@ -384,8 +403,10 @@ public class StartTaskDialog extends DialogWrapper {
             }
         });
 
+        // listener for when value in output resources combo box changes
         outputsResourcesCB.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
+                // when outputsResourcesCB combo box value changes, the new value is saved and preview is updated
                 int outputSelectedIndex = outputsCB.getSelectedIndex();
                 Resource resourceSelected = (Resource) itemEvent.getItem();
                 outputs.get(outputSelectedIndex).setValue(resourceSelected.name());
@@ -393,6 +414,7 @@ public class StartTaskDialog extends DialogWrapper {
             }
         });
 
+        // listener for when the button startTask is clicked
         startTaskButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -425,6 +447,7 @@ public class StartTaskDialog extends DialogWrapper {
             }
         });
 
+        // listener for when the button cancel is clicked
         cancelButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

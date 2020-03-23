@@ -10,11 +10,13 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn.component.field;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.Optional;
 
 public class Input {
 
-    public static enum Kind { PARAMETER, RESOURCE };
+    public enum Kind { PARAMETER, RESOURCE };
 
     private String name;
     private String type;
@@ -23,13 +25,7 @@ public class Input {
     private String value;
     private Optional<String> defaultValue;
 
-    public Input(String name, String type, Kind kind, Optional<String> description, Optional<String> defaultValue) {
-        this.name = name;
-        this.type = type;
-        this.kind = kind;
-        this.description = description;
-        this.defaultValue = defaultValue;
-    }
+    public Input() {}
 
     public String name() {
         return name;
@@ -57,6 +53,31 @@ public class Input {
 
     public Kind kind() {
         return kind;
+    }
+
+    public Input fromJson(JsonNode inputNode, Kind kind) {
+        String name = inputNode.get("name").asText();
+        String type = "string";
+        Optional<String> description = Optional.empty();
+        Optional<String> defaultValue = Optional.empty();
+        JsonNode typeItem = inputNode.get("type");
+        if (typeItem != null) {
+            type = typeItem.asText();
+        }
+        JsonNode descriptionItem = inputNode.get("description");
+        if (descriptionItem != null) {
+            description = Optional.of(descriptionItem.asText());
+        }
+        JsonNode defaultItem = inputNode.get("default");
+        if (defaultItem != null) {
+            defaultValue = Optional.of(defaultItem.asText());
+        }
+        this.name = name;
+        this.type = type;
+        this.defaultValue = defaultValue;
+        this.description = description;
+        this.kind = kind;
+        return this;
     }
 
     @Override

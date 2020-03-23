@@ -10,6 +10,8 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn.component.field;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.Optional;
 
 public class Output {
@@ -20,12 +22,7 @@ public class Output {
     private Optional<Boolean> optional;
     private String value;
 
-    public Output(String name, String type, Optional<String> description, Optional<Boolean> optional) {
-        this.name = name;
-        this.type = type;
-        this.description = description;
-        this.optional = optional;
-    }
+    public Output() {}
 
     public String name() {
         return name;
@@ -47,6 +44,30 @@ public class Output {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public Output fromJson(JsonNode outputNode) {
+        String name = outputNode.get("name").asText();
+        String type = "string"; // which is default value for a resource ??
+        Optional<String> description = Optional.empty();
+        Optional<Boolean> optional = Optional.empty();
+        JsonNode typeItem = outputNode.get("type");
+        if (typeItem != null) {
+            type = typeItem.asText();
+        }
+        JsonNode descriptionItem = outputNode.get("description");
+        if (descriptionItem != null) {
+            description = Optional.of(descriptionItem.asText());
+        }
+        JsonNode optionalItem = outputNode.get("optional");
+        if (optionalItem != null) {
+            optional = Optional.of(optionalItem.asBoolean());
+        }
+        this.name = name;
+        this.type = type;
+        this.description = description;
+        this.optional = optional;
+        return this;
     }
 
     @Override
