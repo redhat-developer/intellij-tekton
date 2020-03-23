@@ -57,6 +57,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             return true;
         }
 
+        Notification notification;
         String namespace, name, apiVersion;
         JsonNode spec;
         CustomResourceDefinitionContext crdContext;
@@ -79,7 +80,9 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
                 throw new IOException("Tekton file has not a valid format. Spec field is not found.");
             }
         } catch (IOException e) {
-            UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
+            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
+            Notifications.Bus.notify(notification);
+            logger.error("Error: " + e.getLocalizedMessage());
             return false;
         }
 
@@ -92,7 +95,6 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         if (resultDialog != Messages.OK) return false;
 
-        Notification notification;
         KubernetesClient client;
         Tkn tknCli;
         try {
@@ -131,6 +133,6 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         // notify user if saving was completed successfully
         notification = new Notification(NOTIFICATION_ID, "Save Successful", StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + " has been saved!", NotificationType.INFORMATION);
         Notifications.Bus.notify(notification);
-        return true;
+        return false;
     }
 }
