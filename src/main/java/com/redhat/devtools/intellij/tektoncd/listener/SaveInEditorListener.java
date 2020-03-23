@@ -88,7 +88,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         int resultDialog = UIHelper.executeInUI(() ->
                 Messages.showYesNoDialog(
-                        "The file has been saved. Do you want to push the changes to the cluster?",
+                        "Do you want to push the changes to the cluster?",
                         "Save to cluster",
                         null
                 ));
