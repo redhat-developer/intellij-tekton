@@ -21,9 +21,13 @@ import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.client.OpenShiftClient;
 
 import java.io.IOException;
+<<<<<<< HEAD
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+=======
+import java.util.*;
+>>>>>>> refactor to use save listener (#17)
 import java.util.stream.Collectors;
 
 public class TknCli implements Tkn {
@@ -156,7 +160,29 @@ public class TknCli implements Tkn {
     }
 
     @Override
+<<<<<<< HEAD
     public void editResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
         client.customResource(crdContext).edit(namespace, name, objectAsString);
     }
 }
+=======
+    public boolean hasCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext) {
+        Map<String, Object> listResources = client.customResource(crdContext).list(namespace);
+        if (listResources != null && listResources.containsKey("items")) {
+            return ((ArrayList) listResources.get("items")).stream().anyMatch(o -> ((HashMap)((HashMap)o).get("metadata")).get("name").equals(name));
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void editCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
+        client.customResource(crdContext).edit(namespace, name, objectAsString);
+    }
+
+    @Override
+    public void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
+        client.customResource(crdContext).create(namespace, objectAsString);
+    }
+}
+>>>>>>> refactor to use save listener (#17)

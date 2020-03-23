@@ -30,7 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
+import static com.redhat.devtools.intellij.tektoncd.Constants.*;
 
 public class OpenEditorTaskAction extends TektonAction {
     public OpenEditorTaskAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
@@ -43,13 +43,13 @@ public class OpenEditorTaskAction extends TektonAction {
         try {
             if (PipelineNode.class.equals(selected.getClass())) {
                 content = tkncli.getPipelineYAML(namespace, selected.toString());
-                kind = "pipelines";
+                kind = KIND_PIPELINES;
             } else if (ResourceNode.class.equals(selected.getClass())) {
                 content = tkncli.getResourceYAML(namespace, selected.toString());
-                kind = "pipelineresources";
+                kind = KIND_RESOURCES;
             } else if (TaskNode.class.equals(selected.getClass())) {
                 content = tkncli.getTaskYAML(namespace, selected.toString());
-                kind = "tasks";
+                kind = KIND_TASKS;
             }
         }
         catch (IOException e) {

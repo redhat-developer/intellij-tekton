@@ -156,6 +156,17 @@ public interface Tkn {
     Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext);
 
     /**
+     * Check if custom resource exists in the cluster which is namespaced.
+     *
+     * @param client the cluster client object
+     * @param namespace the namespace to use
+     * @param name name of custom resource
+     * @param crdContext the custom resource definition context of the resource kind
+     * @return true if resource exists, false otherwise
+     */
+    boolean hasCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext);
+
+    /**
      * Edit a custom resource object which is a namespaced object
      *
      * @param client the cluster client object
@@ -165,5 +176,16 @@ public interface Tkn {
      * @param objectAsString new object as a JSON string
      * @throws IOException
      */
-    void editResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
+    void editCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
+
+    /**
+     * Create a custom resource which is a namespaced object.
+     *
+     * @param client the cluster client object
+     * @param namespace the namespace to use
+     * @param crdContext the custom resource definition context of the resource kind
+     * @param objectAsString new object as a JSON string
+     * @throws IOException
+     */
+    void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
 }

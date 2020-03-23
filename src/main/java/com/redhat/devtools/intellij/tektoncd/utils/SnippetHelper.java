@@ -1,6 +1,8 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.devtools.intellij.common.utils.JSONHelper;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.completion.TknDictionary;
 
 import java.io.IOException;
@@ -14,7 +16,7 @@ public class SnippetHelper {
     }
 
     public static String getBody(String snippet) throws IOException {
-        String yaml = JSONHelper.JSONToYAML(JSONHelper.getJSONFromFile(SNIPPETS_URL).get(snippet).get("body"));
+        String yaml = YAMLHelper.JSONToYAML(SnippetHelper.getSnippetJSON().get(snippet).get("body"));
         return yaml.replaceAll("\"\n", "\n").replaceAll("- \"", "");
     }
 }
