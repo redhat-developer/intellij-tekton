@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
@@ -120,12 +121,12 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         }
 
         try {
-            boolean existResource = tknCli.hasCustomResource(client, namespace, name, crdContext);
-            if (!existResource) {
+            Map<String, Object> resource = tknCli.getCustomResource(client, namespace, name, crdContext);
+            if (resource == null) {
                 tknCli.createCustomResource(client, namespace, crdContext, document.getText());
                 TreeHelper.refreshNode(tree, vf.getUserData(KIND_PLURAL), "");
             } else {
-                JsonNode customResource = JSONHelper.MapToJSON(tknCli.getCustomResource(client, namespace, name, crdContext));
+                JsonNode customResource = JSONHelper.MapToJSON(resource);
                 ((ObjectNode) customResource).set("spec", spec);
                 tknCli.editCustomResource(client, namespace, name, crdContext, customResource.toString());
             }

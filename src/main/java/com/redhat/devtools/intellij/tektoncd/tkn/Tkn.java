@@ -151,20 +151,9 @@ public interface Tkn {
      * @param namespace the namespace to use
      * @param name name of custom resource
      * @param crdContext the custom resource definition context of the resource kind
-     * @return Object as HashMap
+     * @return Object as HashMap, null if no resource was found
      */
     Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext);
-
-    /**
-     * Check if custom resource exists in the cluster which is namespaced.
-     *
-     * @param client the cluster client object
-     * @param namespace the namespace to use
-     * @param name name of custom resource
-     * @param crdContext the custom resource definition context of the resource kind
-     * @return true if resource exists, false otherwise
-     */
-    boolean hasCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext);
 
     /**
      * Edit a custom resource object which is a namespaced object

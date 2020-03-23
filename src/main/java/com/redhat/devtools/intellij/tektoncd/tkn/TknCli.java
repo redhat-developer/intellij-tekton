@@ -17,17 +17,14 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.client.OpenShiftClient;
 
 import java.io.IOException;
-<<<<<<< HEAD
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-=======
-import java.util.*;
->>>>>>> refactor to use save listener (#17)
 import java.util.stream.Collectors;
 
 public class TknCli implements Tkn {
@@ -156,22 +153,11 @@ public class TknCli implements Tkn {
 
     @Override
     public Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext) {
-        return client.customResource(crdContext).get(namespace, name);
-    }
-
-    @Override
-<<<<<<< HEAD
-    public void editResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
-        client.customResource(crdContext).edit(namespace, name, objectAsString);
-    }
-}
-=======
-    public boolean hasCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext) {
-        Map<String, Object> listResources = client.customResource(crdContext).list(namespace);
-        if (listResources != null && listResources.containsKey("items")) {
-            return ((ArrayList) listResources.get("items")).stream().anyMatch(o -> ((HashMap)((HashMap)o).get("metadata")).get("name").equals(name));
-        } else {
-            return false;
+        try {
+            return client.customResource(crdContext).get(namespace, name);
+        } catch(KubernetesClientException e) {
+            // call failed bc resource doesn't exist - 404
+            return null;
         }
     }
 
@@ -185,4 +171,3 @@ public class TknCli implements Tkn {
         client.customResource(crdContext).create(namespace, objectAsString);
     }
 }
->>>>>>> refactor to use save listener (#17)
