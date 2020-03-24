@@ -15,16 +15,20 @@ import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class DictionaryCompletionProvider extends CompletionProvider<CompletionParameters> {
+    Logger logger = LoggerFactory.getLogger(DictionaryCompletionProvider.class);
+
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
         try {
             result.addAllElements(TknDictionary.get().getLookups());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error: " + e.getLocalizedMessage());
         }
     }
 }

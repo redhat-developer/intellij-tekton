@@ -12,7 +12,7 @@ public class SnippetHelper {
     private static final URL SNIPPETS_URL = TknDictionary.class.getResource("/tknsnippets.json");
 
     public static JsonNode getSnippetJSON() throws IOException {
-        return JSONHelper.getJSONFromFile(SNIPPETS_URL);
+        return JSONHelper.getJSONFromURL(SNIPPETS_URL);
     }
 
     public static String getBody(String snippet) throws IOException {

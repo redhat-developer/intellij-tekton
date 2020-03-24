@@ -22,7 +22,7 @@ public class JSONHelper {
 
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
-    public static JsonNode getJSONFromFile(URL file) throws IOException {
+    public static JsonNode getJSONFromURL(URL file) throws IOException {
         return JSON_MAPPER.readTree(file);
     }
 
