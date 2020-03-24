@@ -108,7 +108,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
+            public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
         String json = ExecHelper.execute(command, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
         return PIPERUN_JSON_MAPPER.readValue(json, new TypeReference<List<PipelineRun>>() {});
     }
@@ -198,5 +198,15 @@ public class TknCli implements Tkn {
             });
         }
         return args;
+    }
+
+    @Override
+    public void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
+        ExecHelper.executeWithTerminal(command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
+    }
+
+    @Override
+    public void showLogsTaskRun(String namespace, String taskRun) throws IOException {
+        ExecHelper.executeWithTerminal(command, "taskrun", "logs", taskRun, "-n", namespace);
     }
 }

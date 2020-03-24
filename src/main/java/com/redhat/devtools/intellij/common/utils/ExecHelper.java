@@ -212,84 +212,84 @@ public class ExecHelper {
   }
 
   private static void executeWithTerminalInternal(File workingDirectory , String... command) throws IOException {
+    try {
+      ProcessBuilder builder = new ProcessBuilder(command).directory(workingDirectory).redirectErrorStream(true);
+      Process p = builder.start();
+      boolean isPost2018_3 = ApplicationInfo.getInstance().getBuild().getBaselineVersion() >= 183;
+      p = new RedirectedProcess(p, true, isPost2018_3);
+
+      final Process process = p;
+      AbstractTerminalRunner runner = new AbstractTerminalRunner(ProjectManager.getInstance().getDefaultProject()) {
+        @Override
+        protected Process createProcess(@Nullable String s) {
+          return process;
+        }
+
+        @Override
+        protected ProcessHandler createProcessHandler(Process process) {
+          return null;
+        }
+
+        @Override
+        protected String getTerminalConnectionName(Process process) {
+          return null;
+        }
+
+        @Override
+        protected TtyConnector createTtyConnector(Process process) {
+          return new ProcessTtyConnector(process, StandardCharsets.UTF_8) {
+            @Override
+            protected void resizeImmediately() {
+            }
+
+            @Override
+            public String getName() {
+              return "Odo";
+            }
+
+            @Override
+            public boolean isConnected() {
+              return process.isAlive();
+            }
+          };
+        }
+
+        @Override
+        public String runningTargetName() {
+          return null;
+        }
+      };
+      TerminalOptionsProvider terminalOptions = ServiceManager.getService(TerminalOptionsProvider.class);
+      terminalOptions.setCloseSessionOnLogout(false);
+      final TerminalView view = TerminalView.getInstance(ProjectManager.getInstance().getOpenProjects()[0]);
+      final Method[] method = new Method[1];
+      final Object[][] parameters = new Object[1][];
       try {
-        ProcessBuilder builder = new ProcessBuilder(command).directory(workingDirectory).redirectErrorStream(true);
-        Process p = builder.start();
-        boolean isPost2018_3 = ApplicationInfo.getInstance().getBuild().getBaselineVersion() >= 183;
-        p = new RedirectedProcess(p, true, isPost2018_3);
-
-        final Process process = p;
-        AbstractTerminalRunner runner = new AbstractTerminalRunner(ProjectManager.getInstance().getDefaultProject()) {
-          @Override
-          protected Process createProcess(@Nullable String s) {
-            return process;
-          }
-
-          @Override
-          protected ProcessHandler createProcessHandler(Process process) {
-            return null;
-          }
-
-          @Override
-          protected String getTerminalConnectionName(Process process) {
-            return null;
-          }
-
-          @Override
-          protected TtyConnector createTtyConnector(Process process) {
-            return new ProcessTtyConnector(process, StandardCharsets.UTF_8) {
-              @Override
-              protected void resizeImmediately() {
-              }
-
-              @Override
-              public String getName() {
-                return "Odo";
-              }
-
-              @Override
-              public boolean isConnected() {
-                return process.isAlive();
-              }
-            };
-          }
-
-          @Override
-          public String runningTargetName() {
-            return null;
-          }
-        };
-        TerminalOptionsProvider terminalOptions = ServiceManager.getService(TerminalOptionsProvider.class);
-        terminalOptions.setCloseSessionOnLogout(false);
-        final TerminalView view = TerminalView.getInstance(ProjectManager.getInstance().getOpenProjects()[0]);
-        final Method[] method = new Method[1];
-        final Object[][] parameters = new Object[1][];
+        method[0] = TerminalView.class.getMethod("createNewSession", new Class[] {Project.class, AbstractTerminalRunner.class});
+        parameters[0] = new Object[] {ProjectManager.getInstance().getOpenProjects()[0],
+                runner};
+      } catch (NoSuchMethodException e) {
         try {
-          method[0] = TerminalView.class.getMethod("createNewSession", new Class[] {Project.class, AbstractTerminalRunner.class});
-          parameters[0] = new Object[] {ProjectManager.getInstance().getOpenProjects()[0],
-                                      runner};
-        } catch (NoSuchMethodException e) {
-          try {
-            method[0] = TerminalView.class.getMethod("createNewSession", new Class[] {AbstractTerminalRunner.class});
-            parameters[0] = new Object[] { runner};
-          } catch (NoSuchMethodException e1) {
-            throw new IOException(e1);
-          }
+          method[0] = TerminalView.class.getMethod("createNewSession", new Class[] {AbstractTerminalRunner.class});
+          parameters[0] = new Object[] { runner};
+        } catch (NoSuchMethodException e1) {
+          throw new IOException(e1);
         }
-        ApplicationManager.getApplication().invokeLater(() -> {
-          try {
-            method[0].invoke(view, parameters[0]);
-          } catch (IllegalAccessException|InvocationTargetException e) {}
-        });
-        if (p.waitFor() != 0) {
-          throw new IOException("Process returned exit code: " + p.exitValue(), null);
-        }
+      }
+      ApplicationManager.getApplication().invokeLater(() -> {
+        try {
+          method[0].invoke(view, parameters[0]);
+        } catch (IllegalAccessException|InvocationTargetException e) {}
+      });
+      if (p.waitFor() != 0) {
+        throw new IOException("Process returned exit code: " + p.exitValue(), null);
+      }
     } catch (IOException e) {
-        throw e;
-      }
-      catch (InterruptedException e) {
-        throw new IOException(e);
-      }
+      throw e;
+    }
+    catch (InterruptedException e) {
+      throw new IOException(e);
+    }
   }
 
   public static void executeWithTerminal(File workingDirectory, String... command) throws IOException {
