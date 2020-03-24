@@ -30,7 +30,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.*;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 
 public class OpenEditorTaskAction extends TektonAction {
     public OpenEditorTaskAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }

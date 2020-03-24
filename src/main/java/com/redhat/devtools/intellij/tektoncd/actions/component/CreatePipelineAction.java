@@ -29,6 +29,7 @@ import javax.swing.tree.TreePath;
 import java.io.File;
 import java.io.IOException;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 
 
@@ -44,7 +45,7 @@ public class CreatePipelineAction extends TektonAction {
         try {
             content = SnippetHelper.getBody("Tekton: Pipeline");
         } catch (IOException e) {
-            logger.error("Error: " + e.getLocalizedMessage());
+            logger.error("Error: " + e.getLocalizedMessage(), e);
         }
 
         if (!Strings.isNullOrEmpty(content)) {
@@ -52,7 +53,7 @@ public class CreatePipelineAction extends TektonAction {
             Project project = anActionEvent.getProject();
             VirtualFile fv = ScratchRootType.getInstance().createScratchFile(project, namespace + "-newpipeline.yaml", Language.ANY, content);
             // append info to the virtualFile to be used during saving
-            fv.putUserData(KIND_PLURAL, "pipelines");
+            fv.putUserData(KIND_PLURAL, KIND_PIPELINES);
             File fileToDelete = new File(fv.getPath());
             fileToDelete.deleteOnExit();
             FileEditorManager.getInstance(project).openFile(fv, true);

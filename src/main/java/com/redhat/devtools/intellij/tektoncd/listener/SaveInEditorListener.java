@@ -84,7 +84,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         } catch (IOException e) {
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
-            logger.error("Error: " + e.getLocalizedMessage());
+            logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
         }
 
@@ -116,7 +116,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         } catch (Exception e) {
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
-            logger.error("Error: " + e.getLocalizedMessage());
+            logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
         }
 
@@ -134,7 +134,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             // give a visual notification to user if an error occurs during saving
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
-            logger.error("Error: " + e.getLocalizedMessage());
+            logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
         }
 
