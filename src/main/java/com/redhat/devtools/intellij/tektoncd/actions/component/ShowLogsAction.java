@@ -93,17 +93,10 @@ public class ShowLogsAction extends TektonAction {
             namespace = ((LazyMutableTreeNode)selected).getParent().getParent().getParent().toString();
         }
 
-        try {
-            if (PipelineRunNode.class.equals(nodeClass)) {
-                tkncli.showLogsPipelineRun(anActionEvent.getProject(), namespace, resourceName);
-            } else if (TaskRunNode.class.equals(nodeClass)) {
-                tkncli.showLogsTaskRun(anActionEvent.getProject(), namespace, resourceName);
-            }
-        } catch (IOException e) {
-            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while requesting logs for " + resourceName + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
-            Notifications.Bus.notify(notification);
-            logger.error("Error: " + e.getLocalizedMessage(), e);
-            return;
+        if (PipelineRunNode.class.equals(nodeClass)) {
+            tkncli.showLogsPipelineRun(anActionEvent.getProject(), namespace, resourceName);
+        } else if (TaskRunNode.class.equals(nodeClass)) {
+            tkncli.showLogsTaskRun(anActionEvent.getProject(), namespace, resourceName);
         }
     }
 }

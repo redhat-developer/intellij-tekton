@@ -29,13 +29,10 @@ import org.jetbrains.plugins.terminal.AbstractTerminalRunner;
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner;
 import org.jetbrains.plugins.terminal.TerminalOptionsProvider;
 import org.jetbrains.plugins.terminal.TerminalView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -50,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import static com.redhat.devtools.intellij.common.CommonConstants.HOME_FOLDER;
 
 public class ExecHelper {
+  private static Logger logger = LoggerFactory.getLogger(ExecHelper.class);
   private static final ScheduledExecutorService SERVICE = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
 
   public static void executeAfter(Runnable runnable, long delay, TimeUnit unit) {
@@ -331,6 +329,7 @@ public class ExecHelper {
         try {
           return PtyProcess.exec(command, envs, HOME_FOLDER);
         } catch (IOException e) {
+          logger.error("Error: " + e.getLocalizedMessage(), e);
           throw new ExecutionException(e);
         }
       }
