@@ -197,12 +197,12 @@ public interface Tkn {
      * @param namespace the namespace to use
      * @param pipelineRun name of the PipelineRun
      */
-    void showLogsPipelineRun(Project project, String namespace, String pipelineRun) throws IOException;
+    void showLogsPipelineRun(Project project, String namespace, String pipelineRun);
 
     /**
      * Get logs for a TaskRun
      * @param namespace the namespace to use
      * @param taskRun name of the TaskRun
      */
-    void showLogsTaskRun(Project project, String namespace, String taskRun) throws IOException;
+    void showLogsTaskRun(Project project, String namespace, String taskRun);
 }
