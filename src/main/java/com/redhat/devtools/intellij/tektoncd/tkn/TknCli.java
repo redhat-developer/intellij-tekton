@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -201,12 +202,12 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
-        ExecHelper.executeWithTerminal(command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
+    public void showLogsPipelineRun(Project project, String namespace, String pipelineRun) {
+        ExecHelper.executeWithTerminal(project, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
     }
 
     @Override
-    public void showLogsTaskRun(String namespace, String taskRun) throws IOException {
-        ExecHelper.executeWithTerminal(command, "taskrun", "logs", taskRun, "-n", namespace);
+    public void showLogsTaskRun(Project project, String namespace, String taskRun) {
+        ExecHelper.executeWithTerminal(project, command, "taskrun", "logs", taskRun, "-n", namespace);
     }
 }

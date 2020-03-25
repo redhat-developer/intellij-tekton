@@ -45,6 +45,7 @@ public class ShowLogsAction extends TektonAction {
         String resourceName = selected.toString();
         List<String> resourceRunsName = null;
         Class<?> nodeClass = selected.getClass();
+        String kindLabel = "";
         Notification notification;
         // if node selected is a Pipeline or a Task we need to find its runs
         try {
@@ -56,6 +57,7 @@ public class ShowLogsAction extends TektonAction {
                 }
                 resourceRunsName = pipelineRuns.stream().map(PipelineRun::getName).collect(Collectors.toList());
                 nodeClass = PipelineRunNode.class;
+                kindLabel = "pipelinerun";
             } else if (TaskNode.class.equals(nodeClass)) {
                 List<TaskRun> taskRuns = tkncli.getTaskRuns(namespace, resourceName);
                 if (taskRuns == null || taskRuns.size() == 0) {
@@ -63,6 +65,7 @@ public class ShowLogsAction extends TektonAction {
                 }
                 resourceRunsName = taskRuns.stream().map(TaskRun::getName).collect(Collectors.toList());
                 nodeClass = TaskRunNode.class;
+                kindLabel = "taskrun";
             }
         } catch (IOException e) {
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while requesting logs for " + resourceName + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
@@ -77,11 +80,13 @@ public class ShowLogsAction extends TektonAction {
                 resourceName = resourceRunsName.get(0);
             } else {
                 // if there are more than 1 runs the user has to pick the one he wants the logs for
-                RunPickerDialog dialog = new RunPickerDialog(null, nodeClass.getSimpleName(), resourceRunsName);
+                RunPickerDialog dialog = new RunPickerDialog(null, kindLabel, resourceRunsName);
                 dialog.show();
 
                 if (dialog.isOK()) {
                     resourceName = dialog.getSelected();
+                } else {
+                    return;
                 }
             }
         } else {
@@ -90,9 +95,9 @@ public class ShowLogsAction extends TektonAction {
 
         try {
             if (PipelineRunNode.class.equals(nodeClass)) {
-                tkncli.showLogsPipelineRun(namespace, resourceName);
+                tkncli.showLogsPipelineRun(anActionEvent.getProject(), namespace, resourceName);
             } else if (TaskRunNode.class.equals(nodeClass)) {
-                tkncli.showLogsTaskRun(namespace, resourceName);
+                tkncli.showLogsTaskRun(anActionEvent.getProject(), namespace, resourceName);
             }
         } catch (IOException e) {
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while requesting logs for " + resourceName + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);

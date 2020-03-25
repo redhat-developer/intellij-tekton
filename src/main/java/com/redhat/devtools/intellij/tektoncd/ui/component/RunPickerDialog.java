@@ -1,10 +1,13 @@
 package com.redhat.devtools.intellij.tektoncd.ui.component;
 
 import com.intellij.openapi.ui.DialogWrapper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class RunPickerDialog extends DialogWrapper {
@@ -17,12 +20,14 @@ public class RunPickerDialog extends DialogWrapper {
 
     public RunPickerDialog(Component parent, String kind, List<String> resourceRuns) {
         super(null, parent, false, IdeModalityType.IDE);
-        selectLabel.setText("Select " + kind);
+        selectLabel.setText("Select " + kind + ":");
+        setTitle("Show Logs");
         init();
         for (String runName: resourceRuns) {
             resourcesCB.addItem(runName);
         }
         registerListeners();
+
     }
 
     public static void main(String[] args) {
@@ -37,12 +42,28 @@ public class RunPickerDialog extends DialogWrapper {
     }
 
     private void registerListeners() {
-        // listener for when value in resources input combo box changes
-        resourcesCB.addItemListener(itemEvent -> {
-            if (itemEvent.getStateChange() == 1) {
-                selected = itemEvent.getItem().toString();
+        buttonOK.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                selected = resourcesCB.getSelectedItem().toString();
+                RunPickerDialog.super.close(0, true);
             }
         });
+
+        buttonCancel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                RunPickerDialog.super.close(1, false);
+            }
+        });
+    }
+
+    @NotNull
+    @Override
+    protected Action[] createActions() {
+        return new Action[]{};
     }
 
     @Nullable

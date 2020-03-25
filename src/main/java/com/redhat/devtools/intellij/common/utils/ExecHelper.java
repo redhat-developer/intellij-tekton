@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.jediterm.terminal.ProcessTtyConnector;
 import com.jediterm.terminal.TtyConnector;
+import com.pty4j.PtyProcess;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -25,19 +26,23 @@ import org.apache.xmlgraphics.util.WriterOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.terminal.AbstractTerminalRunner;
+import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner;
 import org.jetbrains.plugins.terminal.TerminalOptionsProvider;
 import org.jetbrains.plugins.terminal.TerminalView;
 
 import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -292,6 +297,47 @@ public class ExecHelper {
     }
   }
 
+  private static void executeWithTerminalInternal(Project project, String... command) {
+    TerminalView terminalView = TerminalView.getInstance(project);
+    LocalTerminalDirectRunner runner = new LocalTerminalDirectRunner(project) {
+
+      @Override
+      protected TtyConnector createTtyConnector(PtyProcess process) {
+        return new ProcessTtyConnector(process, StandardCharsets.UTF_8) {
+          @Override
+          protected void resizeImmediately() {
+          }
+
+          @Override
+          public String getName() {
+            return "Tekton";
+          }
+
+          @Override
+          public boolean isConnected() {
+            return process.isAlive();
+          }
+        };
+      }
+
+      @Override
+      public String runningTargetName() {
+        return null;
+      }
+
+      @Override
+      protected PtyProcess createProcess(@Nullable String directory) throws ExecutionException {
+        Map<String, String> envs = Collections.emptyMap();
+        try {
+          return PtyProcess.exec(command, envs, HOME_FOLDER);
+        } catch (IOException e) {
+          throw new ExecutionException(e);
+        }
+      }
+    };
+    terminalView.createNewSession(project, runner);
+  }
+
   public static void executeWithTerminal(File workingDirectory, String... command) throws IOException {
     if (ApplicationManager.getApplication().isUnitTestMode()) {
       execute(command[0], workingDirectory, Arrays.stream(command)
@@ -306,5 +352,7 @@ public class ExecHelper {
     executeWithTerminal(new File(HOME_FOLDER), command);
   }
 
-
+  public static void executeWithTerminal(Project project, String... command) {
+    executeWithTerminalInternal(project, command);
+  }
 }
