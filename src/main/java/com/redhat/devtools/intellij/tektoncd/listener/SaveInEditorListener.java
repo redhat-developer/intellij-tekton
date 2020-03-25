@@ -23,11 +23,9 @@ import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -41,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
@@ -57,15 +56,18 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             return true;
         }
 
-        Notification notification;
         String namespace, name, apiVersion;
         JsonNode spec;
         CustomResourceDefinitionContext crdContext;
+        Notification notification;
         try {
             namespace = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "namespace"});
+            if (Strings.isNullOrEmpty(namespace)) {
+                throw new IOException("Tekton file has not a valid format. Namespace field is not valid or found.");
+            }
             name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "name"});
-            if (Strings.isNullOrEmpty(namespace) || Strings.isNullOrEmpty(name)) {
-                throw new IOException("Tekton file has not a valid format. Namespace and/or name fields are invalid.");
+            if (Strings.isNullOrEmpty(name)) {
+                throw new IOException("Tekton file has not a valid format. Name field is not valid or found.");
             }
             apiVersion = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"apiVersion"});
             if (Strings.isNullOrEmpty(apiVersion)) {
@@ -82,7 +84,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         } catch (IOException e) {
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
-            logger.error("Error: " + e.getLocalizedMessage());
+            logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
         }
 
@@ -95,13 +97,13 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         if (resultDialog != Messages.OK) return false;
 
+
+        Tree tree;
         KubernetesClient client;
         Tkn tknCli;
         try {
             Project project = EditorFactory.getInstance().getEditors(document)[0].getProject();
-            ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow("Tekton");
-            JBScrollPane pane = (JBScrollPane) window.getContentManager().findContent("").getComponent();
-            Tree tree = (Tree) pane.getViewport().getView();
+            tree = TreeHelper.getTree(project);
             TektonRootNode root = ((TektonRootNode) tree.getModel().getRoot());
             client = root.getClient();
             if (client == null) {
@@ -114,19 +116,25 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         } catch (Exception e) {
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
-            logger.error("Error: " + e.getLocalizedMessage());
+            logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
         }
 
         try {
-            JsonNode customResource = JSONHelper.MapToJSON(tknCli.getCustomResource(client, namespace, name, crdContext));
-            ((ObjectNode) customResource).set("spec", spec);
-            tknCli.editResource(client, namespace, name, crdContext, customResource.toString());
+            Map<String, Object> resource = tknCli.getCustomResource(client, namespace, name, crdContext);
+            if (resource == null) {
+                tknCli.createCustomResource(client, namespace, crdContext, document.getText());
+                TreeHelper.refreshNode(tree, vf.getUserData(KIND_PLURAL), "");
+            } else {
+                JsonNode customResource = JSONHelper.MapToJSON(resource);
+                ((ObjectNode) customResource).set("spec", spec);
+                tknCli.editCustomResource(client, namespace, name, crdContext, customResource.toString());
+            }
         } catch (IOException e) {
             // give a visual notification to user if an error occurs during saving
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
-            logger.error("Error: " + e.getLocalizedMessage());
+            logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
         }
 
@@ -136,3 +144,4 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         return false;
     }
 }
+

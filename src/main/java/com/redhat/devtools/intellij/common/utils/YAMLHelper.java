@@ -10,11 +10,15 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.common.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
+
+import static com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature.WRITE_DOC_START_MARKER;
 
 public class YAMLHelper {
 
@@ -22,7 +26,7 @@ public class YAMLHelper {
 
     public static String getStringValueFromYAML(String yamlAsString, String[] fieldnames) throws IOException {
         JsonNode nodeValue = YAMLHelper.getValueFromYAML(yamlAsString, fieldnames);
-        if (nodeValue == null && !nodeValue.isTextual()) return null;
+        if (nodeValue == null || !nodeValue.isTextual()) return null;
         return nodeValue.asText();
     }
 
@@ -34,5 +38,10 @@ public class YAMLHelper {
             node = node.get(fieldname);
         }
         return node;
+    }
+
+    public static String JSONToYAML(JsonNode json) throws JsonProcessingException {
+        if (json == null) return "";
+        return new YAMLMapper().configure(WRITE_DOC_START_MARKER, false).writeValueAsString(json);
     }
 }

@@ -30,6 +30,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 
 public class OpenEditorTaskAction extends TektonAction {
@@ -43,13 +46,13 @@ public class OpenEditorTaskAction extends TektonAction {
         try {
             if (PipelineNode.class.equals(selected.getClass())) {
                 content = tkncli.getPipelineYAML(namespace, selected.toString());
-                kind = "pipelines";
+                kind = KIND_PIPELINES;
             } else if (ResourceNode.class.equals(selected.getClass())) {
                 content = tkncli.getResourceYAML(namespace, selected.toString());
-                kind = "pipelineresources";
+                kind = KIND_RESOURCES;
             } else if (TaskNode.class.equals(selected.getClass())) {
                 content = tkncli.getTaskYAML(namespace, selected.toString());
-                kind = "tasks";
+                kind = KIND_TASKS;
             }
         }
         catch (IOException e) {

@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.client.OpenShiftClient;
 
@@ -152,11 +153,21 @@ public class TknCli implements Tkn {
 
     @Override
     public Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext) {
-        return client.customResource(crdContext).get(namespace, name);
+        try {
+            return client.customResource(crdContext).get(namespace, name);
+        } catch(KubernetesClientException e) {
+            // call failed bc resource doesn't exist - 404
+            return null;
+        }
     }
 
     @Override
-    public void editResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
+    public void editCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
         client.customResource(crdContext).edit(namespace, name, objectAsString);
+    }
+
+    @Override
+    public void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
+        client.customResource(crdContext).create(namespace, objectAsString);
     }
 }
