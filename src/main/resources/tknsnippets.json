@@ -105,8 +105,10 @@
       "  namespace: ${2: namespace}",
       "spec:",
       "  type: ${3|git,image,pullRequest,cluster,storage|}",
-      "  $LINE_COMMENT params:",
-      "    $LINE_COMMENT Check https://github.com/tektoncd/pipeline/blob/master/docs/resources.md#pipelineresources for more applicable parameters"
+      "  params:",
+      "    - name: ${4:url}",
+      "      value: ${5:https://github.com/git-source/git-source.git}",
+      "  ## Check https://github.com/tektoncd/pipeline/blob/master/docs/resources.md#pipelineresources for more applicable parameters"
     ],
     "description": "Create a PipelineResource Resource",
     "keywords": [
