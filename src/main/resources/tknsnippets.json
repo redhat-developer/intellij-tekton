@@ -8,8 +8,10 @@
       "  name: ${1:foo}",
       "spec:",
       "  steps:",
-      "  - args:",
-      "    - ${3:echo clustertask}"
+      "  - image: ${2:ubuntu}",
+      "    script: |",
+      "      ${3:#!/usr/bin/env bash}",
+      "      ${4:echo \"Hello\"}"
     ],
     "description": "Create a ClusterTask Resource",
     "keywords": [
