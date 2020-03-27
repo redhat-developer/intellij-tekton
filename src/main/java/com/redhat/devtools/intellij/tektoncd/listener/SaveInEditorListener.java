@@ -33,7 +33,9 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
+import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -43,9 +45,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.Constants.*;
 
 public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
     Logger logger = LoggerFactory.getLogger(SaveInEditorListener.class);
@@ -97,6 +97,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         if (resultDialog != Messages.OK) return false;
 
+        String errorMsg = "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n";
 
         Tree tree;
         KubernetesClient client;
@@ -113,7 +114,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
                 throw new IOException("Tekton Cli not found.");
             }
         } catch (Exception e) {
-            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
+            notification = new Notification(NOTIFICATION_ID, "Error", errorMsg + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
             logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
@@ -129,9 +130,19 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
                 ((ObjectNode) customResource).set("spec", spec);
                 tknCli.editCustomResource(client, namespace, name, crdContext, customResource.toString());
             }
+        } catch (KubernetesClientException e) {
+            Status errorStatus = e.getStatus();
+            if (errorStatus != null && !Strings.isNullOrEmpty(errorStatus.getMessage())) {
+                errorMsg += errorStatus.getMessage() + "\n";
+            }
+            // give a visual notification to user if an error occurs during saving
+            notification = new Notification(NOTIFICATION_ID,"Error", errorMsg + e.getLocalizedMessage(), NotificationType.ERROR);
+            Notifications.Bus.notify(notification);
+            logger.error("Error: " + e.getLocalizedMessage(), e);
+            return false;
         } catch (IOException e) {
             // give a visual notification to user if an error occurs during saving
-            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
+            notification = new Notification(NOTIFICATION_ID, "Error", errorMsg + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
             logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
