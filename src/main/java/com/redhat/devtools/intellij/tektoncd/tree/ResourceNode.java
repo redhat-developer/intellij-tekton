@@ -12,10 +12,11 @@ package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.redhat.devtools.intellij.common.tree.IconTreeNode;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
+import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 
 public class ResourceNode extends LazyMutableTreeNode implements IconTreeNode {
-    public ResourceNode(String name) {
-        super(name);
+    public ResourceNode(Resource resource) {
+        super(resource.name());
     }
 
     @Override

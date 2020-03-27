@@ -22,6 +22,7 @@ import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.client.OpenShiftClient;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -176,10 +177,34 @@ public class TknCli implements Tkn {
         client.customResource(crdContext).create(namespace, objectAsString);
     }
 
-    @Override
-    public void startTask(String namespace, String task, List<String> args) throws IOException {
-        List<String> startCmdArgs = Arrays.asList("task", "start", task, "-n", namespace);
-        args.addAll(0, startCmdArgs);
+    public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException {
+        List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
+        args.addAll(argsToList(parameters, inputResources, outputResources));
         ExecHelper.execute(command, args.toArray(new String[0]));
+    }
+
+    private List<String> argsToList(Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) {
+        List<String> args = new ArrayList<>();
+        if (parameters != null) {
+            parameters.entrySet().stream().forEach(param -> {
+                args.add("-p");
+                args.add(param.getKey() + "=" + param.getValue());
+            });
+        }
+
+        if (inputResources != null) {
+            inputResources.entrySet().stream().forEach(input -> {
+                args.add("-i");
+                args.add(input.getKey() + "=" + input.getValue());
+            });
+        }
+
+        if (outputResources != null) {
+            outputResources.entrySet().stream().forEach(output -> {
+                args.add("-o");
+                args.add(output.getKey() + "=" + output.getValue());
+            });
+        }
+        return args;
     }
 }

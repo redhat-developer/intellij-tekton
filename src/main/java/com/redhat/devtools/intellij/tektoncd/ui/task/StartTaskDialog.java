@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.ui.component;
+package com.redhat.devtools.intellij.tektoncd.ui.task;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
@@ -17,7 +17,7 @@ import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
-import org.jetbrains.annotations.NotNull;
+import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +26,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
@@ -45,9 +43,7 @@ public class StartTaskDialog extends DialogWrapper {
     private JButton previewRefreshBtn;
     private JLabel outInfoMessage;
     private JLabel inInfoMessage;
-    private JButton startTaskButton;
     private JLabel errorLbl;
-    private JButton cancelButton;
     private JComboBox inputResourcesCB;
     private JPanel inputParamsPanel;
     private JPanel inputResourcesPanel;
@@ -64,7 +60,8 @@ public class StartTaskDialog extends DialogWrapper {
 
     private String namespace;
     private String taskName;
-    private List<String> args;
+
+    private Map<String, String> parameters, inputResources, outputResources;
 
     public StartTaskDialog(Component parent, String task, List<Resource> resources) {
         super(null, parent, false, IdeModalityType.IDE);
@@ -82,8 +79,8 @@ public class StartTaskDialog extends DialogWrapper {
             return;
         }
         this.resources = resources;
-        this.args = new ArrayList<>();
-        setTitle("Run Task " + taskName);
+        setTitle("Start Task " + taskName);
+        setOKButtonText("Start");
         init();
 
         try {
@@ -115,28 +112,36 @@ public class StartTaskDialog extends DialogWrapper {
         System.exit(0);
     }
 
-    public List<String> args() {
-        return args;
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public Map<String, String> getInputResources() {
+        return inputResources;
+    }
+
+    public Map<String, String> getOutputResources() {
+        return outputResources;
     }
 
     private void calculateArgs() {
         if (inputs != null) {
             for (Input input : inputs) {
                 if (input.kind() == Input.Kind.PARAMETER) {
-                    String value = input.value() == null ? input.defaultValue().get() : input.value();
-                    args.add("-p");
-                    args.add(input.name() + "=" + value);
+                    if (parameters == null) parameters = new HashMap<>();
+                    String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
+                    parameters.put(input.name(), value);
                 } else {
-                    args.add("-i");
-                    args.add(input.name() + "=" + input.value());
+                    if (inputResources == null) inputResources = new HashMap<>();
+                    inputResources.put(input.name(), input.value());
                 }
             }
         }
 
         if (outputs != null) {
             for (Output output : outputs) {
-                args.add("-o");
-                args.add(output.name() + "=" + output.value());
+                if (outputResources == null) outputResources = new HashMap<>();
+                outputResources.put(output.name(), output.value());
             }
         }
     }
@@ -167,10 +172,32 @@ public class StartTaskDialog extends DialogWrapper {
         return null;
     }
 
-    @NotNull
     @Override
-    protected Action[] createActions() {
-        return new Action[]{};
+    protected void doOKAction() {
+        // check if all inputs/outputs have been initialized otherwise show an error
+        String invalidInput = validateInputs();
+        String invalidOutput = validateOutputs();
+        if (invalidInput == null && invalidOutput == null) {
+            calculateArgs();
+            super.doOKAction();
+        } else {
+            String msg = "Error - No value inserted for ";
+            if (invalidInput != null) {
+                msg += invalidInput;
+            } else {
+                msg += invalidOutput;
+            }
+            errorLbl.setText(msg);
+
+            errorLbl.setVisible(true);
+            java.util.Timer timer = new java.util.Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    errorLbl.setVisible(false);
+                }
+            }, 4000);
+        }
     }
 
     @Nullable
@@ -323,7 +350,7 @@ public class StartTaskDialog extends DialogWrapper {
     private void updatePreview() {
         String preview = "";
         try {
-            preview = YAMLHelper.createPreviewInYAML(inputs, outputs);
+            preview = YAMLBuilder.createPreview(inputs, outputs);
         } catch (IOException e) {
             logger.error("Error: " + e.getLocalizedMessage());
         }
@@ -411,48 +438,6 @@ public class StartTaskDialog extends DialogWrapper {
                 Resource resourceSelected = (Resource) itemEvent.getItem();
                 outputs.get(outputSelectedIndex).setValue(resourceSelected.name());
                 updatePreview();
-            }
-        });
-
-        // listener for when the button startTask is clicked
-        startTaskButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                // check if all inputs/outputs have been initialized otherwise show an error
-                String invalidInput = validateInputs();
-                String invalidOutput = validateOutputs();
-                if (invalidInput == null && invalidOutput == null) {
-                    calculateArgs();
-                    StartTaskDialog.super.close(0, true);
-                } else {
-                    String msg = "Error - No value inserted for ";
-                    if (invalidInput != null) {
-                        msg += invalidInput;
-                    } else {
-                        msg += invalidOutput;
-                    }
-                    errorLbl.setText(msg);
-
-                    errorLbl.setVisible(true);
-                    java.util.Timer timer = new java.util.Timer();
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            errorLbl.setVisible(false);
-                        }
-                    }, 4000);
-
-                }
-            }
-        });
-
-        // listener for when the button cancel is clicked
-        cancelButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                StartTaskDialog.super.close(0, false);
             }
         });
     }

@@ -183,9 +183,11 @@ public interface Tkn {
      *
      * @param namespace the namespace of the task
      * @param task the task that has to be run
-     * @param args args to start task (contains input/output params/resources)
+     * @param parameters the parameters to start task
+     * @param inputResources the input resources to start task
+     * @param outputResources the output resources to start task
      * @throws IOException if communication errored
      */
-    void startTask(String namespace, String task, List<String> args) throws IOException;
+    void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException;
 
 }
