@@ -22,14 +22,20 @@ import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.client.OpenShiftClient;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_OUTPUTRESOURCE;
+
 public class TknCli implements Tkn {
     private static final ObjectMapper TASKRUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
     private static final ObjectMapper PIPERUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final ObjectMapper RESOURCE_JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
     static {
         SimpleModule tr_module = new SimpleModule();
@@ -39,6 +45,10 @@ public class TknCli implements Tkn {
         SimpleModule pr_module = new SimpleModule();
         pr_module.addDeserializer(List.class, new PipelineRunDeserializer());
         PIPERUN_JSON_MAPPER.registerModule(pr_module);
+
+        SimpleModule rs_module = new SimpleModule();
+        rs_module.addDeserializer(List.class, new ResourceDeserializer());
+        RESOURCE_JSON_MAPPER.registerModule(rs_module);
     }
     /**
      * Home sub folder for the plugin
@@ -104,9 +114,9 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getResources(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, "resource", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
-        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    public List<Resource> getResources(String namespace) throws IOException {
+        String json = ExecHelper.execute(command, "resource", "ls", "-n", namespace, "-o", "json");
+        return RESOURCE_JSON_MAPPER.readValue(json, new TypeReference<List<Resource>>() {});
     }
 
     @Override
@@ -169,5 +179,24 @@ public class TknCli implements Tkn {
     @Override
     public void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
         client.customResource(crdContext).create(namespace, objectAsString);
+    }
+
+    public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException {
+        List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
+        args.addAll(argsToList(parameters, FLAG_PARAMETER));
+        args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCE));
+        args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
+        ExecHelper.execute(command, args.toArray(new String[0]));
+    }
+
+    private List<String> argsToList(Map<String, String> argMap, String flag) {
+        List<String> args = new ArrayList<>();
+        if (argMap != null) {
+            argMap.entrySet().stream().forEach(param -> {
+                args.add(flag);
+                args.add(param.getKey() + "=" + param.getValue());
+            });
+        }
+        return args;
     }
 }

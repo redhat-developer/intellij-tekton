@@ -8,19 +8,27 @@
  * Contributors:
  * Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.tree;
+package com.redhat.devtools.intellij.tektoncd.tkn;
 
-import com.redhat.devtools.intellij.common.tree.IconTreeNode;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
-import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
+public class Resource {
+    private String name;
+    private String type;
 
-public class ResourceNode extends LazyMutableTreeNode implements IconTreeNode {
-    public ResourceNode(Resource resource) {
-        super(resource.name());
+    public Resource(String name, String type) {
+        this.name = name;
+        this.type = type;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public String type() {
+        return type;
     }
 
     @Override
-    public String getIconName() {
-        return "/images/pipeline.png";
+    public String toString() {
+        return name;
     }
 }

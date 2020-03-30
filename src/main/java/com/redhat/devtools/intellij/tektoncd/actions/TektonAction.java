@@ -21,25 +21,26 @@ import javax.swing.tree.TreePath;
 import java.io.IOException;
 
 public class TektonAction extends TreeAction {
-  public TektonAction(Class... filters) {
+    public TektonAction(Class... filters) {
     super(filters);
   }
 
-  @Override
-  public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
-    try {
-      this.actionPerformed(anActionEvent, path, selected, getTkn(anActionEvent));
-    } catch (IOException e) {
-      Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error");
-    }
-  }
-
-    private Tkn getTkn(AnActionEvent anActionEvent) throws IOException {
-        Tree tree = getTree(anActionEvent);
-        return ((TektonRootNode)tree.getModel().getRoot()).getTkn();
+    @Override
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
+        try {
+            this.actionPerformed(anActionEvent, path, selected, getTkn(anActionEvent));
+        } catch (IOException e) {
+            Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error");
+        }
     }
 
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkn)  {
-
+  private Tkn getTkn(AnActionEvent anActionEvent) throws IOException {
+      Tree tree = getTree(anActionEvent);
+      return ((TektonRootNode)tree.getModel().getRoot()).getTkn();
   }
+
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkn) {
+
+    }
+
 }

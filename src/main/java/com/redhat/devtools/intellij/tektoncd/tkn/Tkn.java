@@ -69,7 +69,7 @@ public interface Tkn {
      * @return the list of resources
      * @throws IOException if communication errored
      */
-    List<String> getResources(String namespace) throws IOException;
+    List<Resource> getResources(String namespace) throws IOException;
 
     /**
      * Return the names of Tekton tasks for a namespace.
@@ -177,4 +177,17 @@ public interface Tkn {
      * @throws IOException
      */
     void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
+
+    /**
+     * Start the execution of a task
+     *
+     * @param namespace the namespace of the task
+     * @param task the task that has to be run
+     * @param parameters the parameters to start task
+     * @param inputResources the input resources to start task
+     * @param outputResources the output resources to start task
+     * @throws IOException if communication errored
+     */
+    void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException;
+
 }
