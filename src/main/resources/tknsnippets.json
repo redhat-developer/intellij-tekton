@@ -5,13 +5,13 @@
       "apiVersion: tekton.dev/v1alpha1",
       "kind: ClusterTask",
       "metadata:",
-      "  name: ${1:foo}",
+      "  name: foo",
       "spec:",
       "  steps:",
-      "  - image: ${2:ubuntu}",
+      "  - image: ubi",
       "    script: |",
-      "      ${3:#!/usr/bin/env bash}",
-      "      ${4:echo \"Hello\"}"
+      "      #!/usr/bin/env bash",
+      "      echo \"Hello\""
     ],
     "description": "Create a ClusterTask Resource",
     "keywords": [
@@ -22,8 +22,8 @@
   "Tekton: Parameter": {
     "prefix": "Tekton: Parameter",
     "body": [
-      "- name: ${1:foo}",
-      "  value: ${2:bar}",
+      "- name: foo",
+      "  value: bar",
       ""
     ],
     "description": "A generic parameter used across any YAML that are key/value pair",
@@ -39,16 +39,16 @@
       "apiVersion: tekton.dev/v1alpha1",
       "kind: Pipeline",
       "metadata:",
-      "  name: ${1:app-deploy}",
-      "  namespace: ${2: namespace}",
+      "  name: app-deploy",
+      "  namespace:  ${namespace}",
       "spec:",
       "  resources:",
-      "    - name: ${3:pipeline-resource-type}",
-      "      type: ${4:pipeline-type}",
+      "    - name: pipeline-resource-type",
+      "      type: pipeline-type",
       "  tasks:",
-      "    - name: ${5:taskName}",
+      "    - name: taskName",
       "      taskRef:",
-      "        name: ${6:build-app}"
+      "        name: build-app"
     ],
     "description": "Create a Tekton Pipeline Resource",
     "keywords": [
@@ -59,13 +59,13 @@
   "Tekton: PipelineTaskReference": {
     "prefix": "Tekton: PipelineTaskReference",
     "body": [
-      "- name: ${1:taskName}",
+      "- name: taskName",
       "  taskRef:",
-      "    name: ${2:build-and-push}",
+      "    name: build-and-push",
       "  runAfter:",
-      "  - ${3:another-task-name}",
-      "  $LINE_COMMENT params:",
-      "  $LINE_COMMENT resources:"
+      "  - another-task-name",
+      "  params:",
+      "  resources:"
     ],
     "description": "Tekton Pipeline Task Reference",
     "keywords": [
@@ -78,15 +78,15 @@
     "prefix": "Tekton: PipelineTaskReferenceInput",
     "body": [
       "params:",
-      "- name: ${1:name}",
-      "  value: ${2:value}",
+      "- name: name",
+      "  value: value",
       "resources:",
       "  inputs:",
-      "    - name: ${3:source}",
-      "      resource: ${4:app-source}",
+      "    - name: source",
+      "      resource: app-source",
       "  outputs:",
-      "    - name: ${5:builtImage}",
-      "      resource: ${6:app-image}"
+      "    - name: builtImage",
+      "      resource: app-image"
     ],
     "description": "Tekton Pipeline Task Reference Inputs, Parameters and Outputs",
     "keywords": [
@@ -101,13 +101,13 @@
       "apiVersion: tekton.dev/v1alpha1",
       "kind: PipelineResource",
       "metadata:",
-      "  name: ${1:git-source}",
-      "  namespace: ${2: namespace}",
+      "  name: git-source",
+      "  namespace:  ${namespace}",
       "spec:",
-      "  type: ${3|git,image,pullRequest,cluster,storage|}",
+      "  type: git",
       "  params:",
-      "    - name: ${4:url}",
-      "      value: ${5:https://github.com/git-source/git-source.git}",
+      "    - name: url",
+      "      value: https://github.com/git-source/git-source.git",
       "  ## Check https://github.com/tektoncd/pipeline/blob/master/docs/resources.md#pipelineresources for more applicable parameters"
     ],
     "description": "Create a PipelineResource Resource",
@@ -119,8 +119,8 @@
   "Tekton: PipelineResourceType": {
     "prefix": "Tekton: PipelineResourceType",
     "body": [
-      "- name: ${1:app-source}",
-      "  type: ${2|git,image,pullRequest,cluster,storage|}"
+      "- name: app-source",
+      "  type: git"
     ],
     "description": "Create a PipelineResource Type Resource",
     "keywords": [
@@ -135,14 +135,14 @@
       "apiVersion: tekton.dev/v1alpha1",
       "kind: PipelineRun",
       "metadata:",
-      "  name: ${1:foo-run}",
+      "  name: foo-run",
       "spec:",
       "  pipelineRef:",
-      "    name: ${2:foo}",
+      "    name: foo",
       "  resources:",
-      "    - name: ${3:source}",
+      "    - name: source",
       "      resourceRef:",
-      "        name: ${4:skaffold-source}"
+      "        name: skaffold-source"
     ],
     "description": "Create a Tekton PipelineRun Resource",
     "keywords": [
@@ -173,28 +173,28 @@
       "apiVersion: tekton.dev/v1alpha1",
       "kind: Task",
       "metadata:",
-      "  name: ${1:foo}",
-      "  namespace: ${2: namespace}",
+      "  name: foo",
+      "  namespace:  ${namespace}",
       "spec:",
       "  inputs:",
       "    params:",
-      "    - name: ${3:pathToDockerFile}",
-      "      type: ${4:string}",
-      "      description: ${5:The path to the dockerfile to build}",
-      "      default: ${6:/workspace/workspace/Dockerfile}",
+      "    - name: pathToDockerFile",
+      "      type: string",
+      "      description: The path to the dockerfile to build",
+      "      default: /workspace/workspace/Dockerfile",
       "    resources:",
-      "    - name: ${7:workspace}",
-      "      type: ${8:git}",
+      "    - name: workspace",
+      "      type: git",
       "  outputs:",
       "    resources:",
-      "    - name: ${9:buildImage}",
-      "      type: ${10:image}",
+      "    - name: buildImage",
+      "      type: image",
       "  steps:",
-      "    - name: ${11:build-sources}",
-      "      image: ${12:ubuntu}",
+      "    - name: build-sources",
+      "      image: ubi",
       "      command: ",
-      "      - ${13:/bin/bash}",
-      "      args: [${14:'-c', 'echo hello world'}]"
+      "      - /bin/bash",
+      "      args: ['-c', 'echo hello world']"
     ],
     "description": "Create a Tekton Task Resource",
     "keywords": [
@@ -207,20 +207,20 @@
     "body": [
       "inputs:",
       "  resources:",
-      "  - name: ${1:source}",
-      "    type: ${2|git,image,pullRequest,cluster,storage|}",
+      "  - name: source",
+      "    type: git",
       "  params:",
-      "  - name: ${3:foo}",
-      "    description: ${4:Parameter description}",
-      "    default: ${5:default value}",
-      "    type: ${6:string}",
+      "  - name: foo",
+      "    description: Parameter description",
+      "    default: default value",
+      "    type: string",
       "outputs:",
       "  resources:",
-      "  - name: ${7:builtImage}",
-      "    outputImageDir: ${8:path/to/image}",
+      "  - name: builtImage",
+      "    outputImageDir: path/to/image",
       "    targetPath: \"\"",
       "    type: image",
-      "$LINE_COMMENT steps:"
+      "steps:"
     ],
     "description": "Tekton Task Inputs, Parameters and Outputs",
     "keywords": [
@@ -234,10 +234,10 @@
   "Tekton: TaskParameter": {
     "prefix": "Tekton: TaskParameter",
     "body": [
-      "- name: ${1:foo}",
-      "  description: ${2:Parameter description}",
-      "  default: ${3:default value}",
-      "  type: ${4:string}"
+      "- name: foo",
+      "  description: Parameter description",
+      "  default: default value",
+      "  type: string"
     ],
     "description": "Tekton Pipeline Task Parameter",
     "keywords": [
@@ -252,10 +252,10 @@
       "apiVersion: tekton.dev/v1alpha1",
       "kind: TaskRun",
       "metadata:",
-      "  name: ${1:echo-hello-world-run}",
+      "  name: echo-hello-world-run",
       "spec:",
       "  taskRef:",
-      "    name: ${2:echo-hello-world}"
+      "    name: echo-hello-world"
     ],
     "description": "Create a Tekton TaskRun Resource",
     "keywords": [
@@ -266,11 +266,11 @@
   "Tekton: TaskStep": {
     "prefix": "Tekton: TaskStep",
     "body": [
-      "- name: ${2:echo2}",
-      "  image: ${3:fedora,quay.io/buildah/stable}",
-      "  workingDir: \\\"/workspace/source/${4:\\\\${inputs.params.contextDir}}\\\"",
+      "- name: echo2",
+      "  image: fedora,quay.io/buildah/stable",
+      "  workingDir: \\\"/workspace/source/\\\\${inputs.params.contextDir}}\\\"",
       "  command:",
-      "  - ${5:echo2}",
+      "  - echo2",
       "  args:",
       "  - 'bye world'"
     ],

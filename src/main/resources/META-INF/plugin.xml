@@ -30,13 +30,13 @@
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.CreatePipelineAction" text="New Pipeline"/>
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.CreateTaskAction" text="New Task"/>
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.CreateClusterTaskAction" text="New ClusterTask"/>
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.CreateResourceAction" text="New Pipeline Resource"/>
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.OpenEditorTaskAction" text="Open in Editor"/>
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.StartTaskAction" text="Start"/>
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.component.DeleteAction" text="Delete"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.pipeline.CreatePipelineAction" text="New Pipeline"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskAction" text="New Task"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.CreateClusterTaskAction" text="New ClusterTask"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.resource.CreateResourceAction" text="New Pipeline Resource"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.OpenEditorTaskAction" text="Open in Editor"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.task.StartTaskAction" text="Start"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.DeleteAction" text="Delete"/>
       <action class="com.redhat.devtools.intellij.common.actions.RefreshAction" text="Refresh"/>
     </group>
   </actions>

@@ -10,6 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.common;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
+
 public class CommonConstants {
     public static final String HOME_FOLDER = System.getProperty("user.home");
+
+    public static final Key<Project> PROJECT = Key.create("project");
 }

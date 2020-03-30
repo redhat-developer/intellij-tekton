@@ -22,7 +22,6 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.treeStructure.Tree;
@@ -45,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.*;
 
 public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
@@ -52,9 +52,9 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
     @Override
     public boolean maySaveDocument(@NotNull Document document, boolean isSaveExplicit) {
-        Project project = getProject();
         VirtualFile vf = FileDocumentManager.getInstance().getFile(document);
-        if(!isFileToPush(project, document, vf)) return true;
+        Project project = vf.getUserData(PROJECT);
+        if(project == null || !isFileToPush(project, document, vf)) return true;
 
         String namespace, name, apiVersion;
         JsonNode spec;
@@ -163,17 +163,6 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             return false;
         }
         return true;
-    }
-
-    private Project getProject() {
-        Project[] openedProjects = ProjectManager.getInstance().getOpenProjects();
-        Project project;
-        if (openedProjects != null && openedProjects.length > 0) {
-            project = openedProjects[0];
-        } else {
-            project = ProjectManager.getInstance().getDefaultProject();
-        }
-        return project;
     }
 }
 
