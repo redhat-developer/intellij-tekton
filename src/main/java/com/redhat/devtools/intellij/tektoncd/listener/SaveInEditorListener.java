@@ -45,7 +45,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
-import static com.redhat.devtools.intellij.tektoncd.Constants.*;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
+import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
     Logger logger = LoggerFactory.getLogger(SaveInEditorListener.class);
