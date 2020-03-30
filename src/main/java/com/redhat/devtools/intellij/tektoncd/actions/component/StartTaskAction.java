@@ -14,6 +14,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
@@ -30,10 +31,10 @@ import java.util.List;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
-public class StartTaskDialogAction extends TektonAction {
-    Logger logger = LoggerFactory.getLogger(StartTaskDialogAction.class);
+public class StartTaskAction extends TektonAction {
+    Logger logger = LoggerFactory.getLogger(StartTaskAction.class);
 
-    public StartTaskDialogAction() { super(TaskNode.class); }
+    public StartTaskAction() { super(TaskNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -46,11 +47,10 @@ public class StartTaskDialogAction extends TektonAction {
                 task = tkncli.getTaskYAML(namespace, selected.toString());
                 resources = tkncli.getResources(namespace);
             } catch (IOException e) {
-                notification = new Notification(NOTIFICATION_ID,
-                        "Error",
-                        "Task " + selected.toString() + " in namespace " + namespace + " failed to start. An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
-                        NotificationType.ERROR);
-                Notifications.Bus.notify(notification);
+                UIHelper.executeInUI(() ->
+                        Messages.showErrorDialog(
+                                "Task " + selected.toString() + " in namespace " + namespace + " failed to start. An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
+                                "Error"));
                 logger.error("Error: " + e.getLocalizedMessage());
                 return;
             }

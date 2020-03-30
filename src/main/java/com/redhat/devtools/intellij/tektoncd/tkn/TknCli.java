@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_OUTPUTRESOURCE;
+
 public class TknCli implements Tkn {
     private static final ObjectMapper TASKRUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
     private static final ObjectMapper PIPERUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
@@ -179,30 +183,18 @@ public class TknCli implements Tkn {
 
     public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
-        args.addAll(argsToList(parameters, inputResources, outputResources));
+        args.addAll(argsToList(parameters, FLAG_PARAMETER));
+        args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCE));
+        args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
         ExecHelper.execute(command, args.toArray(new String[0]));
     }
 
-    private List<String> argsToList(Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) {
+    private List<String> argsToList(Map<String, String> argMap, String flag) {
         List<String> args = new ArrayList<>();
-        if (parameters != null) {
-            parameters.entrySet().stream().forEach(param -> {
-                args.add("-p");
+        if (argMap != null) {
+            argMap.entrySet().stream().forEach(param -> {
+                args.add(flag);
                 args.add(param.getKey() + "=" + param.getValue());
-            });
-        }
-
-        if (inputResources != null) {
-            inputResources.entrySet().stream().forEach(input -> {
-                args.add("-i");
-                args.add(input.getKey() + "=" + input.getValue());
-            });
-        }
-
-        if (outputResources != null) {
-            outputResources.entrySet().stream().forEach(output -> {
-                args.add("-o");
-                args.add(output.getKey() + "=" + output.getValue());
             });
         }
         return args;

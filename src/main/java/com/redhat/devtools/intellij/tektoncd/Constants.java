@@ -19,4 +19,8 @@ public class Constants {
     public static final String KIND_PIPELINES = "pipelines";
     public static final String KIND_RESOURCES = "pipelineresources";
     public static final String KIND_TASKS = "task";
+
+    public static final String FLAG_PARAMETER = "-p";
+    public static final String FLAG_INPUTRESOURCE = "-i";
+    public static final String FLAG_OUTPUTRESOURCE = "-o";
 }
