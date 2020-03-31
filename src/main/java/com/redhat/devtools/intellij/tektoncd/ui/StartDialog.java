@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.ui.task;
+package com.redhat.devtools.intellij.tektoncd.ui;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
@@ -31,8 +31,10 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class StartTaskDialog extends DialogWrapper {
-    Logger logger = LoggerFactory.getLogger(StartTaskDialog.class);
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+
+public class StartDialog extends DialogWrapper {
+    Logger logger = LoggerFactory.getLogger(StartDialog.class);
     private JPanel contentPane;
     private JTextField inputParamValueTxt;
     private JComboBox inputResourceValuesCB;
@@ -54,43 +56,58 @@ public class StartTaskDialog extends DialogWrapper {
     private JLabel outputsResourceLbl;
     private JLabel inputResourceValuesLbl;
     private JLabel inputResourcesLbl;
+    private JLabel outputsTitle;
     private List<Input> inputs;
     private List<Resource> resources;
     private List<Output> outputs;
 
     private String namespace;
-    private String taskName;
+    private String name;
 
     private Map<String, String> parameters, inputResources, outputResources;
 
-    public StartTaskDialog(Component parent, String task, List<Resource> resources) {
+    public StartDialog(Component parent, String configuration, List<Resource> resources) {
         super(null, parent, false, IdeModalityType.IDE);
+        String kind;
         try {
-            this.namespace = YAMLHelper.getStringValueFromYAML(task, new String[] {"metadata", "namespace"});
+            this.namespace = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "namespace"});
             if (Strings.isNullOrEmpty(namespace)) {
                 throw new IOException("Tekton task has not a valid format. Namespace field is not found or its value is not valid.");
             }
-            this.taskName = YAMLHelper.getStringValueFromYAML(task, new String[] {"metadata", "name"});
-            if (Strings.isNullOrEmpty(this.taskName)) {
+            this.name = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "name"});
+            if (Strings.isNullOrEmpty(this.name)) {
                 throw new IOException("Tekton task has not a valid format. Name field is not found or its value is not valid.");
+            }
+            kind = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"kind"});
+            if (Strings.isNullOrEmpty(kind)) {
+                throw new IOException("Tekton task has not a valid format. Kind field is not found or its value is not valid.");
             }
         } catch (IOException e) {
             logger.error("Error: " + e.getLocalizedMessage());
             return;
         }
         this.resources = resources;
-        setTitle("Start Task " + taskName);
+        setTitle("Start " + name);
         setOKButtonText("Start");
         init();
 
+        boolean isPipeline = KIND_PIPELINE.equalsIgnoreCase(kind);
+
         try {
-            JsonNode inputsNode = YAMLHelper.getValueFromYAML(task, new String[] {"spec", "inputs"});
-            if (inputsNode != null) {
-                inputs = getInputs(inputsNode);
-            }
-            JsonNode outputsNode = YAMLHelper.getValueFromYAML(task, new String[] {"spec", "outputs"});
-            if (outputsNode != null) {
-                outputs = getOutputs(outputsNode);
+            if (isPipeline) {
+                JsonNode inputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec"});
+                if (inputsNode != null) {
+                    inputs = getInputsFromNode(inputsNode);
+                }
+            } else {
+                JsonNode inputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "inputs"});
+                if (inputsNode != null) {
+                    inputs = getInputsFromNode(inputsNode);
+                }
+                JsonNode outputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "outputs"});
+                if (outputsNode != null) {
+                    outputs = getOutputs(outputsNode);
+                }
             }
         } catch (IOException e) {
             logger.error("Error: " + e.getLocalizedMessage());
@@ -100,13 +117,13 @@ public class StartTaskDialog extends DialogWrapper {
         setDefaultValueResources();
         // init dialog
         initInputsArea();
-        initOutputsArea();
+        initOutputsArea(isPipeline);
         updatePreview();
         registerListeners();
     }
 
     public static void main(String[] args) {
-        StartTaskDialog dialog = new StartTaskDialog(null, "", null);
+        StartDialog dialog = new StartDialog(null, "", null);
         dialog.pack();
         dialog.show();
         System.exit(0);
@@ -206,25 +223,28 @@ public class StartTaskDialog extends DialogWrapper {
         return contentPane;
     }
 
-    private List<Input> getInputs(JsonNode inputsNode) {
+    private List<Input> getInputsFromNode(JsonNode inputsNode) {
         List<Input> result = new ArrayList<>();
-        List<JsonNode> params = inputsNode.findValues("params");
-        List<JsonNode> resources = inputsNode.findValues("resources");
+        List<JsonNode> params = inputsNode.has("params") ? inputsNode.findValues("params") : null;
+        List<JsonNode> resources = inputsNode.has("resources") ? inputsNode.findValues("resources") : null;
 
         if (params != null) {
-            for (Iterator<JsonNode> it = params.iterator(); it.hasNext(); ) {
-                JsonNode item = it.next();
-                result.add(new Input().fromJson(item.get(0), Input.Kind.PARAMETER));
-            }
+            result.addAll(getInputsFromNodeList(params, Input.Kind.PARAMETER));
         }
 
         if (resources != null) {
-            for (Iterator<JsonNode> it = resources.iterator(); it.hasNext(); ) {
-                JsonNode item = it.next();
-                result.add(new Input().fromJson(item.get(0), Input.Kind.RESOURCE));
-            }
+            result.addAll(getInputsFromNodeList(resources, Input.Kind.RESOURCE));
         }
 
+        return result;
+    }
+
+    private List<Input> getInputsFromNodeList(List<JsonNode> nodes, Input.Kind kind) {
+        List<Input> result = new ArrayList<>();
+        for (Iterator<JsonNode> it = nodes.iterator(); it.hasNext(); ) {
+            JsonNode item = it.next();
+            result.add(new Input().fromJson(item.get(0), kind));
+        }
         return result;
     }
 
@@ -320,8 +340,8 @@ public class StartTaskDialog extends DialogWrapper {
         }
     }
 
-    private void initOutputsArea() {
-        changeOutputComponentVisibility(outputs != null);
+    private void initOutputsArea(boolean isPipeline) {
+        changeOutputComponentVisibility(outputs != null, isPipeline);
         if (outputs == null) return;
 
         for (Output output: outputs) {
@@ -330,9 +350,10 @@ public class StartTaskDialog extends DialogWrapper {
         fillOutResourcesComboBox(outputs.get(0));
     }
 
-    private void changeOutputComponentVisibility(boolean hasOutput) {
-        outInfoMessage.setVisible(!hasOutput);
-        outputsPanel.setVisible(hasOutput);
+    private void changeOutputComponentVisibility(boolean hasOutput, boolean isPipeline) {
+        outputsTitle.setVisible(!isPipeline);
+        outInfoMessage.setVisible(!hasOutput && !isPipeline);
+        outputsPanel.setVisible(hasOutput && !isPipeline);
     }
 
     private void fillOutResourcesComboBox(Output outputSelected) {

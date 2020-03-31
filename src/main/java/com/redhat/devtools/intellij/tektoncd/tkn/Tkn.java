@@ -179,6 +179,17 @@ public interface Tkn {
     void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
 
     /**
+     * Start the execution of a pipeline
+     *
+     * @param namespace the namespace of the pipeline
+     * @param pipeline the pipeline that has to be run
+     * @param parameters the parameters to start pipeline
+     * @param inputResources the input resources to start pipeline
+     * @throws IOException if communication errored
+     */
+    void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources) throws IOException;
+
+    /**
      * Start the execution of a task
      *
      * @param namespace the namespace of the task
@@ -204,14 +215,5 @@ public interface Tkn {
      * @param taskRun name of the TaskRun
      */
     void showLogsTaskRun(String namespace, String taskRun) throws IOException;
-
-    /**
-     * Start the execution of a pipeline
-     *
-     * @param namespace the namespace of the pipeline
-     * @param pipeline the pipeline that has to be run
-     * @throws IOException if communication errored
-     */
-    void startPipeline(String namespace, String pipeline) throws IOException;
 
 }

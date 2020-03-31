@@ -21,8 +21,11 @@ public class Constants {
     public static final String KIND_RESOURCES = "pipelineresources";
     public static final String KIND_TASKS = "tasks";
 
+    public static final String KIND_PIPELINE = "pipeline";
+
     public static final String FLAG_PARAMETER = "-p";
-    public static final String FLAG_INPUTRESOURCE = "-i";
+    public static final String FLAG_INPUTRESOURCEPIPELINE = "-r";
+    public static final String FLAG_INPUTRESOURCETASK = "-i";
     public static final String FLAG_OUTPUTRESOURCE = "-o";
 
     public static final String TERMINAL_TITLE = "Tekton";
