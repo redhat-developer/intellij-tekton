@@ -31,10 +31,10 @@ public class CreateTaskAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((LazyMutableTreeNode)selected).getParent().toString();
-        String content = super.getSnippet(namespace,"Tekton: Task");
+        String content = getSnippet(namespace,"Tekton: Task");
 
         if (!Strings.isNullOrEmpty(content)) {
-            super.createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newtask.yaml", content, KIND_TASKS);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newtask.yaml", content, KIND_TASKS);
         }
     }
 }

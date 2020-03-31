@@ -60,7 +60,7 @@ public class OpenEditorTaskAction extends TektonAction {
                                                anyMatch(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + selected.toString()) &&
                                                                       fileEditor.getFile().getExtension().equals("yaml"));
             if (!fileAlreadyOpened) {
-                super.createAndOpenVirtualFile(project, namespace + "-" + selected.toString() + ".yaml", content, kind);
+                createAndOpenVirtualFile(project, namespace + "-" + selected.toString() + ".yaml", content, kind);
             }
         }
     }

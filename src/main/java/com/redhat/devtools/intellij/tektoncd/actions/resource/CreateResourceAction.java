@@ -28,10 +28,10 @@ public class CreateResourceAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((LazyMutableTreeNode)selected).getParent().toString();
-        String content = super.getSnippet(namespace,"Tekton: PipelineResource");
+        String content = getSnippet(namespace,"Tekton: PipelineResource");
 
         if (!Strings.isNullOrEmpty(content)) {
-            super.createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newresource.yaml", content, KIND_RESOURCES);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newresource.yaml", content, KIND_RESOURCES);
         }
     }
 }

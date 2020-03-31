@@ -28,10 +28,10 @@ public class CreatePipelineAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((LazyMutableTreeNode)selected).getParent().toString();
-        String content = super.getSnippet(namespace, "Tekton: Pipeline");
+        String content = getSnippet(namespace, "Tekton: Pipeline");
 
         if (!Strings.isNullOrEmpty(content)) {
-            super.createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newpipeline.yaml", content, KIND_PIPELINES);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newpipeline.yaml", content, KIND_PIPELINES);
         }
     }
 
