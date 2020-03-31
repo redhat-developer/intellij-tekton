@@ -223,7 +223,4 @@ public class TknCli implements Tkn {
         ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, command, "taskrun", "logs", taskRun, "-n", namespace);
     }
 
-    public void startPipeline(String namespace, String pipeline) throws IOException {
-        ExecHelper.execute(command, "pipeline", "start", pipeline, "-n", namespace);
-    }
 }
