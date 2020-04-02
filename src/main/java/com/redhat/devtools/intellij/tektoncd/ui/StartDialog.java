@@ -225,8 +225,8 @@ public class StartDialog extends DialogWrapper {
 
     private List<Input> getInputsFromNode(JsonNode inputsNode) {
         List<Input> result = new ArrayList<>();
-        List<JsonNode> params = inputsNode.has("params") ? inputsNode.findValues("params") : null;
-        List<JsonNode> resources = inputsNode.has("resources") ? inputsNode.findValues("resources") : null;
+        JsonNode params = inputsNode.has("params") ? inputsNode.get("params") : null;
+        JsonNode resources = inputsNode.has("resources") ? inputsNode.get("resources") : null;
 
         if (params != null) {
             result.addAll(getInputsFromNodeList(params, Input.Kind.PARAMETER));
@@ -239,11 +239,11 @@ public class StartDialog extends DialogWrapper {
         return result;
     }
 
-    private List<Input> getInputsFromNodeList(List<JsonNode> nodes, Input.Kind kind) {
+    private List<Input> getInputsFromNodeList(JsonNode node, Input.Kind kind) {
         List<Input> result = new ArrayList<>();
-        for (Iterator<JsonNode> it = nodes.iterator(); it.hasNext(); ) {
+        for (Iterator<JsonNode> it = node.elements(); it.hasNext(); ) {
             JsonNode item = it.next();
-            result.add(new Input().fromJson(item.get(0), kind));
+            result.add(new Input().fromJson(item, kind));
         }
         return result;
     }
