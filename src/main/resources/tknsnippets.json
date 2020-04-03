@@ -8,7 +8,7 @@
       "  name: foo",
       "spec:",
       "  steps:",
-      "  - image: ubi",
+      "  - image: ubi8/ubi",
       "    script: |",
       "      #!/usr/bin/env bash",
       "      echo \"Hello\""
@@ -191,7 +191,7 @@
       "      type: image",
       "  steps:",
       "    - name: build-sources",
-      "      image: ubi",
+      "      image: ubi8/ubi",
       "      command: ",
       "      - /bin/bash",
       "      args: ['-c', 'echo hello world']"
@@ -267,7 +267,7 @@
     "prefix": "Tekton: TaskStep",
     "body": [
       "- name: echo2",
-      "  image: ubi",
+      "  image: ubi8/ubi",
       "  workingDir: \\\"/workspace/source/\\\\${inputs.params.contextDir}}\\\"",
       "  command:",
       "  - echo2",
