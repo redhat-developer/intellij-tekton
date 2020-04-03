@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.actions.component;
+package com.redhat.devtools.intellij.tektoncd.actions.task;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;

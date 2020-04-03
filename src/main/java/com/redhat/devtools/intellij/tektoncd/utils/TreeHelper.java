@@ -16,6 +16,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
@@ -55,6 +56,7 @@ public class TreeHelper {
 
     public static Class retrieveNodeClassByKind(String kind) {
         switch(kind) {
+            case KIND_CLUSTERTASKS: return ClusterTasksNode.class;
             case KIND_PIPELINES: return PipelinesNode.class;
             case KIND_RESOURCES: return ResourcesNode.class;
             case KIND_TASKS: return TasksNode.class;

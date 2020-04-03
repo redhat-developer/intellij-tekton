@@ -17,21 +17,24 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
-import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
+import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
@@ -50,11 +55,8 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
     @Override
     public boolean maySaveDocument(@NotNull Document document, boolean isSaveExplicit) {
         VirtualFile vf = FileDocumentManager.getInstance().getFile(document);
-
-        // if file is not related to tekton we can skip it
-        if (vf == null || vf.getUserData(KIND_PLURAL).isEmpty()) {
-            return true;
-        }
+        Project project = vf.getUserData(PROJECT);
+        if(project == null || !isFileToPush(project, document, vf)) return true;
 
         String namespace, name, apiVersion;
         JsonNode spec;
@@ -62,7 +64,9 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         Notification notification;
         try {
             namespace = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "namespace"});
-            if (Strings.isNullOrEmpty(namespace)) {
+            if (namespace != null && vf.getUserData(KIND_PLURAL).equals(KIND_CLUSTERTASKS)) {
+                throw new IOException("Tekton file has not a valid format. ClusterTask cannot have a namespace.");
+            } else if (Strings.isNullOrEmpty(namespace) && !vf.getUserData(KIND_PLURAL).equals(KIND_CLUSTERTASKS)) {
                 throw new IOException("Tekton file has not a valid format. Namespace field is not valid or found.");
             }
             name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "name"});
@@ -97,12 +101,12 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         if (resultDialog != Messages.OK) return false;
 
+        String errorMsg = "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n";
 
         Tree tree;
         KubernetesClient client;
         Tkn tknCli;
         try {
-            Project project = EditorFactory.getInstance().getEditors(document)[0].getProject();
             tree = TreeHelper.getTree(project);
             TektonRootNode root = ((TektonRootNode) tree.getModel().getRoot());
             client = root.getClient();
@@ -114,7 +118,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
                 throw new IOException("Tekton Cli not found.");
             }
         } catch (Exception e) {
-            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
+            notification = new Notification(NOTIFICATION_ID, "Error", errorMsg + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
             logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
@@ -130,9 +134,19 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
                 ((ObjectNode) customResource).set("spec", spec);
                 tknCli.editCustomResource(client, namespace, name, crdContext, customResource.toString());
             }
+        } catch (KubernetesClientException e) {
+            Status errorStatus = e.getStatus();
+            if (errorStatus != null && !Strings.isNullOrEmpty(errorStatus.getMessage())) {
+                errorMsg += errorStatus.getMessage() + "\n";
+            }
+            // give a visual notification to user if an error occurs during saving
+            notification = new Notification(NOTIFICATION_ID,"Error", errorMsg + e.getLocalizedMessage(), NotificationType.ERROR);
+            Notifications.Bus.notify(notification);
+            logger.error("Error: " + e.getLocalizedMessage(), e);
+            return false;
         } catch (IOException e) {
             // give a visual notification to user if an error occurs during saving
-            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n" + e.getLocalizedMessage(), NotificationType.ERROR);
+            notification = new Notification(NOTIFICATION_ID, "Error", errorMsg + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
             logger.error("Error: " + e.getLocalizedMessage(), e);
             return false;
@@ -142,6 +156,17 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         notification = new Notification(NOTIFICATION_ID, "Save Successful", StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + " has been saved!", NotificationType.INFORMATION);
         Notifications.Bus.notify(notification);
         return false;
+    }
+
+    private boolean isFileToPush(Project project, Document document, VirtualFile vf) {
+        Editor selectedEditor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+        // if file is not the one selected, skip it
+        if (selectedEditor.getDocument() != document) return false;
+        // if file is not related to tekton, skip it
+        if (vf == null || vf.getUserData(KIND_PLURAL) == null || vf.getUserData(KIND_PLURAL).isEmpty()) {
+            return false;
+        }
+        return true;
     }
 }
 
