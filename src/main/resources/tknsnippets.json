@@ -267,7 +267,7 @@
     "prefix": "Tekton: TaskStep",
     "body": [
       "- name: echo2",
-      "  image: fedora,quay.io/buildah/stable",
+      "  image: ubi",
       "  workingDir: \\\"/workspace/source/\\\\${inputs.params.contextDir}}\\\"",
       "  command:",
       "  - echo2",
