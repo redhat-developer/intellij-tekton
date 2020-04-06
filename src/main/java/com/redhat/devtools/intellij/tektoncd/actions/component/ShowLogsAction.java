@@ -75,7 +75,7 @@ public class ShowLogsAction extends TektonAction {
         }
 
         if (resourceRunsName != null) {
-            if (resourceRunsName.size() == 0) {
+            if (resourceRunsName.size() == 1) {
                 // there is only 1 item, user doesn't have to pick one
                 resourceName = resourceRunsName.get(0);
             } else {
@@ -93,10 +93,14 @@ public class ShowLogsAction extends TektonAction {
             namespace = ((LazyMutableTreeNode)selected).getParent().getParent().getParent().toString();
         }
 
-        if (PipelineRunNode.class.equals(nodeClass)) {
-            tkncli.showLogsPipelineRun(anActionEvent.getProject(), namespace, resourceName);
-        } else if (TaskRunNode.class.equals(nodeClass)) {
-            tkncli.showLogsTaskRun(anActionEvent.getProject(), namespace, resourceName);
+        try {
+            if (PipelineRunNode.class.equals(nodeClass)) {
+                tkncli.showLogsPipelineRun(namespace, resourceName);
+            } else if (TaskRunNode.class.equals(nodeClass)) {
+                tkncli.showLogsTaskRun(namespace, resourceName);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

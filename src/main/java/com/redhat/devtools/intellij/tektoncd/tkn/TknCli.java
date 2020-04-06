@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
@@ -57,16 +58,18 @@ public class TknCli implements Tkn {
     public static final String PLUGIN_FOLDER = ".tkn";
 
     private String command;
+    private final Project project;
 
-    private TknCli() throws IOException {
+    private TknCli(Project project) throws IOException {
         command = getCommand();
+        this.project = project;
     }
 
     private static Tkn INSTANCE;
 
-    public static final Tkn get() throws IOException {
+    public static final Tkn get(Project project) throws IOException {
         if (INSTANCE == null) {
-            INSTANCE = new TknCli();
+            INSTANCE = new TknCli(project);
         }
         return INSTANCE;
     }
@@ -202,12 +205,12 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void showLogsPipelineRun(Project project, String namespace, String pipelineRun) {
-        ExecHelper.executeWithTerminal(project, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
+    public void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
+        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
     }
 
     @Override
-    public void showLogsTaskRun(Project project, String namespace, String taskRun) {
-        ExecHelper.executeWithTerminal(project, command, "taskrun", "logs", taskRun, "-n", namespace);
+    public void showLogsTaskRun(String namespace, String taskRun) throws IOException {
+        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, command, "taskrun", "logs", taskRun, "-n", namespace);
     }
 }

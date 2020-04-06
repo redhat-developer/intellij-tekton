@@ -15,10 +15,8 @@ import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.jediterm.terminal.ProcessTtyConnector;
 import com.jediterm.terminal.TtyConnector;
-import com.pty4j.PtyProcess;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -26,20 +24,19 @@ import org.apache.xmlgraphics.util.WriterOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.terminal.AbstractTerminalRunner;
-import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner;
 import org.jetbrains.plugins.terminal.TerminalOptionsProvider;
 import org.jetbrains.plugins.terminal.TerminalView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 import static com.redhat.devtools.intellij.common.CommonConstants.HOME_FOLDER;
 
 public class ExecHelper {
-  private static Logger logger = LoggerFactory.getLogger(ExecHelper.class);
   private static final ScheduledExecutorService SERVICE = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
 
   public static void executeAfter(Runnable runnable, long delay, TimeUnit unit) {
@@ -214,144 +210,106 @@ public class ExecHelper {
     }
   }
 
-  private static void executeWithTerminalInternal(File workingDirectory , String... command) throws IOException {
-    try {
-      ProcessBuilder builder = new ProcessBuilder(command).directory(workingDirectory).redirectErrorStream(true);
-      Process p = builder.start();
-      boolean isPost2018_3 = ApplicationInfo.getInstance().getBuild().getBaselineVersion() >= 183;
-      p = new RedirectedProcess(p, true, isPost2018_3);
-
-      final Process process = p;
-      AbstractTerminalRunner runner = new AbstractTerminalRunner(ProjectManager.getInstance().getDefaultProject()) {
-        @Override
-        protected Process createProcess(@Nullable String s) {
-          return process;
-        }
-
-        @Override
-        protected ProcessHandler createProcessHandler(Process process) {
-          return null;
-        }
-
-        @Override
-        protected String getTerminalConnectionName(Process process) {
-          return null;
-        }
-
-        @Override
-        protected TtyConnector createTtyConnector(Process process) {
-          return new ProcessTtyConnector(process, StandardCharsets.UTF_8) {
-            @Override
-            protected void resizeImmediately() {
-            }
-
-            @Override
-            public String getName() {
-              return "Odo";
-            }
-
-            @Override
-            public boolean isConnected() {
-              return process.isAlive();
-            }
-          };
-        }
-
-        @Override
-        public String runningTargetName() {
-          return null;
-        }
-      };
-      TerminalOptionsProvider terminalOptions = ServiceManager.getService(TerminalOptionsProvider.class);
-      terminalOptions.setCloseSessionOnLogout(false);
-      final TerminalView view = TerminalView.getInstance(ProjectManager.getInstance().getOpenProjects()[0]);
-      final Method[] method = new Method[1];
-      final Object[][] parameters = new Object[1][];
+  private static void executeWithTerminalInternal(Project project, String title, File workingDirectory, boolean waitForProcessExit, String... command) throws IOException {
       try {
-        method[0] = TerminalView.class.getMethod("createNewSession", new Class[] {Project.class, AbstractTerminalRunner.class});
-        parameters[0] = new Object[] {ProjectManager.getInstance().getOpenProjects()[0],
-                runner};
-      } catch (NoSuchMethodException e) {
-        try {
-          method[0] = TerminalView.class.getMethod("createNewSession", new Class[] {AbstractTerminalRunner.class});
-          parameters[0] = new Object[] { runner};
-        } catch (NoSuchMethodException e1) {
-          throw new IOException(e1);
-        }
-      }
-      ApplicationManager.getApplication().invokeLater(() -> {
-        try {
-          method[0].invoke(view, parameters[0]);
-        } catch (IllegalAccessException|InvocationTargetException e) {}
-      });
-      if (p.waitFor() != 0) {
-        throw new IOException("Process returned exit code: " + p.exitValue(), null);
-      }
-    } catch (IOException e) {
-      throw e;
-    }
-    catch (InterruptedException e) {
-      throw new IOException(e);
-    }
-  }
+        ProcessBuilder builder = new ProcessBuilder(command).directory(workingDirectory).redirectErrorStream(true);
+        Process p = builder.start();
+        boolean isPost2018_3 = ApplicationInfo.getInstance().getBuild().getBaselineVersion() >= 183;
+        p = new RedirectedProcess(p, true, isPost2018_3);
 
-  private static void executeWithTerminalInternal(Project project, String... command) {
-    TerminalView terminalView = TerminalView.getInstance(project);
-    LocalTerminalDirectRunner runner = new LocalTerminalDirectRunner(project) {
-
-      @Override
-      protected TtyConnector createTtyConnector(PtyProcess process) {
-        return new ProcessTtyConnector(process, StandardCharsets.UTF_8) {
+        final Process process = p;
+        AbstractTerminalRunner runner = new AbstractTerminalRunner(project) {
           @Override
-          protected void resizeImmediately() {
+          protected Process createProcess(@Nullable String s) {
+            return process;
           }
 
           @Override
-          public String getName() {
-            return "Tekton";
+          protected ProcessHandler createProcessHandler(Process process) {
+            return null;
           }
 
           @Override
-          public boolean isConnected() {
-            return process.isAlive();
+          protected String getTerminalConnectionName(Process process) {
+            return null;
+          }
+
+          @Override
+          protected TtyConnector createTtyConnector(Process process) {
+            return new ProcessTtyConnector(process, StandardCharsets.UTF_8) {
+              @Override
+              protected void resizeImmediately() {
+              }
+
+              @Override
+              public String getName() {
+                return title;
+              }
+
+              @Override
+              public boolean isConnected() {
+                return true;
+              }
+            };
+          }
+
+          @Override
+          public String runningTargetName() {
+            return null;
           }
         };
-      }
-
-      @Override
-      public String runningTargetName() {
-        return null;
-      }
-
-      @Override
-      protected PtyProcess createProcess(@Nullable String directory) throws ExecutionException {
-        Map<String, String> envs = Collections.emptyMap();
+        TerminalOptionsProvider terminalOptions = ServiceManager.getService(TerminalOptionsProvider.class);
+        terminalOptions.setCloseSessionOnLogout(false);
+        final TerminalView view = TerminalView.getInstance(project);
+        final Method[] method = new Method[1];
+        final Object[][] parameters = new Object[1][];
         try {
-          return PtyProcess.exec(command, envs, HOME_FOLDER);
-        } catch (IOException e) {
-          logger.error("Error: " + e.getLocalizedMessage(), e);
-          throw new ExecutionException(e);
+          method[0] = TerminalView.class.getMethod("createNewSession", new Class[] {Project.class, AbstractTerminalRunner.class});
+          parameters[0] = new Object[] {project,
+                                      runner};
+        } catch (NoSuchMethodException e) {
+          try {
+            method[0] = TerminalView.class.getMethod("createNewSession", new Class[] {AbstractTerminalRunner.class});
+            parameters[0] = new Object[] { runner};
+          } catch (NoSuchMethodException e1) {
+            throw new IOException(e1);
+          }
         }
+        ApplicationManager.getApplication().invokeLater(() -> {
+          try {
+            method[0].invoke(view, parameters[0]);
+          } catch (IllegalAccessException|InvocationTargetException e) {}
+        });
+        if (waitForProcessExit && p.waitFor() != 0) {
+          throw new IOException("Process returned exit code: " + p.exitValue(), null);
+        }
+    } catch (IOException e) {
+        throw e;
       }
-    };
-    terminalView.createNewSession(project, runner);
+      catch (InterruptedException e) {
+        throw new IOException(e);
+      }
   }
 
-  public static void executeWithTerminal(File workingDirectory, String... command) throws IOException {
+  public static void executeWithTerminal(Project project, String title, File workingDirectory, boolean waitForProcessToExit, String... command) throws IOException {
     if (ApplicationManager.getApplication().isUnitTestMode()) {
       execute(command[0], workingDirectory, Arrays.stream(command)
               .skip(1)
               .toArray(String[]::new));
     } else {
-      executeWithTerminalInternal(workingDirectory, command);
+      executeWithTerminalInternal(project, title, workingDirectory, waitForProcessToExit, command);
     }
   }
 
-  public static void executeWithTerminal(String... command) throws IOException {
-    executeWithTerminal(new File(HOME_FOLDER), command);
+  public static void executeWithTerminal(Project project, String title, File workingDirectory, String... command) throws IOException {
+    executeWithTerminal(project, title, workingDirectory, true, command);
   }
 
-  public static void executeWithTerminal(Project project, String... command) {
-    executeWithTerminalInternal(project, command);
+  public static void executeWithTerminal(Project project, String title, boolean waitForProcessToExit, String... command) throws IOException {
+    executeWithTerminal(project, title, new File(HOME_FOLDER), waitForProcessToExit, command);
+  }
+
+  public static void executeWithTerminal(Project project, String title, String... command) throws IOException {
+    executeWithTerminal(project, title, new File(HOME_FOLDER), true, command);
   }
 }

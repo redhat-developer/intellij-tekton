@@ -54,7 +54,7 @@ public class TektonRootNode extends LazyMutableTreeNode implements IconTreeNode 
 
   public Tkn getTkn() throws IOException {
     if (tkn == null) {
-        tkn = TknCli.get();
+        tkn = TknCli.get(model.getProject());
     }
     return tkn;
   }

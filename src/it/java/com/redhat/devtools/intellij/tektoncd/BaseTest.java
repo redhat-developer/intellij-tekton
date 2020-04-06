@@ -43,7 +43,7 @@ public abstract class BaseTest {
                 return 0;
             }
         });
-        tkn = TknCli.get();
+        tkn = TknCli.get(myFixture.getProject());
         client = new DefaultKubernetesClient(new ConfigBuilder().build());
     }
 

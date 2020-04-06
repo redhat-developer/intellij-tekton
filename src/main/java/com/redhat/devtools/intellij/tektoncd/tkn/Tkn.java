@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
-import com.intellij.openapi.project.Project;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 
@@ -197,12 +196,12 @@ public interface Tkn {
      * @param namespace the namespace to use
      * @param pipelineRun name of the PipelineRun
      */
-    void showLogsPipelineRun(Project project, String namespace, String pipelineRun);
+    void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException;
 
     /**
      * Get logs for a TaskRun
      * @param namespace the namespace to use
      * @param taskRun name of the TaskRun
      */
-    void showLogsTaskRun(Project project, String namespace, String taskRun);
+    void showLogsTaskRun(String namespace, String taskRun) throws IOException;
 }
