@@ -48,12 +48,14 @@ public class ShowLogsAction extends TektonAction {
             Notification notification;
 
             // if node selected is a Pipeline or a Task we need to find its runs
+            String finalResourceName = resourceName;
             try {
                 namespace = ((LazyMutableTreeNode) selected).getParent().getParent().toString();
                 if (PipelineNode.class.equals(nodeClass)) {
                     List<PipelineRun> pipelineRuns = tkncli.getPipelineRuns(namespace, resourceName);
                     if (pipelineRuns == null || pipelineRuns.size() == 0) {
-                        throw new IOException("Pipeline " + resourceName + "doesn't have any pipelineRun to be selected");
+                        UIHelper.executeInUI(() -> Messages.showWarningDialog("Pipeline " + finalResourceName + "doesn't have any pipelineRun to be selected", "Show Logs"));
+                        return;
                     }
                     resourceRunsName = pipelineRuns.stream().map(PipelineRun::getName).collect(Collectors.toList());
                     nodeClass = PipelineRunNode.class;
@@ -61,14 +63,14 @@ public class ShowLogsAction extends TektonAction {
                 } else if (TaskNode.class.equals(nodeClass)) {
                     List<TaskRun> taskRuns = tkncli.getTaskRuns(namespace, resourceName);
                     if (taskRuns == null || taskRuns.size() == 0) {
-                        throw new IOException("Task " + resourceName + "doesn't have any taskRun to be selected");
+                        UIHelper.executeInUI(() -> Messages.showWarningDialog("Task " + finalResourceName + "doesn't have any taskRun to be selected", "Show Logs"));
+                        return;
                     }
                     resourceRunsName = taskRuns.stream().map(TaskRun::getName).collect(Collectors.toList());
                     nodeClass = TaskRunNode.class;
                     kindLabel = "taskrun";
                 }
             } catch (IOException e) {
-                String finalResourceName = resourceName;
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
                                 "An error occurred while requesting logs for " + finalResourceName + "\n" + e.getLocalizedMessage(),
