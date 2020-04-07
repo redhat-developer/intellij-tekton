@@ -12,7 +12,7 @@ There are only a few guidelines that we need contributors to follow.
 3. `cd intellij-tekton`
 4. Import the folder as a project in JetBrains IntelliJ
 
-## Run the extension locally
+## Run the plugin locally
 
 1. From root folder, run the below command.
     ```bash
