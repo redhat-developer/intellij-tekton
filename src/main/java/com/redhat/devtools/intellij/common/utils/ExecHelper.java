@@ -15,7 +15,6 @@ import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.jediterm.terminal.ProcessTtyConnector;
 import com.jediterm.terminal.TtyConnector;
 import org.apache.commons.exec.CommandLine;
@@ -211,7 +210,7 @@ public class ExecHelper {
     }
   }
 
-  private static void executeWithTerminalInternal(File workingDirectory , String... command) throws IOException {
+  private static void executeWithTerminalInternal(Project project, String title, File workingDirectory, boolean waitForProcessExit, String... command) throws IOException {
       try {
         ProcessBuilder builder = new ProcessBuilder(command).directory(workingDirectory).redirectErrorStream(true);
         Process p = builder.start();
@@ -219,7 +218,7 @@ public class ExecHelper {
         p = new RedirectedProcess(p, true, isPost2018_3);
 
         final Process process = p;
-        AbstractTerminalRunner runner = new AbstractTerminalRunner(ProjectManager.getInstance().getDefaultProject()) {
+        AbstractTerminalRunner runner = new AbstractTerminalRunner(project) {
           @Override
           protected Process createProcess(@Nullable String s) {
             return process;
@@ -244,12 +243,12 @@ public class ExecHelper {
 
               @Override
               public String getName() {
-                return "Odo";
+                return title;
               }
 
               @Override
               public boolean isConnected() {
-                return process.isAlive();
+                return true;
               }
             };
           }
@@ -261,12 +260,12 @@ public class ExecHelper {
         };
         TerminalOptionsProvider terminalOptions = ServiceManager.getService(TerminalOptionsProvider.class);
         terminalOptions.setCloseSessionOnLogout(false);
-        final TerminalView view = TerminalView.getInstance(ProjectManager.getInstance().getOpenProjects()[0]);
+        final TerminalView view = TerminalView.getInstance(project);
         final Method[] method = new Method[1];
         final Object[][] parameters = new Object[1][];
         try {
           method[0] = TerminalView.class.getMethod("createNewSession", new Class[] {Project.class, AbstractTerminalRunner.class});
-          parameters[0] = new Object[] {ProjectManager.getInstance().getOpenProjects()[0],
+          parameters[0] = new Object[] {project,
                                       runner};
         } catch (NoSuchMethodException e) {
           try {
@@ -281,7 +280,7 @@ public class ExecHelper {
             method[0].invoke(view, parameters[0]);
           } catch (IllegalAccessException|InvocationTargetException e) {}
         });
-        if (p.waitFor() != 0) {
+        if (waitForProcessExit && p.waitFor() != 0) {
           throw new IOException("Process returned exit code: " + p.exitValue(), null);
         }
     } catch (IOException e) {
@@ -292,19 +291,25 @@ public class ExecHelper {
       }
   }
 
-  public static void executeWithTerminal(File workingDirectory, String... command) throws IOException {
+  public static void executeWithTerminal(Project project, String title, File workingDirectory, boolean waitForProcessToExit, String... command) throws IOException {
     if (ApplicationManager.getApplication().isUnitTestMode()) {
       execute(command[0], workingDirectory, Arrays.stream(command)
               .skip(1)
               .toArray(String[]::new));
     } else {
-      executeWithTerminalInternal(workingDirectory, command);
+      executeWithTerminalInternal(project, title, workingDirectory, waitForProcessToExit, command);
     }
   }
 
-  public static void executeWithTerminal(String... command) throws IOException {
-    executeWithTerminal(new File(HOME_FOLDER), command);
+  public static void executeWithTerminal(Project project, String title, File workingDirectory, String... command) throws IOException {
+    executeWithTerminal(project, title, workingDirectory, true, command);
   }
 
+  public static void executeWithTerminal(Project project, String title, boolean waitForProcessToExit, String... command) throws IOException {
+    executeWithTerminal(project, title, new File(HOME_FOLDER), waitForProcessToExit, command);
+  }
 
+  public static void executeWithTerminal(Project project, String title, String... command) throws IOException {
+    executeWithTerminal(project, title, new File(HOME_FOLDER), true, command);
+  }
 }

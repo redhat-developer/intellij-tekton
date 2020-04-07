@@ -190,4 +190,18 @@ public interface Tkn {
      */
     void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException;
 
+    /**
+     * Get logs for a PipelineRun
+     *
+     * @param namespace the namespace to use
+     * @param pipelineRun name of the PipelineRun
+     */
+    void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException;
+
+    /**
+     * Get logs for a TaskRun
+     * @param namespace the namespace to use
+     * @param taskRun name of the TaskRun
+     */
+    void showLogsTaskRun(String namespace, String taskRun) throws IOException;
 }
