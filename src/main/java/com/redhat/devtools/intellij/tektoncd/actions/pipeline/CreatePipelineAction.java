@@ -34,5 +34,4 @@ public class CreatePipelineAction extends TektonAction {
             createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newpipeline.yaml", content, KIND_PIPELINES);
         }
     }
-
 }

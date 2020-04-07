@@ -72,15 +72,15 @@ public class StartDialog extends DialogWrapper {
         try {
             this.namespace = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "namespace"});
             if (Strings.isNullOrEmpty(namespace)) {
-                throw new IOException("Tekton task has not a valid format. Namespace field is not found or its value is not valid.");
+                throw new IOException("Tekton configuration has an invalid format. Namespace field is not found or its value is not valid.");
             }
             this.name = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "name"});
             if (Strings.isNullOrEmpty(this.name)) {
-                throw new IOException("Tekton task has not a valid format. Name field is not found or its value is not valid.");
+                throw new IOException("Tekton configuration has an invalid format. Name field is not found or its value is not valid.");
             }
             kind = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"kind"});
             if (Strings.isNullOrEmpty(kind)) {
-                throw new IOException("Tekton task has not a valid format. Kind field is not found or its value is not valid.");
+                throw new IOException("Tekton configuration has an invalid format. Kind field is not found or its value is not valid.");
             }
         } catch (IOException e) {
             logger.error("Error: " + e.getLocalizedMessage());
@@ -229,17 +229,17 @@ public class StartDialog extends DialogWrapper {
         JsonNode resources = inputsNode.has("resources") ? inputsNode.get("resources") : null;
 
         if (params != null) {
-            result.addAll(getInputsFromNodeList(params, Input.Kind.PARAMETER));
+            result.addAll(getInputsFromNodeInternal(params, Input.Kind.PARAMETER));
         }
 
         if (resources != null) {
-            result.addAll(getInputsFromNodeList(resources, Input.Kind.RESOURCE));
+            result.addAll(getInputsFromNodeInternal(resources, Input.Kind.RESOURCE));
         }
 
         return result;
     }
 
-    private List<Input> getInputsFromNodeList(JsonNode node, Input.Kind kind) {
+    private List<Input> getInputsFromNodeInternal(JsonNode node, Input.Kind kind) {
         List<Input> result = new ArrayList<>();
         for (Iterator<JsonNode> it = node.elements(); it.hasNext(); ) {
             JsonNode item = it.next();

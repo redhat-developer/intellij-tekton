@@ -26,12 +26,11 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
 
-public class OpenEditorTaskAction extends TektonAction {
-    public OpenEditorTaskAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
+public class OpenEditorAction extends TektonAction {
+    public OpenEditorAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
