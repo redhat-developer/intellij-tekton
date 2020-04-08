@@ -16,16 +16,12 @@ import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
 
 public class CreateTaskAction extends TektonAction {
-    Logger logger = LoggerFactory.getLogger(CreateTaskAction.class);
-
     public CreateTaskAction() { super(TasksNode.class); }
 
     @Override

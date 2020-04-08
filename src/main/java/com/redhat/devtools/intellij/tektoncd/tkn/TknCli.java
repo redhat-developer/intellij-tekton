@@ -30,9 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
-import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_OUTPUTRESOURCE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 
 public class TknCli implements Tkn {
     private static final ObjectMapper TASKRUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
@@ -185,10 +186,18 @@ public class TknCli implements Tkn {
         client.customResource(crdContext).create(namespace, objectAsString);
     }
 
+    @Override
+    public void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> resources) throws IOException {
+        List<String> args = new ArrayList<>(Arrays.asList("pipeline", "start", pipeline, "-n", namespace));
+        args.addAll(argsToList(parameters, FLAG_PARAMETER));
+        args.addAll(argsToList(resources, FLAG_INPUTRESOURCEPIPELINE));
+        ExecHelper.execute(command, args.toArray(new String[0]));
+    }
+
     public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
-        args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCE));
+        args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCETASK));
         args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
         ExecHelper.execute(command, args.toArray(new String[0]));
     }
@@ -213,4 +222,5 @@ public class TknCli implements Tkn {
     public void showLogsTaskRun(String namespace, String taskRun) throws IOException {
         ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, command, "taskrun", "logs", taskRun, "-n", namespace);
     }
+
 }

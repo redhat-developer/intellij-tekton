@@ -34,8 +34,8 @@
       <action class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskAction" text="New Task"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.CreateClusterTaskAction" text="New ClusterTask"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.resource.CreateResourceAction" text="New Pipeline Resource"/>
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.OpenEditorTaskAction" text="Open in Editor"/>
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.task.StartTaskAction" text="Start"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.OpenEditorAction" text="Open in Editor"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.StartAction" text="Start"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.ShowLogsAction" text="Show Logs"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.DeleteAction" text="Delete"/>
       <action class="com.redhat.devtools.intellij.common.actions.RefreshAction" text="Refresh"/>
