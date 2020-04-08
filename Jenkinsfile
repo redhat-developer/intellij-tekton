@@ -3,7 +3,7 @@
 node('rhel7'){
 	stage('Checkout repo') {
 		deleteDir()
-		git url: 'https://github.com/jeffmaury/intellij-tekton',
+		git url: 'https://github.com/redhat-developer/intellij-tekton',
 			branch: "${sha1}"
 	}
 
