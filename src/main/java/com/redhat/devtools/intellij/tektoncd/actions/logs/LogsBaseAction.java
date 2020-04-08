@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.actions.logs;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
+import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
@@ -31,17 +32,26 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LogsBaseAction extends TektonAction {
+public abstract class LogsBaseAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(LogsBaseAction.class);
 
     public LogsBaseAction() { super(PipelineRunNode.class, TaskRunNode.class, TaskNode.class, PipelineNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        this.actionPerformed(anActionEvent, path, selected, tkncli);
+        ExecHelper.submit(() -> {
+            String namespace = getNamespace((LazyMutableTreeNode) selected);
+            Class<?> nodeClass = selected.getClass();
+            String resourceName = pickRun(namespace, selected.toString(), nodeClass, "Follow Logs", tkncli);
+            if (resourceName == null) return;
+
+            this.actionPerformed(namespace, resourceName, nodeClass, tkncli);
+        });
     }
 
-    protected String pickRun(String namespace, String resource, Class node, String action, Tkn tkncli) {
+    public abstract void actionPerformed(String namespace, String resourceName, Class nodeClass, Tkn tkncli);
+
+    private String pickRun(String namespace, String resource, Class node, String action, Tkn tkncli) {
         if (PipelineNode.class.equals(node)) {
             return this.pickPipelineRunByPipeline(namespace, resource, action, tkncli);
         } else if (TaskNode.class.equals(node)) {
@@ -115,7 +125,7 @@ public class LogsBaseAction extends TektonAction {
 
     }
 
-    protected String getNamespace(LazyMutableTreeNode selected) {
+    private String getNamespace(LazyMutableTreeNode selected) {
         Class<?> nodeClass = selected.getClass();
         if (PipelineNode.class.equals(nodeClass) || TaskNode.class.equals(nodeClass)) {
             return selected.getParent().getParent().toString();

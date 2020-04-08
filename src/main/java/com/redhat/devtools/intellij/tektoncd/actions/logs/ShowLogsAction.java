@@ -10,10 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions.logs;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
-import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
@@ -23,34 +20,24 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.tree.TreePath;
 import java.io.IOException;
 
 public class ShowLogsAction extends LogsBaseAction {
     Logger logger = LoggerFactory.getLogger(ShowLogsAction.class);
 
-    @Override
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ExecHelper.submit(() -> {
-            String namespace = getNamespace((LazyMutableTreeNode) selected);
-            Class<?> nodeClass = selected.getClass();
-            String resourceName = pickRun(namespace, selected.toString(), nodeClass, "Show Logs", tkncli);
-            if (resourceName == null) return;
-
-            try {
-                if (PipelineRunNode.class.equals(nodeClass) || PipelineNode.class.equals(nodeClass)) {
-                    tkncli.showLogsPipelineRun(namespace, resourceName);
-                } else if (TaskRunNode.class.equals(nodeClass) || TaskNode.class.equals(nodeClass)) {
-                    tkncli.showLogsTaskRun(namespace, resourceName);
-                }
-            } catch (IOException e) {
-                String finalResourceName = resourceName;
-                UIHelper.executeInUI(() ->
-                        Messages.showErrorDialog(
-                                "An error occurred while requesting logs for " + finalResourceName + "\n" + e.getLocalizedMessage(),
-                                "Error"));
-                logger.error("Error: " + e.getLocalizedMessage(), e);
+    public void actionPerformed(String namespace, String resourceName, Class nodeClass,  Tkn tkncli) {
+        try {
+            if (PipelineRunNode.class.equals(nodeClass) || PipelineNode.class.equals(nodeClass)) {
+                tkncli.showLogsPipelineRun(namespace, resourceName);
+            } else if (TaskRunNode.class.equals(nodeClass) || TaskNode.class.equals(nodeClass)) {
+                tkncli.showLogsTaskRun(namespace, resourceName);
             }
-        });
+        } catch (IOException e) {
+            UIHelper.executeInUI(() ->
+                    Messages.showErrorDialog(
+                            "An error occurred while requesting logs for " + resourceName + "\n" + e.getLocalizedMessage(),
+                            "Error"));
+            logger.error("Error: " + e.getLocalizedMessage(), e);
+        }
     }
 }
