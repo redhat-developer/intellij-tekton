@@ -29,23 +29,13 @@ import java.io.IOException;
 public class FollowLogsAction extends LogsBaseAction {
     Logger logger = LoggerFactory.getLogger(FollowLogsAction.class);
 
-    public FollowLogsAction() { super(PipelineRunNode.class, TaskRunNode.class, TaskNode.class, PipelineNode.class); }
-
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ExecHelper.submit(() -> {
-            String namespace;
-            String resourceName = selected.toString();
+            String namespace = getNamespace((LazyMutableTreeNode) selected);
             Class<?> nodeClass = selected.getClass();
-
-            if (PipelineNode.class.equals(nodeClass) || TaskNode.class.equals(nodeClass)) {
-                // if node selected is a Pipeline or a Task user need to pick a run
-                namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
-                resourceName = pickRunByResource(namespace, resourceName, nodeClass, "Follow Logs", tkncli);
-                if (resourceName == null) return;
-            } else {
-                namespace = ((LazyMutableTreeNode)selected).getParent().getParent().getParent().toString();
-            }
+            String resourceName = pickRun(namespace, selected.toString(), nodeClass, "Follow Logs", tkncli);
+            if (resourceName == null) return;
 
             try {
                 if (PipelineRunNode.class.equals(nodeClass) || PipelineNode.class.equals(nodeClass)) {

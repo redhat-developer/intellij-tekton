@@ -12,13 +12,16 @@ package com.redhat.devtools.intellij.tektoncd.actions.logs;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
+import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.ui.RunPickerDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,23 +34,20 @@ import java.util.stream.Collectors;
 public class LogsBaseAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(LogsBaseAction.class);
 
-    public LogsBaseAction(Class... filters) {
-        super(filters);
-    }
+    public LogsBaseAction() { super(PipelineRunNode.class, TaskRunNode.class, TaskNode.class, PipelineNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         this.actionPerformed(anActionEvent, path, selected, tkncli);
     }
 
-    protected String pickRunByResource(String namespace, String resource, Class node, String action, Tkn tkncli) {
-        String runPicked = null;
+    protected String pickRun(String namespace, String resource, Class node, String action, Tkn tkncli) {
         if (PipelineNode.class.equals(node)) {
-            runPicked = this.pickPipelineRunByPipeline(namespace, resource, action, tkncli);
+            return this.pickPipelineRunByPipeline(namespace, resource, action, tkncli);
         } else if (TaskNode.class.equals(node)) {
-            runPicked = this.pickTaskRunByTask(namespace, resource, action, tkncli);
+            return this.pickTaskRunByTask(namespace, resource, action, tkncli);
         }
-        return runPicked;
+        return resource;
     }
 
     private String pickPipelineRunByPipeline(String namespace, String name, String actionName, Tkn tkncli) {
@@ -113,6 +113,15 @@ public class LogsBaseAction extends TektonAction {
         }
         return runPicked;
 
+    }
+
+    protected String getNamespace(LazyMutableTreeNode selected) {
+        Class<?> nodeClass = selected.getClass();
+        if (PipelineNode.class.equals(nodeClass) || TaskNode.class.equals(nodeClass)) {
+            return selected.getParent().getParent().toString();
+        } else {
+            return selected.getParent().getParent().getParent().toString();
+        }
     }
 
 }
