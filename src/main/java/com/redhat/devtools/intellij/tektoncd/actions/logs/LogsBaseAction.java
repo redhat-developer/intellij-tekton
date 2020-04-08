@@ -42,7 +42,7 @@ public abstract class LogsBaseAction extends TektonAction {
         ExecHelper.submit(() -> {
             String namespace = getNamespace((LazyMutableTreeNode) selected);
             Class<?> nodeClass = selected.getClass();
-            String resourceName = pickRun(namespace, selected.toString(), nodeClass, "Follow Logs", tkncli);
+            String resourceName = pickRun(namespace, selected.toString(), nodeClass, anActionEvent.getPresentation().getText(), tkncli);
             if (resourceName == null) return;
 
             this.actionPerformed(namespace, resourceName, nodeClass, tkncli);
