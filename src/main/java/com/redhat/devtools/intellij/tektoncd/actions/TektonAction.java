@@ -76,4 +76,5 @@ public class TektonAction extends TreeAction {
         fileToDelete.deleteOnExit();
         FileEditorManager.getInstance(project).openFile(vf, true);
     }
+
 }
