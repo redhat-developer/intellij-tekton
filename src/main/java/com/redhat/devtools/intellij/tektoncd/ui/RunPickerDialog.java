@@ -13,11 +13,11 @@ public class RunPickerDialog extends DialogWrapper {
     private JComboBox resourcesCB;
     private String selected;
 
-    public RunPickerDialog(Component parent, String kind, List<String> resourceRuns) {
+    public RunPickerDialog(Component parent, String action, String kind, List<String> resourceRuns) {
         super(null, parent, false, IdeModalityType.IDE);
         selectLabel.setText("Select " + kind + ":");
-        setTitle("Show Logs");
-        setOKButtonText("Show Logs");
+        setTitle(action);
+        setOKButtonText(action);
         init();
         for (String runName: resourceRuns) {
             resourcesCB.addItem(runName);
@@ -25,7 +25,7 @@ public class RunPickerDialog extends DialogWrapper {
     }
 
     public static void main(String[] args) {
-        RunPickerDialog dialog = new RunPickerDialog(null, "", null);
+        RunPickerDialog dialog = new RunPickerDialog(null, "", "", null);
         dialog.pack();
         dialog.show();
         System.exit(0);

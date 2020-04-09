@@ -216,4 +216,19 @@ public interface Tkn {
      */
     void showLogsTaskRun(String namespace, String taskRun) throws IOException;
 
+    /**
+     * Follow logs for a PipelineRun
+     *
+     * @param namespace the namespace to use
+     * @param pipelineRun name of the PipelineRun
+     */
+    void followLogsPipelineRun(String namespace, String pipelineRun) throws IOException;
+
+    /**
+     * Follow logs for a TaskRun
+     * @param namespace the namespace to use
+     * @param taskRun name of the TaskRun
+     */
+    void followLogsTaskRun(String namespace, String taskRun) throws IOException;
+
 }
