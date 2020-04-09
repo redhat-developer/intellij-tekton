@@ -69,7 +69,7 @@ public class ExecHelper {
     PumpStreamHandler handler = new PumpStreamHandler(new WriterOutputStream(writer));
     executor.setStreamHandler(handler);
     executor.setWorkingDirectory(workingDirectory);
-    CommandLine command = new CommandLine(executable).addArguments(arguments);
+    CommandLine command = new CommandLine(executable).addArguments(arguments, false);
     try {
       executor.execute(command);
       return writer.toString();
