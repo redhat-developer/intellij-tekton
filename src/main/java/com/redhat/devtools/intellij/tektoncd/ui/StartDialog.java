@@ -277,9 +277,6 @@ public class StartDialog extends DialogWrapper {
     private void setInputValue(String inputName, String value) {
         for (Input input: inputs) {
             if (input.name().equals(inputName)) {
-                if (input.type().equals("array")) {
-                    value = value.replace(" ", ",");
-                }
                 input.setValue(value);
                 break;
             }

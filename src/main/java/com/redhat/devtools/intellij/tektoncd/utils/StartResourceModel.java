@@ -93,7 +93,6 @@ public class StartResourceModel {
     }
 
     private void setDefaultValueResources() {
-        int resourcesCount;
         List<Input> resourceInputs = null;
         if (this.inputs != null) {
             resourceInputs = inputs.stream().filter(input -> input.kind() == Input.Kind.RESOURCE).collect(Collectors.toList());
@@ -152,7 +151,7 @@ public class StartResourceModel {
             result.addAll(getInputsFromNodeInternal(resources, Input.Kind.RESOURCE));
         }
 
-        return result;
+        return result.size() > 0 ? result : null;
     }
 
     private List<Input> getInputsFromNodeInternal(JsonNode node, Input.Kind kind) {
@@ -175,7 +174,7 @@ public class StartResourceModel {
             }
         }
 
-        return result;
+        return result.size() > 0 ? result : null;
     }
 
     private boolean isPipeline() {

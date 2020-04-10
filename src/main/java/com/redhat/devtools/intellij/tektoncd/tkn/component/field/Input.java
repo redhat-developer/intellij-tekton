@@ -11,7 +11,10 @@
 package com.redhat.devtools.intellij.tektoncd.tkn.component.field;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.apache.commons.lang.StringUtils;
 
+import java.util.Iterator;
 import java.util.Optional;
 
 public class Input {
@@ -71,6 +74,9 @@ public class Input {
         JsonNode defaultItem = inputNode.get("default");
         if (defaultItem != null) {
             defaultValue = Optional.of(defaultItem.asText());
+            if (defaultItem.isArray()) {
+                defaultValue = Optional.of(convertArrayNodeToString((ArrayNode) defaultItem));
+            }
         }
         this.name = name;
         this.type = type;
@@ -78,6 +84,16 @@ public class Input {
         this.description = description;
         this.kind = kind;
         return this;
+    }
+
+    private String convertArrayNodeToString(ArrayNode node) {
+        String result = "";
+        for (Iterator<JsonNode> it = node.iterator(); it.hasNext(); ) {
+            JsonNode item = it.next();
+            result += item.asText() + ",";
+        }
+        result = result.equals("") ? result : StringUtils.removeEnd(result, ",");
+        return result;
     }
 
     @Override
