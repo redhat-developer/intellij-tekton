@@ -17,4 +17,5 @@ public class CommonConstants {
     public static final String HOME_FOLDER = System.getProperty("user.home");
 
     public static final Key<Project> PROJECT = Key.create("project");
+    public static final Key<Long> LAST_MODIFICATION_STAMP = Key.create("last.modification.stamp");
 }
