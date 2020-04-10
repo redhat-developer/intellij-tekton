@@ -26,7 +26,7 @@
     <fileDocumentSynchronizationVetoer implementation="com.redhat.devtools.intellij.tektoncd.listener.SaveInEditorListener" order="first" />
     <completion.contributor language="any" implementationClass="com.redhat.devtools.intellij.tektoncd.completion.DictionaryContributor"/>
     <fileDocumentSynchronizationVetoer implementation="com.redhat.devtools.intellij.tektoncd.listener.SaveInEditorListener" order="first"/>
-    <toolWindow id="Tekton" anchor="left" factoryClass="com.redhat.devtools.intellij.tektoncd.WindowToolFactory"/>
+    <toolWindow id="Tekton" anchor="left" factoryClass="com.redhat.devtools.intellij.tektoncd.WindowToolFactory" icon="/images/cluster.png"/>
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
