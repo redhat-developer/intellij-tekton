@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -82,12 +83,13 @@ public class StartAction extends TektonAction {
             }
             if (noInputsAndOuputs || stdialog.isOK()) {
                 try {
-                    Map<String, String> params = stdialog == null ? null : stdialog.getParameters();
-                    Map<String, String> inputResources = stdialog == null ? null : stdialog.getInputResources();
+                    Map<String, String> params = stdialog == null ? Collections.emptyMap() : stdialog.getParameters();
+                    Map<String, String> inputResources = stdialog == null ? Collections.emptyMap() : stdialog.getInputResources();
+                    Map<String, String> outputResources = stdialog == null ? Collections.emptyMap() : stdialog.getOutputResources();
                     if (PipelineNode.class.equals(nodeClass)) {
                         tkncli.startPipeline(namespace, selected.toString(), params, inputResources);
                     } else if (TaskNode.class.equals(nodeClass)) {
-                        tkncli.startTask(namespace, selected.toString(), params, inputResources, stdialog.getOutputResources());
+                        tkncli.startTask(namespace, selected.toString(), params, inputResources, outputResources);
                     }
                     ((LazyMutableTreeNode)selected).reload();
                 } catch (IOException e) {
