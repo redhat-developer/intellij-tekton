@@ -12,10 +12,10 @@ package com.redhat.devtools.intellij.tektoncd.tkn.component.field;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.commons.lang.StringUtils;
 
-import java.util.Iterator;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class Input {
 
@@ -87,13 +87,7 @@ public class Input {
     }
 
     private String convertArrayNodeToString(ArrayNode node) {
-        String result = "";
-        for (Iterator<JsonNode> it = node.iterator(); it.hasNext(); ) {
-            JsonNode item = it.next();
-            result += item.asText() + ",";
-        }
-        result = result.equals("") ? result : StringUtils.removeEnd(result, ",");
-        return result;
+        return  StreamSupport.stream(node.spliterator(), false).map(jsonNode -> jsonNode.asText()).collect(Collectors.joining(","));
     }
 
     @Override
