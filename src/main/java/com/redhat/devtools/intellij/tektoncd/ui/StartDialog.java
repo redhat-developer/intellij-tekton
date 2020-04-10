@@ -10,10 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Strings;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
@@ -27,9 +24,10 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.TimerTask;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 
@@ -66,26 +64,13 @@ public class StartDialog extends DialogWrapper {
 
     private Map<String, String> parameters, inputResources, outputResources;
 
-    public StartDialog(Component parent, String configuration, List<Resource> resources) {
+    public StartDialog(Component parent, String namespace, String name, String kind, List<Input> inputs, List<Output> outputs, List<Resource> resources) {
         super(null, parent, false, IdeModalityType.IDE);
-        String kind;
-        try {
-            this.namespace = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "namespace"});
-            if (Strings.isNullOrEmpty(namespace)) {
-                throw new IOException("Tekton configuration has an invalid format. Namespace field is not found or its value is not valid.");
-            }
-            this.name = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "name"});
-            if (Strings.isNullOrEmpty(this.name)) {
-                throw new IOException("Tekton configuration has an invalid format. Name field is not found or its value is not valid.");
-            }
-            kind = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"kind"});
-            if (Strings.isNullOrEmpty(kind)) {
-                throw new IOException("Tekton configuration has an invalid format. Kind field is not found or its value is not valid.");
-            }
-        } catch (IOException e) {
-            logger.error("Error: " + e.getLocalizedMessage());
-            return;
-        }
+
+        this.namespace = namespace;
+        this.name = name;
+        this.inputs = inputs;
+        this.outputs = outputs;
         this.resources = resources;
         setTitle("Start " + name);
         setOKButtonText("Start");
@@ -93,28 +78,6 @@ public class StartDialog extends DialogWrapper {
 
         boolean isPipeline = KIND_PIPELINE.equalsIgnoreCase(kind);
 
-        try {
-            if (isPipeline) {
-                JsonNode inputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec"});
-                if (inputsNode != null) {
-                    inputs = getInputsFromNode(inputsNode);
-                }
-            } else {
-                JsonNode inputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "inputs"});
-                if (inputsNode != null) {
-                    inputs = getInputsFromNode(inputsNode);
-                }
-                JsonNode outputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "outputs"});
-                if (outputsNode != null) {
-                    outputs = getOutputs(outputsNode);
-                }
-            }
-        } catch (IOException e) {
-            logger.error("Error: " + e.getLocalizedMessage());
-        }
-
-        // if for a specific input/output type (git, image, ...) only a resource exists, set that resource as default value for input/output
-        setDefaultValueResources();
         // init dialog
         initInputsArea();
         initOutputsArea(isPipeline);
@@ -123,7 +86,7 @@ public class StartDialog extends DialogWrapper {
     }
 
     public static void main(String[] args) {
-        StartDialog dialog = new StartDialog(null, "", null);
+        StartDialog dialog = new StartDialog(null, "",  "", "", null, null, null);
         dialog.pack();
         dialog.show();
         System.exit(0);
@@ -223,73 +186,6 @@ public class StartDialog extends DialogWrapper {
         return contentPane;
     }
 
-    private List<Input> getInputsFromNode(JsonNode inputsNode) {
-        List<Input> result = new ArrayList<>();
-        JsonNode params = inputsNode.has("params") ? inputsNode.get("params") : null;
-        JsonNode resources = inputsNode.has("resources") ? inputsNode.get("resources") : null;
-
-        if (params != null) {
-            result.addAll(getInputsFromNodeInternal(params, Input.Kind.PARAMETER));
-        }
-
-        if (resources != null) {
-            result.addAll(getInputsFromNodeInternal(resources, Input.Kind.RESOURCE));
-        }
-
-        return result;
-    }
-
-    private List<Input> getInputsFromNodeInternal(JsonNode node, Input.Kind kind) {
-        List<Input> result = new ArrayList<>();
-        for (Iterator<JsonNode> it = node.elements(); it.hasNext(); ) {
-            JsonNode item = it.next();
-            result.add(new Input().fromJson(item, kind));
-        }
-        return result;
-    }
-
-    private List<Output> getOutputs(JsonNode outputsNode) {
-        List<Output> result = new ArrayList<>();
-        List<JsonNode> resources = outputsNode.findValues("resources");
-
-        if (resources != null) {
-            for (Iterator<JsonNode> it = resources.iterator(); it.hasNext(); ) {
-                JsonNode item = it.next();
-                result.add(new Output().fromJson(item.get(0)));
-            }
-        }
-
-        return result;
-    }
-
-    private void setDefaultValueResources() {
-        if (inputs == null && outputs == null) {
-            return;
-        }
-        int resourcesCount;
-        // if for a specific type (git, image, ...) only a resource exists, set that resource as default value for input/output
-        Map<String, List<Resource>> resourceGroupedByType = resources.stream().collect(Collectors.groupingBy(Resource::type));
-
-        if (inputs != null) {
-            Input[] resourceInputs = inputs.stream().filter(input -> input.kind() == Input.Kind.RESOURCE).toArray(Input[]::new);
-            for (Input input: resourceInputs) {
-                resourcesCount = resourceGroupedByType.get(input.type()).size();
-                if (resourcesCount == 1) {
-                    input.setValue(resourceGroupedByType.get(input.type()).get(0).name());
-                }
-            }
-        }
-
-        if (outputs != null) {
-            for (Output output: outputs) {
-                resourcesCount = resourceGroupedByType.get(output.type()).size();
-                if (resourcesCount == 1) {
-                    output.setValue(resourceGroupedByType.get(output.type()).get(0).name());
-                }
-            }
-        }
-
-    }
 
     private void initInputsArea() {
         if (inputs == null) {

@@ -23,12 +23,14 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.StartDialog;
+import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
@@ -60,18 +62,32 @@ public class StartAction extends TektonAction {
                 logger.error("Error: " + e.getLocalizedMessage());
                 return;
             }
-            String finalConfiguration = configuration;
-            StartDialog stdialog = UIHelper.executeInUI(() -> {
-                StartDialog dialog = new StartDialog(null, finalConfiguration, resources);
-                dialog.show();
-                return dialog;
-            });
-            if (stdialog.isOK()) {
+
+            StartResourceModel model = new StartResourceModel(configuration, resources);
+
+            if (!model.isValid()) {
+                UIHelper.executeInUI(() -> Messages.showErrorDialog(model.getErrorMessage(), "Error"));
+                return;
+            }
+
+            boolean noInputsAndOuputs = model.getInputs() == null && model.getOutputs() == null;
+            StartDialog stdialog = null;
+
+            if (!noInputsAndOuputs) {
+                stdialog = UIHelper.executeInUI(() -> {
+                    StartDialog dialog = new StartDialog(null, model.getNamespace(), model.getName(), model.getKind(), model.getInputs(), model.getOutputs(), resources);
+                    dialog.show();
+                    return dialog;
+                });
+            }
+            if (noInputsAndOuputs || stdialog.isOK()) {
                 try {
+                    Map<String, String> params = stdialog == null ? null : stdialog.getParameters();
+                    Map<String, String> inputResources = stdialog == null ? null : stdialog.getInputResources();
                     if (PipelineNode.class.equals(nodeClass)) {
-                        tkncli.startPipeline(namespace, selected.toString(), stdialog.getParameters(), stdialog.getInputResources());
+                        tkncli.startPipeline(namespace, selected.toString(), params, inputResources);
                     } else if (TaskNode.class.equals(nodeClass)) {
-                        tkncli.startTask(namespace, selected.toString(), stdialog.getParameters(), stdialog.getInputResources(), stdialog.getOutputResources());
+                        tkncli.startTask(namespace, selected.toString(), params, inputResources, stdialog.getOutputResources());
                     }
                     ((LazyMutableTreeNode)selected).reload();
                 } catch (IOException e) {
