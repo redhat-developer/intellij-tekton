@@ -61,7 +61,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         Long currentModificationStamp = document.getModificationStamp();
         if(project == null ||
                  !isFileToPush(project, document, vf) ||
-                 (lastModificationStamp != null && lastModificationStamp != currentModificationStamp)
+                 (lastModificationStamp != null && lastModificationStamp.longValue() == currentModificationStamp.longValue())
         ) {
             return true;
         }
