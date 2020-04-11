@@ -74,7 +74,7 @@ public abstract class LogsBaseAction extends TektonAction {
                     Messages.showErrorDialog(
                             "An error occurred while requesting logs for " + name + "\n" + e.getLocalizedMessage(),
                             "Error"));
-            logger.error("Error: " + e.getLocalizedMessage(), e);
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
             return null;
         }
 
@@ -95,7 +95,7 @@ public abstract class LogsBaseAction extends TektonAction {
                     Messages.showErrorDialog(
                             "An error occurred while requesting logs for " + name + "\n" + e.getLocalizedMessage(),
                             "Error"));
-            logger.error("Error: " + e.getLocalizedMessage(), e);
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
             return null;
         }
 

@@ -28,7 +28,7 @@ public class DictionaryCompletionProvider extends CompletionProvider<CompletionP
         try {
             result.addAllElements(TknDictionary.get().getLookups());
         } catch (IOException e) {
-            logger.error("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage());
         }
     }
 }

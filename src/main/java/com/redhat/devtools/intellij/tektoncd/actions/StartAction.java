@@ -60,7 +60,7 @@ public class StartAction extends TektonAction {
                         Messages.showErrorDialog(
                                 selected.toString() + " in namespace " + namespace + " failed to start. An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
                                 "Error"));
-                logger.error("Error: " + e.getLocalizedMessage());
+                logger.warn("Error: " + e.getLocalizedMessage());
                 return;
             }
 
@@ -98,7 +98,7 @@ public class StartAction extends TektonAction {
                             selected.toString() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
-                    logger.error("Error: " + e.getLocalizedMessage());
+                    logger.warn("Error: " + e.getLocalizedMessage());
                 }
             }
         });
