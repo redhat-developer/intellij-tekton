@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdNodeBasedDeserializer;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.redhat.devtools.intellij.common.utils.DateHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +36,14 @@ public class TaskRunDeserializer extends StdNodeBasedDeserializer<List<TaskRun>>
                 JsonNode item = it.next();
                 String name = item.get("metadata").get("name").asText();
                 Optional<Boolean> completed = Optional.empty();
+                String startTimeText = "running " + DateHelper.humanizeDate(item.get("status").get("startTime").asText());
+                String type = item.get("status").get("conditions").get(0).get("type").asText();
+                String typeStatus = item.get("status").get("conditions").get(0).get("status").asText();
+                String completionTimeText = "";
+                if (type.equals("Succeeded") && typeStatus.equals("True")) {
+                    completionTimeText = ", finished " + DateHelper.humanizeDate(item.get("status").get("completionTime").asText());
+                    startTimeText = startTimeText.replace("running", "started") + " ago";
+                }
                 JsonNode conditions = item.get("status").get("conditions");
                 if (conditions.isArray() && conditions.size() > 0) {
                     String status = conditions.get(0).get("status").asText();
@@ -44,7 +53,7 @@ public class TaskRunDeserializer extends StdNodeBasedDeserializer<List<TaskRun>>
                         completed = Optional.of(false);
                     }
                 }
-                result.add(TaskRun.of(name, completed));
+                result.add(TaskRun.of(name, completed, startTimeText, completionTimeText));
             }
         }
         return result;

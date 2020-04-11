@@ -15,8 +15,10 @@ import java.util.Optional;
 public interface TaskRun {
     String getName();
     Optional<Boolean> isCompleted();
+    String getStartTimeText();
+    String getCompletionTimeText();
 
-    public static TaskRun of(String name, Optional<Boolean> completed) {
+    public static TaskRun of(String name, Optional<Boolean> completed, String startTimeText, String completionTimeText) {
         return new TaskRun() {
 
             @Override
@@ -27,6 +29,14 @@ public interface TaskRun {
             @Override
             public Optional<Boolean> isCompleted() {
                 return completed;
+            }
+
+            @Override
+            public String getStartTimeText() { return startTimeText; }
+
+            @Override
+            public String getCompletionTimeText() {
+                return completionTimeText;
             }
         };
     }

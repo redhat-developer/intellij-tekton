@@ -38,8 +38,9 @@ public class PipelineRunDeserializer extends StdNodeBasedDeserializer<List<Pipel
                 JsonNode conditions = item.get("status").get("conditions");
                 String startTimeText = "running " + DateHelper.humanizeDate(item.get("status").get("startTime").asText());
                 String type = item.get("status").get("conditions").get(0).get("type").asText();
+                String typeStatus = item.get("status").get("conditions").get(0).get("status").asText();
                 String completionTimeText = "";
-                if (type.equals(("Succeeded"))) {
+                if (type.equals("Succeeded")  && typeStatus.equals("True")) {
                     completionTimeText = ", finished " + DateHelper.humanizeDate(item.get("status").get("completionTime").asText());
                     startTimeText = startTimeText.replace("running", "started");
                 }

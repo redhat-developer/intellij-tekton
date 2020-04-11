@@ -21,7 +21,12 @@ public class TaskRunNode extends LazyMutableTreeNode implements IconTreeNode {
 
     @Override
     public String toString() {
-        return ((TaskRun)getUserObject()).getName();
+        TaskRun tRun = (TaskRun)getUserObject();
+        return "<html>" +
+                tRun.getName() +
+                " <span style=\"font-size:90%;color:gray;\">" +
+                tRun.getStartTimeText() + tRun.getCompletionTimeText() +
+                "</span></html>";
     }
 
     @Override
