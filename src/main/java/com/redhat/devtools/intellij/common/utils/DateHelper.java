@@ -21,7 +21,6 @@ public class DateHelper {
 
     public static String humanizeDate(Instant start, Instant end) {
         long seconds = Duration.between(start, end).getSeconds();
-        String date = "";
         int days = (int) (seconds / (24 * 3600));
         seconds = seconds % (24 * 3600);
         int hours = (int) (seconds / 3600);
@@ -29,14 +28,19 @@ public class DateHelper {
         int minutes = (int) (seconds / 60);
         seconds %= 60;
 
+        String date = "";
         if (days > 0) {
             date += days + " d ";
         }
         if (date.length() < 6) {
-            date += hours + " h ";
+            if (hours == 0 && days > 0) {
+                date += hours + " h ";
+            }
         }
         if (date.length() < 6) {
-            date += minutes + " m ";
+            if (minutes == 0 && hours > 0) {
+                date += minutes + " m ";
+            }
         }
         if (date.length() < 6) {
             date += seconds + " s ";
