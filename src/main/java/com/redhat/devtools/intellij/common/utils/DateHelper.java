@@ -33,12 +33,12 @@ public class DateHelper {
             date += days + " d ";
         }
         if (date.length() < 6) {
-            if (hours == 0 && days > 0) {
+            if (hours > 0 || days > 0) {
                 date += hours + " h ";
             }
         }
         if (date.length() < 6) {
-            if (minutes == 0 && hours > 0) {
+            if (minutes > 0 || hours > 0) {
                 date += minutes + " m ";
             }
         }
