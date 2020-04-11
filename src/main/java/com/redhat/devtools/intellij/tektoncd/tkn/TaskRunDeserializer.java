@@ -43,6 +43,8 @@ public class TaskRunDeserializer extends StdNodeBasedDeserializer<List<TaskRun>>
                 if (type.equals("Succeeded") && typeStatus.equals("True")) {
                     completionTimeText = ", finished " + DateHelper.humanizeDate(item.get("status").get("completionTime").asText());
                     startTimeText = startTimeText.replace("running", "started") + " ago";
+                } else if (type.equals("Succeeded") && typeStatus.equals("False")) {
+                    startTimeText = startTimeText.replace("running", "started") + " ago";
                 }
                 JsonNode conditions = item.get("status").get("conditions");
                 if (conditions.isArray() && conditions.size() > 0) {
