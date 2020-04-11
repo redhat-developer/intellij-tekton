@@ -33,7 +33,7 @@ public class TknAutoInsertHandler implements InsertHandler<LookupElement> {
             String elementText = SnippetHelper.getBody(item.getLookupString());
             document.replaceString(startOffset, tailOffset, elementText);
         } catch (IOException ex) {
-            logger.error("Error: " + ex.getLocalizedMessage());
+            logger.warn("Error: " + ex.getLocalizedMessage());
         }
     }
 }

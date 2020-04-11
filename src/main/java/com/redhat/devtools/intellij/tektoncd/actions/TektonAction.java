@@ -63,7 +63,7 @@ public class TektonAction extends TreeAction {
                 content = content.replace("${namespace}", namespace);
             }
         } catch (IOException e) {
-            logger.error("Error: " + e.getLocalizedMessage(), e);
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
         return content;
     }

@@ -269,7 +269,7 @@ public class StartDialog extends DialogWrapper {
         try {
             preview = YAMLBuilder.createPreview(inputs, outputs);
         } catch (IOException e) {
-            logger.error("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage());
         }
         previewTextArea.setText(preview);
     }

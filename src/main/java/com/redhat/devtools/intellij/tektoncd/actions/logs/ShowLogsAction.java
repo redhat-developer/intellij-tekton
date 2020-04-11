@@ -37,7 +37,7 @@ public class ShowLogsAction extends LogsBaseAction {
                     Messages.showErrorDialog(
                             "An error occurred while requesting logs for " + resourceName + "\n" + e.getLocalizedMessage(),
                             "Error"));
-            logger.error("Error: " + e.getLocalizedMessage(), e);
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
     }
 }
