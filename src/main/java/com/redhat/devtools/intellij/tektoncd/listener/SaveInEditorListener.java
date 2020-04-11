@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.redhat.devtools.intellij.common.CommonConstants.LAST_MODIFICATION_STAMP;
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
@@ -56,7 +57,15 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
     public boolean maySaveDocument(@NotNull Document document, boolean isSaveExplicit) {
         VirtualFile vf = FileDocumentManager.getInstance().getFile(document);
         Project project = vf.getUserData(PROJECT);
-        if(project == null || !isFileToPush(project, document, vf)) return true;
+        Long lastModificationStamp = vf.getUserData(LAST_MODIFICATION_STAMP);
+        Long currentModificationStamp = document.getModificationStamp();
+        if(project == null ||
+                 !isFileToPush(project, document, vf) ||
+                 currentModificationStamp.equals(lastModificationStamp)
+        ) {
+            return true;
+        }
+        vf.putUserData(LAST_MODIFICATION_STAMP, currentModificationStamp);
 
         String namespace, name, apiVersion;
         JsonNode spec;
