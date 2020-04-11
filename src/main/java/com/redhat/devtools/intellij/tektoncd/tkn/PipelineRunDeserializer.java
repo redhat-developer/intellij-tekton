@@ -14,8 +14,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdNodeBasedDeserializer;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.redhat.devtools.intellij.common.utils.DateHelper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +27,7 @@ public class PipelineRunDeserializer extends StdNodeBasedDeserializer<List<Pipel
     }
 
     @Override
-    public List<PipelineRun> convert(JsonNode root, DeserializationContext ctxt) throws IOException {
+    public List<PipelineRun> convert(JsonNode root, DeserializationContext ctxt) {
         List<PipelineRun> result = new ArrayList<>();
         JsonNode items = root.get("items");
         if (items != null) {
@@ -36,6 +36,13 @@ public class PipelineRunDeserializer extends StdNodeBasedDeserializer<List<Pipel
                 String name = item.get("metadata").get("name").asText();
                 Optional<Boolean> completed = Optional.empty();
                 JsonNode conditions = item.get("status").get("conditions");
+                String startTimeText = "running " + DateHelper.humanizeDate(item.get("status").get("startTime").asText());
+                String type = item.get("status").get("conditions").get(0).get("type").asText();
+                String completionTimeText = "";
+                if (type.equals(("Succeeded"))) {
+                    completionTimeText = ", finished " + DateHelper.humanizeDate(item.get("status").get("completionTime").asText());
+                    startTimeText = startTimeText.replace("running", "started");
+                }
                 if (conditions.isArray() && conditions.size() > 0) {
                     String status = conditions.get(0).get("status").asText();
                     if (status.equalsIgnoreCase("true")) {
@@ -44,7 +51,7 @@ public class PipelineRunDeserializer extends StdNodeBasedDeserializer<List<Pipel
                         completed = Optional.of(false);
                     }
                 }
-                result.add(PipelineRun.of(name, completed));
+                result.add(PipelineRun.of(name, completed, startTimeText, completionTimeText));
             }
         }
         return result;

@@ -21,7 +21,12 @@ public class PipelineRunNode extends LazyMutableTreeNode implements IconTreeNode
 
     @Override
     public String toString() {
-        return ((PipelineRun)getUserObject()).getName();
+        PipelineRun pRun = (PipelineRun) getUserObject();
+        return "<html>" +
+                pRun.getName() +
+                " <span style=\"font-size:90%;color:gray;\">" +
+                pRun.getStartTimeText() + pRun.getCompletionTimeText() +
+                "</span></html>";
     }
 
     @Override

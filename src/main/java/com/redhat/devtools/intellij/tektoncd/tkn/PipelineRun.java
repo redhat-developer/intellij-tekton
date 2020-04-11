@@ -15,8 +15,10 @@ import java.util.Optional;
 public interface PipelineRun {
     String getName();
     Optional<Boolean> isCompleted();
+    String getStartTimeText();
+    String getCompletionTimeText();
 
-    public static PipelineRun of(String name, Optional<Boolean> completed) {
+    public static PipelineRun of(String name, Optional<Boolean> completed, String startTimeText, String completionTimeText) {
         return new PipelineRun() {
 
             @Override
@@ -27,6 +29,14 @@ public interface PipelineRun {
             @Override
             public Optional<Boolean> isCompleted() {
                 return completed;
+            }
+
+            @Override
+            public String getStartTimeText() { return startTimeText; }
+
+            @Override
+            public String getCompletionTimeText() {
+                return completionTimeText;
             }
         };
     }
