@@ -27,7 +27,7 @@ public class PipelineNode extends LazyMutableTreeNode implements IconTreeNode {
         NamespaceNode namespaceNode = (NamespaceNode) getParent().getParent();
         TektonRootNode root = (TektonRootNode) getRoot();
         try {
-            root.getTkn().getPipelineRuns(namespaceNode.toString(), (String) getUserObject()).forEach(run -> add(new PipelineRunNode(run)));
+            root.getTkn().getPipelineRuns(namespaceNode.toString(), (String) getUserObject()).forEach(run -> add(new RunNode(run)));
         } catch (IOException e) {
             add(new DefaultMutableTreeNode("Failed to load pipeline runs"));
         }

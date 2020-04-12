@@ -15,8 +15,8 @@ import java.time.Instant;
 
 public class DateHelper {
 
-    public static String humanizeDate(String start) {
-        return humanizeDate(Instant.parse(start),  Instant.now());
+    public static String humanizeDate(Instant start) {
+        return humanizeDate(start,  Instant.now());
     }
 
     public static String humanizeDate(Instant start, Instant end) {

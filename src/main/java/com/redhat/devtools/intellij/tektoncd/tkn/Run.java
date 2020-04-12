@@ -10,20 +10,27 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import java.time.Instant;
 import java.util.Optional;
 
-public interface PipelineRun {
+public interface Run {
     String getName();
+    String getKind();
     Optional<Boolean> isCompleted();
-    String getStartTimeText();
-    String getCompletionTimeText();
+    Instant getStartTime();
+    Instant getCompletionTime();
 
-    public static PipelineRun of(String name, Optional<Boolean> completed, String startTimeText, String completionTimeText) {
-        return new PipelineRun() {
+    public static Run of(String name, String kind, Optional<Boolean> completed, Instant startTime, Instant completionTime) {
+        return new Run() {
 
             @Override
             public String getName() {
                 return name;
+            }
+
+            @Override
+            public String getKind() {
+                return kind;
             }
 
             @Override
@@ -32,12 +39,15 @@ public interface PipelineRun {
             }
 
             @Override
-            public String getStartTimeText() { return startTimeText; }
+            public Instant getStartTime() {
+                return startTime;
+            }
 
             @Override
-            public String getCompletionTimeText() {
-                return completionTimeText;
+            public Instant getCompletionTime() {
+                return completionTime;
             }
         };
     }
 }
+

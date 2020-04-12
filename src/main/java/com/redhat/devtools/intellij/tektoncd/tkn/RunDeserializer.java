@@ -6,7 +6,7 @@
  * and is available at http://www.eclipse.org/legal/epl-v20.html
  *
  * Contributors:
- * Red Hat, Inc. - initial API and implementation
+ * Red Hat, Inc.
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
@@ -14,38 +14,35 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdNodeBasedDeserializer;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.redhat.devtools.intellij.common.utils.DateHelper;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-public class PipelineRunDeserializer extends StdNodeBasedDeserializer<List<PipelineRun>> {
-    public PipelineRunDeserializer() {
-        super(TypeFactory.defaultInstance().constructCollectionType(List.class, PipelineRun.class));
+public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
+    public RunDeserializer() {
+        super(TypeFactory.defaultInstance().constructCollectionType(List.class, Run.class));
     }
 
     @Override
-    public List<PipelineRun> convert(JsonNode root, DeserializationContext ctxt) {
-        List<PipelineRun> result = new ArrayList<>();
+    public List<Run> convert(JsonNode root, DeserializationContext ctxt) {
+        List<Run> result = new ArrayList<>();
         JsonNode items = root.get("items");
         if (items != null) {
             for (Iterator<JsonNode> it = items.iterator(); it.hasNext(); ) {
                 JsonNode item = it.next();
                 String name = item.get("metadata").get("name").asText();
+                String kind = item.get("kind").asText();
                 Optional<Boolean> completed = Optional.empty();
                 JsonNode conditions = item.get("status").get("conditions");
-                String startTimeText = "running " + DateHelper.humanizeDate(item.get("status").get("startTime").asText());
-                String type = item.get("status").get("conditions").get(0).get("type").asText();
-                String typeStatus = item.get("status").get("conditions").get(0).get("status").asText();
-                String completionTimeText = "";
-                if (type.equals("Succeeded")  && typeStatus.equals("True")) {
-                    completionTimeText = ", finished in " + DateHelper.humanizeDate(item.get("status").get("completionTime").asText());
-                    startTimeText = startTimeText.replace("running", "started") + " ago";
-                } else if (type.equals("Succeeded") && typeStatus.equals("False")) {
-                    startTimeText = startTimeText.replace("running", "started") + " ago";
-                }
+                Instant completionTime = null;
+                Instant startTime = null;
+                String completionTimeText = item.get("status").get("completionTime") == null ? null : item.get("status").get("completionTime").asText(null);
+                if (completionTimeText != null) completionTime = Instant.parse(completionTimeText);
+                String startTimeText = item.get("status").get("startTime").asText();
+                if (startTimeText != null) startTime = Instant.parse(startTimeText);
                 if (conditions.isArray() && conditions.size() > 0) {
                     String status = conditions.get(0).get("status").asText();
                     if (status.equalsIgnoreCase("true")) {
@@ -54,7 +51,7 @@ public class PipelineRunDeserializer extends StdNodeBasedDeserializer<List<Pipel
                         completed = Optional.of(false);
                     }
                 }
-                result.add(PipelineRun.of(name, completed, startTimeText, completionTimeText));
+                result.add(Run.of(name, kind, completed, startTime, completionTime));
             }
         }
         return result;

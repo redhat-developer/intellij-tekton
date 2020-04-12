@@ -22,6 +22,8 @@ public class Constants {
     public static final String KIND_TASKS = "tasks";
 
     public static final String KIND_PIPELINE = "pipeline";
+    public static final String KIND_PIPELINERUN = "pipelinerun";
+    public static final String KIND_TASKRUN = "taskrun";
 
     public static final String FLAG_PARAMETER = "-p";
     public static final String FLAG_INPUTRESOURCEPIPELINE = "-r";
