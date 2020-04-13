@@ -107,7 +107,7 @@ public class StartResourceModel {
             isValid = false;
         }
 
-        // if for a specific type (git, image, ...) only a resource exists, set that resource as default value for input/output
+        // set the first resource for a specific type (git, image, ...) as the default value for input/output
         Map<String, List<Resource>> resourceGroupedByType = resources.stream().collect(Collectors.groupingBy(Resource::type));
 
         for (Input input: resourceInputs) {
@@ -117,9 +117,7 @@ public class StartResourceModel {
                 isValid = false;
                 continue;
             }
-            if (resourcesByInputType.size() == 1) {
-                input.setValue(resourcesByInputType.get(0).name());
-            }
+            input.setValue(resourcesByInputType.get(0).name());
         }
 
         if (outputs != null) {
@@ -130,9 +128,7 @@ public class StartResourceModel {
                     isValid = false;
                     continue;
                 }
-                if (resourcesByOutputType.size() == 1) {
-                    output.setValue(resourcesByOutputType.get(0).name());
-                }
+                output.setValue(resourcesByOutputType.get(0).name());
             }
         }
 
