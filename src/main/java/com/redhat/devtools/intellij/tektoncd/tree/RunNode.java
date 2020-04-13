@@ -16,20 +16,28 @@ import com.redhat.devtools.intellij.common.utils.DateHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 
 public class RunNode extends LazyMutableTreeNode implements IconTreeNode {
-    public RunNode(Run run) {
+    private int level;
+    public RunNode(Run run, int level) {
         super(run);
+        this.level = level;
+    }
+
+    public String getName() {
+        return ((Run)getUserObject()).getName();
     }
 
     public String getKind() {
         return ((Run)getUserObject()).getKind();
     }
 
+    public int getLevel() { return this.level; }
+
     @Override
     public String toString() {
         Run run = (Run)getUserObject();
-        return "<html><span id=\"title\">" +
+        return "<html>" +
                 run.getName() +
-                "</span> <span style=\"font-size:90%;color:gray;\">" +
+                " <span style=\"font-size:90%;color:gray;\">" +
                 getTimeInfoText() +
                 "</span></html>";
     }
@@ -51,6 +59,15 @@ public class RunNode extends LazyMutableTreeNode implements IconTreeNode {
             }
         }
         return text;
+    }
+
+    @Override
+    public void load() {
+        super.load();
+        Run run = (Run)getUserObject();
+        if (!run.getTaskRuns().isEmpty()) {
+            run.getTaskRuns().forEach(taskRun -> add(new RunNode(taskRun, 5)));
+        }
     }
 
     @Override

@@ -19,7 +19,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 
 public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
     public RunDeserializer() {
@@ -35,25 +38,37 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
                 JsonNode item = it.next();
                 String name = item.get("metadata").get("name").asText();
                 String kind = item.get("kind").asText();
-                Optional<Boolean> completed = Optional.empty();
-                JsonNode conditions = item.get("status").get("conditions");
-                Instant completionTime = null;
-                Instant startTime = null;
-                String completionTimeText = item.get("status").get("completionTime") == null ? null : item.get("status").get("completionTime").asText(null);
-                if (completionTimeText != null) completionTime = Instant.parse(completionTimeText);
-                String startTimeText = item.get("status").get("startTime").asText();
-                if (startTimeText != null) startTime = Instant.parse(startTimeText);
-                if (conditions.isArray() && conditions.size() > 0) {
-                    String status = conditions.get(0).get("status").asText();
-                    if (status.equalsIgnoreCase("true")) {
-                        completed = Optional.of(true);
-                    } else if (status.equalsIgnoreCase("false")) {
-                        completed = Optional.of(false);
-                    }
-                }
-                result.add(Run.of(name, kind, completed, startTime, completionTime));
+                result.add(createRun(item, name, kind));
             }
         }
         return result;
+    }
+
+    private Run createRun(JsonNode item, String name, String kind) {
+        Optional<Boolean> completed = Optional.empty();
+        JsonNode conditions = item.get("status").get("conditions");
+        Instant completionTime = null;
+        Instant startTime = null;
+        String completionTimeText = item.get("status").get("completionTime") == null ? null : item.get("status").get("completionTime").asText(null);
+        if (completionTimeText != null) completionTime = Instant.parse(completionTimeText);
+        String startTimeText = item.get("status").get("startTime").asText();
+        if (startTimeText != null) startTime = Instant.parse(startTimeText);
+        if (conditions.isArray() && conditions.size() > 0) {
+            String status = conditions.get(0).get("status").asText();
+            if (status.equalsIgnoreCase("true")) {
+                completed = Optional.of(true);
+            } else if (status.equalsIgnoreCase("false")) {
+                completed = Optional.of(false);
+            }
+        }
+        List<Run> taskRuns = new ArrayList<>();
+        JsonNode taskRunsNode = item.get("status").get("taskRuns");
+        if (taskRunsNode != null) {
+            for (Iterator<Map.Entry<String, JsonNode>> it = taskRunsNode.fields(); it.hasNext(); ) {
+                Map.Entry<String, JsonNode> entry = it.next();
+                taskRuns.add(createRun(entry.getValue(), entry.getKey(), KIND_TASKRUN));
+            }
+        }
+        return Run.of(name, kind, completed, startTime, completionTime, taskRuns);
     }
 }

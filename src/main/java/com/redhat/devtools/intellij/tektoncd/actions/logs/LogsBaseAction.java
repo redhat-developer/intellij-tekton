@@ -28,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public abstract class LogsBaseAction extends TektonAction {
@@ -41,41 +39,30 @@ public abstract class LogsBaseAction extends TektonAction {
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ExecHelper.submit(() -> {
             String namespace = getNamespace((LazyMutableTreeNode) selected);
-            Class<?> nodeClass = selected.getClass();
-            String resourceName = pickRun(namespace, selected.toString(), nodeClass, anActionEvent.getPresentation().getText(), tkncli);
+            String resourceName = pickRun(namespace, selected, anActionEvent.getPresentation().getText(), tkncli);
             if (resourceName == null) return;
-            String kind = getKind(selected, nodeClass);
+            String kind = getKind(selected);
 
-            this.actionPerformed(namespace, cleanName(resourceName), kind, nodeClass, tkncli);
+            this.actionPerformed(namespace, resourceName, kind, selected.getClass(), tkncli);
         });
     }
 
     public abstract void actionPerformed(String namespace, String resourceName, String kind, Class nodeClass, Tkn tkncli);
 
-    private String cleanName(String resourceName) {
-        final Pattern pattern = Pattern.compile("<span id=\"title\">(.+?)</span>", Pattern.DOTALL);
-        final Matcher matcher = pattern.matcher(resourceName);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return resourceName;
-    }
-
-    private String getKind(Object selected, Class nodeClass) {
-        if (RunNode.class.equals(nodeClass)) {
+    private String getKind(Object selected) {
+        if (RunNode.class.equals(selected.getClass())) {
             return ((RunNode) selected).getKind();
         }
         return null;
     }
 
-
-    private String pickRun(String namespace, String resource, Class node, String action, Tkn tkncli) {
-        if (PipelineNode.class.equals(node)) {
-            return this.pickPipelineRunByPipeline(namespace, resource, action, tkncli);
-        } else if (TaskNode.class.equals(node)) {
-            return this.pickTaskRunByTask(namespace, resource, action, tkncli);
+    private String pickRun(String namespace, Object selected, String action, Tkn tkncli) {
+        if (PipelineNode.class.equals(selected.getClass())) {
+            return this.pickPipelineRunByPipeline(namespace, selected.toString(), action, tkncli);
+        } else if (TaskNode.class.equals(selected.getClass())) {
+            return this.pickTaskRunByTask(namespace, selected.toString(), action, tkncli);
         }
-        return resource;
+        return ((RunNode) selected).getName();
     }
 
     private String pickPipelineRunByPipeline(String namespace, String name, String actionName, Tkn tkncli) {
@@ -148,7 +135,11 @@ public abstract class LogsBaseAction extends TektonAction {
         if (PipelineNode.class.equals(nodeClass) || TaskNode.class.equals(nodeClass)) {
             return selected.getParent().getParent().toString();
         } else {
-            return selected.getParent().getParent().getParent().toString();
+            if (((RunNode) selected).getLevel() == 4) {
+                return selected.getParent().getParent().getParent().toString();
+            } else {
+                return selected.getParent().getParent().getParent().getParent().toString();
+            }
         }
     }
 
