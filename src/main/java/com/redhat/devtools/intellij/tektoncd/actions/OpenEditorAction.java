@@ -11,7 +11,9 @@
 package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
@@ -24,6 +26,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
@@ -56,11 +59,13 @@ public class OpenEditorAction extends TektonAction {
         if (!content.isEmpty()) {
             Project project = anActionEvent.getProject();
 
-            boolean fileAlreadyOpened = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
-                                               anyMatch(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + selected.toString()) &&
-                                                                      fileEditor.getFile().getExtension().equals("yaml"));
-            if (!fileAlreadyOpened) {
+            Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
+                    filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + selected.toString()) &&
+                            fileEditor.getFile().getExtension().equals("yaml")).findFirst();
+            if (!editor.isPresent()) {
                 createAndOpenVirtualFile(project, namespace + "-" + selected.toString() + ".yaml", content, kind);
+            } else {
+                FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
             }
         }
     }
