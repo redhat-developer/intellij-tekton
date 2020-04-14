@@ -45,10 +45,12 @@ These are accessible via the context menu when right-clicking an item in the tre
    * `Delete` - Delete the selected pipeline/task/clusterTask/resource.
    * `Refresh` - Refresh the selected item
    * `Show Logs` - Show a dialog to choose the pipelineRun/taskRun to print logs for (only available for Pipeline/Task)
+   * `Follow Logs` - Show a dialog to choose the pipelineRun/taskRun to follow logs for (only available for Pipeline/Task)
 
 #### Actions available for an PipelineRun/TaskRun
 
    * `Show Logs` - Print logs for the selected PipelineRun/TaskRun
+   * `Follow Logs` - Follow logs for the selected PipelineRun/TaskRun
 
 ##### Saving Process
 
