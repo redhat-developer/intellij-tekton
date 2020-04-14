@@ -27,9 +27,9 @@ public class ShowLogsAction extends LogsBaseAction {
 
     public void actionPerformed(String namespace, String resourceName, Class nodeClass,  Tkn tkncli) {
         try {
-            if (PipelineRunNode.class.equals(nodeClass) || PipelineNode.class.equals(nodeClass)) {
+            if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {
                 tkncli.showLogsPipelineRun(namespace, resourceName);
-            } else if (TaskRunNode.class.equals(nodeClass) || TaskNode.class.equals(nodeClass)) {
+            } else if (TaskNode.class.equals(nodeClass) || TaskRunNode.class.equals(nodeClass)) {
                 tkncli.showLogsTaskRun(namespace, resourceName);
             }
         } catch (IOException e) {

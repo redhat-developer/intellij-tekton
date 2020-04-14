@@ -1,33 +1,30 @@
 /*******************************************************************************
- * Copyright (c) 2019 Red Hat, Inc.
+ * Copyright (c) 2020 Red Hat, Inc.
  * Distributed under license by Red Hat, Inc. All rights reserved.
  * This program is made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v20.html
  *
  * Contributors:
- * Red Hat, Inc. - initial API and implementation
+ * Red Hat, Inc.
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import java.time.Instant;
 import java.util.Optional;
 
-public interface TaskRun {
-    String getName();
-    Optional<Boolean> isCompleted();
+public class TaskRun extends Run {
 
-    public static TaskRun of(String name, Optional<Boolean> completed) {
-        return new TaskRun() {
+    private String triggeredBy;
+    private String stepName;
 
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public Optional<Boolean> isCompleted() {
-                return completed;
-            }
-        };
+    public TaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime) {
+        super(name, completed, startTime, completionTime);
+        this.triggeredBy = triggeredBy;
+        this.stepName = stepName;
     }
+
+    public String getTriggeredBy() { return triggeredBy; }
+
+    public String getStepName() { return stepName; }
 }

@@ -36,18 +36,13 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_OUTPUTRESOURC
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 
 public class TknCli implements Tkn {
-    private static final ObjectMapper TASKRUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
-    private static final ObjectMapper PIPERUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final ObjectMapper RUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
     private static final ObjectMapper RESOURCE_JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
     static {
-        SimpleModule tr_module = new SimpleModule();
-        tr_module.addDeserializer(List.class, new TaskRunDeserializer());
-        TASKRUN_JSON_MAPPER.registerModule(tr_module);
-
         SimpleModule pr_module = new SimpleModule();
-        pr_module.addDeserializer(List.class, new PipelineRunDeserializer());
-        PIPERUN_JSON_MAPPER.registerModule(pr_module);
+        pr_module.addDeserializer(List.class, new RunDeserializer());
+        RUN_JSON_MAPPER.registerModule(pr_module);
 
         SimpleModule rs_module = new SimpleModule();
         rs_module.addDeserializer(List.class, new ResourceDeserializer());
@@ -113,9 +108,9 @@ public class TknCli implements Tkn {
     }
 
     @Override
-            public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
+    public List<Run> getPipelineRuns(String namespace, String pipeline) throws IOException {
         String json = ExecHelper.execute(command, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
-        return PIPERUN_JSON_MAPPER.readValue(json, new TypeReference<List<PipelineRun>>() {});
+        return RUN_JSON_MAPPER.readValue(json, new TypeReference<List<Run>>() {});
     }
 
     @Override
@@ -131,9 +126,9 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
+    public List<Run> getTaskRuns(String namespace, String task) throws IOException {
         String json = ExecHelper.execute(command, "taskrun", "ls", task, "-n", namespace, "-o", "json");
-        return TASKRUN_JSON_MAPPER.readValue(json, new TypeReference<List<TaskRun>>() {});
+        return RUN_JSON_MAPPER.readValue(json, new TypeReference<List<Run>>() {});
     }
 
     @Override

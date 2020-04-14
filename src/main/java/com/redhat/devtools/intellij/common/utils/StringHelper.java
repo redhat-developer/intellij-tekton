@@ -8,20 +8,11 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.tkn;
+package com.redhat.devtools.intellij.common.utils;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
+public class StringHelper {
 
-public class PipelineRun extends Run {
-
-    private List<TaskRun> tasksRun;
-
-    public PipelineRun(String name, Optional<Boolean> completed, Instant startTime, Instant completionTime, List<TaskRun> tasksRun) {
-        super(name, completed, startTime, completionTime);
-        this.tasksRun = tasksRun;
+    public static String beautify(String text) {
+        return text.length() > 16 ? text.substring(0, 16) + ".." : text;
     }
-
-    public List<TaskRun> getTaskRuns() { return tasksRun; }
 }
