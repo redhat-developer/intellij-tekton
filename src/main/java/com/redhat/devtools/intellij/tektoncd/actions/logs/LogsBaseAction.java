@@ -41,20 +41,12 @@ public abstract class LogsBaseAction extends TektonAction {
             String namespace = getNamespace((LazyMutableTreeNode) selected);
             String resourceName = pickRun(namespace, selected, anActionEvent.getPresentation().getText(), tkncli);
             if (resourceName == null) return;
-            String kind = getKind(selected);
 
-            this.actionPerformed(namespace, resourceName, kind, selected.getClass(), tkncli);
+            this.actionPerformed(namespace, resourceName, selected.getClass(), tkncli);
         });
     }
 
-    public abstract void actionPerformed(String namespace, String resourceName, String kind, Class nodeClass, Tkn tkncli);
-
-    private String getKind(Object selected) {
-        if (RunNode.class.equals(selected.getClass())) {
-            return ((RunNode) selected).getKind();
-        }
-        return null;
-    }
+    public abstract void actionPerformed(String namespace, String resourceName, Class nodeClass, Tkn tkncli);
 
     private String pickRun(String namespace, Object selected, String action, Tkn tkncli) {
         if (PipelineNode.class.equals(selected.getClass())) {

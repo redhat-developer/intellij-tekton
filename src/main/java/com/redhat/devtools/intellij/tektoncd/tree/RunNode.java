@@ -26,23 +26,9 @@ public class RunNode extends LazyMutableTreeNode implements IconTreeNode {
         return ((Run)getUserObject()).getName();
     }
 
-    public String getKind() {
-        return ((Run)getUserObject()).getKind();
-    }
-
     public int getLevel() { return this.level; }
 
-    @Override
-    public String toString() {
-        Run run = (Run)getUserObject();
-        return "<html>" +
-                run.getName() +
-                " <span style=\"font-size:90%;color:gray;\">" +
-                getTimeInfoText() +
-                "</span></html>";
-    }
-
-    private String getTimeInfoText() {
+    public String getTimeInfoText() {
         String text = "";
         Run run = (Run) getUserObject();
         if (!run.isCompleted().isPresent()) {
@@ -59,15 +45,6 @@ public class RunNode extends LazyMutableTreeNode implements IconTreeNode {
             }
         }
         return text;
-    }
-
-    @Override
-    public void load() {
-        super.load();
-        Run run = (Run)getUserObject();
-        if (!run.getTaskRuns().isEmpty()) {
-            run.getTaskRuns().forEach(taskRun -> add(new RunNode(taskRun, 5)));
-        }
     }
 
     @Override

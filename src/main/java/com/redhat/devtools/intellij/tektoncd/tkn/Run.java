@@ -11,48 +11,35 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
-public interface Run {
-    String getName();
-    String getKind();
-    Optional<Boolean> isCompleted();
-    Instant getStartTime();
-    Instant getCompletionTime();
-    List<Run> getTaskRuns();
+public class Run {
 
-    public static Run of(String name, String kind, Optional<Boolean> completed, Instant startTime, Instant completionTime, List<Run> tasksRun) {
-        return new Run() {
+    private String name;
+    private Optional<Boolean> completed;
+    private Instant startTime, completionTime;
 
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public String getKind() {
-                return kind;
-            }
-
-            @Override
-            public Optional<Boolean> isCompleted() {
-                return completed;
-            }
-
-            @Override
-            public Instant getStartTime() {
-                return startTime;
-            }
-
-            @Override
-            public Instant getCompletionTime() {
-                return completionTime;
-            }
-
-            @Override
-            public List<Run> getTaskRuns() { return tasksRun; }
-        };
+    public Run(String name, Optional<Boolean> completed, Instant startTime, Instant completionTime) {
+        this.name = name;
+        this.completed = completed;
+        this.startTime = startTime;
+        this.completionTime = completionTime;
     }
-}
 
+    public String getName() {
+        return name;
+    }
+
+    public Optional<Boolean> isCompleted() {
+        return completed;
+    }
+
+    public Instant getStartTime() {
+        return startTime;
+    }
+
+    public Instant getCompletionTime() {
+        return completionTime;
+    }
+
+}

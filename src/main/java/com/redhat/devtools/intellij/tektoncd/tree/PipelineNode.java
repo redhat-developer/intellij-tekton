@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.redhat.devtools.intellij.common.tree.IconTreeNode;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
+import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class PipelineNode extends LazyMutableTreeNode implements IconTreeNode {
         NamespaceNode namespaceNode = (NamespaceNode) getParent().getParent();
         TektonRootNode root = (TektonRootNode) getRoot();
         try {
-            root.getTkn().getPipelineRuns(namespaceNode.toString(), (String) getUserObject()).forEach(run -> add(new RunNode(run, 4)));
+            root.getTkn().getPipelineRuns(namespaceNode.toString(), (String) getUserObject()).forEach(run -> add(new PipelineRunNode((PipelineRun) run,4)));
         } catch (IOException e) {
             add(new DefaultMutableTreeNode("Failed to load pipeline runs"));
         }

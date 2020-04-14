@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.redhat.devtools.intellij.common.tree.IconTreeNode;
 import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
+import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class TaskNode extends LazyMutableTreeNode implements IconTreeNode {
         NamespaceNode namespaceNode = (NamespaceNode) getParent().getParent();
         TektonRootNode root = (TektonRootNode) getRoot();
         try {
-            root.getTkn().getTaskRuns(namespaceNode.toString(), (String) getUserObject()).forEach(run -> add(new RunNode(run, 4)));
+            root.getTkn().getTaskRuns(namespaceNode.toString(), (String) getUserObject()).forEach(run -> add(new TaskRunNode((TaskRun) run, 4)));
         } catch (IOException e) {
             add(new DefaultMutableTreeNode("Failed to load task runs"));
         }

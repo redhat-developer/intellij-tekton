@@ -14,24 +14,22 @@ import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
-import com.redhat.devtools.intellij.tektoncd.tree.RunNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
-
 public class FollowLogsAction extends LogsBaseAction {
     Logger logger = LoggerFactory.getLogger(FollowLogsAction.class);
 
-    public void actionPerformed(String namespace, String resourceName, String kind, Class nodeClass,  Tkn tkncli) {
+    public void actionPerformed(String namespace, String resourceName, Class nodeClass,  Tkn tkncli) {
         try {
-            if (PipelineNode.class.equals(nodeClass) || (RunNode.class.equals(nodeClass) && kind.equalsIgnoreCase(KIND_PIPELINERUN))) {
+            if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {
                 tkncli.followLogsPipelineRun(namespace, resourceName);
-            } else if (TaskNode.class.equals(nodeClass) || (RunNode.class.equals(nodeClass) && kind.equalsIgnoreCase(KIND_TASKRUN))) {
+            } else if (TaskNode.class.equals(nodeClass) || TaskRunNode.class.equals(nodeClass)) {
                 tkncli.followLogsTaskRun(namespace, resourceName);
             }
         } catch (IOException e) {

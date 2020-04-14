@@ -38,13 +38,13 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
                 JsonNode item = it.next();
                 String name = item.get("metadata").get("name").asText();
                 String kind = item.get("kind").asText();
-                result.add(createRun(item, name, kind));
+                result.add(createRun(item, name, "", kind));
             }
         }
         return result;
     }
 
-    private Run createRun(JsonNode item, String name, String kind) {
+    private Run createRun(JsonNode item, String name, String triggeredBy, String kind) {
         Optional<Boolean> completed = Optional.empty();
         JsonNode conditions = item.get("status").get("conditions");
         Instant completionTime = null;
@@ -61,14 +61,37 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
                 completed = Optional.of(false);
             }
         }
-        List<Run> taskRuns = new ArrayList<>();
-        JsonNode taskRunsNode = item.get("status").get("taskRuns");
-        if (taskRunsNode != null) {
-            for (Iterator<Map.Entry<String, JsonNode>> it = taskRunsNode.fields(); it.hasNext(); ) {
+        if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
+            String stepName = "";
+            JsonNode pipelineTaskName = item.get("pipelineTaskName");
+            if (pipelineTaskName == null) {
+                JsonNode labels = item.get("metadata") != null ? item.get("metadata").get("labels") : null;
+                if (labels != null) {
+                    stepName = labels.get("tekton.dev/pipelineTask") != null ? labels.get("tekton.dev/pipelineTask").asText() : "";
+                    triggeredBy = labels.get("tekton.dev/pipeline") != null ? labels.get("tekton.dev/pipeline").asText() : "";
+                }
+            } else {
+                stepName = pipelineTaskName.asText();
+            }
+            return createTaskRun(name, triggeredBy, stepName, completed, startTime, completionTime);
+        } else {
+            JsonNode taskRunsNode = item.get("status").get("taskRuns");
+            return createPipelineRun(name, completed, startTime, completionTime, taskRunsNode);
+        }
+    }
+
+    private Run createPipelineRun(String name, Optional<Boolean> completed, Instant startTime, Instant completionTime, JsonNode tasksRunNode) {
+        List<TaskRun> tasksRun = new ArrayList<>();
+        if (tasksRunNode != null) {
+            for (Iterator<Map.Entry<String, JsonNode>> it = tasksRunNode.fields(); it.hasNext(); ) {
                 Map.Entry<String, JsonNode> entry = it.next();
-                taskRuns.add(createRun(entry.getValue(), entry.getKey(), KIND_TASKRUN));
+                tasksRun.add((TaskRun) createRun(entry.getValue(), entry.getKey(), name, KIND_TASKRUN));
             }
         }
-        return Run.of(name, kind, completed, startTime, completionTime, taskRuns);
+        return new PipelineRun(name, completed, startTime, completionTime, tasksRun);
+    }
+
+    private Run createTaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime) {
+        return new TaskRun(name, triggeredBy, stepName, completed, startTime, completionTime);
     }
 }
