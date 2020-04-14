@@ -46,7 +46,7 @@
       "    - name: pipeline-resource-type",
       "      type: pipeline-type",
       "  tasks:",
-      "    - name: taskName",
+      "    - name: foo",
       "      taskRef:",
       "        name: build-app"
     ],
@@ -59,7 +59,7 @@
   "Tekton: PipelineTaskReference": {
     "prefix": "Tekton: PipelineTaskReference",
     "body": [
-      "- name: taskName",
+      "- name: foo",
       "  taskRef:",
       "    name: build-and-push",
       "  runAfter:",
