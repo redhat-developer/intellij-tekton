@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tree;
 
+import com.redhat.devtools.intellij.common.utils.StringHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 
 public class TaskRunNode extends RunNode {
@@ -32,10 +33,9 @@ public class TaskRunNode extends RunNode {
         String triggeredBy = run.getTriggeredBy();
         String stepName = run.getStepName();
         if (!triggeredBy.isEmpty()) {
-            displayName += triggeredBy.length() > 16 ? triggeredBy.substring(0, 16) : triggeredBy;
-            displayName += "/";
+            displayName += StringHelper.beautify(triggeredBy) + "/";
         }
-        displayName += stepName.length() > 16 ? stepName.substring(0, 16) : stepName;
+        displayName +=  StringHelper.beautify(stepName);
         return displayName;
     }
 }
