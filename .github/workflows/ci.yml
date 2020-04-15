@@ -23,10 +23,6 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - uses: actions/upload-artifact@v1
-      with:
-        name: linux-test-reports
-        path: build/reports
 
   kubernetes-integration-tests:
     runs-on: ubuntu-latest
@@ -65,10 +61,6 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - uses: actions/upload-artifact@v1
-      with:
-        name: macos-test-reports
-        path: build/reports
 
   build-windows:
     runs-on: windows-latest
@@ -83,8 +75,3 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - uses: actions/upload-artifact@v1
-      with:
-        name: windows-test-reports
-        path: build/reports
-
