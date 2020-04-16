@@ -12,6 +12,14 @@
 
 A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin is currently in Preview Mode.
 
+![](images/demo1.gif)
+
+## New and Noteworthy
+
+### Provides easy editing support for Tekton assets (pipelines, task, ...)
+
+![](images/demo2.gif)
+
 ### Running Kubernetes and OpenShift Clusters to use with plugin
 
 To use the plugin, developers can deploy Tekton Pipelines into a Red Hat CodeReady Containers or Minikube instance.
