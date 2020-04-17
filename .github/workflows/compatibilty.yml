@@ -22,6 +22,8 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Disk space
+      run: df -BG
     - name: Verify Plugin on IntelliJ Platforms
       id: verify
       uses: ChrisCarini/intellij-platform-plugin-verifier-action@v0.0.1
