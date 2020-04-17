@@ -12,6 +12,16 @@ on:
 jobs:
   compatibility:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        IJ: [ideaIC:2018.2, ideaIC:2018.3, ideaIC:2019.1, ideaIC:2019.2, ideaIC:2019.3, ideaIC:2020.1,
+             ideaIC:LATEST-EAP-SNAPSHOT,
+             ideaIU:2018.2, ideaIU:2018.3, ideaIU:2019.1, ideaIU:2019.2, ideaIU:2019.3, ideaIU:2020.1,
+             ideaIU:LATEST-EAP-SNAPSHOT,
+             pycharmPC:2018.2, pycharmPC:2018.3, pycharmPC:2019.1, pycharmPC:2019.2, pycharmPC:2019.3, pycharmPC:2020.1,
+             pycharmPC:LATEST-EAP-SNAPSHOT,
+             goland:2018.2, goland:2018.3, goland:2019.1, goland:2019.2, goland:2019.3, goland:2020.1,
+             goland:LATEST-EAP-SNAPSHOT]
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -22,44 +32,14 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - name: Disk space
-      run: df -BG
     - name: Verify Plugin on IntelliJ Platforms
       id: verify
       uses: ChrisCarini/intellij-platform-plugin-verifier-action@v0.0.1
       with:
-        ide-versions: |
-          ideaIC:2018.2
-          ideaIC:2018.3
-          ideaIC:2019.1
-          ideaIC:2019.2
-          ideaIC:2019.3
-          ideaIC:2020.1
-          ideaIC:LATEST-EAP-SNAPSHOT
-          ideaIU:2018.2
-          ideaIU:2018.3
-          ideaIU:2019.1
-          ideaIU:2019.2
-          ideaIU:2019.3
-          ideaIU:2020.1
-          ideaIU:LATEST-EAP-SNAPSHOT
-          pycharmPC:2018.2
-          pycharmPC:2018.3
-          pycharmPC:2019.1
-          pycharmPC:2019.2
-          pycharmPC:2019.3
-          pycharmPC:2020.1
-          pycharmPC:LATEST-EAP-SNAPSHOT
-          goland:2018.2
-          goland:2018.3
-          goland:2019.1
-          goland:2019.2
-          goland:2019.3
-          goland:2020.1
-          goland:LATEST-EAP-SNAPSHOT
+        ide-versions: ${{ matrix.IJ }}
     - uses: actions/upload-artifact@v1
       with:
-        name: verification.log
+        name: verification-${{ matrix.IJ }}.log
         path: ${{steps.verify.outputs.verification-output-log-filename}}
 
 
