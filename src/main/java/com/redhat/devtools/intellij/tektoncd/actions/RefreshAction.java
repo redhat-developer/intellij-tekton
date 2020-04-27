@@ -15,9 +15,11 @@ import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 
@@ -25,7 +27,7 @@ import javax.swing.tree.TreePath;
 
 public class RefreshAction extends StructureTreeAction {
     public RefreshAction() {
-        super(PipelinesNode.class, TasksNode.class, ClusterTasksNode.class, ResourcesNode.class, PipelineNode.class, TaskNode.class);
+        super(PipelinesNode.class, TasksNode.class, ClusterTasksNode.class, ResourcesNode.class, PipelineNode.class, TaskNode.class, PipelineRunsNode.class, TaskRunsNode.class);
     }
 
     @Override
