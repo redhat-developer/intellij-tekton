@@ -43,7 +43,7 @@ public abstract class LogsBaseAction extends TektonAction {
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
-            String namespace = getNamespace(element);
+            String namespace = element.getNamespace();
             String resourceName = pickRun(namespace, element, anActionEvent.getPresentation().getText(), tkncli);
             if (resourceName == null) return;
 
@@ -125,16 +125,5 @@ public abstract class LogsBaseAction extends TektonAction {
         }
         return runPicked;
 
-    }
-
-    private String getNamespace(Object selected) {
-        while (selected != null && !(selected instanceof NamespaceNode)) {
-            if (selected instanceof ParentableNode) {
-                selected = ((ParentableNode)selected).getParent();
-            } else {
-                selected = null;
-            }
-        }
-        return selected != null ? ((NamespaceNode)selected).getName():"";
     }
 }
