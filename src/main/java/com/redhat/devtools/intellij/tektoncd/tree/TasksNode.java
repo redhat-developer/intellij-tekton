@@ -10,30 +10,8 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tree;
 
-import com.redhat.devtools.intellij.common.tree.IconTreeNode;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.io.IOException;
-
-public class TasksNode extends LazyMutableTreeNode implements IconTreeNode {
-    public TasksNode() {
-        super("Tasks");
-    }
-
-    @Override
-    public void load() {
-        super.load();
-        try {
-            NamespaceNode namespaceNode = (NamespaceNode) getParent();
-            ((TektonRootNode)getRoot()).getTkn().getTasks(namespaceNode.toString()).forEach(task -> add(new TaskNode(task)));
-        } catch (IOException e) {
-            add(new DefaultMutableTreeNode("Failed to load tasks"));
-        }
-    }
-
-    @Override
-    public String getIconName() {
-        return "/images/task.png";
+public class TasksNode extends ParentableNode<NamespaceNode>  {
+    public TasksNode(TektonRootNode root, NamespaceNode parent) {
+        super(root, parent, "Tasks");
     }
 }

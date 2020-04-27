@@ -10,8 +10,26 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tree;
 
-public class PipelineNode extends ParentableNode<PipelinesNode> {
-    public PipelineNode(TektonRootNode root, PipelinesNode parent, String name) {
-        super(root, parent, name);
+public abstract class ParentableNode<T> {
+    private final T parent;
+    private final TektonRootNode root;
+    private final String name;
+
+    protected ParentableNode(TektonRootNode root,T parent, String name) {
+        this.root = root;
+        this.parent = parent;
+        this.name = name;
+    }
+
+    public TektonRootNode getRoot() {
+        return root;
+    }
+
+    public T getParent() {
+        return parent;
+    }
+
+    public String getName() {
+        return name;
     }
 }

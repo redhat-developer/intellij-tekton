@@ -19,7 +19,7 @@ import java.util.stream.StreamSupport;
 
 public class Input {
 
-    public enum Kind { PARAMETER, RESOURCE };
+    public enum Kind { PARAMETER, RESOURCE }
 
     private String name;
     private String type;
@@ -87,7 +87,7 @@ public class Input {
     }
 
     private String convertArrayNodeToString(ArrayNode node) {
-        return  StreamSupport.stream(node.spliterator(), false).map(jsonNode -> jsonNode.asText()).collect(Collectors.joining(","));
+        return  StreamSupport.stream(node.spliterator(), false).map(JsonNode::asText).collect(Collectors.joining(","));
     }
 
     @Override

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 public class ShowLogsAction extends LogsBaseAction {
-    Logger logger = LoggerFactory.getLogger(ShowLogsAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShowLogsAction.class);
 
     public void actionPerformed(String namespace, String resourceName, Class nodeClass,  Tkn tkncli) {
         try {

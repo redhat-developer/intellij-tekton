@@ -28,8 +28,10 @@ import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import io.fabric8.kubernetes.api.model.Status;
@@ -117,7 +119,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         Tkn tknCli;
         try {
             tree = TreeHelper.getTree(project);
-            TektonRootNode root = ((TektonRootNode) tree.getModel().getRoot());
+            TektonRootNode root = (TektonRootNode) ((TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY)).getRootElement();
             client = root.getClient();
             if (client == null) {
                 throw new IOException("Kubernetes client has not been initialized.");

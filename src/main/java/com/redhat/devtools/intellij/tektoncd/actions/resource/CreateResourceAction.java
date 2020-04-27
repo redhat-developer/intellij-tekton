@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.actions.resource;
 
 import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
@@ -27,7 +26,7 @@ public class CreateResourceAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        String namespace = ((LazyMutableTreeNode)selected).getParent().toString();
+        String namespace = ((ResourcesNode)getElement(selected)).getParent().getName();
         String content = getSnippet(namespace,"Tekton: PipelineResource");
 
         if (!Strings.isNullOrEmpty(content)) {

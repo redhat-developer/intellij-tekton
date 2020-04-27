@@ -10,27 +10,26 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tree;
 
-import com.redhat.devtools.intellij.common.tree.IconTreeNode;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.common.utils.DateHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 
-public class RunNode extends LazyMutableTreeNode implements IconTreeNode {
-    private int level;
-    public RunNode(Run run, int level) {
-        super(run);
+public class RunNode<T, R extends Run> extends ParentableNode<T> {
+    private final R run;
+    private final int level;
+    public RunNode(TektonRootNode root, T parent, R run, int level) {
+        super(root, parent, run.getName());
+        this.run = run;
         this.level = level;
     }
 
-    public String getName() {
-        return ((Run)getUserObject()).getName();
+    public R getRun() {
+        return run;
     }
 
     public int getLevel() { return this.level; }
 
     public String getTimeInfoText() {
         String text = "";
-        Run run = (Run) getUserObject();
         if (!run.isCompleted().isPresent()) {
             text = "running " + DateHelper.humanizeDate(run.getStartTime());
             return text;
@@ -45,11 +44,5 @@ public class RunNode extends LazyMutableTreeNode implements IconTreeNode {
             }
         }
         return text;
-    }
-
-    @Override
-    public String getIconName() {
-        Run run = (Run) getUserObject();
-        return run.isCompleted().isPresent()?run.isCompleted().get()?"/images/success.png":"/images/failed.png":"/images/running.png";
     }
 }
