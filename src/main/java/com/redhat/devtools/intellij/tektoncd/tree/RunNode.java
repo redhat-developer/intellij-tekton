@@ -15,18 +15,14 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 
 public class RunNode<T, R extends Run> extends ParentableNode<T> {
     private final R run;
-    private final int level;
-    public RunNode(TektonRootNode root, T parent, R run, int level) {
+    public RunNode(TektonRootNode root, T parent, R run) {
         super(root, parent, run.getName());
         this.run = run;
-        this.level = level;
     }
 
     public R getRun() {
         return run;
     }
-
-    public int getLevel() { return this.level; }
 
     public String getTimeInfoText() {
         String text = "";

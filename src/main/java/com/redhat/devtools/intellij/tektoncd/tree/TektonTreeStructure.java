@@ -104,7 +104,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             return getPipelineRuns((PipelineNode) element);
         }
         if (element instanceof PipelineRunNode) {
-            return ((PipelineRunNode)element).getRun().getTaskRuns().stream().map(run -> new TaskRunNode(((PipelineRunNode) element).getRoot(), (ParentableNode<Object>) element, run, 5)).toArray();
+            return ((PipelineRunNode)element).getRun().getTaskRuns().stream().map(run -> new TaskRunNode(((PipelineRunNode) element).getRoot(), (ParentableNode<Object>) element, run)).toArray();
         }
 
         if (element instanceof TasksNode) {
@@ -126,7 +126,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> taskruns = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getTaskRuns(element.getParent().getParent().getName(), element.getName()).forEach(run -> taskruns.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run, 4)));
+            tkn.getTaskRuns(element.getParent().getParent().getName(), element.getName()).forEach(run -> taskruns.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
         } catch (IOException e) {
             taskruns.add(new MessageNode(element.getRoot(), element, "Failed to load task runs"));
         }
@@ -138,7 +138,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> pipelineRuns = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getPipelineRuns(element.getParent().getParent().getName(), element.getName()).forEach(pipelinerun -> pipelineRuns.add(new PipelineRunNode(element.getRoot(), element, pipelinerun, 4)));
+            tkn.getPipelineRuns(element.getParent().getParent().getName(), element.getName()).forEach(pipelinerun -> pipelineRuns.add(new PipelineRunNode(element.getRoot(), element, pipelinerun)));
         } catch (IOException e) {
             pipelineRuns.add(new MessageNode(element.getRoot(), element, "Failed to load pipeline runs"));
         }

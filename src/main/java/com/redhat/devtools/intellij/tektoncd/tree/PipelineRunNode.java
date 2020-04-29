@@ -13,7 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.tree;
 import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
 
 public class PipelineRunNode extends RunNode<PipelineNode, PipelineRun> {
-    public PipelineRunNode(TektonRootNode root, PipelineNode parent, PipelineRun run, int level) {
-        super(root, parent, run, level);
+    public PipelineRunNode(TektonRootNode root, PipelineNode parent, PipelineRun run) {
+        super(root, parent, run);
     }
 }
