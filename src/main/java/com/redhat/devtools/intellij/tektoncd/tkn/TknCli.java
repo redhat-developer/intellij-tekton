@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.intellij.openapi.project.Project;
@@ -26,6 +27,7 @@ import io.fabric8.openshift.client.OpenShiftClient;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,6 +40,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 public class TknCli implements Tkn {
     private static final ObjectMapper RUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
     private static final ObjectMapper RESOURCE_JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
     static {
         SimpleModule pr_module = new SimpleModule();
@@ -105,6 +108,16 @@ public class TknCli implements Tkn {
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
         String json = ExecHelper.execute(command, "taskrun", "ls", task, "-n", namespace, "-o", "json");
         return RUN_JSON_MAPPER.readValue(json, new TypeReference<List<TaskRun>>() {});
+    }
+
+    @Override
+    public List<Condition> getConditions(String namespace) throws IOException, NullPointerException {
+        String conditionListJson = ExecHelper.execute(command, "conditions", "ls", "-n", namespace, "-o", "json");
+        if (!JSON_MAPPER.readTree(conditionListJson).has("items")) {
+            return Collections.emptyList();
+        }
+        JavaType customClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, Condition.class);
+        return JSON_MAPPER.readValue(JSON_MAPPER.readTree(conditionListJson).get("items").toString(), customClassCollection);
     }
 
     @Override

@@ -91,6 +91,15 @@ public interface Tkn {
     List<TaskRun> getTaskRuns(String namespace, String task) throws IOException;
 
     /**
+     * Return the list of conditions for a namespace.
+     *
+     * @param namespace the namespace of the task
+     * @return the list of conditions
+     * @throws IOException if communication errored
+     */
+    List<Condition> getConditions(String namespace) throws IOException;
+
+    /**
      * Get pipeline configuration in YAML
      *
      * @param namespace the namespace of the task
