@@ -10,17 +10,18 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tree;
 
-import com.redhat.devtools.intellij.common.tree.IconTreeNode;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.tektoncd.tkn.Condition;
 
-public class ConditionNode extends LazyMutableTreeNode implements IconTreeNode {
-    public ConditionNode(Condition condition) {
-        super(condition.getName());
+public class ConditionNode extends ParentableNode<ConditionsNode> {
+    private final Condition condition;
+    public ConditionNode(TektonRootNode root, ConditionsNode parent, Condition condition) {
+        super(root, parent, condition.getName());
+        this.condition = condition;
     }
 
-    @Override
-    public String getIconName() {
-        return "/images/pipeline.png";
+    public Condition getCondition() {
+        return condition;
     }
 }
+
+

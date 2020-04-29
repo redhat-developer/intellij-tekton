@@ -127,6 +127,17 @@ public interface Tkn {
     String getTaskYAML(String namespace, String task) throws IOException;
 
     /**
+     * Get condition configuration in YAML
+     *
+     * @param client the cluster client object
+     * @param namespace the namespace of the condition
+     * @param condition the condition to use
+     * @param crdContext
+     * @throws IOException if communication errored
+     */
+    String getConditionYAML(KubernetesClient client, String namespace, String condition, CustomResourceDefinitionContext crdContext) throws IOException ;
+
+    /**
      * Delete a pipeline
      *
      * @param namespace the namespace to use
@@ -152,6 +163,15 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void deleteResource(String namespace, String resource) throws IOException;
+
+    /**
+     * Delete a condition
+     *
+     * @param namespace the namespace to use
+     * @param condition the condition to delete
+     * @throws IOException if communication errored
+     */
+    void deleteCondition(String namespace, String condition) throws IOException;
 
     /**
      * Get a custom resource from the cluster which is namespaced.

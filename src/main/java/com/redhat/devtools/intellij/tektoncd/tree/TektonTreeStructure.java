@@ -135,7 +135,21 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getResources((ResourcesNode) element);
             }
         }
+        if (element instanceof ConditionsNode) {
+            return getConditions((ConditionsNode)element);
+        }
         return new Object[0];
+    }
+
+    private Object[] getConditions(ConditionsNode element) {
+        List<Object> conditions = new ArrayList<>();
+        try {
+            Tkn tkn = element.getRoot().getTkn();
+            tkn.getConditions(element.getParent().getName()).forEach(condition -> conditions.add(new ConditionNode(element.getRoot(), element, condition)));
+        } catch (IOException e) {
+            conditions.add(new MessageNode(element.getRoot(), element, "Failed to load conditions"));
+        }
+        return conditions.toArray(new Object[conditions.size()]);
     }
 
     private Object[] getTaskRuns(ParentableNode element, String task) {

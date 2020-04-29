@@ -25,7 +25,8 @@ public class ConditionDeserializer extends StdNodeBasedDeserializer<Condition> {
 
     @Override
     public Condition convert(JsonNode root, DeserializationContext ctxt) {
-         String name = root.get("metadata").get("name").asText();
-         return new Condition(name);
+        String apiVersion = root.get("apiVersion").asText();
+        String name = root.get("metadata").get("name").asText();
+        return new Condition(apiVersion, name);
     }
 }

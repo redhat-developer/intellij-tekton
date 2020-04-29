@@ -15,10 +15,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 @JsonDeserialize(using = ConditionDeserializer.class)
 public class Condition {
     private String name;
+    private String apiVersion;
 
-    public Condition(String name) {
+    public Condition(String apiVersion, String name) {
+        this.apiVersion = apiVersion;
         this.name = name;
     }
+
+    public String getApiVersion() { return this.apiVersion; }
 
     public String getName() {
         return this.name;

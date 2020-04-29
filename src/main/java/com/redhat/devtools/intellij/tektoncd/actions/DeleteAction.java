@@ -15,8 +15,11 @@ import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+
 import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
+
+import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
@@ -27,7 +30,7 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public class DeleteAction extends TektonAction {
-    public DeleteAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
+    public DeleteAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class, ConditionNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -50,6 +53,8 @@ public class DeleteAction extends TektonAction {
                         tkncli.deleteResource(namespace, element.getName());
                     } else if (element instanceof TaskNode) {
                         tkncli.deleteTask(namespace, element.getName());
+                    } else if (element instanceof ConditionNode) {
+                        tkncli.deleteCondition(namespace, selected.toString());
                     }
                     ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element.getParent());
                 }

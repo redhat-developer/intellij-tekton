@@ -15,6 +15,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
@@ -30,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
@@ -41,6 +44,7 @@ public class TknCli implements Tkn {
     private static final ObjectMapper RUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
     private static final ObjectMapper RESOURCE_JSON_MAPPER = new ObjectMapper(new JsonFactory());
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final YAMLMapper YAML_MAPPER = new YAMLMapper().configure(YAMLGenerator.Feature.WRITE_DOC_START_MARKER, false);
 
     static {
         SimpleModule pr_module = new SimpleModule();
@@ -136,6 +140,11 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public String getConditionYAML(KubernetesClient client, String namespace, String condition, CustomResourceDefinitionContext crdContext) throws IOException {
+        return YAML_MAPPER.writeValueAsString(this.getCustomResource(client, namespace, condition, crdContext));
+    }
+
+    @Override
     public void deletePipeline(String namespace, String pipeline) throws IOException {
         ExecHelper.execute(command, "pipeline", "delete", "-f", pipeline, "-n", namespace);
     }
@@ -151,9 +160,14 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public void deleteCondition(String namespace, String condition) throws IOException {
+        ExecHelper.execute(command, "conditions", "delete", "-f", condition, "-n", namespace);
+    }
+
+    @Override
     public Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext) {
         try {
-            return client.customResource(crdContext).get(namespace, name);
+            return new TreeMap<>(client.customResource(crdContext).get(namespace, name));
         } catch(KubernetesClientException e) {
             // call failed bc resource doesn't exist - 404
             return null;
