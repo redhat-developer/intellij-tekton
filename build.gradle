@@ -21,7 +21,7 @@ targetCompatibility = '1.8'
 intellij {
     version ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName 'com.redhat.devtools.intellij.tekton'
-    plugins 'terminal'
+    plugins 'terminal', 'yaml'
     updateSinceUntilBuild false
 }
 

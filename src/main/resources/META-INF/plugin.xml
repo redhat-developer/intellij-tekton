@@ -29,6 +29,7 @@
        on how to target different products -->
   <depends>com.intellij.modules.lang</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
+  <depends>org.jetbrains.plugins.yaml</depends>
 
 
   <extensions defaultExtensionNs="com.intellij">
