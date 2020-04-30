@@ -21,7 +21,7 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
-import com.redhat.devtools.intellij.common.tree.MutableStructureSynchronizer;
+import com.redhat.devtools.intellij.common.tree.MutableModelSynchronizer;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +32,7 @@ public class WindowToolFactory implements ToolWindowFactory {
 
         TektonTreeStructure structure = new TektonTreeStructure(project);
         StructureTreeModel<TektonTreeStructure> model = new StructureTreeModel<>(structure);
-        new MutableStructureSynchronizer<Object>(model, structure, structure);
+        new MutableModelSynchronizer<Object>(model, structure, structure);
         Tree tree = new Tree(new AsyncTreeModel(model));
         tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
         tree.setCellRenderer(new NodeRenderer());

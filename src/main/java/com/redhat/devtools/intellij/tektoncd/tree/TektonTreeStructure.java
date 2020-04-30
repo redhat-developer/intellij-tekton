@@ -16,8 +16,8 @@ import com.intellij.ide.util.treeView.NodeDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.redhat.devtools.intellij.common.tree.LabelAndIconDescriptor;
-import com.redhat.devtools.intellij.common.tree.MutableStructure;
-import com.redhat.devtools.intellij.common.tree.MutableStructureSupport;
+import com.redhat.devtools.intellij.common.tree.MutableModel;
+import com.redhat.devtools.intellij.common.tree.MutableModelSupport;
 import com.redhat.devtools.intellij.common.utils.ConfigHelper;
 import com.redhat.devtools.intellij.common.utils.ConfigWatcher;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
@@ -37,7 +37,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TektonTreeStructure extends AbstractTreeStructure implements MutableStructure<Object>, ConfigWatcher.Listener {
+public class TektonTreeStructure extends AbstractTreeStructure implements MutableModel<Object>, ConfigWatcher.Listener {
     private final Project project;
     private Config config;
     private TektonRootNode root;
@@ -62,7 +62,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     private static final Icon RUNNING_ICON = IconLoader.findIcon("/images/running.png", TektonTreeStructure.class);
 
-    private MutableStructure<Object> mutableStructureSupport = new MutableStructureSupport<>();
+    private MutableModel<Object> mutableModelSupport = new MutableModelSupport<>();
 
     public TektonTreeStructure(Project project) {
         this.project = project;
@@ -186,6 +186,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load tasks"));
         }
+        System.out.println("Returning " + tasks.size() + " tasks");
         return tasks.toArray(new Object[tasks.size()]);
     }
 
@@ -218,40 +219,40 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
     @Override
     public NodeDescriptor createDescriptor(Object element, NodeDescriptor parentDescriptor) {
         if (element instanceof TektonRootNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((TektonRootNode)el).getClient().getMasterUrl().toString(), CLUSTER_ICON, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((TektonRootNode)element).getClient().getMasterUrl().toString(), CLUSTER_ICON, parentDescriptor);
         }
         if (element instanceof NamespaceNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((NamespaceNode)el).getName(), NAMESPACE_ICON, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((NamespaceNode)element).getName(), NAMESPACE_ICON, parentDescriptor);
         }
         if (element instanceof PipelinesNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((PipelinesNode)el).getName(), PIPELINE_ICON, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((PipelinesNode)element).getName(), PIPELINE_ICON, parentDescriptor);
         }
         if (element instanceof PipelineNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((PipelineNode)el).getName(), PIPELINE_ICON, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((PipelineNode)element).getName(), PIPELINE_ICON, parentDescriptor);
         }
         if (element instanceof PipelineRunNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((PipelineRunNode)el).getName(), el -> ((PipelineRunNode)el).getTimeInfoText(), getIcon(((PipelineRunNode)element).getRun()), parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((PipelineRunNode)element).getName(), ((PipelineRunNode)element).getTimeInfoText(), getIcon(((PipelineRunNode)element).getRun()), parentDescriptor);
         }
         if (element instanceof TasksNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((TasksNode)el).getName(), TASK_ICON, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((TasksNode)element).getName(), TASK_ICON, parentDescriptor);
         }
         if (element instanceof TaskNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((TaskNode)el).getName(), TASK_ICON, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((TaskNode)element).getName(), TASK_ICON, parentDescriptor);
         }
         if (element instanceof TaskRunNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((TaskRunNode)el).getDisplayName(), el -> ((TaskRunNode)el).getTimeInfoText(), getIcon(((TaskRunNode)element).getRun()), parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((TaskRunNode)element).getDisplayName(), ((TaskRunNode)element).getTimeInfoText(), getIcon(((TaskRunNode)element).getRun()), parentDescriptor);
         }
         if (element instanceof ClusterTasksNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((ClusterTasksNode)el).getName(), CLUSTER_TASK_ICON, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((ClusterTasksNode)element).getName(), CLUSTER_TASK_ICON, parentDescriptor);
         }
         if (element instanceof ResourcesNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((ResourcesNode)el).getName(), PIPELINE_ICON, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((ResourcesNode)element).getName(), PIPELINE_ICON, parentDescriptor);
         }
         if (element instanceof ResourceNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((ResourceNode)el).getName(), PIPELINE_ICON, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((ResourceNode)element).getName(), PIPELINE_ICON, parentDescriptor);
         }
         if (element instanceof MessageNode) {
-            return new LabelAndIconDescriptor(project, element, el -> ((MessageNode)el).getName(), AllIcons.Ide.Warning_notifications, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((MessageNode)element).getName(), AllIcons.Ide.Warning_notifications, parentDescriptor);
         }
         return null;
     }
@@ -272,27 +273,27 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     @Override
     public void fireAdded(Object element) {
-        mutableStructureSupport.fireAdded(element);
+        mutableModelSupport.fireAdded(element);
     }
 
     @Override
     public void fireModified(Object element) {
-        mutableStructureSupport.fireModified(element);
+        mutableModelSupport.fireModified(element);
     }
 
     @Override
     public void fireRemoved(Object element) {
-        mutableStructureSupport.fireRemoved(element);
+        mutableModelSupport.fireRemoved(element);
     }
 
     @Override
     public void addListener(Listener<Object> listener) {
-        mutableStructureSupport.addListener(listener);
+        mutableModelSupport.addListener(listener);
     }
 
     @Override
     public void removeListener(Listener<Object> listener) {
-        mutableStructureSupport.removeListener(listener);
+        mutableModelSupport.removeListener(listener);
     }
 
     @Override
@@ -336,7 +337,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
     protected void refresh() {
         try {
             root.load();
-            mutableStructureSupport.fireModified(root);
+            mutableModelSupport.fireModified(root);
         } catch (Exception e) {
         }
     }
