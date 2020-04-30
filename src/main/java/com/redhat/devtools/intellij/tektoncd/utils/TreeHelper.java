@@ -18,6 +18,8 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
@@ -47,20 +49,24 @@ public class TreeHelper {
      *
      * @param tree tree of node to be refreshed
      * @param kind kind of node to be refreshed
-     * @param name name of node to be refreshed
+     * @param namespace name of node to be refreshed
      */
-    public static void refreshNode(Tree tree, String kind, String name) {
+    public static void refreshNode(Tree tree, String kind, String namespace) {
         if (tree == null) {
             return;
         }
 
+
         Class nodeClass = retrieveNodeClassByKind(kind);
 
         if (nodeClass == null) return;
-        Optional<Object> element = StreamSupport.stream(TreeUtil.treeTraverser(tree).spliterator(), false).map(StructureTreeAction::getElement).filter(el -> nodeClass.isInstance(el)).findFirst();
+        Optional<Object> element = StreamSupport.stream(TreeUtil.treeTraverser(tree).spliterator(), false)
+                .map(StructureTreeAction::getElement)
+                .filter(el -> el instanceof ParentableNode && ((ParentableNode)el).getParent() instanceof NamespaceNode && ((NamespaceNode)((ParentableNode)el).getParent()).getName().equals(namespace))
+                .filter(el -> nodeClass.isInstance(el)).findFirst();
         if (element.isPresent()) {
             System.out.println(System.currentTimeMillis() + " Asking for refresh " + element.get());
-            ((TektonTreeStructure)tree.getClientProperty(STRUCTURE_PROPERTY)).fireModified(element.get());
+            ((TektonTreeStructure) tree.getClientProperty(STRUCTURE_PROPERTY)).fireModified(element.get());
         }
     }
 

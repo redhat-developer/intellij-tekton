@@ -139,7 +139,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             Map<String, Object> resource = tknCli.getCustomResource(client, namespace, name, crdContext);
             if (resource == null) {
                 tknCli.createCustomResource(client, namespace, crdContext, document.getText());
-                TreeHelper.refreshNode(tree, vf.getUserData(KIND_PLURAL), "");
+                TreeHelper.refreshNode(tree, vf.getUserData(KIND_PLURAL), namespace);
             } else {
                 JsonNode customResource = JSONHelper.MapToJSON(resource);
                 ((ObjectNode) customResource).set("spec", spec);
