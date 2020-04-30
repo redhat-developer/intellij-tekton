@@ -29,6 +29,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 public class StartResourceModel {
 
     private String namespace, name, kind;
+    private String serviceAccountName;
+    private Map<String, String> taskServiceAccountNames;
     private List<Input> inputs;
     private List<Output> outputs;
     private List<Resource> resources;
@@ -58,6 +60,7 @@ public class StartResourceModel {
                 errorMessage += " * Kind field is missing or its value is not valid.\n";
                 isValid = false;
             }
+            buildServiceAccount(configuration);
             buildInputs(configuration);
             buildOutputs(configuration);
 
@@ -66,6 +69,26 @@ public class StartResourceModel {
         } catch (IOException e) {
             errorMessage += " Error: " + e.getLocalizedMessage() + "\n";
             isValid = false;
+        }
+    }
+
+    private void buildServiceAccount(String configuration) throws IOException {
+        JsonNode saNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "serviceAccountName"});
+        if (saNode != null) {
+            this.serviceAccountName = saNode.asText();
+        }
+        if (isPipeline()) {
+            saNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "serviceAccountNames"});
+            getTaskServiceAccountFromNode(saNode);
+        }
+    }
+
+    private void getTaskServiceAccountFromNode(JsonNode node) {
+        for (Iterator<JsonNode> it = node.elements(); it.hasNext(); ) {
+            JsonNode item = it.next();
+            String task = item.get("taskName").asText();
+            String sa = item.get("serviceAccountName").asText();
+            this.taskServiceAccountNames.put(sa, task);
         }
     }
 
@@ -193,6 +216,10 @@ public class StartResourceModel {
     public String getKind() {
         return this.kind;
     }
+
+    public String getServiceAccount() { return this.serviceAccountName; }
+
+    public Map<String, String> getTaskServiceAccount() { return this.taskServiceAccountNames; }
 
     public List<Input> getInputs() {
         return this.inputs;

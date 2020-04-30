@@ -31,6 +31,8 @@ public class Constants {
     public static final String KIND_PIPELINERUN = "pipelinerun";
     public static final String KIND_TASKRUN = "taskrun";
 
+    public static final String FLAG_SERVICEACCOUNT = "-s";
+    public static final String FLAG_TASKSERVICEACCOUNT = "--task-serviceaccount";
     public static final String FLAG_PARAMETER = "-p";
     public static final String FLAG_INPUTRESOURCEPIPELINE = "-r";
     public static final String FLAG_INPUTRESOURCETASK = "-i";

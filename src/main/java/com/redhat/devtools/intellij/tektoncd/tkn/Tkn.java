@@ -344,9 +344,11 @@ public interface Tkn {
      * @param pipeline the pipeline that has to be run
      * @param parameters the parameters to start pipeline
      * @param inputResources the input resources to start pipeline
+     * @param serviceAccount the service account to use when running the pipeline
+     * @param taskServiceAccount the service account corresponding to the task
      * @throws IOException if communication errored
      */
-    void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources) throws IOException;
+    void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount) throws IOException;
 
     /**
      * Re-run the pipeline using last pipelinerun values
@@ -365,9 +367,10 @@ public interface Tkn {
      * @param parameters the parameters to start task
      * @param inputResources the input resources to start task
      * @param outputResources the output resources to start task
+     * @param serviceAccount the service account to use when running the task
      * @throws IOException if communication errored
      */
-    void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException;
+    void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount) throws IOException;
 
     /**
      * Re-run the task using last taskrun values

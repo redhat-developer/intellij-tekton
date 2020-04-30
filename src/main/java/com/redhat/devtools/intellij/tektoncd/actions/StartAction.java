@@ -86,13 +86,15 @@ public class StartAction extends TektonAction {
             }
             if (noInputsAndOuputs || stdialog.isOK()) {
                 try {
+                    String serviceAccount = model.getServiceAccount();
+                    Map<String, String> taskServiceAccount = model.getTaskServiceAccount();
                     Map<String, String> params = stdialog == null ? Collections.emptyMap() : stdialog.getParameters();
                     Map<String, String> inputResources = stdialog == null ? Collections.emptyMap() : stdialog.getInputResources();
                     Map<String, String> outputResources = stdialog == null ? Collections.emptyMap() : stdialog.getOutputResources();
                     if (element instanceof PipelineNode) {
-                        tkncli.startPipeline(namespace, element.getName(), params, inputResources);
+                        tkncli.startPipeline(namespace, element.getName(), params, inputResources, serviceAccount, taskServiceAccount);
                     } else if (element instanceof TaskNode) {
-                        tkncli.startTask(namespace, element.getName(), params, inputResources, outputResources);
+                        tkncli.startTask(namespace, element.getName(), params, inputResources, outputResources, serviceAccount);
                     }
                     ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
                 } catch (IOException e) {
