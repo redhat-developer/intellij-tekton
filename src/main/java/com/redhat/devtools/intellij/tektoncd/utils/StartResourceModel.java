@@ -88,7 +88,7 @@ public class StartResourceModel {
             JsonNode item = it.next();
             String task = item.get("taskName").asText();
             String sa = item.get("serviceAccountName").asText();
-            this.taskServiceAccountNames.put(sa, task);
+            this.taskServiceAccountNames.put(task, sa);
         }
     }
 
