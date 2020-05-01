@@ -14,17 +14,16 @@ import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PlainTextTokenTypes;
+import org.jetbrains.yaml.YAMLLanguage;
 
 public class DictionaryContributor extends CompletionContributor {
     public DictionaryContributor() {
-        // completions for plain text files
+        // completions for plain text yaml files
         extend(CompletionType.BASIC,
                 PlatformPatterns.psiElement(PlainTextTokenTypes.PLAIN_TEXT),
                 new DictionaryCompletionProvider());
-
-        // always suggest when invoked manually
         extend(CompletionType.BASIC,
-                PlatformPatterns.not(PlatformPatterns.alwaysFalse()),
+                PlatformPatterns.psiElement().withLanguage(YAMLLanguage.INSTANCE),
                 new DictionaryCompletionProvider());
     }
 }
