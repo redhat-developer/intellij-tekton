@@ -10,24 +10,8 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tree;
 
-import com.redhat.devtools.intellij.common.tree.IconTreeNode;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
-
-public class NamespaceNode extends LazyMutableTreeNode implements IconTreeNode {
-    public NamespaceNode(String name) {
-        super(name);
-    }
-    @Override
-    public String getIconName() {
-        return "/images/project.png";
-    }
-
-    @Override
-    public void load() {
-        super.load();
-        this.add(new PipelinesNode());
-        this.add(new TasksNode());
-        this.add(new ClusterTasksNode());
-        this.add(new ResourcesNode());
+public class NamespaceNode extends ParentableNode<TektonRootNode>  {
+    public NamespaceNode(TektonRootNode parent, String name) {
+        super(parent, parent, name);
     }
 }

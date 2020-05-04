@@ -60,7 +60,7 @@ public interface Tkn {
      * @return the list of pipeline runs
      * @throws IOException if communication errored
      */
-    List<Run> getPipelineRuns(String namespace, String pipeline) throws IOException;
+    List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException;
 
     /**
      * Return the list of resources that can be used in a pipeline
@@ -88,7 +88,7 @@ public interface Tkn {
      * @return the list of task runs
      * @throws IOException if communication errored
      */
-    List<Run> getTaskRuns(String namespace, String task) throws IOException;
+    List<TaskRun> getTaskRuns(String namespace, String task) throws IOException;
 
     /**
      * Get pipeline configuration in YAML

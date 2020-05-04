@@ -15,13 +15,16 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.StartDialog;
 import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
 import org.slf4j.Logger;
@@ -36,29 +39,29 @@ import java.util.Map;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class StartAction extends TektonAction {
-    Logger logger = LoggerFactory.getLogger(StartAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(StartAction.class);
 
     public StartAction() { super(PipelineNode.class, TaskNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
-        Class<?> nodeClass = selected.getClass();
+        ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
+        String namespace = element.getParent().getParent().getName();
         ExecHelper.submit(() -> {
             String configuration = null;
             Notification notification;
             List<Resource> resources;
             try {
-                if (PipelineNode.class.equals(nodeClass)) {
-                    configuration = tkncli.getPipelineYAML(namespace, selected.toString());
-                } else if (TaskNode.class.equals(nodeClass)) {
-                    configuration = tkncli.getTaskYAML(namespace, selected.toString());
+                if (element instanceof PipelineNode) {
+                    configuration = tkncli.getPipelineYAML(namespace, element.getName());
+                } else if (element instanceof TaskNode) {
+                    configuration = tkncli.getTaskYAML(namespace, element.getName());
                 }
                 resources = tkncli.getResources(namespace);
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
-                                selected.toString() + " in namespace " + namespace + " failed to start. An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
+                                element.getName() + " in namespace " + namespace + " failed to start. An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
                                 "Error"));
                 logger.warn("Error: " + e.getLocalizedMessage());
                 return;
@@ -86,16 +89,16 @@ public class StartAction extends TektonAction {
                     Map<String, String> params = stdialog == null ? Collections.emptyMap() : stdialog.getParameters();
                     Map<String, String> inputResources = stdialog == null ? Collections.emptyMap() : stdialog.getInputResources();
                     Map<String, String> outputResources = stdialog == null ? Collections.emptyMap() : stdialog.getOutputResources();
-                    if (PipelineNode.class.equals(nodeClass)) {
-                        tkncli.startPipeline(namespace, selected.toString(), params, inputResources);
-                    } else if (TaskNode.class.equals(nodeClass)) {
-                        tkncli.startTask(namespace, selected.toString(), params, inputResources, outputResources);
+                    if (element instanceof PipelineNode) {
+                        tkncli.startPipeline(namespace, element.getName(), params, inputResources);
+                    } else if (element instanceof TaskNode) {
+                        tkncli.startTask(namespace, element.getName(), params, inputResources, outputResources);
                     }
-                    ((LazyMutableTreeNode)selected).reload();
+                    ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
                 } catch (IOException e) {
                     notification = new Notification(NOTIFICATION_ID,
                             "Error",
-                            selected.toString() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
+                            element.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
                     logger.warn("Error: " + e.getLocalizedMessage());

@@ -12,12 +12,15 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
@@ -28,10 +31,11 @@ public class DeleteAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
         int resultDialog = UIHelper.executeInUI(() -> {
-            String kind = selected.getClass().getSimpleName().toLowerCase().replace("node", "");
-            return Messages.showYesNoDialog("Are you sure you want to delete " + kind + " " + selected.toString() + " ?",
-                    "Delete " + selected.toString(),
+            String kind = element.getClass().getSimpleName().toLowerCase().replace("node", "");
+            return Messages.showYesNoDialog("Are you sure you want to delete " + kind + " " + element.getName() + " ?",
+                    "Delete " + element.getName(),
                     null
             );
         });
@@ -39,16 +43,15 @@ public class DeleteAction extends TektonAction {
         CompletableFuture.runAsync(() -> {
             try {
                 if (resultDialog == Messages.OK) {
-                    String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
-                    Class<?> nodeClass = selected.getClass();
-                    if (PipelineNode.class.equals(nodeClass)) {
-                        tkncli.deletePipeline(namespace, selected.toString());
-                    } else if (ResourceNode.class.equals(nodeClass)) {
-                        tkncli.deleteResource(namespace, selected.toString());
-                    } else if (TaskNode.class.equals(nodeClass)) {
-                        tkncli.deleteTask(namespace, selected.toString());
+                    String namespace = element.getParent().getParent().getName();
+                    if (element instanceof PipelineNode) {
+                        tkncli.deletePipeline(namespace, element.getName());
+                    } else if (element instanceof ResourceNode) {
+                        tkncli.deleteResource(namespace, element.getName());
+                    } else if (element instanceof TaskNode) {
+                        tkncli.deleteTask(namespace, element.getName());
                     }
-                    ((LazyMutableTreeNode)((LazyMutableTreeNode) selected).getParent()).reload();
+                    ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element.getParent());
                 }
             } catch (IOException e) {
                 UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));

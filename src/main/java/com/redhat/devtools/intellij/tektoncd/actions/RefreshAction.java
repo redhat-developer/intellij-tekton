@@ -11,19 +11,27 @@
 package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.common.actions.TreeAction;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
-import com.redhat.devtools.intellij.tektoncd.tree.*;
+import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
+import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 
 import javax.swing.tree.TreePath;
 
-public class RefreshAction extends TreeAction {
+public class RefreshAction extends StructureTreeAction {
     public RefreshAction() {
         super(PipelinesNode.class, TasksNode.class, ClusterTasksNode.class, ResourcesNode.class, PipelineNode.class, TaskNode.class);
     }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
-        ((LazyMutableTreeNode) selected).reload();
+        selected = StructureTreeAction.getElement(selected);
+        TektonTreeStructure structure = (TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY);
+        structure.fireModified(selected);
     }
 }

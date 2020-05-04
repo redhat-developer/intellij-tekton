@@ -15,13 +15,24 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
+import com.intellij.util.ui.tree.TreeUtil;
+import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.*;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.STRUCTURE_PROPERTY;
 
 public class TreeHelper {
 
@@ -38,19 +49,23 @@ public class TreeHelper {
      *
      * @param tree tree of node to be refreshed
      * @param kind kind of node to be refreshed
-     * @param name name of node to be refreshed
+     * @param namespace name of node to be refreshed
      */
-    public static void refreshNode(Tree tree, String kind, String name) {
+    public static void refreshNode(Tree tree, String kind, String namespace) {
         if (tree == null) {
             return;
         }
 
+
         Class nodeClass = retrieveNodeClassByKind(kind);
 
         if (nodeClass == null) return;
-        LazyMutableTreeNode[] nodes = (LazyMutableTreeNode[]) tree.getSelectedNodes(nodeClass, null);
-        if (nodes != null && nodes.length > 0) {
-            nodes[0].reload();
+        Optional<Object> element = StreamSupport.stream(TreeUtil.treeTraverser(tree).spliterator(), false)
+                .map(StructureTreeAction::getElement)
+                .filter(el -> el instanceof ParentableNode && ((ParentableNode)el).getParent() instanceof NamespaceNode && ((NamespaceNode)((ParentableNode)el).getParent()).getName().equals(namespace))
+                .filter(el -> nodeClass.isInstance(el)).findFirst();
+        if (element.isPresent()) {
+            ((TektonTreeStructure) tree.getClientProperty(STRUCTURE_PROPERTY)).fireModified(element.get());
         }
     }
 

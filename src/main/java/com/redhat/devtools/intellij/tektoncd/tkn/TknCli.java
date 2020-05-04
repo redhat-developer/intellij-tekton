@@ -108,9 +108,9 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<Run> getPipelineRuns(String namespace, String pipeline) throws IOException {
+    public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
         String json = ExecHelper.execute(command, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
-        return RUN_JSON_MAPPER.readValue(json, new TypeReference<List<Run>>() {});
+        return RUN_JSON_MAPPER.readValue(json, new TypeReference<List<PipelineRun>>() {});
     }
 
     @Override
@@ -126,9 +126,9 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<Run> getTaskRuns(String namespace, String task) throws IOException {
+    public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
         String json = ExecHelper.execute(command, "taskrun", "ls", task, "-n", namespace, "-o", "json");
-        return RUN_JSON_MAPPER.readValue(json, new TypeReference<List<Run>>() {});
+        return RUN_JSON_MAPPER.readValue(json, new TypeReference<List<TaskRun>>() {});
     }
 
     @Override

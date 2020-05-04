@@ -14,21 +14,12 @@ import com.redhat.devtools.intellij.common.utils.StringHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 
 public class TaskRunNode extends RunNode {
-    public TaskRunNode(TaskRun run, int level) {
-        super(run, level);
+    public TaskRunNode(TektonRootNode root, ParentableNode<Object> parent, TaskRun run) {
+        super(root, parent, run);
     }
 
-    @Override
-    public String toString() {
-        return "<html>" +
-                getDisplayName() +
-                " <span style=\"font-size:90%;color:gray;\">" +
-                getTimeInfoText() +
-                "</span></html>";
-    }
-
-    private String getDisplayName() {
-        TaskRun run = (TaskRun)getUserObject();
+    public String getDisplayName() {
+        TaskRun run = (TaskRun)getRun();
         String displayName = "";
         String triggeredBy = run.getTriggeredBy();
         String stepName = run.getStepName();

@@ -10,32 +10,15 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tree;
 
-import com.redhat.devtools.intellij.common.tree.IconTreeNode;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
-import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
+public class TaskNode extends ParentableNode<ParentableNode<NamespaceNode>> {
+    private final boolean cluster;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.io.IOException;
-
-public class TaskNode extends LazyMutableTreeNode implements IconTreeNode {
-    public TaskNode(String name) {
-        super(name);
+    public TaskNode(TektonRootNode root, ParentableNode<NamespaceNode> parent, String name, boolean cluster) {
+        super(root, parent, name);
+        this.cluster = cluster;
     }
 
-    @Override
-    public void load() {
-        super.load();
-        NamespaceNode namespaceNode = (NamespaceNode) getParent().getParent();
-        TektonRootNode root = (TektonRootNode) getRoot();
-        try {
-            root.getTkn().getTaskRuns(namespaceNode.toString(), (String) getUserObject()).forEach(run -> add(new TaskRunNode((TaskRun) run, 4)));
-        } catch (IOException e) {
-            add(new DefaultMutableTreeNode("Failed to load task runs"));
-        }
-    }
-
-    @Override
-    public String getIconName() {
-        return "/images/task.png";
+    public boolean isCluster() {
+        return cluster;
     }
 }

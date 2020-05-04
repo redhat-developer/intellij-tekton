@@ -31,4 +31,6 @@ public class Constants {
     public static final String FLAG_OUTPUTRESOURCE = "-o";
 
     public static final String TERMINAL_TITLE = "Tekton";
+
+    public static final String STRUCTURE_PROPERTY = Constants.class.getPackage().getName() + ".structure";
 }
