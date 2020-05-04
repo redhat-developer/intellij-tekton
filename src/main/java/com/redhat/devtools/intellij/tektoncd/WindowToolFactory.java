@@ -10,7 +10,9 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd;
 
+import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -25,18 +27,46 @@ import com.redhat.devtools.intellij.common.tree.MutableModelSynchronizer;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 public class WindowToolFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        try {
+            ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
-        TektonTreeStructure structure = new TektonTreeStructure(project);
-        StructureTreeModel<TektonTreeStructure> model = new StructureTreeModel<>(structure);
-        new MutableModelSynchronizer<Object>(model, structure, structure);
-        Tree tree = new Tree(new AsyncTreeModel(model));
-        tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
-        tree.setCellRenderer(new NodeRenderer());
-        PopupHandler.installPopupHandler(tree, "com.redhat.devtools.intellij.tektoncd.tree", ActionPlaces.UNKNOWN);
-        toolWindow.getContentManager().addContent(contentFactory.createContent(new JBScrollPane(tree), "", false));
+            TektonTreeStructure structure = new TektonTreeStructure(project);
+            StructureTreeModel<TektonTreeStructure> model = buildModel(structure, project);
+            new MutableModelSynchronizer<Object>(model, structure, structure);
+            Tree tree = new Tree(new AsyncTreeModel(model, project));
+            tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
+            tree.setCellRenderer(new NodeRenderer());
+            PopupHandler.installPopupHandler(tree, "com.redhat.devtools.intellij.tektoncd.tree", ActionPlaces.UNKNOWN);
+            toolWindow.getContentManager().addContent(contentFactory.createContent(new JBScrollPane(tree), "", false));
+        } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
+            throw new RuntimeException((e));
+        }
+    }
+
+    /**
+     * Build the model through reflection as StructureTreeModel does not have a stable API.
+     *
+     * @param structure the structure to associate
+     * @param project the IJ project
+     * @return the build model
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     * @throws InstantiationException
+     * @throws NoSuchMethodException
+     */
+    private StructureTreeModel buildModel(TektonTreeStructure structure, Project project) throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
+        try {
+            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class});
+            return constructor.newInstance(structure);
+        } catch (NoSuchMethodException e) {
+            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class, Disposable.class});
+            return constructor.newInstance(structure, project);
+        }
     }
 }

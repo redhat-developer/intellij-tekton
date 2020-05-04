@@ -250,7 +250,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             return new LabelAndIconDescriptor(project, element, ((ResourceNode)element).getName(), PIPELINE_ICON, parentDescriptor);
         }
         if (element instanceof MessageNode) {
-            return new LabelAndIconDescriptor(project, element, ((MessageNode)element).getName(), AllIcons.Ide.Warning_notifications, parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((MessageNode)element).getName(), AllIcons.General.Warning, parentDescriptor);
         }
         return null;
     }
