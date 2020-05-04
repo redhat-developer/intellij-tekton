@@ -147,7 +147,7 @@ public class StartResourceModel {
             result.addAll(getInputsFromNodeInternal(resources, Input.Kind.RESOURCE));
         }
 
-        return result.isEmpty() ? result : null;
+        return result.isEmpty() ? null : result;
     }
 
     private List<Input> getInputsFromNodeInternal(JsonNode node, Input.Kind kind) {
@@ -170,7 +170,7 @@ public class StartResourceModel {
             }
         }
 
-        return result.isEmpty() ? result : null;
+        return result.isEmpty() ? null : result;
     }
 
     private boolean isPipeline() {

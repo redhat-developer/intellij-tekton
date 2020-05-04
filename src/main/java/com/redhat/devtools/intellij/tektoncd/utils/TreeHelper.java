@@ -65,7 +65,6 @@ public class TreeHelper {
                 .filter(el -> el instanceof ParentableNode && ((ParentableNode)el).getParent() instanceof NamespaceNode && ((NamespaceNode)((ParentableNode)el).getParent()).getName().equals(namespace))
                 .filter(el -> nodeClass.isInstance(el)).findFirst();
         if (element.isPresent()) {
-            System.out.println(System.currentTimeMillis() + " Asking for refresh " + element.get());
             ((TektonTreeStructure) tree.getClientProperty(STRUCTURE_PROPERTY)).fireModified(element.get());
         }
     }

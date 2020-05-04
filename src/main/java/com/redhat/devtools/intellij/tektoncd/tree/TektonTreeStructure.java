@@ -86,7 +86,6 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     @Override
     public Object[] getChildElements(Object element) {
-        System.out.println(System.currentTimeMillis() + " Getting childs for " + element);
         if (element instanceof TektonRootNode) {
             return getNamespaces((TektonRootNode) element);
         }
@@ -186,7 +185,6 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load tasks"));
         }
-        System.out.println("Returning " + tasks.size() + " tasks");
         return tasks.toArray(new Object[tasks.size()]);
     }
 

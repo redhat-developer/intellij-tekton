@@ -34,7 +34,7 @@ public class DeleteAction extends TektonAction {
         ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
         int resultDialog = UIHelper.executeInUI(() -> {
             String kind = element.getClass().getSimpleName().toLowerCase().replace("node", "");
-            return Messages.showYesNoDialog("Are you sure you want to delete " + kind + " " + selected.toString() + " ?",
+            return Messages.showYesNoDialog("Are you sure you want to delete " + kind + " " + element.getName() + " ?",
                     "Delete " + element.getName(),
                     null
             );
@@ -47,9 +47,9 @@ public class DeleteAction extends TektonAction {
                     if (element instanceof PipelineNode) {
                         tkncli.deletePipeline(namespace, element.getName());
                     } else if (element instanceof ResourceNode) {
-                        tkncli.deleteResource(namespace, selected.toString());
+                        tkncli.deleteResource(namespace, element.getName());
                     } else if (element instanceof TaskNode) {
-                        tkncli.deleteTask(namespace, selected.toString());
+                        tkncli.deleteTask(namespace, element.getName());
                     }
                     ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element.getParent());
                 }

@@ -128,14 +128,13 @@ public abstract class LogsBaseAction extends TektonAction {
     }
 
     private String getNamespace(Object selected) {
-        Object element = StructureTreeAction.getElement(selected);
-        while (element != null && !(element instanceof NamespaceNode)) {
-            if (element instanceof ParentableNode) {
-                element = ((ParentableNode)element).getParent();
+        while (selected != null && !(selected instanceof NamespaceNode)) {
+            if (selected instanceof ParentableNode) {
+                selected = ((ParentableNode)selected).getParent();
             } else {
-                element = null;
+                selected = null;
             }
         }
-        return element != null ? ((NamespaceNode)element).getName():"";
+        return selected != null ? ((NamespaceNode)selected).getName():"";
     }
 }
