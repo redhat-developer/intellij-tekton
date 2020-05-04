@@ -14,11 +14,14 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,19 +38,19 @@ public class StartLastRunAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ExecHelper.submit(() -> {
-            String namespace = ((LazyMutableTreeNode)selected).getParent().getParent().toString();
-            Class<?> nodeClass = selected.getClass();
+            ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
+            String namespace = element.getParent().getParent().getName();
             try {
-                if (PipelineNode.class.equals(nodeClass)) {
-                    tkncli.startLastPipeline(namespace, selected.toString());
-                } else if (TaskNode.class.equals(nodeClass)) {
-                    tkncli.startLastTask(namespace, selected.toString());
+                if (element instanceof PipelineNode) {
+                    tkncli.startLastPipeline(namespace, element.getName());
+                } else if (element instanceof TaskNode) {
+                    tkncli.startLastTask(namespace, element.getName());
                 }
-                ((LazyMutableTreeNode)selected).reload();
+                ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
             } catch (IOException e) {
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
-                        selected.toString() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
+                        element.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
                 logger.warn("Error: " + e.getLocalizedMessage(), e);
