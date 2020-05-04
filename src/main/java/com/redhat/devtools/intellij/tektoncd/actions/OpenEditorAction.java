@@ -57,8 +57,8 @@ public class OpenEditorAction extends TektonAction {
                 content = tkncli.getTaskYAML(namespace, element.getName());
                 kind = KIND_TASKS;
             } else if (element instanceof ConditionNode) {
-                CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(((ConditionNode) selected).getCondition().getApiVersion(), KIND_CONDITIONS);
-                content = tkncli.getConditionYAML(element.getRoot().getClient(), namespace, selected.toString(), crdContext);
+                CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(((ConditionNode) element).getCondition().getApiVersion(), KIND_CONDITIONS);
+                content = tkncli.getConditionYAML(element.getRoot().getClient(), namespace, element.getName(), crdContext);
                 kind = KIND_CONDITIONS;
             }
         }

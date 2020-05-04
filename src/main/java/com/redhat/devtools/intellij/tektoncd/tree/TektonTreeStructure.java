@@ -103,7 +103,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                         new TasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new ClusterTasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new TaskRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                        new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
+                        new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new ConditionsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
             }
             if (element instanceof PipelinesNode) {
@@ -118,7 +119,6 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             if (element instanceof PipelineRunNode) {
                 return ((PipelineRunNode)element).getRun().getTaskRuns().stream().map(run -> new TaskRunNode(((PipelineRunNode) element).getRoot(), (ParentableNode<Object>) element, run)).toArray();
             }
-
             if (element instanceof TasksNode) {
                 return getTasks((TasksNode) element);
             }
@@ -134,9 +134,9 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             if (element instanceof ResourcesNode) {
                 return getResources((ResourcesNode) element);
             }
-        }
-        if (element instanceof ConditionsNode) {
-            return getConditions((ConditionsNode)element);
+            if (element instanceof ConditionsNode) {
+                return getConditions((ConditionsNode)element);
+            }
         }
         return new Object[0];
     }
@@ -284,6 +284,12 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         }
         if (element instanceof ResourceNode) {
             return new LabelAndIconDescriptor(project, element, ((ResourceNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof ConditionsNode) {
+            return new LabelAndIconDescriptor(project, element, ((ConditionsNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof ConditionNode) {
+            return new LabelAndIconDescriptor(project, element, ((ConditionNode)element).getName(), PIPELINE_ICON, parentDescriptor);
         }
         if (element instanceof MessageNode) {
             return new LabelAndIconDescriptor(project, element, ((MessageNode)element).getName(), AllIcons.General.Warning, parentDescriptor);

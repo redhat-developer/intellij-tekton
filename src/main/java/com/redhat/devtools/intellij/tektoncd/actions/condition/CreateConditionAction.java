@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.actions.condition;
 
 import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.common.tree.LazyMutableTreeNode;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
@@ -26,7 +25,7 @@ public class CreateConditionAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        String namespace = ((LazyMutableTreeNode) selected).getParent().toString();
+        String namespace = ((ConditionsNode)getElement(selected)).getParent().getName();
         String content = getSnippet(namespace, "Tekton: Condition");
 
         if (!Strings.isNullOrEmpty(content)) {
