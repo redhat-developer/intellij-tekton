@@ -45,22 +45,10 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
     }
 
     private Run createRun(JsonNode item, String name, String triggeredBy, String kind) {
-        Optional<Boolean> completed = Optional.empty();
-        JsonNode conditions = item.get("status").get("conditions");
-        Instant completionTime = null;
-        Instant startTime = null;
-        String completionTimeText = item.get("status").get("completionTime") == null ? null : item.get("status").get("completionTime").asText(null);
-        if (completionTimeText != null) completionTime = Instant.parse(completionTimeText);
-        String startTimeText = item.get("status").get("startTime").asText();
-        if (startTimeText != null) startTime = Instant.parse(startTimeText);
-        if (conditions.isArray() && conditions.size() > 0) {
-            String status = conditions.get(0).get("status").asText();
-            if (status.equalsIgnoreCase("true")) {
-                completed = Optional.of(true);
-            } else if (status.equalsIgnoreCase("false")) {
-                completed = Optional.of(false);
-            }
-        }
+        Optional<Boolean> completed = isCompleted(item);
+        Instant completionTime = getCompletionTime(item);
+        Instant startTime = getStartTime(item);
+
         if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
             String stepName = "";
             JsonNode pipelineTaskName = item.get("pipelineTaskName");
@@ -73,7 +61,8 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
             } else {
                 stepName = pipelineTaskName.asText();
             }
-            return createTaskRun(name, triggeredBy, stepName, completed, startTime, completionTime);
+            JsonNode conditionChecks = item.get("conditionChecks");
+            return createTaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks);
         } else {
             JsonNode taskRunsNode = item.get("status").get("taskRuns");
             return createPipelineRun(name, completed, startTime, completionTime, taskRunsNode);
@@ -91,7 +80,52 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
         return new PipelineRun(name, completed, startTime, completionTime, tasksRun);
     }
 
-    private Run createTaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime) {
-        return new TaskRun(name, triggeredBy, stepName, completed, startTime, completionTime);
+    private Run createTaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime, JsonNode conditionChecksNode) {
+        List<ConditionCheckRun> conditionChecks = new ArrayList<>();
+        if (conditionChecksNode != null) {
+            for (Iterator<JsonNode> it = conditionChecksNode.elements(); it.hasNext(); ) {
+                JsonNode conditionCheckNode = it.next();
+                String conditionName = conditionCheckNode.get("conditionName").asText("");
+                Optional<Boolean> isConditionCompleted = isCompleted(conditionCheckNode);
+                Instant conditionCompletionTime = getCompletionTime(conditionCheckNode);
+                Instant conditionStartTime = getStartTime(conditionCheckNode);
+                conditionChecks.add(new ConditionCheckRun(conditionName, isConditionCompleted, conditionStartTime, conditionCompletionTime));
+            }
+        }
+        return new TaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks);
+    }
+
+    private Instant getCompletionTime(JsonNode item) {
+        Instant completionTime = null;
+        try {
+            String completionTimeText = item.get("status").get("completionTime") == null ? null : item.get("status").get("completionTime").asText(null);
+            if (completionTimeText != null) completionTime = Instant.parse(completionTimeText);
+        } catch (NullPointerException ne) { }
+        return completionTime;
+    }
+
+    private Instant getStartTime(JsonNode item) {
+        Instant startTime = null;
+        try {
+            String startTimeText = item.get("status").get("startTime") == null ? null : item.get("status").get("startTime").asText(null);
+            if (startTimeText != null) startTime = Instant.parse(startTimeText);
+        } catch (NullPointerException ne) { }
+        return startTime;
+    }
+
+    private Optional<Boolean> isCompleted(JsonNode item) {
+        Optional<Boolean> completed = Optional.empty();
+        try {
+            JsonNode conditions = item.get("status").get("conditions");
+            if (conditions.isArray() && conditions.size() > 0) {
+                String status = conditions.get(0).get("status").asText();
+                if (status.equalsIgnoreCase("true")) {
+                    completed = Optional.of(true);
+                } else if (status.equalsIgnoreCase("false")) {
+                    completed = Optional.of(false);
+                }
+            }
+        } catch (Exception e) {}
+        return completed;
     }
 }

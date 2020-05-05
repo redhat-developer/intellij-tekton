@@ -26,6 +26,9 @@ public class RunNode<T, R extends Run> extends ParentableNode<T> {
 
     public String getTimeInfoText() {
         String text = "";
+        if (run.getStartTime() == null) {
+            return text;
+        }
         if (!run.isCompleted().isPresent()) {
             text = "running " + DateHelper.humanizeDate(run.getStartTime());
             return text;
