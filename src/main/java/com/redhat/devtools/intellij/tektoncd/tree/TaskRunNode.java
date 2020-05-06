@@ -14,7 +14,7 @@ import com.redhat.devtools.intellij.common.utils.StringHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 
 public class TaskRunNode extends RunNode {
-    public TaskRunNode(TektonRootNode root, ParentableNode<Object> parent, TaskRun run) {
+    public TaskRunNode(TektonRootNode root, ParentableNode parent, TaskRun run) {
         super(root, parent, run);
     }
 

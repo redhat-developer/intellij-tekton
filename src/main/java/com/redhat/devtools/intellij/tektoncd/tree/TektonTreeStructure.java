@@ -92,15 +92,21 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         if (element instanceof NamespaceNode) {
             return new Object[]{
                     new PipelinesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                    new PipelineRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                     new TasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                     new ClusterTasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                    new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)};
+                    new TaskRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                    new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
+            };
         }
         if (element instanceof PipelinesNode) {
             return getPipelines((PipelinesNode) element);
         }
         if (element instanceof PipelineNode) {
-            return getPipelineRuns((PipelineNode) element);
+            return getPipelineRuns((PipelineNode) element, ((PipelineNode) element).getName());
+        }
+        if (element instanceof PipelineRunsNode) {
+            return getPipelineRuns((PipelineRunsNode) element, "");
         }
         if (element instanceof PipelineRunNode) {
             return ((PipelineRunNode)element).getRun().getTaskRuns().stream().map(run -> new TaskRunNode(((PipelineRunNode) element).getRoot(), (ParentableNode<Object>) element, run)).toArray();
@@ -110,10 +116,13 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             return getTasks((TasksNode) element);
         }
         if (element instanceof TaskNode) {
-            return getTaskRuns((TaskNode) element);
+            return getTaskRuns((TaskNode) element, ((TaskNode) element).getName());
         }
         if (element instanceof ClusterTasksNode) {
             return getClusterTasks((ClusterTasksNode) element);
+        }
+        if (element instanceof TaskRunsNode) {
+            return getTaskRuns((TaskRunsNode) element, "");
         }
         if (element instanceof ResourcesNode) {
             return getResources((ResourcesNode) element);
@@ -121,23 +130,22 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return new Object[0];
     }
 
-    private Object[] getTaskRuns(TaskNode element) {
+    private Object[] getTaskRuns(ParentableNode element, String task) {
         List<Object> taskruns = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getTaskRuns(element.getParent().getParent().getName(), element.getName()).forEach(run -> taskruns.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+            tkn.getTaskRuns(element.getNamespace(), task).forEach(run -> taskruns.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
         } catch (IOException e) {
             taskruns.add(new MessageNode(element.getRoot(), element, "Failed to load task runs"));
         }
         return taskruns.toArray(new Object[taskruns.size()]);
-
     }
 
-    private Object[] getPipelineRuns(PipelineNode element) {
+    private Object[] getPipelineRuns(ParentableNode element, String pipeline) {
         List<Object> pipelineRuns = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getPipelineRuns(element.getParent().getParent().getName(), element.getName()).forEach(pipelinerun -> pipelineRuns.add(new PipelineRunNode(element.getRoot(), element, pipelinerun)));
+            tkn.getPipelineRuns(element.getNamespace(), pipeline).forEach(pipelinerun -> pipelineRuns.add(new PipelineRunNode(element.getRoot(), element, pipelinerun)));
         } catch (IOException e) {
             pipelineRuns.add(new MessageNode(element.getRoot(), element, "Failed to load pipeline runs"));
         }
@@ -231,6 +239,9 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         if (element instanceof PipelineRunNode) {
             return new LabelAndIconDescriptor(project, element, ((PipelineRunNode)element).getName(), ((PipelineRunNode)element).getTimeInfoText(), getIcon(((PipelineRunNode)element).getRun()), parentDescriptor);
         }
+        if (element instanceof PipelineRunsNode) {
+            return new LabelAndIconDescriptor(project, element, ((PipelineRunsNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
         if (element instanceof TasksNode) {
             return new LabelAndIconDescriptor(project, element, ((TasksNode)element).getName(), TASK_ICON, parentDescriptor);
         }
@@ -239,6 +250,9 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         }
         if (element instanceof TaskRunNode) {
             return new LabelAndIconDescriptor(project, element, ((TaskRunNode)element).getDisplayName(), ((TaskRunNode)element).getTimeInfoText(), getIcon(((TaskRunNode)element).getRun()), parentDescriptor);
+        }
+        if (element instanceof TaskRunsNode) {
+            return new LabelAndIconDescriptor(project, element, ((TaskRunsNode)element).getName(), TASK_ICON, parentDescriptor);
         }
         if (element instanceof ClusterTasksNode) {
             return new LabelAndIconDescriptor(project, element, ((ClusterTasksNode)element).getName(), CLUSTER_TASK_ICON, parentDescriptor);

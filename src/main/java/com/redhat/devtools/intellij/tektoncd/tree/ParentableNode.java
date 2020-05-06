@@ -32,4 +32,16 @@ public abstract class ParentableNode<T> {
     public String getName() {
         return name;
     }
+
+    public String getNamespace() {
+        Object element = this;
+        while (!(element instanceof NamespaceNode)) {
+            if (element instanceof ParentableNode) {
+                element = ((ParentableNode)element).getParent();
+            } else {
+                element = null;
+            }
+        }
+        return element != null ? ((NamespaceNode)element).getName():"";
+    }
 }

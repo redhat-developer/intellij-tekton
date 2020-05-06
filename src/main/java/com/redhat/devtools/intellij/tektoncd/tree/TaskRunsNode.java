@@ -10,10 +10,8 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tree;
 
-import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
-
-public class PipelineRunNode extends RunNode<ParentableNode, PipelineRun> {
-    public PipelineRunNode(TektonRootNode root, ParentableNode parent, PipelineRun run) {
-        super(root, parent, run);
+public class TaskRunsNode extends ParentableNode<NamespaceNode>  {
+    public TaskRunsNode(TektonRootNode root, NamespaceNode parent) {
+        super(root, parent, "TaskRuns");
     }
 }
