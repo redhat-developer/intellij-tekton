@@ -16,14 +16,9 @@ import java.util.Optional;
 
 public class PipelineRun extends Run {
 
-    private List<TaskRun> tasksRun;
-
     public PipelineRun(String name, Optional<Boolean> completed, Instant startTime, Instant completionTime, List<TaskRun> tasksRun) {
-        super(name, completed, startTime, completionTime);
-        this.tasksRun = tasksRun;
+        super(name, completed, startTime, completionTime, tasksRun);
     }
-
-    public List<TaskRun> getTaskRuns() { return tasksRun; }
 
     @Override
     public String getFailedReason() { return ""; }

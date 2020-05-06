@@ -118,9 +118,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getPipelineRuns((PipelineRunsNode) element, "");
             }
             if (element instanceof PipelineRunNode) {
-                return getTaskRuns((PipelineRunNode)element, ((PipelineRunNode)element).getRun().getTaskRuns());
+                return getTaskRuns((PipelineRunNode)element, ((PipelineRunNode) element).getRun().getChildren());
             }
-
             if (element instanceof TasksNode) {
                 return getTasks((TasksNode) element);
             }
@@ -128,10 +127,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getTaskRuns((TaskNode) element, ((TaskNode) element).getName());
             }
             if (element instanceof TaskRunNode) {
-                List<TaskRun> conditionChecks = ((TaskRun) ((TaskRunNode) element).getRun()).getConditionChecks();
-                //if (!conditionChecks.isEmpty()) {
-                return getTaskRuns((TaskRunNode)element, ((TaskRun)((TaskRunNode) element).getRun()).getConditionChecks());
-                //}
+                return getTaskRuns((TaskRunNode)element, ((TaskRunNode) element).getRun().getChildren());
             }
             if (element instanceof ClusterTasksNode) {
                 return getClusterTasks((ClusterTasksNode) element);
@@ -143,7 +139,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getResources((ResourcesNode) element);
             }
             if (element instanceof ConditionsNode) {
-                return getConditions((ConditionsNode) element);
+                return getConditions((ConditionsNode)element);
             }
         }
         return new Object[0];

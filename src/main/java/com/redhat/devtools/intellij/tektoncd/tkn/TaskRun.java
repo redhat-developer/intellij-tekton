@@ -18,22 +18,18 @@ public class TaskRun extends Run {
 
     private String triggeredBy;
     private String stepName;
-    private List<TaskRun> conditionChecks;
     private String failedReason;
 
     public TaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime, List<TaskRun> conditionChecks, String failedReason) {
-        super(name, completed, startTime, completionTime);
+        super(name, completed, startTime, completionTime, conditionChecks);
         this.triggeredBy = triggeredBy;
         this.stepName = stepName;
-        this.conditionChecks = conditionChecks;
         this.failedReason = failedReason;
     }
 
     public String getTriggeredBy() { return triggeredBy; }
 
     public String getStepName() { return stepName; }
-
-    public List<TaskRun> getConditionChecks() { return conditionChecks; }
 
     public String getFailedReason() { return failedReason; }
 }
