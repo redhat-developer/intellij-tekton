@@ -79,7 +79,9 @@ public class StartResourceModel {
         }
         if (isPipeline()) {
             saNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "serviceAccountNames"});
-            getTaskServiceAccountFromNode(saNode);
+            if (saNode != null) {
+                getTaskServiceAccountFromNode(saNode);
+            }
         }
     }
 
