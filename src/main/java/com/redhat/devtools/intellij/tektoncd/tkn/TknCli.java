@@ -189,12 +189,22 @@ public class TknCli implements Tkn {
         ExecHelper.execute(command, args.toArray(new String[0]));
     }
 
+    @Override
+    public void startLastPipeline(String namespace, String pipeline) throws IOException {
+        ExecHelper.execute(command, "pipeline", "start", pipeline, "--last", "-n", namespace);
+    }
+
     public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCETASK));
         args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
         ExecHelper.execute(command, args.toArray(new String[0]));
+    }
+
+    @Override
+    public void startLastTask(String namespace, String task) throws IOException {
+        ExecHelper.execute(command, "task", "start", task, "--last", "-n", namespace);
     }
 
     private List<String> argsToList(Map<String, String> argMap, String flag) {

@@ -190,6 +190,15 @@ public interface Tkn {
     void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources) throws IOException;
 
     /**
+     * Re-run the pipeline using last pipelinerun values
+     *
+     * @param namespace the namespace of the task
+     * @param pipeline the pipeline that has to be run
+     * @throws IOException if communication errored
+     */
+    void startLastPipeline(String namespace, String pipeline) throws IOException;
+
+    /**
      * Start the execution of a task
      *
      * @param namespace the namespace of the task
@@ -200,6 +209,15 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException;
+
+    /**
+     * Re-run the task using last taskrun values
+     *
+     * @param namespace the namespace of the task
+     * @param task the task that has to be run
+     * @throws IOException if communication errored
+     */
+    void startLastTask(String namespace, String task) throws IOException;
 
     /**
      * Get logs for a PipelineRun
