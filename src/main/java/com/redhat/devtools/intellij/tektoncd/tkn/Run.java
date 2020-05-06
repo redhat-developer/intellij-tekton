@@ -13,7 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import java.time.Instant;
 import java.util.Optional;
 
-public class Run {
+public abstract class Run {
 
     private String name;
     private Optional<Boolean> completed;
@@ -41,5 +41,7 @@ public class Run {
     public Instant getCompletionTime() {
         return completionTime;
     }
+
+    public abstract String getFailedReason();
 
 }

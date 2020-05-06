@@ -24,4 +24,7 @@ public class PipelineRun extends Run {
     }
 
     public List<TaskRun> getTaskRuns() { return tasksRun; }
+
+    @Override
+    public String getFailedReason() { return ""; }
 }

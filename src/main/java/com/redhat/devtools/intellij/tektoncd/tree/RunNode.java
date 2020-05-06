@@ -24,7 +24,15 @@ public class RunNode<T, R extends Run> extends ParentableNode<T> {
         return run;
     }
 
-    public String getTimeInfoText() {
+    public String getInfoText() {
+        String text = getTimeInfoText();
+        if (text.isEmpty()) {
+            text = run.getFailedReason();
+        }
+        return text;
+    }
+
+    private String getTimeInfoText() {
         String text = "";
         if (run.getStartTime() == null) {
             return text;

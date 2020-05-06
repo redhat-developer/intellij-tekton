@@ -62,7 +62,13 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
                 stepName = pipelineTaskName.asText();
             }
             JsonNode conditionChecks = item.get("conditionChecks");
-            return createTaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks);
+            JsonNode conditions = item.get("status").get("conditions");
+            String failedReason = "";
+            if (conditions.isArray() && conditions.size() > 0) {
+                failedReason = conditions.get(0).get("reason").asText("");
+            }
+
+            return createTaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks, failedReason);
         } else {
             JsonNode taskRunsNode = item.get("status").get("taskRuns");
             return createPipelineRun(name, completed, startTime, completionTime, taskRunsNode);
@@ -80,8 +86,8 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
         return new PipelineRun(name, completed, startTime, completionTime, tasksRun);
     }
 
-    private Run createTaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime, JsonNode conditionChecksNode) {
-        List<ConditionCheckRun> conditionChecks = new ArrayList<>();
+    private Run createTaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime, JsonNode conditionChecksNode, String failedReason) {
+        List<TaskRun> conditionChecks = new ArrayList<>();
         if (conditionChecksNode != null) {
             for (Iterator<JsonNode> it = conditionChecksNode.elements(); it.hasNext(); ) {
                 JsonNode conditionCheckNode = it.next();
@@ -89,10 +95,10 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
                 Optional<Boolean> isConditionCompleted = isCompleted(conditionCheckNode);
                 Instant conditionCompletionTime = getCompletionTime(conditionCheckNode);
                 Instant conditionStartTime = getStartTime(conditionCheckNode);
-                conditionChecks.add(new ConditionCheckRun(conditionName, isConditionCompleted, conditionStartTime, conditionCompletionTime));
+                conditionChecks.add(new TaskRun(conditionName, "", "", isConditionCompleted, conditionStartTime, conditionCompletionTime, new ArrayList<>(), ""));
             }
         }
-        return new TaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks);
+        return new TaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks, failedReason);
     }
 
     private Instant getCompletionTime(JsonNode item) {
