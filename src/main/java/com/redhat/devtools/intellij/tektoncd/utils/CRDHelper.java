@@ -14,15 +14,22 @@ import com.google.common.base.Strings;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 
 public class CRDHelper {
-    public static CustomResourceDefinitionContext getCRDContext(String version, String plural) {
-        if (Strings.isNullOrEmpty(version) || Strings.isNullOrEmpty(plural)) return null;
-        String[] apiVersion = version.split("/");
-        if (apiVersion.length != 2) return null;
+    public static CustomResourceDefinitionContext getCRDContext(String apiVersion, String plural) {
+        if (Strings.isNullOrEmpty(apiVersion) || Strings.isNullOrEmpty(plural)) return null;
+        String group, version;
+        String[] groupVersion = apiVersion.split("/");
+        if (groupVersion.length == 2) {
+            group = groupVersion[0];
+            version = groupVersion[1];
+        } else {
+            group = apiVersion;
+            version = "v1alpha1";
+        }
         return new CustomResourceDefinitionContext.Builder()
-                .withName(plural + ".tekton.dev")
-                .withGroup(apiVersion[0])
+                .withName(plural + "." + group)
+                .withGroup(group)
                 .withScope("Namespaced")
-                .withVersion(apiVersion[1])
+                .withVersion(version)
                 .withPlural(plural)
                 .build();
     }

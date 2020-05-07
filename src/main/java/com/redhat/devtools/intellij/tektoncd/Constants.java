@@ -21,6 +21,10 @@ public class Constants {
     public static final String KIND_RESOURCES = "pipelineresources";
     public static final String KIND_TASKS = "tasks";
     public static final String KIND_CONDITIONS = "conditions";
+    public static final String KIND_TRIGGERTEMPLATES = "triggertemplates";
+    public static final String KIND_TRIGGERBINDINGS = "triggerbindings";
+    public static final String KIND_CLUSTERTRIGGERBINDINGS = "clustertriggerbindings";
+    public static final String KIND_EVENTLISTENER = "eventlisteners";
 
     public static final String KIND_PIPELINE = "pipeline";
     public static final String KIND_PIPELINERUN = "pipelinerun";
