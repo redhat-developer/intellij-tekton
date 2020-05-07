@@ -40,7 +40,6 @@ public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
         Optional<Boolean> completed = isCompleted(item);
         Instant completionTime = getCompletionTime(item);
         Instant startTime = getStartTime(item);
-
         if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
             String stepName = "";
             JsonNode pipelineTaskName = item.get("pipelineTaskName");

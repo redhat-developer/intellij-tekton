@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
@@ -281,7 +282,7 @@ public class TknCli implements Tkn {
 
     public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
-        if (!serviceAccount.isEmpty()) {
+        if (!Strings.isNullOrEmpty(serviceAccount)) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
         }
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
