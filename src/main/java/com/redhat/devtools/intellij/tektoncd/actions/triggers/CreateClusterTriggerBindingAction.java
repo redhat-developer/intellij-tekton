@@ -15,7 +15,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
 
 import javax.swing.tree.TreePath;
 
@@ -26,7 +25,7 @@ public class CreateClusterTriggerBindingAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        String namespace = ((TriggerBindingsNode)getElement(selected)).getParent().getName();
+        String namespace = ((ClusterTriggerBindingsNode)getElement(selected)).getParent().getName();
         String content = getSnippet(namespace, "Tekton: ClusterTriggerBinding");
 
         if (!Strings.isNullOrEmpty(content)) {

@@ -13,6 +13,9 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 import com.google.common.base.Strings;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
+
 public class CRDHelper {
     public static CustomResourceDefinitionContext getCRDContext(String apiVersion, String plural) {
         if (Strings.isNullOrEmpty(apiVersion) || Strings.isNullOrEmpty(plural)) return null;
@@ -32,5 +35,15 @@ public class CRDHelper {
                 .withVersion(version)
                 .withPlural(plural)
                 .build();
+    }
+
+    public static boolean isClusterScopedResource(String kind_plural) {
+        switch (kind_plural) {
+            case KIND_CLUSTERTASKS:
+            case KIND_CLUSTERTRIGGERBINDINGS:
+                return true;
+            default:
+                return false;
+        }
     }
 }

@@ -48,7 +48,6 @@ import java.util.Map;
 
 import static com.redhat.devtools.intellij.common.CommonConstants.LAST_MODIFICATION_STAMP;
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
@@ -75,9 +74,9 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         Notification notification;
         try {
             namespace = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "namespace"});
-            if (namespace != null && vf.getUserData(KIND_PLURAL).equals(KIND_CLUSTERTASKS)) {
-                throw new IOException("Tekton file has not a valid format. ClusterTask cannot have a namespace.");
-            } else if (Strings.isNullOrEmpty(namespace) && !vf.getUserData(KIND_PLURAL).equals(KIND_CLUSTERTASKS)) {
+            if (namespace != null && CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL))) {
+                throw new IOException("Tekton file has not a valid format. Cluster-scoped resources cannot have a namespace.");
+            } else if (Strings.isNullOrEmpty(namespace) && !CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL))) {
                 throw new IOException("Tekton file has not a valid format. Namespace field is not valid or found.");
             }
             name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "name"});

@@ -184,7 +184,7 @@ public class TknCli implements Tkn {
 
     @Override
     public String getEventListenerYAML(String namespace, String eventListener) throws IOException {
-        return ExecHelper.execute(command, "eventListener", "describe", eventListener, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, "eventlistener", "describe", eventListener, "-n", namespace, "-o", "yaml");
     }
 
     @Override
@@ -224,7 +224,7 @@ public class TknCli implements Tkn {
 
     @Override
     public void deleteEventListener(String namespace, String eventListener) throws IOException {
-        ExecHelper.execute(command, "eventListener", "delete", "-f", eventListener, "-n", namespace);
+        ExecHelper.execute(command, "eventlistener", "delete", "-f", eventListener, "-n", namespace);
     }
 
     @Override
