@@ -12,12 +12,12 @@ package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tkn.TknCli;
+import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
-import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 public class TektonRootNode {
   private KubernetesClient client = loadClient();
@@ -36,10 +36,11 @@ public class TektonRootNode {
     return new DefaultKubernetesClient(new ConfigBuilder().build());
   }
 
-  public Tkn getTkn() throws IOException {
-    if (tkn == null) {
-        tkn = TknCli.get(project);
-    }
+  public CompletableFuture<Tkn> initializeTkn() {
+    return TknCliFactory.getInstance().getTkn(project).whenComplete((tkn, err) -> this.tkn = tkn);
+  }
+
+  public Tkn getTkn() {
     return tkn;
   }
 
