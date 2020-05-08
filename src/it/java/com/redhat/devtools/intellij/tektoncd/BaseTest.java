@@ -18,6 +18,7 @@ import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCli;
+import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -43,7 +44,7 @@ public abstract class BaseTest {
                 return 0;
             }
         });
-        tkn = TknCli.get(myFixture.getProject());
+        tkn = TknCliFactory.getInstance().getTkn(myFixture.getProject()).get();
         client = new DefaultKubernetesClient(new ConfigBuilder().build());
     }
 

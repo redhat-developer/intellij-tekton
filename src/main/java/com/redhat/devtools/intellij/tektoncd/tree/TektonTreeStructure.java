@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TektonTreeStructure extends AbstractTreeStructure implements MutableModel<Object>, ConfigWatcher.Listener {
     private final Project project;
@@ -64,6 +65,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     private MutableModel<Object> mutableModelSupport = new MutableModelSupport<>();
 
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+
     public TektonTreeStructure(Project project) {
         this.project = project;
         this.root = new TektonRootNode(project);
@@ -81,51 +84,56 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     @Override
     public Object getRootElement() {
+        if (!initialized.getAndSet(true)) {
+            root.initializeTkn().thenAccept(tkn -> fireModified(root));
+        }
         return root;
     }
 
     @Override
     public Object[] getChildElements(Object element) {
-        if (element instanceof TektonRootNode) {
-            return getNamespaces((TektonRootNode) element);
-        }
-        if (element instanceof NamespaceNode) {
-            return new Object[]{
-                    new PipelinesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                    new PipelineRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                    new TasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                    new ClusterTasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                    new TaskRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                    new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
-            };
-        }
-        if (element instanceof PipelinesNode) {
-            return getPipelines((PipelinesNode) element);
-        }
-        if (element instanceof PipelineNode) {
-            return getPipelineRuns((PipelineNode) element, ((PipelineNode) element).getName());
-        }
-        if (element instanceof PipelineRunsNode) {
-            return getPipelineRuns((PipelineRunsNode) element, "");
-        }
-        if (element instanceof PipelineRunNode) {
-            return ((PipelineRunNode)element).getRun().getTaskRuns().stream().map(run -> new TaskRunNode(((PipelineRunNode) element).getRoot(), (ParentableNode<Object>) element, run)).toArray();
-        }
+        if (root.getTkn() != null) {
+            if (element instanceof TektonRootNode) {
+                return getNamespaces((TektonRootNode) element);
+            }
+            if (element instanceof NamespaceNode) {
+                return new Object[]{
+                        new PipelinesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new PipelineRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new TasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new ClusterTasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new TaskRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
+                };
+            }
+            if (element instanceof PipelinesNode) {
+                return getPipelines((PipelinesNode) element);
+            }
+            if (element instanceof PipelineNode) {
+                return getPipelineRuns((PipelineNode) element, ((PipelineNode) element).getName());
+            }
+            if (element instanceof PipelineRunsNode) {
+                return getPipelineRuns((PipelineRunsNode) element, "");
+            }
+            if (element instanceof PipelineRunNode) {
+                return ((PipelineRunNode)element).getRun().getTaskRuns().stream().map(run -> new TaskRunNode(((PipelineRunNode) element).getRoot(), (ParentableNode<Object>) element, run)).toArray();
+            }
 
-        if (element instanceof TasksNode) {
-            return getTasks((TasksNode) element);
-        }
-        if (element instanceof TaskNode) {
-            return getTaskRuns((TaskNode) element, ((TaskNode) element).getName());
-        }
-        if (element instanceof ClusterTasksNode) {
-            return getClusterTasks((ClusterTasksNode) element);
-        }
-        if (element instanceof TaskRunsNode) {
-            return getTaskRuns((TaskRunsNode) element, "");
-        }
-        if (element instanceof ResourcesNode) {
-            return getResources((ResourcesNode) element);
+            if (element instanceof TasksNode) {
+                return getTasks((TasksNode) element);
+            }
+            if (element instanceof TaskNode) {
+                return getTaskRuns((TaskNode) element, ((TaskNode) element).getName());
+            }
+            if (element instanceof ClusterTasksNode) {
+                return getClusterTasks((ClusterTasksNode) element);
+            }
+            if (element instanceof TaskRunsNode) {
+                return getTaskRuns((TaskRunsNode) element, "");
+            }
+            if (element instanceof ResourcesNode) {
+                return getResources((ResourcesNode) element);
+            }
         }
         return new Object[0];
     }

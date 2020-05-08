@@ -48,37 +48,13 @@ public class TknCli implements Tkn {
         rs_module.addDeserializer(List.class, new ResourceDeserializer());
         RESOURCE_JSON_MAPPER.registerModule(rs_module);
     }
-    /**
-     * Home sub folder for the plugin
-     */
-    public static final String PLUGIN_FOLDER = ".tkn";
 
     private String command;
     private final Project project;
 
-    private TknCli(Project project) throws IOException {
-        command = getCommand();
+    TknCli(Project project, String command) {
+        this.command = command;
         this.project = project;
-    }
-
-    private static Tkn INSTANCE;
-
-    public static final Tkn get(Project project) throws IOException {
-        if (INSTANCE == null) {
-            INSTANCE = new TknCli(project);
-        }
-        return INSTANCE;
-    }
-
-    public String getCommand() throws IOException {
-        if (command == null) {
-            command = getTknCommand();
-        }
-        return command;
-    }
-
-    private String getTknCommand() throws IOException {
-        return DownloadHelper.getInstance().downloadIfRequired("tkn", TknCli.class.getResource("/tkn.json"));
     }
 
     @Override
