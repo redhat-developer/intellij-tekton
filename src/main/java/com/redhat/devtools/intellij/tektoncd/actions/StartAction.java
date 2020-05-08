@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -74,12 +73,12 @@ public class StartAction extends TektonAction {
                 return;
             }
 
-            boolean noInputsAndOuputs = model.getInputs() == null && model.getOutputs() == null;
+            boolean noInputsAndOuputs = model.getInputs().isEmpty() && model.getOutputs().isEmpty();
             StartDialog stdialog = null;
 
             if (!noInputsAndOuputs) {
                 stdialog = UIHelper.executeInUI(() -> {
-                    StartDialog dialog = new StartDialog(null, model.getNamespace(), model.getName(), model.getKind(), model.getInputs(), model.getOutputs(), resources);
+                    StartDialog dialog = new StartDialog(null, model);
                     dialog.show();
                     return dialog;
                 });
@@ -87,10 +86,10 @@ public class StartAction extends TektonAction {
             if (noInputsAndOuputs || stdialog.isOK()) {
                 try {
                     String serviceAccount = model.getServiceAccount();
-                    Map<String, String> taskServiceAccount = model.getTaskServiceAccount();
-                    Map<String, String> params = stdialog == null ? Collections.emptyMap() : stdialog.getParameters();
-                    Map<String, String> inputResources = stdialog == null ? Collections.emptyMap() : stdialog.getInputResources();
-                    Map<String, String> outputResources = stdialog == null ? Collections.emptyMap() : stdialog.getOutputResources();
+                    Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
+                    Map<String, String> params = model.getParameters();
+                    Map<String, String> inputResources = model.getInputResources();
+                    Map<String, String> outputResources = model.getOutputResources();
                     if (element instanceof PipelineNode) {
                         tkncli.startPipeline(namespace, element.getName(), params, inputResources, serviceAccount, taskServiceAccount);
                     } else if (element instanceof TaskNode) {
