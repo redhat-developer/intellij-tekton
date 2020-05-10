@@ -140,8 +140,8 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getConditionYAML(KubernetesClient client, String namespace, String condition, CustomResourceDefinitionContext crdContext) throws IOException {
-        return YAML_MAPPER.writeValueAsString(this.getCustomResource(client, namespace, condition, crdContext));
+    public String getConditionYAML(String namespace, String condition) throws IOException {
+        return ExecHelper.execute(command, "condition", "describe", condition, "-n", namespace, "-o", "yaml");
     }
 
     @Override

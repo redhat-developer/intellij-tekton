@@ -54,7 +54,7 @@ public class DeleteAction extends TektonAction {
                     } else if (element instanceof TaskNode) {
                         tkncli.deleteTask(namespace, element.getName());
                     } else if (element instanceof ConditionNode) {
-                        tkncli.deleteCondition(namespace, selected.toString());
+                        tkncli.deleteCondition(namespace, element.getName());
                     }
                     ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element.getParent());
                 }

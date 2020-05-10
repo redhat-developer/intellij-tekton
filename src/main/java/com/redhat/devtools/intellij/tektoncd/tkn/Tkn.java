@@ -129,13 +129,11 @@ public interface Tkn {
     /**
      * Get condition configuration in YAML
      *
-     * @param client the cluster client object
      * @param namespace the namespace of the condition
      * @param condition the condition to use
-     * @param crdContext
      * @throws IOException if communication errored
      */
-    String getConditionYAML(KubernetesClient client, String namespace, String condition, CustomResourceDefinitionContext crdContext) throws IOException ;
+    String getConditionYAML(String namespace, String condition) throws IOException ;
 
     /**
      * Delete a pipeline

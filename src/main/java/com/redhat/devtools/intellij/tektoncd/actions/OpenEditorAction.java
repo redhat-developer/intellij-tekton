@@ -18,14 +18,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
-import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
-import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
@@ -57,8 +55,7 @@ public class OpenEditorAction extends TektonAction {
                 content = tkncli.getTaskYAML(namespace, element.getName());
                 kind = KIND_TASKS;
             } else if (element instanceof ConditionNode) {
-                CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(((ConditionNode) element).getCondition().getApiVersion(), KIND_CONDITIONS);
-                content = tkncli.getConditionYAML(element.getRoot().getClient(), namespace, element.getName(), crdContext);
+                content = tkncli.getConditionYAML(namespace, element.getName());
                 kind = KIND_CONDITIONS;
             }
         }
