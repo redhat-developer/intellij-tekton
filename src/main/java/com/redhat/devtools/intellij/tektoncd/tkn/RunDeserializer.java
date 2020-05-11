@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdNodeBasedDeserializer;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 
 public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
     public RunDeserializer() {
-        super(TypeFactory.defaultInstance().constructCollectionType(List.class, Run.class));
+        super(Run.class);
     }
 
     @Override
