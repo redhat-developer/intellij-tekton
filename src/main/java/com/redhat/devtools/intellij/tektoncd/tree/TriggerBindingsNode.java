@@ -12,6 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.tree;
 
 public class TriggerBindingsNode extends ParentableNode<NamespaceNode>  {
     public TriggerBindingsNode(TektonRootNode root, NamespaceNode parent) {
-        super(root, parent, "TriggerBinding");
+        super(root, parent, "TriggerBindings");
     }
 }

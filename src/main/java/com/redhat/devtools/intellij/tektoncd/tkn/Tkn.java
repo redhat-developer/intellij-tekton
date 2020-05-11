@@ -175,6 +175,7 @@ public interface Tkn {
      *
      * @param namespace the namespace of the task
      * @param triggerTemplate the triggerTemplate to use
+     * @return triggerTemplate configuration
      * @throws IOException if communication errored
      */
     String getTriggerTemplateYAML(String namespace, String triggerTemplate) throws IOException;
@@ -184,6 +185,7 @@ public interface Tkn {
      *
      * @param namespace the namespace of the task
      * @param triggerBinding the triggerBinding to use
+     * @return triggerBinding configuration
      * @throws IOException if communication errored
      */
     String getTriggerBindingYAML(String namespace, String triggerBinding) throws IOException;
@@ -193,6 +195,7 @@ public interface Tkn {
      *
      * @param namespace the namespace of the task
      * @param ctb the clusterTriggerBinding to use
+     * @return clusterTriggerBinding configuration
      * @throws IOException if communication errored
      */
     String getClusterTriggerBindingYAML(String namespace, String ctb) throws IOException;
@@ -202,6 +205,7 @@ public interface Tkn {
      *
      * @param namespace the namespace of the task
      * @param eventListener the eventListener to use
+     * @return eventListener configuration
      * @throws IOException if communication errored
      */
     String getEventListenerYAML(String namespace, String eventListener) throws IOException;

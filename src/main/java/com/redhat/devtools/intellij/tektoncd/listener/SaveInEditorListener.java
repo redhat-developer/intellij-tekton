@@ -74,9 +74,10 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         Notification notification;
         try {
             namespace = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "namespace"});
-            if (namespace != null && CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL))) {
+            boolean isClusterScoped = CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL));
+            if (namespace != null && isClusterScoped) {
                 throw new IOException("Tekton file has not a valid format. Cluster-scoped resources cannot have a namespace.");
-            } else if (Strings.isNullOrEmpty(namespace) && !CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL))) {
+            } else if (Strings.isNullOrEmpty(namespace) && !isClusterScoped) {
                 throw new IOException("Tekton file has not a valid format. Namespace field is not valid or found.");
             }
             name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "name"});

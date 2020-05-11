@@ -19,15 +19,10 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGE
 public class CRDHelper {
     public static CustomResourceDefinitionContext getCRDContext(String apiVersion, String plural) {
         if (Strings.isNullOrEmpty(apiVersion) || Strings.isNullOrEmpty(plural)) return null;
-        String group, version;
         String[] groupVersion = apiVersion.split("/");
-        if (groupVersion.length == 2) {
-            group = groupVersion[0];
-            version = groupVersion[1];
-        } else {
-            group = apiVersion;
-            version = "v1alpha1";
-        }
+        if (groupVersion.length != 2) return null;
+        String group = groupVersion[0];
+        String version = groupVersion[1];
         return new CustomResourceDefinitionContext.Builder()
                 .withName(plural + "." + group)
                 .withGroup(group)
