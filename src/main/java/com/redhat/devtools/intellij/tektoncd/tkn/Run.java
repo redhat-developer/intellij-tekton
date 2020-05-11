@@ -10,10 +10,13 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+@JsonDeserialize(using = RunDeserializer.class)
 public abstract class Run {
 
     private String name;

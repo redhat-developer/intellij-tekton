@@ -170,7 +170,9 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     private Object[] getTaskRuns(ParentableNode element, List<TaskRun> taskRuns)  {
         List<Object> taskRunsNodes = new ArrayList<>();
-        taskRuns.forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+        if (taskRuns != null) {
+            taskRuns.forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+        }
         return taskRunsNodes.toArray(new Object[taskRunsNodes.size()]);
     }
 
