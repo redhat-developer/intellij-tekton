@@ -13,14 +13,11 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdNodeBasedDeserializer;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-
-import java.util.List;
 
 
 public class ConditionDeserializer extends StdNodeBasedDeserializer<Condition> {
     public ConditionDeserializer() {
-        super(TypeFactory.defaultInstance().constructCollectionType(List.class, Condition.class));
+        super(Condition.class);
     }
 
     @Override

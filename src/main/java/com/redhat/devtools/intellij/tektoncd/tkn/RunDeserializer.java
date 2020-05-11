@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdNodeBasedDeserializer;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -24,26 +23,17 @@ import java.util.Optional;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 
-public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
+public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
     public RunDeserializer() {
-        super(TypeFactory.defaultInstance().constructCollectionType(List.class, Run.class));
+        super(Run.class);
     }
 
     @Override
-    public List<Run> convert(JsonNode root, DeserializationContext ctxt) {
-        List<Run> result = new ArrayList<>();
-        JsonNode items = root.get("items");
+    public Run convert(JsonNode item, DeserializationContext ctxt) {
+        String name = item.get("metadata").get("name").asText();
         // this is a temporary fix for a bug in tkn 0.9.0. TaskRunList doesn't mention the kind for its children
-        String tempKind = root.has("kind") ? root.get("kind").asText().replace("List", "") : "";
-        if (items != null) {
-            for (Iterator<JsonNode> it = items.iterator(); it.hasNext(); ) {
-                JsonNode item = it.next();
-                String name = item.get("metadata").get("name").asText();
-                String kind = item.has("kind") ? item.get("kind").asText() : tempKind;
-                result.add(createRun(item, name, "", kind));
-            }
-        }
-        return result;
+        String kind = item.has("kind") ? item.get("kind").asText() : KIND_TASKRUN;
+        return createRun(item, name, "", kind);
     }
 
     private Run createRun(JsonNode item, String name, String triggeredBy, String kind) {

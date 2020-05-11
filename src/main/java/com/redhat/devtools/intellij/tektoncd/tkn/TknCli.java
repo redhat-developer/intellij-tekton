@@ -11,14 +11,9 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.intellij.openapi.project.Project;
-import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -41,20 +36,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_OUTPUTRESOURC
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 
 public class TknCli implements Tkn {
-    private static final ObjectMapper RUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
-    private static final ObjectMapper RESOURCE_JSON_MAPPER = new ObjectMapper(new JsonFactory());
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
-    private static final YAMLMapper YAML_MAPPER = new YAMLMapper().configure(YAMLGenerator.Feature.WRITE_DOC_START_MARKER, false);
-
-    static {
-        SimpleModule pr_module = new SimpleModule();
-        pr_module.addDeserializer(List.class, new RunDeserializer());
-        RUN_JSON_MAPPER.registerModule(pr_module);
-
-        SimpleModule rs_module = new SimpleModule();
-        rs_module.addDeserializer(List.class, new ResourceDeserializer());
-        RESOURCE_JSON_MAPPER.registerModule(rs_module);
-    }
 
     private String command;
     private final Project project;
@@ -93,13 +75,13 @@ public class TknCli implements Tkn {
     @Override
     public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
         String json = ExecHelper.execute(command, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
-        return RUN_JSON_MAPPER.readValue(json, new TypeReference<List<PipelineRun>>() {});
+        return getCustomCollection(json, PipelineRun.class);
     }
 
     @Override
     public List<Resource> getResources(String namespace) throws IOException {
         String json = ExecHelper.execute(command, "resource", "ls", "-n", namespace, "-o", "json");
-        return RESOURCE_JSON_MAPPER.readValue(json, new TypeReference<List<Resource>>() {});
+        return getCustomCollection(json, Resource.class);
     }
 
     @Override
@@ -111,17 +93,21 @@ public class TknCli implements Tkn {
     @Override
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
         String json = ExecHelper.execute(command, "taskrun", "ls", task, "-n", namespace, "-o", "json");
-        return RUN_JSON_MAPPER.readValue(json, new TypeReference<List<TaskRun>>() {});
+        return getCustomCollection(json, TaskRun.class);
     }
 
     @Override
     public List<Condition> getConditions(String namespace) throws IOException, NullPointerException {
         String conditionListJson = ExecHelper.execute(command, "conditions", "ls", "-n", namespace, "-o", "json");
-        if (!JSON_MAPPER.readTree(conditionListJson).has("items")) {
+        return getCustomCollection(conditionListJson, Condition.class);
+    }
+
+    private <T> List<T> getCustomCollection(String json, Class<T> customClass) throws IOException {
+        if (!JSON_MAPPER.readTree(json).has("items")) {
             return Collections.emptyList();
         }
-        JavaType customClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, Condition.class);
-        return JSON_MAPPER.readValue(JSON_MAPPER.readTree(conditionListJson).get("items").toString(), customClassCollection);
+        JavaType customClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, customClass);
+        return JSON_MAPPER.readValue(JSON_MAPPER.readTree(json).get("items").toString(), customClassCollection);
     }
 
     @Override

@@ -10,6 +10,9 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+@JsonDeserialize(using = ResourceDeserializer.class)
 public class Resource {
     private String name;
     private String type;
