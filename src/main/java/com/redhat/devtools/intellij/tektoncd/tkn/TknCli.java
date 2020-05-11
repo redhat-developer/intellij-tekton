@@ -75,21 +75,13 @@ public class TknCli implements Tkn {
     @Override
     public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
         String json = ExecHelper.execute(command, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
-        if (!JSON_MAPPER.readTree(json).has("items")) {
-            return Collections.emptyList();
-        }
-        JavaType pipelineRunClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, PipelineRun.class);
-        return JSON_MAPPER.readValue(JSON_MAPPER.readTree(json).get("items").toString(), pipelineRunClassCollection);
+        return getCustomCollection(json, PipelineRun.class);
     }
 
     @Override
     public List<Resource> getResources(String namespace) throws IOException {
         String json = ExecHelper.execute(command, "resource", "ls", "-n", namespace, "-o", "json");
-        if (!JSON_MAPPER.readTree(json).has("items")) {
-            return Collections.emptyList();
-        }
-        JavaType resourceClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, Resource.class);
-        return JSON_MAPPER.readValue(JSON_MAPPER.readTree(json).get("items").toString(), resourceClassCollection);
+        return getCustomCollection(json, Resource.class);
     }
 
     @Override
@@ -101,21 +93,21 @@ public class TknCli implements Tkn {
     @Override
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
         String json = ExecHelper.execute(command, "taskrun", "ls", task, "-n", namespace, "-o", "json");
-        if (!JSON_MAPPER.readTree(json).has("items")) {
-            return Collections.emptyList();
-        }
-        JavaType taskRunClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, TaskRun.class);
-        return JSON_MAPPER.readValue(JSON_MAPPER.readTree(json).get("items").toString(), taskRunClassCollection);
+        return getCustomCollection(json, TaskRun.class);
     }
 
     @Override
     public List<Condition> getConditions(String namespace) throws IOException, NullPointerException {
         String conditionListJson = ExecHelper.execute(command, "conditions", "ls", "-n", namespace, "-o", "json");
-        if (!JSON_MAPPER.readTree(conditionListJson).has("items")) {
+        return getCustomCollection(conditionListJson, Condition.class);
+    }
+
+    private <T> List<T> getCustomCollection(String json, Class<T> customClass) throws IOException {
+        if (!JSON_MAPPER.readTree(json).has("items")) {
             return Collections.emptyList();
         }
-        JavaType customClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, Condition.class);
-        return JSON_MAPPER.readValue(JSON_MAPPER.readTree(conditionListJson).get("items").toString(), customClassCollection);
+        JavaType customClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, customClass);
+        return JSON_MAPPER.readValue(JSON_MAPPER.readTree(json).get("items").toString(), customClassCollection);
     }
 
     @Override
