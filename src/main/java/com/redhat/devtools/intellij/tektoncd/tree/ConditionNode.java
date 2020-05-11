@@ -8,18 +8,20 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.tkn;
+package com.redhat.devtools.intellij.tektoncd.tree;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
+import com.redhat.devtools.intellij.tektoncd.tkn.Condition;
 
-public class PipelineRun extends Run {
-
-    public PipelineRun(String name, Optional<Boolean> completed, Instant startTime, Instant completionTime, List<TaskRun> tasksRun) {
-        super(name, completed, startTime, completionTime, tasksRun);
+public class ConditionNode extends ParentableNode<ConditionsNode> {
+    private final Condition condition;
+    public ConditionNode(TektonRootNode root, ConditionsNode parent, Condition condition) {
+        super(root, parent, condition.getName());
+        this.condition = condition;
     }
 
-    @Override
-    public String getFailedReason() { return ""; }
+    public Condition getCondition() {
+        return condition;
+    }
 }
+
+

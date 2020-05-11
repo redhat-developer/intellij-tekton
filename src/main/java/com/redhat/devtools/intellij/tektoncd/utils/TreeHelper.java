@@ -18,6 +18,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
@@ -75,6 +77,7 @@ public class TreeHelper {
             case KIND_PIPELINES: return PipelinesNode.class;
             case KIND_RESOURCES: return ResourcesNode.class;
             case KIND_TASKS: return TasksNode.class;
+            case KIND_CONDITIONS: return ConditionsNode.class;
             default: return null;
         }
     }

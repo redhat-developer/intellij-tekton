@@ -10,16 +10,21 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-public class PipelineRun extends Run {
+@JsonDeserialize(using = ConditionDeserializer.class)
+public class Condition {
+    private String name;
+    private String apiVersion;
 
-    public PipelineRun(String name, Optional<Boolean> completed, Instant startTime, Instant completionTime, List<TaskRun> tasksRun) {
-        super(name, completed, startTime, completionTime, tasksRun);
+    public Condition(String apiVersion, String name) {
+        this.apiVersion = apiVersion;
+        this.name = name;
     }
 
-    @Override
-    public String getFailedReason() { return ""; }
+    public String getApiVersion() { return this.apiVersion; }
+
+    public String getName() {
+        return this.name;
+    }
 }

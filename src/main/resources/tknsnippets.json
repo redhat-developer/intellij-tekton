@@ -280,5 +280,44 @@
       "- name",
       "name"
     ]
+  },
+  "Tekton: Condition": {
+    "prefix": "Tekton: Condition",
+    "body": [
+      "apiVersion: tekton.dev/v1alpha1",
+      "kind: Condition",
+      "metadata:",
+      "  name: file-exists",
+      "  namespace: ${namespace}",
+      "spec:",
+      "  params:",
+      "    - name: path",
+      "  resources:",
+      "    - name: workspace",
+      "      type: git",
+      "  check:",
+      "    image: alpine",
+      "    script: 'test -f $(resources.workspace.path)/$(params.path)'"
+    ],
+    "description": "Tekton Condition",
+    "keywords": [
+      "condition",
+      "apiVersion"
+    ]
+  },
+  "Tekton: ConditionReference": {
+    "prefix": "Tekton: ConditionReference",
+    "body": [
+      "conditions:",
+      "  - conditionRef: condition_name",
+      "  params:",
+      "    - name: path",
+      "    value: $(params.path)"
+    ],
+    "description": "Tekton Condition Reference",
+    "keywords": [
+      "conditions",
+      "conditionRef"
+    ]
   }
 }

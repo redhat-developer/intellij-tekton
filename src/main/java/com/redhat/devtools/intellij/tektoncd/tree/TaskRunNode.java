@@ -27,6 +27,9 @@ public class TaskRunNode extends RunNode {
             displayName += StringHelper.beautify(triggeredBy) + "/";
         }
         displayName +=  StringHelper.beautify(stepName);
+        if (displayName.isEmpty()) {
+            displayName = run.getName();
+        }
         return displayName;
     }
 }

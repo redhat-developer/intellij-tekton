@@ -11,20 +11,25 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public class TaskRun extends Run {
 
     private String triggeredBy;
     private String stepName;
+    private String failedReason;
 
-    public TaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime) {
-        super(name, completed, startTime, completionTime);
+    public TaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime, List<TaskRun> conditionChecks, String failedReason) {
+        super(name, completed, startTime, completionTime, conditionChecks);
         this.triggeredBy = triggeredBy;
         this.stepName = stepName;
+        this.failedReason = failedReason;
     }
 
     public String getTriggeredBy() { return triggeredBy; }
 
     public String getStepName() { return stepName; }
+
+    public String getFailedReason() { return failedReason; }
 }

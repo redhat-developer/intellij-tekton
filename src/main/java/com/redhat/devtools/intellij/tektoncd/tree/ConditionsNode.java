@@ -8,18 +8,11 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.tkn;
+package com.redhat.devtools.intellij.tektoncd.tree;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
-public class PipelineRun extends Run {
-
-    public PipelineRun(String name, Optional<Boolean> completed, Instant startTime, Instant completionTime, List<TaskRun> tasksRun) {
-        super(name, completed, startTime, completionTime, tasksRun);
+public class ConditionsNode extends ParentableNode<NamespaceNode> {
+    public ConditionsNode(TektonRootNode root, NamespaceNode parent) {
+        super(root, parent, "Conditions");
     }
-
-    @Override
-    public String getFailedReason() { return ""; }
 }
+

@@ -12,8 +12,11 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
@@ -26,8 +29,10 @@ import io.fabric8.openshift.client.OpenShiftClient;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
@@ -38,6 +43,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 public class TknCli implements Tkn {
     private static final ObjectMapper RUN_JSON_MAPPER = new ObjectMapper(new JsonFactory());
     private static final ObjectMapper RESOURCE_JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
+    private static final YAMLMapper YAML_MAPPER = new YAMLMapper().configure(YAMLGenerator.Feature.WRITE_DOC_START_MARKER, false);
 
     static {
         SimpleModule pr_module = new SimpleModule();
@@ -108,6 +115,16 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public List<Condition> getConditions(String namespace) throws IOException, NullPointerException {
+        String conditionListJson = ExecHelper.execute(command, "conditions", "ls", "-n", namespace, "-o", "json");
+        if (!JSON_MAPPER.readTree(conditionListJson).has("items")) {
+            return Collections.emptyList();
+        }
+        JavaType customClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, Condition.class);
+        return JSON_MAPPER.readValue(JSON_MAPPER.readTree(conditionListJson).get("items").toString(), customClassCollection);
+    }
+
+    @Override
     public String getPipelineYAML(String namespace, String pipeline) throws IOException {
         return ExecHelper.execute(command, "pipeline", "describe", pipeline, "-n", namespace, "-o", "yaml");
     }
@@ -120,6 +137,11 @@ public class TknCli implements Tkn {
     @Override
     public String getTaskYAML(String namespace, String task) throws IOException {
         return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "yaml");
+    }
+
+    @Override
+    public String getConditionYAML(String namespace, String condition) throws IOException {
+        return ExecHelper.execute(command, "condition", "describe", condition, "-n", namespace, "-o", "yaml");
     }
 
     @Override
@@ -138,9 +160,14 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public void deleteCondition(String namespace, String condition) throws IOException {
+        ExecHelper.execute(command, "conditions", "delete", "-f", condition, "-n", namespace);
+    }
+
+    @Override
     public Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext) {
         try {
-            return client.customResource(crdContext).get(namespace, name);
+            return new TreeMap<>(client.customResource(crdContext).get(namespace, name));
         } catch(KubernetesClientException e) {
             // call failed bc resource doesn't exist - 404
             return null;

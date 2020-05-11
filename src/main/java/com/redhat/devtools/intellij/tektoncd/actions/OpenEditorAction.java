@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
@@ -29,12 +30,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
 
 public class OpenEditorAction extends TektonAction {
-    public OpenEditorAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class); }
+    public OpenEditorAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class, ConditionNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -52,6 +54,9 @@ public class OpenEditorAction extends TektonAction {
             } else if (element instanceof TaskNode) {
                 content = tkncli.getTaskYAML(namespace, element.getName());
                 kind = KIND_TASKS;
+            } else if (element instanceof ConditionNode) {
+                content = tkncli.getConditionYAML(namespace, element.getName());
+                kind = KIND_CONDITIONS;
             }
         }
         catch (IOException e) {

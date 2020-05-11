@@ -91,6 +91,15 @@ public interface Tkn {
     List<TaskRun> getTaskRuns(String namespace, String task) throws IOException;
 
     /**
+     * Return the list of conditions for a namespace.
+     *
+     * @param namespace the namespace of the task
+     * @return the list of conditions
+     * @throws IOException if communication errored
+     */
+    List<Condition> getConditions(String namespace) throws IOException;
+
+    /**
      * Get pipeline configuration in YAML
      *
      * @param namespace the namespace of the task
@@ -118,6 +127,15 @@ public interface Tkn {
     String getTaskYAML(String namespace, String task) throws IOException;
 
     /**
+     * Get condition configuration in YAML
+     *
+     * @param namespace the namespace of the condition
+     * @param condition the condition to use
+     * @throws IOException if communication errored
+     */
+    String getConditionYAML(String namespace, String condition) throws IOException ;
+
+    /**
      * Delete a pipeline
      *
      * @param namespace the namespace to use
@@ -143,6 +161,15 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void deleteResource(String namespace, String resource) throws IOException;
+
+    /**
+     * Delete a condition
+     *
+     * @param namespace the namespace to use
+     * @param condition the condition to delete
+     * @throws IOException if communication errored
+     */
+    void deleteCondition(String namespace, String condition) throws IOException;
 
     /**
      * Get a custom resource from the cluster which is namespaced.

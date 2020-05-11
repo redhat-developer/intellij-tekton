@@ -33,11 +33,13 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
     public List<Run> convert(JsonNode root, DeserializationContext ctxt) {
         List<Run> result = new ArrayList<>();
         JsonNode items = root.get("items");
+        // this is a temporary fix for a bug in tkn 0.9.0. TaskRunList doesn't mention the kind for its children
+        String tempKind = root.has("kind") ? root.get("kind").asText().replace("List", "") : "";
         if (items != null) {
             for (Iterator<JsonNode> it = items.iterator(); it.hasNext(); ) {
                 JsonNode item = it.next();
                 String name = item.get("metadata").get("name").asText();
-                String kind = item.get("kind").asText();
+                String kind = item.has("kind") ? item.get("kind").asText() : tempKind;
                 result.add(createRun(item, name, "", kind));
             }
         }
@@ -45,22 +47,10 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
     }
 
     private Run createRun(JsonNode item, String name, String triggeredBy, String kind) {
-        Optional<Boolean> completed = Optional.empty();
-        JsonNode conditions = item.get("status").get("conditions");
-        Instant completionTime = null;
-        Instant startTime = null;
-        String completionTimeText = item.get("status").get("completionTime") == null ? null : item.get("status").get("completionTime").asText(null);
-        if (completionTimeText != null) completionTime = Instant.parse(completionTimeText);
-        String startTimeText = item.get("status").get("startTime").asText();
-        if (startTimeText != null) startTime = Instant.parse(startTimeText);
-        if (conditions.isArray() && conditions.size() > 0) {
-            String status = conditions.get(0).get("status").asText();
-            if (status.equalsIgnoreCase("true")) {
-                completed = Optional.of(true);
-            } else if (status.equalsIgnoreCase("false")) {
-                completed = Optional.of(false);
-            }
-        }
+        Optional<Boolean> completed = isCompleted(item);
+        Instant completionTime = getCompletionTime(item);
+        Instant startTime = getStartTime(item);
+
         if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
             String stepName = "";
             JsonNode pipelineTaskName = item.get("pipelineTaskName");
@@ -73,7 +63,14 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
             } else {
                 stepName = pipelineTaskName.asText();
             }
-            return createTaskRun(name, triggeredBy, stepName, completed, startTime, completionTime);
+            JsonNode conditionChecks = item.get("conditionChecks");
+            JsonNode conditions = item.get("status").get("conditions");
+            String failedReason = "";
+            if (conditions.isArray() && conditions.size() > 0) {
+                failedReason = conditions.get(0).get("reason").asText("");
+            }
+
+            return createTaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks, failedReason);
         } else {
             JsonNode taskRunsNode = item.get("status").get("taskRuns");
             return createPipelineRun(name, completed, startTime, completionTime, taskRunsNode);
@@ -91,7 +88,52 @@ public class RunDeserializer extends StdNodeBasedDeserializer<List<Run>> {
         return new PipelineRun(name, completed, startTime, completionTime, tasksRun);
     }
 
-    private Run createTaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime) {
-        return new TaskRun(name, triggeredBy, stepName, completed, startTime, completionTime);
+    private Run createTaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime, JsonNode conditionChecksNode, String failedReason) {
+        List<TaskRun> conditionChecks = new ArrayList<>();
+        if (conditionChecksNode != null) {
+            for (Iterator<JsonNode> it = conditionChecksNode.elements(); it.hasNext(); ) {
+                JsonNode conditionCheckNode = it.next();
+                String conditionName = conditionCheckNode.get("conditionName").asText("");
+                Optional<Boolean> isConditionCompleted = isCompleted(conditionCheckNode);
+                Instant conditionCompletionTime = getCompletionTime(conditionCheckNode);
+                Instant conditionStartTime = getStartTime(conditionCheckNode);
+                conditionChecks.add(new TaskRun(conditionName, "", "", isConditionCompleted, conditionStartTime, conditionCompletionTime, new ArrayList<>(), ""));
+            }
+        }
+        return new TaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks, failedReason);
+    }
+
+    private Instant getCompletionTime(JsonNode item) {
+        Instant completionTime = null;
+        try {
+            String completionTimeText = item.get("status").get("completionTime") == null ? null : item.get("status").get("completionTime").asText(null);
+            if (completionTimeText != null) completionTime = Instant.parse(completionTimeText);
+        } catch (NullPointerException ne) { }
+        return completionTime;
+    }
+
+    private Instant getStartTime(JsonNode item) {
+        Instant startTime = null;
+        try {
+            String startTimeText = item.get("status").get("startTime") == null ? null : item.get("status").get("startTime").asText(null);
+            if (startTimeText != null) startTime = Instant.parse(startTimeText);
+        } catch (NullPointerException ne) { }
+        return startTime;
+    }
+
+    private Optional<Boolean> isCompleted(JsonNode item) {
+        Optional<Boolean> completed = Optional.empty();
+        try {
+            JsonNode conditions = item.get("status").get("conditions");
+            if (conditions.isArray() && conditions.size() > 0) {
+                String status = conditions.get(0).get("status").asText();
+                if (status.equalsIgnoreCase("true")) {
+                    completed = Optional.of(true);
+                } else if (status.equalsIgnoreCase("false")) {
+                    completed = Optional.of(false);
+                }
+            }
+        } catch (Exception e) {}
+        return completed;
     }
 }
