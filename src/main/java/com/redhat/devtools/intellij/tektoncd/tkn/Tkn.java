@@ -27,6 +27,14 @@ public interface Tkn {
     boolean isTektonAware(KubernetesClient client);
 
     /**
+     * Check if the cluster is Tekton Triggers aware.
+     *
+     * @param client the cluster client object
+     * @return true if Tekton triggers are installed on cluster false otherwise
+     */
+    boolean isTektonTriggersAware(KubernetesClient client);
+
+    /**
      * Returns the names of ClusterTask for a namespace
      * @param namespace the namespace to use
      * @return the list of ClusterTasks names

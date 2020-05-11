@@ -69,6 +69,11 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public boolean isTektonTriggersAware(KubernetesClient client) {
+        return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("triggers.tekton.dev")).findFirst().isPresent();
+    }
+
+    @Override
     public List<String> getClusterTasks(String namespace) throws IOException {
         String output = ExecHelper.execute(command, "clustertask", "ls", "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());

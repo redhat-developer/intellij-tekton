@@ -29,6 +29,7 @@ import io.fabric8.kubernetes.api.model.Context;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,24 +94,32 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     @Override
     public Object[] getChildElements(Object element) {
-        if (root.getTkn() != null) {
+        Tkn tkn = root.getTkn();
+        if (tkn != null) {
             if (element instanceof TektonRootNode) {
                 return getNamespaces((TektonRootNode) element);
             }
             if (element instanceof NamespaceNode) {
-                return new Object[]{
+                Object[] generalNodes = new Object[]{
                         new PipelinesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new PipelineRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new TasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new ClusterTasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new TaskRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                        new ConditionsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new ConditionsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
+                };
+                if (!tkn.isTektonTriggersAware(root.getClient())) {
+                    return generalNodes;
+                }
+                Object[] triggersNode = new Object[] {
                         new TriggerTemplatesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new TriggerBindingsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new ClusterTriggerBindingsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new EventListenersNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
+                return ArrayUtils.addAll(generalNodes, triggersNode);
+
             }
             if (element instanceof PipelinesNode) {
                 return getPipelines((PipelinesNode) element);
