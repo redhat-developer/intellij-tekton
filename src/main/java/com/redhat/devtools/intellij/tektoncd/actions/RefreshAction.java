@@ -15,6 +15,8 @@ import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
+import com.redhat.devtools.intellij.tektoncd.tree.EventListenersNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
@@ -23,12 +25,15 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 
 import javax.swing.tree.TreePath;
 
 public class RefreshAction extends StructureTreeAction {
     public RefreshAction() {
-        super(PipelinesNode.class, TasksNode.class, ClusterTasksNode.class, ResourcesNode.class, PipelineNode.class, TaskNode.class, PipelineRunsNode.class, TaskRunsNode.class, ConditionsNode.class);
+        super(PipelinesNode.class, TasksNode.class, ClusterTasksNode.class, ResourcesNode.class, PipelineNode.class, TaskNode.class, PipelineRunsNode.class, TaskRunsNode.class, ConditionsNode.class,
+                TriggerTemplatesNode.class, TriggerBindingsNode.class, ClusterTriggerBindingsNode.class, EventListenersNode.class);
     }
 
     @Override

@@ -319,5 +319,80 @@
       "conditions",
       "conditionRef"
     ]
+  },
+  "Tekton: TriggerTemplate": {
+    "prefix": "Tekton: TriggerTemplate",
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerTemplate",
+      "metadata:",
+      "  name: name",
+      "spec:",
+      "  resourcetemplates:",
+      "    - "
+    ],
+    "description": "Tekton TriggerTemplate",
+    "keywords": [
+      "triggertemplate",
+      "apiversion"
+    ]
+  },
+  "Tekton: TriggerBinding": {
+    "prefix": "Tekton: TriggerBinding",
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: name",
+      "spec:",
+      "  params:",
+      "    - name: param_name",
+      "      value: value"
+    ],
+    "description": "Tekton TriggerBinding",
+    "keywords": [
+      "triggerbinding",
+      "apiversion"
+    ]
+  },
+  "Tekton: ClusterTriggerBinding": {
+    "prefix": "Tekton: ClusterTriggerBinding",
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: ClusterTriggerBinding",
+      "metadata:",
+      "  name: name",
+      "spec:",
+      "  params:",
+      "    - name: param_name",
+      "      value: value"
+    ],
+    "description": "Tekton ClusterTriggerBinding",
+    "keywords": [
+      "clustertriggerbinding",
+      "apiversion"
+    ]
+  },
+  "Tekton: EventListener": {
+    "prefix": "Tekton: EventListener",
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: EventListener",
+      "metadata:",
+      "  name: name",
+      "spec:",
+      "  serviceAccountName: serviceAccount",
+      "  triggers:",
+      "    - name: triggerName",
+      "      bindings:",
+      "        - name: bindingName",
+      "      template:",
+      "        name: templateName"
+    ],
+    "description": "Tekton EventListener",
+    "keywords": [
+      "eventlistener",
+      "apiversion"
+    ]
   }
 }

@@ -27,6 +27,14 @@ public interface Tkn {
     boolean isTektonAware(KubernetesClient client);
 
     /**
+     * Check if the cluster is Tekton Triggers aware.
+     *
+     * @param client the cluster client object
+     * @return true if Tekton triggers are installed on cluster false otherwise
+     */
+    boolean isTektonTriggersAware(KubernetesClient client);
+
+    /**
      * Returns the names of ClusterTask for a namespace
      * @param namespace the namespace to use
      * @return the list of ClusterTasks names
@@ -100,6 +108,42 @@ public interface Tkn {
     List<Condition> getConditions(String namespace) throws IOException;
 
     /**
+     * Return the list of triggertemplate in a namespace
+     *
+     * @param namespace the namespace to use
+     * @return the list of triggertemplate
+     * @throws IOException if communication errored
+     */
+    List<String> getTriggerTemplates(String namespace) throws IOException;
+
+    /**
+     * Return the list of triggerbindings in a namespace
+     *
+     * @param namespace the namespace to use
+     * @return the list of triggerbindings
+     * @throws IOException if communication errored
+     */
+    List<String> getTriggerBindings(String namespace) throws IOException;
+
+    /**
+     * Return the list of clusterTriggerbindings in a namespace
+     *
+     * @param namespace the namespace to use
+     * @return the list of clusterTriggerbindings
+     * @throws IOException if communication errored
+     */
+    List<String> getClusterTriggerBindings(String namespace) throws IOException;
+
+    /**
+     * Return the list of eventListeners in a namespace
+     *
+     * @param namespace the namespace to use
+     * @return the list of eventListeners
+     * @throws IOException if communication errored
+     */
+    List<String> getEventListeners(String namespace) throws IOException;
+
+    /**
      * Get pipeline configuration in YAML
      *
      * @param namespace the namespace of the task
@@ -136,6 +180,45 @@ public interface Tkn {
     String getConditionYAML(String namespace, String condition) throws IOException ;
 
     /**
+     *
+     * @param namespace the namespace of the task
+     * @param triggerTemplate the triggerTemplate to use
+     * @return triggerTemplate configuration
+     * @throws IOException if communication errored
+     */
+    String getTriggerTemplateYAML(String namespace, String triggerTemplate) throws IOException;
+
+    /**
+     * Get triggerBinding configuration in YAML
+     *
+     * @param namespace the namespace of the task
+     * @param triggerBinding the triggerBinding to use
+     * @return triggerBinding configuration
+     * @throws IOException if communication errored
+     */
+    String getTriggerBindingYAML(String namespace, String triggerBinding) throws IOException;
+
+    /**
+     * Get clusterTriggerBinding configuration in YAML
+     *
+     * @param namespace the namespace of the task
+     * @param ctb the clusterTriggerBinding to use
+     * @return clusterTriggerBinding configuration
+     * @throws IOException if communication errored
+     */
+    String getClusterTriggerBindingYAML(String namespace, String ctb) throws IOException;
+
+    /**
+     * Get eventListener configuration in YAML
+     *
+     * @param namespace the namespace of the task
+     * @param eventListener the eventListener to use
+     * @return eventListener configuration
+     * @throws IOException if communication errored
+     */
+    String getEventListenerYAML(String namespace, String eventListener) throws IOException;
+
+    /**
      * Delete a pipeline
      *
      * @param namespace the namespace to use
@@ -170,6 +253,39 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void deleteCondition(String namespace, String condition) throws IOException;
+
+    /**
+     *
+     * @param namespace the namespace to use
+     * @param triggerTemplate the triggerTemplate to delete
+     * @throws IOException if communication errored
+     */
+    void deleteTriggerTemplate(String namespace, String triggerTemplate) throws IOException;
+
+    /**
+     * Delete a triggerBinding
+     *
+     * @param namespace the namespace to use
+     * @param triggerBinding the triggerBinding to delete
+     * @throws IOException if communication errored
+     */
+    void deleteTriggerBinding(String namespace, String triggerBinding) throws IOException;
+
+    /**
+     * Delete a clusterTriggerBinding
+     * @param namespace the namespace to use
+     * @param ctb the clusterTriggerBinding to delete
+     * @throws IOException if communication errored
+     */
+    void deleteClusterTriggerBinding(String namespace, String ctb) throws IOException;
+
+    /**
+     * Delete a eventListener
+     * @param namespace the namespace to use
+     * @param eventListener the eventListener to delete
+     * @throws IOException if communication errored
+     */
+    void deleteEventListener(String namespace, String eventListener) throws IOException;
 
     /**
      * Get a custom resource from the cluster which is namespaced.

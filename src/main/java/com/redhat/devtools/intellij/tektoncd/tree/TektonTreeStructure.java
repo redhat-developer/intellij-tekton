@@ -29,6 +29,7 @@ import io.fabric8.kubernetes.api.model.Context;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,12 +94,13 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     @Override
     public Object[] getChildElements(Object element) {
-        if (root.getTkn() != null) {
+        Tkn tkn = root.getTkn();
+        if (tkn != null) {
             if (element instanceof TektonRootNode) {
                 return getNamespaces((TektonRootNode) element);
             }
             if (element instanceof NamespaceNode) {
-                return new Object[]{
+                Object[] generalNodes = new Object[]{
                         new PipelinesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new PipelineRunsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new TasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
@@ -107,6 +109,17 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                         new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new ConditionsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
+                if (!tkn.isTektonTriggersAware(root.getClient())) {
+                    return generalNodes;
+                }
+                Object[] triggersNode = new Object[] {
+                        new TriggerTemplatesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new TriggerBindingsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new ClusterTriggerBindingsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
+                        new EventListenersNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
+                };
+                return ArrayUtils.addAll(generalNodes, triggersNode);
+
             }
             if (element instanceof PipelinesNode) {
                 return getPipelines((PipelinesNode) element);
@@ -141,6 +154,18 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             if (element instanceof ConditionsNode) {
                 return getConditions((ConditionsNode)element);
             }
+            if (element instanceof TriggerTemplatesNode) {
+                return getTriggerTemplates((TriggerTemplatesNode) element);
+            }
+            if (element instanceof TriggerBindingsNode) {
+                return getTriggerBindings((TriggerBindingsNode) element);
+            }
+            if (element instanceof ClusterTriggerBindingsNode) {
+                return getClusterTriggerBindingsNode((ClusterTriggerBindingsNode) element);
+            }
+            if (element instanceof EventListenersNode) {
+                return getEventListenersNode((EventListenersNode) element);
+            }
         }
         return new Object[0];
     }
@@ -154,6 +179,50 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             conditions.add(new MessageNode(element.getRoot(), element, "Failed to load conditions"));
         }
         return conditions.toArray(new Object[conditions.size()]);
+    }
+
+    private Object[] getEventListenersNode(EventListenersNode element) {
+        List<Object> eventListeners = new ArrayList<>();
+        try {
+            Tkn tkn = element.getRoot().getTkn();
+            tkn.getEventListeners(element.getNamespace()).forEach(template -> eventListeners.add(new EventListenerNode(element.getRoot(), element, template)));
+        } catch (IOException e) {
+            eventListeners.add(new MessageNode(element.getRoot(), element, "Failed to load event listeners"));
+        }
+        return eventListeners.toArray(new Object[eventListeners.size()]);
+    }
+
+    private Object[] getClusterTriggerBindingsNode(ClusterTriggerBindingsNode element) {
+        List<Object> ctbs = new ArrayList<>();
+        try {
+            Tkn tkn = element.getRoot().getTkn();
+            tkn.getClusterTriggerBindings(element.getNamespace()).forEach(template -> ctbs.add(new ClusterTriggerBindingNode(element.getRoot(), element, template)));
+        } catch (IOException e) {
+            ctbs.add(new MessageNode(element.getRoot(), element, "Failed to load cluster trigger bindings"));
+        }
+        return ctbs.toArray(new Object[ctbs.size()]);
+    }
+
+    private Object[] getTriggerBindings(TriggerBindingsNode element) {
+        List<Object> triggerBindings = new ArrayList<>();
+        try {
+            Tkn tkn = element.getRoot().getTkn();
+            tkn.getTriggerBindings(element.getNamespace()).forEach(template -> triggerBindings.add(new TriggerBindingNode(element.getRoot(), element, template)));
+        } catch (IOException e) {
+            triggerBindings.add(new MessageNode(element.getRoot(), element, "Failed to load triggerbindings"));
+        }
+        return triggerBindings.toArray(new Object[triggerBindings.size()]);
+    }
+
+    private Object[] getTriggerTemplates(TriggerTemplatesNode element) {
+        List<Object> triggerTemplates = new ArrayList<>();
+        try {
+            Tkn tkn = element.getRoot().getTkn();
+            tkn.getTriggerTemplates(element.getNamespace()).forEach(template -> triggerTemplates.add(new TriggerTemplateNode(element.getRoot(), element, template)));
+        } catch (IOException e) {
+            triggerTemplates.add(new MessageNode(element.getRoot(), element, "Failed to load triggertemplates"));
+        }
+        return triggerTemplates.toArray(new Object[triggerTemplates.size()]);
     }
 
     private Object[] getTaskRuns(ParentableNode element, String task) {
@@ -303,6 +372,30 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         }
         if (element instanceof ConditionNode) {
             return new LabelAndIconDescriptor(project, element, ((ConditionNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof TriggerTemplatesNode) {
+            return new LabelAndIconDescriptor(project, element, ((TriggerTemplatesNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof TriggerTemplateNode) {
+            return new LabelAndIconDescriptor(project, element, ((TriggerTemplateNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof TriggerBindingsNode) {
+            return new LabelAndIconDescriptor(project, element, ((TriggerBindingsNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof TriggerBindingNode) {
+            return new LabelAndIconDescriptor(project, element, ((TriggerBindingNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof ClusterTriggerBindingsNode) {
+            return new LabelAndIconDescriptor(project, element, ((ClusterTriggerBindingsNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof ClusterTriggerBindingNode) {
+            return new LabelAndIconDescriptor(project, element, ((ClusterTriggerBindingNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof EventListenersNode) {
+            return new LabelAndIconDescriptor(project, element, ((EventListenersNode)element).getName(), PIPELINE_ICON, parentDescriptor);
+        }
+        if (element instanceof EventListenerNode) {
+            return new LabelAndIconDescriptor(project, element, ((EventListenerNode)element).getName(), PIPELINE_ICON, parentDescriptor);
         }
         if (element instanceof MessageNode) {
             return new LabelAndIconDescriptor(project, element, ((MessageNode)element).getName(), AllIcons.General.Warning, parentDescriptor);

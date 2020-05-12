@@ -13,17 +13,26 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 import com.google.common.base.Strings;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
+
 public class CRDHelper {
-    public static CustomResourceDefinitionContext getCRDContext(String version, String plural) {
-        if (Strings.isNullOrEmpty(version) || Strings.isNullOrEmpty(plural)) return null;
-        String[] apiVersion = version.split("/");
-        if (apiVersion.length != 2) return null;
+    public static CustomResourceDefinitionContext getCRDContext(String apiVersion, String plural) {
+        if (Strings.isNullOrEmpty(apiVersion) || Strings.isNullOrEmpty(plural)) return null;
+        String[] groupVersion = apiVersion.split("/");
+        if (groupVersion.length != 2) return null;
+        String group = groupVersion[0];
+        String version = groupVersion[1];
         return new CustomResourceDefinitionContext.Builder()
-                .withName(plural + ".tekton.dev")
-                .withGroup(apiVersion[0])
+                .withName(plural + "." + group)
+                .withGroup(group)
                 .withScope("Namespaced")
-                .withVersion(apiVersion[1])
+                .withVersion(version)
                 .withPlural(plural)
                 .build();
+    }
+
+    public static boolean isClusterScopedResource(String kind_plural) {
+        return kind_plural == KIND_CLUSTERTASKS || kind_plural == KIND_CLUSTERTRIGGERBINDINGS;
     }
 }

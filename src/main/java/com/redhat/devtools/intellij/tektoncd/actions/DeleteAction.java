@@ -16,21 +16,25 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
+import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
 import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
-
-import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
+
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public class DeleteAction extends TektonAction {
-    public DeleteAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class, ConditionNode.class); }
+    public DeleteAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class, ConditionNode.class, TriggerTemplateNode.class, TriggerBindingNode.class, ClusterTriggerBindingNode.class, EventListenerNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -55,6 +59,14 @@ public class DeleteAction extends TektonAction {
                         tkncli.deleteTask(namespace, element.getName());
                     } else if (element instanceof ConditionNode) {
                         tkncli.deleteCondition(namespace, element.getName());
+                    } else if (element instanceof TriggerTemplateNode) {
+                        tkncli.deleteTriggerTemplate(namespace, element.getName());
+                    } else if (element instanceof TriggerBindingNode) {
+                        tkncli.deleteTriggerBinding(namespace, element.getName());
+                    } else if (element instanceof  ClusterTriggerBindingNode) {
+                        tkncli.deleteClusterTriggerBinding(namespace, element.getName());
+                    } else if (element instanceof  EventListenerNode) {
+                        tkncli.deleteEventListener(namespace, element.getName());
                     }
                     ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element.getParent());
                 }

@@ -52,6 +52,11 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public boolean isTektonTriggersAware(KubernetesClient client) {
+        return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("triggers.tekton.dev")).findFirst().isPresent();
+    }
+
+    @Override
     public List<String> getClusterTasks(String namespace) throws IOException {
         String output = ExecHelper.execute(command, "clustertask", "ls", "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
@@ -111,6 +116,30 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public List<String> getTriggerTemplates(String namespace) throws IOException {
+        String output = ExecHelper.execute(command, "triggertemplates", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getTriggerBindings(String namespace) throws IOException {
+        String output = ExecHelper.execute(command, "triggerbindings", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getClusterTriggerBindings(String namespace) throws IOException {
+        String output = ExecHelper.execute(command, "ctb", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getEventListeners(String namespace) throws IOException {
+        String output = ExecHelper.execute(command, "eventlisteners", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    }
+
+    @Override
     public String getPipelineYAML(String namespace, String pipeline) throws IOException {
         return ExecHelper.execute(command, "pipeline", "describe", pipeline, "-n", namespace, "-o", "yaml");
     }
@@ -131,6 +160,26 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public String getTriggerTemplateYAML(String namespace, String triggerTemplate) throws IOException {
+        return ExecHelper.execute(command, "triggertemplate", "describe", triggerTemplate, "-n", namespace, "-o", "yaml");
+    }
+
+    @Override
+    public String getTriggerBindingYAML(String namespace, String triggerBinding) throws IOException {
+        return ExecHelper.execute(command, "triggerbinding", "describe", triggerBinding, "-n", namespace, "-o", "yaml");
+    }
+
+    @Override
+    public String getClusterTriggerBindingYAML(String namespace, String ctb) throws IOException {
+        return ExecHelper.execute(command, "ctb", "describe", ctb, "-n", namespace, "-o", "yaml");
+    }
+
+    @Override
+    public String getEventListenerYAML(String namespace, String eventListener) throws IOException {
+        return ExecHelper.execute(command, "eventlistener", "describe", eventListener, "-n", namespace, "-o", "yaml");
+    }
+
+    @Override
     public void deletePipeline(String namespace, String pipeline) throws IOException {
         ExecHelper.execute(command, "pipeline", "delete", "-f", pipeline, "-n", namespace);
     }
@@ -148,6 +197,26 @@ public class TknCli implements Tkn {
     @Override
     public void deleteCondition(String namespace, String condition) throws IOException {
         ExecHelper.execute(command, "conditions", "delete", "-f", condition, "-n", namespace);
+    }
+
+    @Override
+    public void deleteTriggerTemplate(String namespace, String triggerTemplate) throws IOException {
+        ExecHelper.execute(command, "triggertemplate", "delete", "-f", triggerTemplate, "-n", namespace);
+    }
+
+    @Override
+    public void deleteTriggerBinding(String namespace, String triggerBinding) throws IOException {
+        ExecHelper.execute(command, "triggerbinding", "delete", "-f", triggerBinding, "-n", namespace);
+    }
+
+    @Override
+    public void deleteClusterTriggerBinding(String namespace, String ctb) throws IOException {
+        ExecHelper.execute(command, "ctb", "delete", "-f", ctb, "-n", namespace);
+    }
+
+    @Override
+    public void deleteEventListener(String namespace, String eventListener) throws IOException {
+        ExecHelper.execute(command, "eventlistener", "delete", "-f", eventListener, "-n", namespace);
     }
 
     @Override
