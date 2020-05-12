@@ -33,12 +33,6 @@ public class CRDHelper {
     }
 
     public static boolean isClusterScopedResource(String kind_plural) {
-        switch (kind_plural) {
-            case KIND_CLUSTERTASKS:
-            case KIND_CLUSTERTRIGGERBINDINGS:
-                return true;
-            default:
-                return false;
-        }
+        return kind_plural == KIND_CLUSTERTASKS || kind_plural == KIND_CLUSTERTRIGGERBINDINGS;
     }
 }
