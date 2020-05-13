@@ -110,14 +110,16 @@ public class StartResourceModel {
         // set the first resource for a specific type (git, image, ...) as the default value for input/output
         Map<String, List<Resource>> resourceGroupedByType = resources.stream().collect(Collectors.groupingBy(Resource::type));
 
-        for (Input input: resourceInputs) {
-            List<Resource> resourcesByInputType = resourceGroupedByType.get(input.type());
-            if (resourcesByInputType == null) {
-                errorMessage += " * The input " + input.name() + " requires a resource of type " + input.type() + " but no resource of that type was found in the cluster.\n";
-                isValid = false;
-                continue;
+        if (resourceInputs != null) {
+            for (Input input: resourceInputs) {
+                List<Resource> resourcesByInputType = resourceGroupedByType.get(input.type());
+                if (resourcesByInputType == null) {
+                    errorMessage += " * The input " + input.name() + " requires a resource of type " + input.type() + " but no resource of that type was found in the cluster.\n";
+                    isValid = false;
+                    continue;
+                }
+                input.setValue(resourcesByInputType.get(0).name());
             }
-            input.setValue(resourcesByInputType.get(0).name());
         }
 
         if (outputs != null) {
@@ -166,7 +168,9 @@ public class StartResourceModel {
         if (resources != null) {
             for (Iterator<JsonNode> it = resources.iterator(); it.hasNext(); ) {
                 JsonNode item = it.next();
-                result.add(new Output().fromJson(item.get(0)));
+                for (Iterator<JsonNode> iter = item.elements(); iter.hasNext(); ) {
+                    result.add(new Output().fromJson(iter.next()));
+                }
             }
         }
 

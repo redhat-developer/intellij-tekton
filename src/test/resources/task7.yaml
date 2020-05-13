@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  inputs:
+    resources:
+      - name: resource1
+        type: git
+      - name: resource2
+        type: git
+  steps:
+    - args:
+        - -c
+        - echo hello world
+      command:
+        - /bin/bash
+      image: fedora
+      name: build-sources
+      resources: {}
