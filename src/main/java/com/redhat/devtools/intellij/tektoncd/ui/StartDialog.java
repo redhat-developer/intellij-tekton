@@ -62,9 +62,6 @@ public class StartDialog extends DialogWrapper {
     private JComboBox tsaCB;
     private JTextField tsaTxt;
     private JLabel tsaLbl;
-    private List<Input> inputs;
-    private List<Resource> resources;
-    private List<Output> outputs;
 
     private StartResourceModel model;
 
@@ -72,9 +69,6 @@ public class StartDialog extends DialogWrapper {
         super(null, parent, false, IdeModalityType.IDE);
 
         this.model = model;
-        this.inputs = model.getInputs();
-        this.outputs = model.getOutputs();
-        this.resources = model.getResources();
         setTitle("Start " + model.getName());
         setOKButtonText("Start");
         init();
@@ -101,7 +95,7 @@ public class StartDialog extends DialogWrapper {
         Map<String, String> inputResources = new HashMap<>();
         Map<String, String> outputResources = new HashMap<>();
 
-        for (Input input : inputs) {
+        for (Input input : model.getInputs()) {
             if (input.kind() == Input.Kind.PARAMETER) {
                 String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
                 parameters.put(input.name(), value);
@@ -110,18 +104,18 @@ public class StartDialog extends DialogWrapper {
             }
         }
 
-        for (Output output : outputs) {
+        for (Output output : model.getOutputs()) {
             outputResources.put(output.name(), output.value());
         }
 
 
-        this.model.setParameters(parameters);
-        this.model.setInputResources(inputResources);
-        this.model.setOutputResources(outputResources);
+        model.setParameters(parameters);
+        model.setInputResources(inputResources);
+        model.setOutputResources(outputResources);
     }
 
     private String validateInputs() {
-        for (Input input: inputs) {
+        for (Input input: model.getInputs()) {
             if (input.value() == null && !input.defaultValue().isPresent()) {
                 return input.name();
             }
@@ -130,7 +124,7 @@ public class StartDialog extends DialogWrapper {
     }
 
     private String validateOutputs() {
-        for (Output output: outputs) {
+        for (Output output: model.getOutputs()) {
             if (output.value() == null) {
                 return output.name();
             }
@@ -190,11 +184,11 @@ public class StartDialog extends DialogWrapper {
 
 
     private void initInputsArea() {
-        if (inputs.isEmpty()) {
+        if (model.getInputs().isEmpty()) {
             changeInputComponentVisibility(false, false, false);
             return;
         }
-        for (Input input: inputs) {
+        for (Input input: model.getInputs()) {
             if (input.kind() == Input.Kind.PARAMETER) {
                 inputParamsCB.addItem(input);
             } else {
@@ -228,7 +222,7 @@ public class StartDialog extends DialogWrapper {
 
     private void fillInputResourceComboBox(Input inputSelected) {
         inputResourceValuesCB.removeAll();
-        for (Resource resource: resources) {
+        for (Resource resource: model.getResources()) {
             if (resource.type().equals(inputSelected.type())) {
                 inputResourceValuesCB.addItem(resource);
             }
@@ -239,6 +233,7 @@ public class StartDialog extends DialogWrapper {
     }
 
     private void initOutputsArea(boolean isPipeline) {
+        List<Output> outputs = model.getOutputs();
         changeOutputComponentVisibility(!outputs.isEmpty(), isPipeline);
         if (outputs.isEmpty()) {
             return;
@@ -258,7 +253,7 @@ public class StartDialog extends DialogWrapper {
 
     private void fillOutResourcesComboBox(Output outputSelected) {
         outputsResourcesCB.removeAll();
-        for (Resource resource: resources) {
+        for (Resource resource: model.getResources()) {
             if (resource.type().equals(outputSelected.type())) {
                 outputsResourcesCB.addItem(resource);
             }
@@ -271,7 +266,7 @@ public class StartDialog extends DialogWrapper {
     private void updatePreview() {
         String preview = "";
         try {
-            preview = YAMLBuilder.createPreview(model.getServiceAccount(), model.getTaskServiceAccounts(), inputs, outputs);
+            preview = YAMLBuilder.createPreview(model);
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage());
         }
@@ -279,7 +274,7 @@ public class StartDialog extends DialogWrapper {
     }
 
     private void setInputValue(String inputName, String value) {
-        for (Input input: inputs) {
+        for (Input input: model.getInputs()) {
             if (input.name().equals(inputName)) {
                 input.setValue(value);
                 break;
@@ -307,7 +302,7 @@ public class StartDialog extends DialogWrapper {
             // when combo box value change update tsa value textbox
             if (itemEvent.getStateChange() == 1) {
                 String currentTask = (String) itemEvent.getItem();
-                String value = this.model.getTaskServiceAccounts().get(currentTask);
+                String value = model.getTaskServiceAccounts().get(currentTask);
                 tsaTxt.setText(value);
             }
         });
@@ -376,7 +371,7 @@ public class StartDialog extends DialogWrapper {
                 Output currentOutput = (Output) itemEvent.getItem();
                 fillOutResourcesComboBox(currentOutput);
                 if (currentOutput.value() == null && outputsResourcesCB.getItemCount() > 0) {
-                    outputs.get(outputsCB.getSelectedIndex()).setValue(((Resource) outputsResourcesCB.getItemAt(0)).name());
+                    model.getOutputs().get(outputsCB.getSelectedIndex()).setValue(((Resource) outputsResourcesCB.getItemAt(0)).name());
                 }
             }
         });
@@ -387,7 +382,7 @@ public class StartDialog extends DialogWrapper {
                 // when outputsResourcesCB combo box value changes, the new value is saved and preview is updated
                 int outputSelectedIndex = outputsCB.getSelectedIndex();
                 Resource resourceSelected = (Resource) itemEvent.getItem();
-                outputs.get(outputSelectedIndex).setValue(resourceSelected.name());
+                model.getOutputs().get(outputSelectedIndex).setValue(resourceSelected.name());
                 updatePreview();
             }
         });

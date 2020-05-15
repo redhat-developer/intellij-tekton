@@ -24,22 +24,22 @@ import java.util.Map;
 public class YAMLBuilder {
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
 
-    public static String createPreview(String serviceAccount, Map<String, String> taskServiceAccounts, List<Input> inputs, List<Output> outputs) throws IOException {
+    public static String createPreview(StartResourceModel model) throws IOException {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
-        if (!serviceAccount.isEmpty()) {
-            rootNode.put("serviceAccountName", serviceAccount);
+        if (!model.getServiceAccount().isEmpty()) {
+            rootNode.put("serviceAccountName", model.getServiceAccount());
         }
 
-        ArrayNode tsaNode = createTaskServiceAccountNode(taskServiceAccounts);
+        ArrayNode tsaNode = createTaskServiceAccountNode(model.getTaskServiceAccounts());
         if (tsaNode.size() > 0) {
             rootNode.set("serviceAccountNames", tsaNode);
         }
 
-        ObjectNode inputsNode = createInputNode(inputs);
+        ObjectNode inputsNode = createInputNode(model.getInputs());
         rootNode.set("inputs", inputsNode);
 
-        ObjectNode outputsNode = createOutputNode(outputs);
+        ObjectNode outputsNode = createOutputNode(model.getOutputs());
         rootNode.set("outputs", outputsNode);
 
         return new YAMLMapper().writeValueAsString(rootNode);
