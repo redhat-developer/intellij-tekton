@@ -29,7 +29,7 @@ public class CreateConditionAction extends TektonAction {
         String content = getSnippet(namespace, "Tekton: Condition");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newcondition.yaml", content, KIND_CONDITIONS);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newcondition.yaml", content, KIND_CONDITIONS);
         }
     }
 }

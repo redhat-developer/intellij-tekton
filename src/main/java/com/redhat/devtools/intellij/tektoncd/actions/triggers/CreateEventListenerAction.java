@@ -29,7 +29,7 @@ public class CreateEventListenerAction extends TektonAction {
         String content = getSnippet(namespace, "Tekton: EventListener");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-neweventlistener.yaml", content, KIND_EVENTLISTENER);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-neweventlistener.yaml", content, KIND_EVENTLISTENER);
         }
     }
 }

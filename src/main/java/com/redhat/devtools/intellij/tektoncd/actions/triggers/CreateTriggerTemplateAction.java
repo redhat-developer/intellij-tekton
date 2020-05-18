@@ -29,7 +29,7 @@ public class CreateTriggerTemplateAction extends TektonAction {
         String content = getSnippet(namespace, "Tekton: TriggerTemplate");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newtriggertemplate.yaml", content, KIND_TRIGGERTEMPLATES);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggertemplate.yaml", content, KIND_TRIGGERTEMPLATES);
         }
     }
 }

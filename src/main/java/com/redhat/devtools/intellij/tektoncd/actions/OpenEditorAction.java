@@ -91,7 +91,7 @@ public class OpenEditorAction extends TektonAction {
                     filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + element.getName()) &&
                             fileEditor.getFile().getExtension().equals("yaml")).findFirst();
             if (!editor.isPresent()) {
-                createAndOpenVirtualFile(project, namespace + "-" + element.getName() + ".yaml", content, kind);
+                createAndOpenVirtualFile(project, namespace, namespace + "-" + element.getName() + ".yaml", content, kind);
             } else {
                 FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
             }

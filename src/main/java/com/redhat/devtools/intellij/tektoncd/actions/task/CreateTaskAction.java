@@ -29,7 +29,7 @@ public class CreateTaskAction extends TektonAction {
         String content = getSnippet(namespace,"Tekton: Task");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newtask.yaml", content, KIND_TASKS);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtask.yaml", content, KIND_TASKS);
         }
     }
 }

@@ -14,6 +14,7 @@ import com.intellij.openapi.util.Key;
 
 public class Constants {
     public static final String NOTIFICATION_ID = "Tekton Pipelines";
+    public static final Key<String> NAMESPACE = Key.create("com.redhat.devtools.intellij.tektoncd.tekton.namespace");
     public static final Key<String> KIND_PLURAL = Key.create("com.redhat.devtools.intellij.tektoncd.tekton.plural");
 
     public static final String KIND_CLUSTERTASKS = "clustertasks";

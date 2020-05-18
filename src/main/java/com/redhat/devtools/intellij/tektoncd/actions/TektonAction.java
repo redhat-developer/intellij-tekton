@@ -34,6 +34,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
+import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 
 public class TektonAction extends StructureTreeAction {
     Logger logger = LoggerFactory.getLogger(TektonAction.class);
@@ -70,10 +71,11 @@ public class TektonAction extends StructureTreeAction {
         return content;
     }
 
-    public void createAndOpenVirtualFile(Project project, String name, String content, String kind) {
+    public void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind) {
         VirtualFile vf = ScratchRootType.getInstance().createScratchFile(project, name, Language.ANY, content);
         vf.putUserData(KIND_PLURAL, kind);
         vf.putUserData(PROJECT, project);
+        vf.putUserData(NAMESPACE, namespace);
         File fileToDelete = new File(vf.getPath());
         fileToDelete.deleteOnExit();
         FileEditorManager.getInstance(project).openFile(vf, true);

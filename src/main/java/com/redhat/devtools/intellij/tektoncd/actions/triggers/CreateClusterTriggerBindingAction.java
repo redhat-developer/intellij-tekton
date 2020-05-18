@@ -29,7 +29,7 @@ public class CreateClusterTriggerBindingAction extends TektonAction {
         String content = getSnippet(namespace, "Tekton: ClusterTriggerBinding");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newclustertriggerbinding.yaml", content, KIND_CLUSTERTRIGGERBINDINGS);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newclustertriggerbinding.yaml", content, KIND_CLUSTERTRIGGERBINDINGS);
         }
     }
 }

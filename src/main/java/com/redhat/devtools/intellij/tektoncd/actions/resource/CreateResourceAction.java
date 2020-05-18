@@ -30,7 +30,7 @@ public class CreateResourceAction extends TektonAction {
         String content = getSnippet(namespace,"Tekton: PipelineResource");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newresource.yaml", content, KIND_RESOURCES);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newresource.yaml", content, KIND_RESOURCES);
         }
     }
 }

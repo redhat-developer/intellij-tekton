@@ -29,7 +29,7 @@ public class CreateTriggerBindingAction extends TektonAction {
         String content = getSnippet(namespace, "Tekton: TriggerBinding");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newtriggerbinding.yaml", content, KIND_TRIGGERBINDINGS);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggerbinding.yaml", content, KIND_TRIGGERBINDINGS);
         }
     }
 }
