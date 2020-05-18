@@ -26,7 +26,7 @@ public class CreateClusterTriggerBindingAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((ClusterTriggerBindingsNode)getElement(selected)).getParent().getName();
-        String content = getSnippet(namespace, "Tekton: ClusterTriggerBinding");
+        String content = getSnippet("Tekton: ClusterTriggerBinding");
 
         if (!Strings.isNullOrEmpty(content)) {
             createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newclustertriggerbinding.yaml", content, KIND_CLUSTERTRIGGERBINDINGS);

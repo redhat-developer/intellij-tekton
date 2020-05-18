@@ -26,7 +26,7 @@ public class CreateConditionAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((ConditionsNode)getElement(selected)).getParent().getName();
-        String content = getSnippet(namespace, "Tekton: Condition");
+        String content = getSnippet("Tekton: Condition");
 
         if (!Strings.isNullOrEmpty(content)) {
             createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newcondition.yaml", content, KIND_CONDITIONS);

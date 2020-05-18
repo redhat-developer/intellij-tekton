@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
-import com.google.common.base.Strings;
 import com.intellij.ide.scratch.ScratchRootType;
 import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -58,13 +57,10 @@ public class TektonAction extends StructureTreeAction {
 
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkn) {}
 
-    public String getSnippet(String namespace, String snippet) {
+    public String getSnippet(String snippet) {
         String content = null;
         try {
             content = SnippetHelper.getBody(snippet);
-            if (!Strings.isNullOrEmpty(content) && !Strings.isNullOrEmpty(namespace)) {
-                content = content.replace("${namespace}", namespace);
-            }
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage(), e);
         }

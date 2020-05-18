@@ -27,7 +27,7 @@ public class CreateResourceAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((ResourcesNode)getElement(selected)).getParent().getName();
-        String content = getSnippet(namespace,"Tekton: PipelineResource");
+        String content = getSnippet("Tekton: PipelineResource");
 
         if (!Strings.isNullOrEmpty(content)) {
             createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newresource.yaml", content, KIND_RESOURCES);

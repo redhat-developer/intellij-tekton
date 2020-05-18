@@ -26,7 +26,7 @@ public class CreateTriggerTemplateAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((TriggerTemplatesNode)getElement(selected)).getParent().getName();
-        String content = getSnippet(namespace, "Tekton: TriggerTemplate");
+        String content = getSnippet("Tekton: TriggerTemplate");
 
         if (!Strings.isNullOrEmpty(content)) {
             createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggertemplate.yaml", content, KIND_TRIGGERTEMPLATES);
