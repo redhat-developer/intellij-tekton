@@ -163,14 +163,11 @@ public class StartResourceModel {
 
     private List<Output> getOutputs(JsonNode outputsNode) {
         List<Output> result = new ArrayList<>();
-        List<JsonNode> resources = outputsNode.findValues("resources");
+        JsonNode resources = outputsNode.get("resources");
 
         if (resources != null) {
-            for (Iterator<JsonNode> it = resources.iterator(); it.hasNext(); ) {
-                JsonNode item = it.next();
-                for (Iterator<JsonNode> iter = item.elements(); iter.hasNext(); ) {
-                    result.add(new Output().fromJson(iter.next()));
-                }
+            for (Iterator<JsonNode> it = resources.elements(); it.hasNext(); ) {
+                result.add(new Output().fromJson(it.next()));
             }
         }
 
