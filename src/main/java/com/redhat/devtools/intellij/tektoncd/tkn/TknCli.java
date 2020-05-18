@@ -155,6 +155,11 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public String getClusterTaskYAML(String task) throws IOException {
+        return ExecHelper.execute(command, "clustertask", "describe", task, "-o", "yaml");
+    }
+
+    @Override
     public String getConditionYAML(String namespace, String condition) throws IOException {
         return ExecHelper.execute(command, "condition", "describe", condition, "-n", namespace, "-o", "yaml");
     }
@@ -187,6 +192,11 @@ public class TknCli implements Tkn {
     @Override
     public void deleteTask(String namespace, String task) throws IOException {
         ExecHelper.execute(command, "task", "delete", "-f", task, "-n", namespace);
+    }
+
+    @Override
+    public void deleteClusterTask(String task) throws IOException {
+        ExecHelper.execute(command, "clustertask", "delete", "-f", task);
     }
 
     @Override

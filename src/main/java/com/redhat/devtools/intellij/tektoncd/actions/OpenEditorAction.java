@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
@@ -44,7 +46,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDIN
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
 
 public class OpenEditorAction extends TektonAction {
-    public OpenEditorAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class, ConditionNode.class, TriggerTemplateNode.class, TriggerBindingNode.class, ClusterTriggerBindingNode.class, EventListenerNode.class); }
+    public OpenEditorAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class, ClusterTaskNode.class, ConditionNode.class, TriggerTemplateNode.class, TriggerBindingNode.class, ClusterTriggerBindingNode.class, EventListenerNode.class); }
 
 
     @Override
@@ -63,6 +65,9 @@ public class OpenEditorAction extends TektonAction {
             } else if (element instanceof TaskNode) {
                 content = tkncli.getTaskYAML(namespace, element.getName());
                 kind = KIND_TASKS;
+            } else if (element instanceof ClusterTaskNode) {
+                content = tkncli.getClusterTaskYAML(element.getName());
+                kind = KIND_CLUSTERTASKS;
             } else if (element instanceof ConditionNode) {
                 content = tkncli.getConditionYAML(namespace, element.getName());
                 kind = KIND_CONDITIONS;

@@ -171,6 +171,14 @@ public interface Tkn {
     String getTaskYAML(String namespace, String task) throws IOException;
 
     /**
+     * Get clusterTask configuration in YAML
+     *
+     * @param task the task to use
+     * @throws IOException if communication errored
+     */
+    String getClusterTaskYAML(String task) throws IOException;
+
+    /**
      * Get condition configuration in YAML
      *
      * @param namespace the namespace of the condition
@@ -235,6 +243,14 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void deleteTask(String namespace, String task) throws IOException;
+
+    /**
+     * Delete a clusterTask
+     *
+     * @param task the task to delete
+     * @throws IOException if communication errored
+     */
+    void deleteClusterTask(String task) throws IOException;
 
     /**
      * Delete a resource

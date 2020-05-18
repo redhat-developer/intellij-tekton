@@ -16,6 +16,7 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
@@ -34,7 +35,7 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public class DeleteAction extends TektonAction {
-    public DeleteAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class, ConditionNode.class, TriggerTemplateNode.class, TriggerBindingNode.class, ClusterTriggerBindingNode.class, EventListenerNode.class); }
+    public DeleteAction() { super(TaskNode.class, PipelineNode.class, ResourceNode.class, ClusterTaskNode.class, ConditionNode.class, TriggerTemplateNode.class, TriggerBindingNode.class, ClusterTriggerBindingNode.class, EventListenerNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -57,6 +58,8 @@ public class DeleteAction extends TektonAction {
                         tkncli.deleteResource(namespace, element.getName());
                     } else if (element instanceof TaskNode) {
                         tkncli.deleteTask(namespace, element.getName());
+                    } else if (element instanceof  ClusterTaskNode) {
+                        tkncli.deleteClusterTask(element.getName());
                     } else if (element instanceof ConditionNode) {
                         tkncli.deleteCondition(namespace, element.getName());
                     } else if (element instanceof TriggerTemplateNode) {
