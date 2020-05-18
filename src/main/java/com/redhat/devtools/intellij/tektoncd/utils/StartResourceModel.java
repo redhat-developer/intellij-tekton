@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 
 public class StartResourceModel {
@@ -99,22 +102,27 @@ public class StartResourceModel {
     }
 
     private void buildInputs(String configuration) throws IOException {
+        JsonNode paramsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "params"});
+        if (paramsNode != null) {
+            this.inputs.addAll(getInputsFromNode(paramsNode, FLAG_PARAMETER));
+        }
+
         if (isPipeline()) {
-            JsonNode inputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec"});
+            JsonNode inputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "resources"});
             if (inputsNode != null) {
-                this.inputs = getInputsFromNode(inputsNode);
+                this.inputs.addAll(getInputsFromNode(inputsNode, FLAG_INPUTRESOURCEPIPELINE));
             }
         } else {
-            JsonNode inputsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "inputs"});
-            if (inputsNode != null) {
-                this.inputs = getInputsFromNode(inputsNode);
+            JsonNode resourceInputsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "resources", "inputs"});
+            if (resourceInputsNode != null) {
+                this.inputs.addAll(getInputsFromNode(resourceInputsNode, FLAG_INPUTRESOURCETASK));
             }
         }
     }
 
     private void buildOutputs(String configuration) throws IOException {
         if (!isPipeline()) {
-            JsonNode outputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "outputs"});
+            JsonNode outputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "resources", "outputs"});
             if (outputsNode != null) {
                 this.outputs = getOutputs(outputsNode);
             }
@@ -165,17 +173,13 @@ public class StartResourceModel {
 
     }
 
-    private List<Input> getInputsFromNode(JsonNode inputsNode) {
+    private List<Input> getInputsFromNode(JsonNode inputsNode, String flag) {
         List<Input> result = new ArrayList<>();
-        JsonNode params = inputsNode.has("params") ? inputsNode.get("params") : null;
-        JsonNode resources = inputsNode.has("resources") ? inputsNode.get("resources") : null;
 
-        if (params != null) {
-            result.addAll(getInputsFromNodeInternal(params, Input.Kind.PARAMETER));
-        }
-
-        if (resources != null) {
-            result.addAll(getInputsFromNodeInternal(resources, Input.Kind.RESOURCE));
+        if (flag.equals(FLAG_PARAMETER)) {
+            result.addAll(getInputsFromNodeInternal(inputsNode, Input.Kind.PARAMETER));
+        } else {
+            result.addAll(getInputsFromNodeInternal(inputsNode, Input.Kind.RESOURCE));
         }
 
         return result;
