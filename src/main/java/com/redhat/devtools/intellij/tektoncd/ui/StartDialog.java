@@ -25,6 +25,7 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,10 +59,10 @@ public class StartDialog extends DialogWrapper {
     private JLabel outputsTitle;
     private JPanel serviceAccountsPanel;
     private JLabel saLbl;
-    private JTextField saTxt;
     private JComboBox tsaCB;
-    private JTextField tsaTxt;
     private JLabel tsaLbl;
+    private JComboBox saCB;
+    private JComboBox saForTaskCB;
 
     private StartResourceModel model;
 
@@ -79,6 +80,8 @@ public class StartDialog extends DialogWrapper {
         initServiceAccountArea(isPipeline);
         initInputsArea();
         initOutputsArea(isPipeline);
+        // fill serviceAccount ComboBox
+        fillComboBox(saCB, model.getServiceAccounts(), "");
         updatePreview();
         registerListeners();
     }
@@ -170,15 +173,19 @@ public class StartDialog extends DialogWrapper {
         if (isPipeline) {
             tsaLbl.setVisible(true);
             tsaCB.setVisible(true);
-            tsaTxt.setVisible(true);
-            fillTSAComboBox();
+            saForTaskCB.setVisible(true);
+            // fill taskServiceAccount combobox
+            fillComboBox(tsaCB, model.getTaskServiceAccounts().keySet(), null);
+            // fill service Account combobox for task
+            fillComboBox(saForTaskCB, model.getServiceAccounts(), "");
         }
     }
 
-    private void fillTSAComboBox() {
-        tsaCB.removeAll();
-        for (String task: this.model.getTaskServiceAccounts().keySet()) {
-            tsaCB.addItem(task);
+    private void fillComboBox(JComboBox comboBox, Collection<String> values, String defaultValue) {
+        comboBox.removeAll();
+        if (defaultValue != null) comboBox.addItem(defaultValue);
+        for (String value: values) {
+            comboBox.addItem(value);
         }
     }
 
@@ -286,13 +293,12 @@ public class StartDialog extends DialogWrapper {
         // listener for when preview refresh button is clicked
         previewRefreshBtn.addActionListener(actionEvent -> updatePreview());
 
-        // listener for when focus is lost in textbox with tsa's value
-        saTxt.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                super.focusLost(e);
-                // when focus is lost, value in textbox is saved in sa
-                model.setServiceAccount(saTxt.getText());
+        // listener for when value in tsa combo box changes
+        saCB.addItemListener(itemEvent -> {
+            // when combo box value change update sa value
+            if (itemEvent.getStateChange() == 1) {
+                String serviceAccountSelected = (String) itemEvent.getItem();
+                model.setServiceAccount(serviceAccountSelected);
                 updatePreview();
             }
         });
@@ -301,20 +307,19 @@ public class StartDialog extends DialogWrapper {
         tsaCB.addItemListener(itemEvent -> {
             // when combo box value change update tsa value textbox
             if (itemEvent.getStateChange() == 1) {
-                String currentTask = (String) itemEvent.getItem();
-                String value = model.getTaskServiceAccounts().get(currentTask);
-                tsaTxt.setText(value);
+                String taskSelected = (String) itemEvent.getItem();
+                String value = model.getTaskServiceAccounts().get(taskSelected);
+                saForTaskCB.setSelectedItem(value);
             }
         });
 
-        // listener for when focus is lost in textbox with tsa's value
-        tsaTxt.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                super.focusLost(e);
-                // when focus is lost, value in textbox is saved in tsa map
-                String taskSelected = (String) tsaCB.getSelectedItem();
-                model.getTaskServiceAccounts().put(taskSelected, tsaTxt.getText());
+        // listener for when value in tsa combo box changes
+        saForTaskCB.addItemListener(itemEvent -> {
+            // when combo box value change update tsa value textbox
+            if (itemEvent.getStateChange() == 1) {
+                String saSelected = (String) itemEvent.getItem();
+                String taskSelected = tsaCB.getSelectedItem().toString();
+                model.getTaskServiceAccounts().put(taskSelected, saSelected);
                 updatePreview();
             }
         });

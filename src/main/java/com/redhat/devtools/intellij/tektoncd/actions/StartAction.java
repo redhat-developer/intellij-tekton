@@ -50,6 +50,7 @@ public class StartAction extends TektonAction {
             String configuration = null;
             Notification notification;
             List<Resource> resources;
+            List<String> serviceAccounts;
             try {
                 if (element instanceof PipelineNode) {
                     configuration = tkncli.getPipelineYAML(namespace, element.getName());
@@ -57,6 +58,7 @@ public class StartAction extends TektonAction {
                     configuration = tkncli.getTaskYAML(namespace, element.getName());
                 }
                 resources = tkncli.getResources(namespace);
+                serviceAccounts = tkncli.getServiceAccounts(element.getRoot().getClient(), namespace);
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
@@ -66,7 +68,7 @@ public class StartAction extends TektonAction {
                 return;
             }
 
-            StartResourceModel model = new StartResourceModel(configuration, resources);
+            StartResourceModel model = new StartResourceModel(configuration, resources, serviceAccounts);
 
             if (!model.isValid()) {
                 UIHelper.executeInUI(() -> Messages.showErrorDialog(model.getErrorMessage(), "Error"));

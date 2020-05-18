@@ -52,6 +52,15 @@ public interface Tkn {
     List<String> getNamespaces(KubernetesClient client) throws IOException;
 
     /**
+     * Return the names of the serviceAccounts for a namespace
+     *
+     * @param client the cluster client object
+     * @param namespace the namespace to use
+     * @return the list of service account names
+     */
+    List<String> getServiceAccounts(KubernetesClient client, String namespace);
+
+    /**
      * Return the names of Tekton pipelines for a namespace
      *
      * @param namespace the namespace to use

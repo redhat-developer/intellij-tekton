@@ -35,11 +35,12 @@ public class StartResourceModel {
     private List<Input> inputs;
     private List<Output> outputs;
     private List<Resource> resources;
+    private List<String> serviceAccounts;
     private boolean isValid = true;
     private String errorMessage;
     private Map<String, String> parameters, inputResources, outputResources, taskServiceAccountNames;
 
-    public StartResourceModel(String configuration, List<Resource> resources) {
+    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts) {
         this.errorMessage = "Tekton configuration has an invalid format:\n";
         this.inputs = Collections.emptyList();
         this.outputs = Collections.emptyList();
@@ -49,6 +50,7 @@ public class StartResourceModel {
         this.inputResources = Collections.emptyMap();
         this.outputResources = Collections.emptyMap();
         this.taskServiceAccountNames = Collections.emptyMap();
+        this.serviceAccounts = serviceAccounts;
 
         buildModel(configuration);
     }
@@ -231,6 +233,10 @@ public class StartResourceModel {
 
     public List<Resource> getResources() {
         return this.resources;
+    }
+
+    public List<String> getServiceAccounts() {
+        return this.serviceAccounts;
     }
 
     public String getErrorMessage() {

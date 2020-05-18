@@ -74,6 +74,11 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public List<String> getServiceAccounts(KubernetesClient client, String namespace) {
+        return client.serviceAccounts().inNamespace(namespace).list().getItems().stream().map(serviceAccount -> serviceAccount.getMetadata().getName()).collect(Collectors.toList());
+    }
+
+    @Override
     public List<String> getPipelines(String namespace) throws IOException {
         String output = ExecHelper.execute(command, "pipeline", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
