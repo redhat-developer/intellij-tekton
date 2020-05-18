@@ -132,14 +132,15 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         }
 
         try {
-            Map<String, Object> resource = tknCli.getCustomResource(client, namespace, name, crdContext);
+            String resourceNamespace = CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL)) ? "" : namespace;
+            Map<String, Object> resource = tknCli.getCustomResource(client, resourceNamespace, name, crdContext);
             if (resource == null) {
-                tknCli.createCustomResource(client, namespace, crdContext, document.getText());
+                tknCli.createCustomResource(client, resourceNamespace, crdContext, document.getText());
                 TreeHelper.refreshNode(tree, vf.getUserData(KIND_PLURAL), namespace);
             } else {
                 JsonNode customResource = JSONHelper.MapToJSON(resource);
                 ((ObjectNode) customResource).set("spec", spec);
-                tknCli.editCustomResource(client, namespace, name, crdContext, customResource.toString());
+                tknCli.editCustomResource(client, resourceNamespace, name, crdContext, customResource.toString());
             }
         } catch (KubernetesClientException e) {
             Status errorStatus = e.getStatus();

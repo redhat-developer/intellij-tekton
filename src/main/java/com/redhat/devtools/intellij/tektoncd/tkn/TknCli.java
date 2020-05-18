@@ -222,6 +222,9 @@ public class TknCli implements Tkn {
     @Override
     public Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext) {
         try {
+            if (namespace.isEmpty()) {
+                return new TreeMap<>(client.customResource(crdContext).get(name));
+            }
             return new TreeMap<>(client.customResource(crdContext).get(namespace, name));
         } catch(KubernetesClientException e) {
             // call failed bc resource doesn't exist - 404
@@ -231,12 +234,20 @@ public class TknCli implements Tkn {
 
     @Override
     public void editCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
-        client.customResource(crdContext).edit(namespace, name, objectAsString);
+        if (namespace.isEmpty()) {
+            client.customResource(crdContext).edit(name, objectAsString);
+        } else {
+            client.customResource(crdContext).edit(namespace, name, objectAsString);
+        }
     }
 
     @Override
     public void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
-        client.customResource(crdContext).create(namespace, objectAsString);
+        if (namespace.isEmpty()) {
+            client.customResource(crdContext).create(objectAsString);
+        } else {
+            client.customResource(crdContext).create(namespace, objectAsString);
+        }
     }
 
     @Override
