@@ -26,10 +26,11 @@ public class CreateClusterTaskAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        String content = getSnippet(null,"Tekton: ClusterTask");
+        String namespace = ((ClusterTasksNode)getElement(selected)).getParent().getName();
+        String content = getSnippet("Tekton: ClusterTask");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), "newclustertask.yaml", content, KIND_CLUSTERTASKS);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, "newclustertask.yaml", content, KIND_CLUSTERTASKS);
         }
     }
 }

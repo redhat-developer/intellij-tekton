@@ -287,7 +287,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> tasks = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getClusterTasks(element.getParent().getName()).forEach(name -> tasks.add(new TaskNode(element.getRoot(), element, name, true)));
+            tkn.getClusterTasks(element.getParent().getName()).forEach(name -> tasks.add(new ClusterTaskNode(element.getRoot(), element, name)));
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load cluster tasks"));
         }
@@ -376,6 +376,9 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         }
         if (element instanceof ClusterTasksNode) {
             return new LabelAndIconDescriptor(project, element, ((ClusterTasksNode)element).getName(), CLUSTER_TASK_ICON, parentDescriptor);
+        }
+        if (element instanceof ClusterTaskNode) {
+            return new LabelAndIconDescriptor(project, element, ((ClusterTaskNode)element).getName(), CLUSTER_TASK_ICON, parentDescriptor);
         }
         if (element instanceof ResourcesNode) {
             return new LabelAndIconDescriptor(project, element, ((ResourcesNode)element).getName(), PIPELINE_RESOURCE_ICON, parentDescriptor);

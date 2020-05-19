@@ -49,6 +49,7 @@ import java.util.Map;
 import static com.redhat.devtools.intellij.common.CommonConstants.LAST_MODIFICATION_STAMP;
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
+import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
@@ -58,28 +59,23 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
     public boolean maySaveDocument(@NotNull Document document, boolean isSaveExplicit) {
         VirtualFile vf = FileDocumentManager.getInstance().getFile(document);
         Project project = vf.getUserData(PROJECT);
+        String namespace = vf.getUserData(NAMESPACE);
         Long lastModificationStamp = vf.getUserData(LAST_MODIFICATION_STAMP);
         Long currentModificationStamp = document.getModificationStamp();
         if(project == null ||
-                 !isFileToPush(project, document, vf) ||
-                 currentModificationStamp.equals(lastModificationStamp)
+                namespace == null ||
+                !isFileToPush(project, document, vf) ||
+                currentModificationStamp.equals(lastModificationStamp)
         ) {
             return true;
         }
         vf.putUserData(LAST_MODIFICATION_STAMP, currentModificationStamp);
 
-        String namespace, name, apiVersion;
+        String name, apiVersion;
         JsonNode spec;
         CustomResourceDefinitionContext crdContext;
         Notification notification;
         try {
-            namespace = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "namespace"});
-            boolean isClusterScoped = CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL));
-            if (namespace != null && isClusterScoped) {
-                throw new IOException("Tekton file has not a valid format. Cluster-scoped resources cannot have a namespace.");
-            } else if (Strings.isNullOrEmpty(namespace) && !isClusterScoped) {
-                throw new IOException("Tekton file has not a valid format. Namespace field is not valid or found.");
-            }
             name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "name"});
             if (Strings.isNullOrEmpty(name)) {
                 throw new IOException("Tekton file has not a valid format. Name field is not valid or found.");
@@ -136,14 +132,15 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         }
 
         try {
-            Map<String, Object> resource = tknCli.getCustomResource(client, namespace, name, crdContext);
+            String resourceNamespace = CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL)) ? "" : namespace;
+            Map<String, Object> resource = tknCli.getCustomResource(client, resourceNamespace, name, crdContext);
             if (resource == null) {
-                tknCli.createCustomResource(client, namespace, crdContext, document.getText());
+                tknCli.createCustomResource(client, resourceNamespace, crdContext, document.getText());
                 TreeHelper.refreshNode(tree, vf.getUserData(KIND_PLURAL), namespace);
             } else {
                 JsonNode customResource = JSONHelper.MapToJSON(resource);
                 ((ObjectNode) customResource).set("spec", spec);
-                tknCli.editCustomResource(client, namespace, name, crdContext, customResource.toString());
+                tknCli.editCustomResource(client, resourceNamespace, name, crdContext, customResource.toString());
             }
         } catch (KubernetesClientException e) {
             Status errorStatus = e.getStatus();

@@ -26,10 +26,10 @@ public class CreateTriggerBindingAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((TriggerBindingsNode)getElement(selected)).getParent().getName();
-        String content = getSnippet(namespace, "Tekton: TriggerBinding");
+        String content = getSnippet("Tekton: TriggerBinding");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newtriggerbinding.yaml", content, KIND_TRIGGERBINDINGS);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggerbinding.yaml", content, KIND_TRIGGERBINDINGS);
         }
     }
 }

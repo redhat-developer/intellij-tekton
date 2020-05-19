@@ -27,10 +27,10 @@ public class CreatePipelineAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         String namespace = ((PipelinesNode)getElement(selected)).getParent().getName();
-        String content = getSnippet(namespace, "Tekton: Pipeline");
+        String content = getSnippet("Tekton: Pipeline");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace + "-newpipeline.yaml", content, KIND_PIPELINES);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace,namespace + "-newpipeline.yaml", content, KIND_PIPELINES);
         }
     }
 }

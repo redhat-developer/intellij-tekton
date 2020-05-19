@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
-import com.google.common.base.Strings;
 import com.intellij.ide.scratch.ScratchRootType;
 import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -34,6 +33,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
+import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 
 public class TektonAction extends StructureTreeAction {
     Logger logger = LoggerFactory.getLogger(TektonAction.class);
@@ -57,23 +57,21 @@ public class TektonAction extends StructureTreeAction {
 
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkn) {}
 
-    public String getSnippet(String namespace, String snippet) {
+    public String getSnippet(String snippet) {
         String content = null;
         try {
             content = SnippetHelper.getBody(snippet);
-            if (!Strings.isNullOrEmpty(content) && !Strings.isNullOrEmpty(namespace)) {
-                content = content.replace("${namespace}", namespace);
-            }
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
         return content;
     }
 
-    public void createAndOpenVirtualFile(Project project, String name, String content, String kind) {
+    public void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind) {
         VirtualFile vf = ScratchRootType.getInstance().createScratchFile(project, name, Language.ANY, content);
         vf.putUserData(KIND_PLURAL, kind);
         vf.putUserData(PROJECT, project);
+        vf.putUserData(NAMESPACE, namespace);
         File fileToDelete = new File(vf.getPath());
         fileToDelete.deleteOnExit();
         FileEditorManager.getInstance(project).openFile(vf, true);
