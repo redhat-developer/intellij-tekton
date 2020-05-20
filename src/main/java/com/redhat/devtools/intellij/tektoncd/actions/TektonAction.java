@@ -63,9 +63,6 @@ public class TektonAction extends StructureTreeAction {
         String content = null;
         try {
             content = SnippetHelper.getBody(snippet);
-            if (!Strings.isNullOrEmpty(content) && !Strings.isNullOrEmpty(namespace)) {
-                content = content.replace("${namespace}", namespace);
-            }
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
