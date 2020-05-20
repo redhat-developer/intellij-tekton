@@ -10,12 +10,12 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
-import com.intellij.ide.scratch.ScratchRootType;
-import com.intellij.lang.Language;
+import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
@@ -24,12 +24,14 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
@@ -68,13 +70,22 @@ public class TektonAction extends StructureTreeAction {
     }
 
     public void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind) {
-        VirtualFile vf = ScratchRootType.getInstance().createScratchFile(project, name, Language.ANY, content);
-        vf.putUserData(KIND_PLURAL, kind);
-        vf.putUserData(PROJECT, project);
-        vf.putUserData(NAMESPACE, namespace);
-        File fileToDelete = new File(vf.getPath());
-        fileToDelete.deleteOnExit();
-        FileEditorManager.getInstance(project).openFile(vf, true);
+        try {
+            VirtualFile vf = createTempFile(name, content);
+            vf.putUserData(KIND_PLURAL, kind);
+            vf.putUserData(PROJECT, project);
+            vf.putUserData(NAMESPACE, namespace);
+            File fileToDelete = new File(vf.getPath());
+            fileToDelete.deleteOnExit();
+            FileEditorManager.getInstance(project).openFile(vf, true);
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage(), e);
+        }
     }
 
+    private VirtualFile createTempFile(String name, String content) throws IOException {
+        File file = new File(System.getProperty("java.io.tmpdir"), name);
+        FileUtils.write(file, content, StandardCharsets.UTF_8);
+        return LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
+    }
 }
