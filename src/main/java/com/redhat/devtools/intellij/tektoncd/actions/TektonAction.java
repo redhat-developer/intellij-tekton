@@ -69,7 +69,7 @@ public class TektonAction extends StructureTreeAction {
         return content;
     }
 
-    public void createAndOpenVirtualFile(Project project, String name, String content, String kind) {
+    public void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind) {
         try {
             VirtualFile vf = createTempFile(name, content);
             vf.putUserData(KIND_PLURAL, kind);
