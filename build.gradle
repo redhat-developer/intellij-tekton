@@ -9,9 +9,8 @@ plugins {
 repositories {
     mavenCentral()
     mavenLocal()
-    maven {
-        url 'https://repository.jboss.org'
-    }
+    maven { url 'https://repository.jboss.org' }
+    maven { url 'https://jitpack.io' }
 }
 
 sourceCompatibility = '1.8'
@@ -30,6 +29,10 @@ dependencies {
     compile 'io.fabric8:tekton-client:4.10.2'
     compile 'com.redhat.devtools.intellij:intellij-common:0.0.1-SNAPSHOT'
     testCompile 'org.mockito:mockito-inline:3.4.6'
+    compile 'com.github.graphstream:gs-core:dev-SNAPSHOT'
+    compile 'com.github.graphstream:gs-ui-swing:dev-SNAPSHOT'
+    compile 'com.github.graphstream:gs-algo:dev-SNAPSHOT'
+    compile 'com.github.vlsi.mxgraph:jgraphx:4.1.0'
 }
 
 configurations {
