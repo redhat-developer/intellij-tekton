@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +50,7 @@ public class StartAction extends TektonAction {
             String configuration = null;
             Notification notification;
             List<Resource> resources;
+            List<String> serviceAccounts;
             try {
                 if (element instanceof PipelineNode) {
                     configuration = tkncli.getPipelineYAML(namespace, element.getName());
@@ -58,6 +58,7 @@ public class StartAction extends TektonAction {
                     configuration = tkncli.getTaskYAML(namespace, element.getName());
                 }
                 resources = tkncli.getResources(namespace);
+                serviceAccounts = tkncli.getServiceAccounts(element.getRoot().getClient(), namespace);
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
@@ -67,32 +68,34 @@ public class StartAction extends TektonAction {
                 return;
             }
 
-            StartResourceModel model = new StartResourceModel(configuration, resources);
+            StartResourceModel model = new StartResourceModel(configuration, resources, serviceAccounts);
 
             if (!model.isValid()) {
                 UIHelper.executeInUI(() -> Messages.showErrorDialog(model.getErrorMessage(), "Error"));
                 return;
             }
 
-            boolean noInputsAndOuputs = model.getInputs() == null && model.getOutputs() == null;
+            boolean noInputsAndOuputs = model.getInputs().isEmpty() && model.getOutputs().isEmpty();
             StartDialog stdialog = null;
 
             if (!noInputsAndOuputs) {
                 stdialog = UIHelper.executeInUI(() -> {
-                    StartDialog dialog = new StartDialog(null, model.getNamespace(), model.getName(), model.getKind(), model.getInputs(), model.getOutputs(), resources);
+                    StartDialog dialog = new StartDialog(null, model);
                     dialog.show();
                     return dialog;
                 });
             }
             if (noInputsAndOuputs || stdialog.isOK()) {
                 try {
-                    Map<String, String> params = stdialog == null ? Collections.emptyMap() : stdialog.getParameters();
-                    Map<String, String> inputResources = stdialog == null ? Collections.emptyMap() : stdialog.getInputResources();
-                    Map<String, String> outputResources = stdialog == null ? Collections.emptyMap() : stdialog.getOutputResources();
+                    String serviceAccount = model.getServiceAccount();
+                    Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
+                    Map<String, String> params = model.getParameters();
+                    Map<String, String> inputResources = model.getInputResources();
+                    Map<String, String> outputResources = model.getOutputResources();
                     if (element instanceof PipelineNode) {
-                        tkncli.startPipeline(namespace, element.getName(), params, inputResources);
+                        tkncli.startPipeline(namespace, element.getName(), params, inputResources, serviceAccount, taskServiceAccount);
                     } else if (element instanceof TaskNode) {
-                        tkncli.startTask(namespace, element.getName(), params, inputResources, outputResources);
+                        tkncli.startTask(namespace, element.getName(), params, inputResources, outputResources, serviceAccount);
                     }
                     ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
                 } catch (IOException e) {

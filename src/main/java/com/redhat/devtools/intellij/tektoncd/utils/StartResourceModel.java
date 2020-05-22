@@ -19,6 +19,8 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,15 +31,27 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 public class StartResourceModel {
 
     private String namespace, name, kind;
+    private String serviceAccountName;
     private List<Input> inputs;
     private List<Output> outputs;
     private List<Resource> resources;
+    private List<String> serviceAccounts;
     private boolean isValid = true;
     private String errorMessage;
+    private Map<String, String> parameters, inputResources, outputResources, taskServiceAccountNames;
 
-    public StartResourceModel(String configuration, List<Resource> resources) {
-        this.resources = resources;
+    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts) {
         this.errorMessage = "Tekton configuration has an invalid format:\n";
+        this.inputs = Collections.emptyList();
+        this.outputs = Collections.emptyList();
+        this.resources = resources;
+        this.serviceAccountName = "";
+        this.parameters = Collections.emptyMap();
+        this.inputResources = Collections.emptyMap();
+        this.outputResources = Collections.emptyMap();
+        this.taskServiceAccountNames = Collections.emptyMap();
+        this.serviceAccounts = serviceAccounts;
+
         buildModel(configuration);
     }
 
@@ -58,6 +72,7 @@ public class StartResourceModel {
                 errorMessage += " * Kind field is missing or its value is not valid.\n";
                 isValid = false;
             }
+            initTaskServiceAccounts(configuration);
             buildInputs(configuration);
             buildOutputs(configuration);
 
@@ -66,6 +81,20 @@ public class StartResourceModel {
         } catch (IOException e) {
             errorMessage += " Error: " + e.getLocalizedMessage() + "\n";
             isValid = false;
+        }
+    }
+
+    private void initTaskServiceAccounts(String configuration) throws IOException {
+        if (isPipeline()) {
+            JsonNode tasksNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "tasks"});
+            if (tasksNode != null) {
+                this.taskServiceAccountNames = new HashMap<>();
+                for (Iterator<JsonNode> it = tasksNode.elements(); it.hasNext(); ) {
+                    JsonNode item = it.next();
+                    String task = item.get("name").asText();
+                    this.taskServiceAccountNames.put(task, "");
+                }
+            }
         }
     }
 
@@ -149,7 +178,7 @@ public class StartResourceModel {
             result.addAll(getInputsFromNodeInternal(resources, Input.Kind.RESOURCE));
         }
 
-        return result.isEmpty() ? null : result;
+        return result;
     }
 
     private List<Input> getInputsFromNodeInternal(JsonNode node, Input.Kind kind) {
@@ -171,7 +200,7 @@ public class StartResourceModel {
             }
         }
 
-        return result.isEmpty() ? null : result;
+        return result;
     }
 
     private boolean isPipeline() {
@@ -202,8 +231,48 @@ public class StartResourceModel {
         return this.outputs;
     }
 
+    public List<Resource> getResources() {
+        return this.resources;
+    }
+
+    public List<String> getServiceAccounts() {
+        return this.serviceAccounts;
+    }
+
     public String getErrorMessage() {
         return this.errorMessage;
     }
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setInputResources(Map<String, String> inputResources) {
+        this.inputResources = inputResources;
+    }
+
+    public Map<String, String> getInputResources() {
+        return inputResources;
+    }
+
+    public void setOutputResources(Map<String, String> outputResources) {
+        this.outputResources = outputResources;
+    }
+
+    public Map<String, String> getOutputResources() {
+        return outputResources;
+    }
+
+    public void setServiceAccount(String serviceAccountName) { this.serviceAccountName = serviceAccountName; }
+
+    public String getServiceAccount() { return this.serviceAccountName; }
+
+    public void setTaskServiceAccounts(Map<String, String> taskServiceAccountNames) { this.taskServiceAccountNames = taskServiceAccountNames; }
+
+    public Map<String, String> getTaskServiceAccounts() { return this.taskServiceAccountNames; }
 
 }

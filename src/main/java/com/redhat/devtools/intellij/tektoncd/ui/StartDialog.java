@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,83 +57,68 @@ public class StartDialog extends DialogWrapper {
     private JLabel inputResourceValuesLbl;
     private JLabel inputResourcesLbl;
     private JLabel outputsTitle;
-    private List<Input> inputs;
-    private List<Resource> resources;
-    private List<Output> outputs;
+    private JPanel serviceAccountsPanel;
+    private JLabel saLbl;
+    private JComboBox tsaCB;
+    private JLabel tsaLbl;
+    private JComboBox saCB;
+    private JComboBox saForTaskCB;
 
-    private String namespace;
-    private String name;
+    private StartResourceModel model;
 
-    private Map<String, String> parameters, inputResources, outputResources;
-
-    public StartDialog(Component parent, String namespace, String name, String kind, List<Input> inputs, List<Output> outputs, List<Resource> resources) {
+    public StartDialog(Component parent, StartResourceModel model) {
         super(null, parent, false, IdeModalityType.IDE);
 
-        this.namespace = namespace;
-        this.name = name;
-        this.inputs = inputs;
-        this.outputs = outputs;
-        this.resources = resources;
-        setTitle("Start " + name);
+        this.model = model;
+        setTitle("Start " + model.getName());
         setOKButtonText("Start");
         init();
 
-        boolean isPipeline = KIND_PIPELINE.equalsIgnoreCase(kind);
+        boolean isPipeline = KIND_PIPELINE.equalsIgnoreCase(model.getKind());
 
         // init dialog
+        initServiceAccountArea(isPipeline);
         initInputsArea();
         initOutputsArea(isPipeline);
+        // fill serviceAccount ComboBox
+        fillComboBox(saCB, model.getServiceAccounts(), "");
         updatePreview();
         registerListeners();
     }
 
     public static void main(String[] args) {
-        StartDialog dialog = new StartDialog(null, "",  "", "", null, null, null);
+        StartDialog dialog = new StartDialog(null, null);
         dialog.pack();
         dialog.show();
         System.exit(0);
     }
 
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
-    public Map<String, String> getInputResources() {
-        return inputResources;
-    }
-
-    public Map<String, String> getOutputResources() {
-        return outputResources;
-    }
-
     private void calculateArgs() {
-        if (inputs != null) {
-            for (Input input : inputs) {
-                if (input.kind() == Input.Kind.PARAMETER) {
-                    if (parameters == null) parameters = new HashMap<>();
-                    String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
-                    parameters.put(input.name(), value);
-                } else {
-                    if (inputResources == null) inputResources = new HashMap<>();
-                    inputResources.put(input.name(), input.value());
-                }
+        Map<String, String> parameters = new HashMap<>();
+        Map<String, String> inputResources = new HashMap<>();
+        Map<String, String> outputResources = new HashMap<>();
+
+        for (Input input : model.getInputs()) {
+            if (input.kind() == Input.Kind.PARAMETER) {
+                String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
+                parameters.put(input.name(), value);
+            } else {
+                inputResources.put(input.name(), input.value());
             }
         }
 
-        if (outputs != null) {
-            for (Output output : outputs) {
-                if (outputResources == null) outputResources = new HashMap<>();
-                outputResources.put(output.name(), output.value());
-            }
+        for (Output output : model.getOutputs()) {
+            outputResources.put(output.name(), output.value());
         }
+
+
+        model.setParameters(parameters);
+        model.setInputResources(inputResources);
+        model.setOutputResources(outputResources);
     }
 
     private String validateInputs() {
-        if (inputs == null) {
-            return null;
-        }
-
-        for (Input input: inputs) {
+        for (Input input: model.getInputs()) {
             if (input.value() == null && !input.defaultValue().isPresent()) {
                 return input.name();
             }
@@ -140,11 +127,7 @@ public class StartDialog extends DialogWrapper {
     }
 
     private String validateOutputs() {
-        if (outputs == null) {
-            return null;
-        }
-
-        for (Output output: outputs) {
+        for (Output output: model.getOutputs()) {
             if (output.value() == null) {
                 return output.name();
             }
@@ -186,13 +169,33 @@ public class StartDialog extends DialogWrapper {
         return contentPane;
     }
 
+    private void initServiceAccountArea(boolean isPipeline) {
+        if (isPipeline) {
+            tsaLbl.setVisible(true);
+            tsaCB.setVisible(true);
+            saForTaskCB.setVisible(true);
+            // fill taskServiceAccount combobox
+            fillComboBox(tsaCB, model.getTaskServiceAccounts().keySet(), null);
+            // fill service Account combobox for task
+            fillComboBox(saForTaskCB, model.getServiceAccounts(), "");
+        }
+    }
+
+    private void fillComboBox(JComboBox comboBox, Collection<String> values, String defaultValue) {
+        comboBox.removeAll();
+        if (defaultValue != null) comboBox.addItem(defaultValue);
+        for (String value: values) {
+            comboBox.addItem(value);
+        }
+    }
+
 
     private void initInputsArea() {
-        if (inputs == null) {
+        if (model.getInputs().isEmpty()) {
             changeInputComponentVisibility(false, false, false);
             return;
         }
-        for (Input input: inputs) {
+        for (Input input: model.getInputs()) {
             if (input.kind() == Input.Kind.PARAMETER) {
                 inputParamsCB.addItem(input);
             } else {
@@ -226,7 +229,7 @@ public class StartDialog extends DialogWrapper {
 
     private void fillInputResourceComboBox(Input inputSelected) {
         inputResourceValuesCB.removeAll();
-        for (Resource resource: resources) {
+        for (Resource resource: model.getResources()) {
             if (resource.type().equals(inputSelected.type())) {
                 inputResourceValuesCB.addItem(resource);
             }
@@ -237,8 +240,11 @@ public class StartDialog extends DialogWrapper {
     }
 
     private void initOutputsArea(boolean isPipeline) {
-        changeOutputComponentVisibility(outputs != null, isPipeline);
-        if (outputs == null) return;
+        List<Output> outputs = model.getOutputs();
+        changeOutputComponentVisibility(!outputs.isEmpty(), isPipeline);
+        if (outputs.isEmpty()) {
+            return;
+        }
 
         for (Output output: outputs) {
             outputsCB.addItem(output);
@@ -254,7 +260,7 @@ public class StartDialog extends DialogWrapper {
 
     private void fillOutResourcesComboBox(Output outputSelected) {
         outputsResourcesCB.removeAll();
-        for (Resource resource: resources) {
+        for (Resource resource: model.getResources()) {
             if (resource.type().equals(outputSelected.type())) {
                 outputsResourcesCB.addItem(resource);
             }
@@ -267,7 +273,7 @@ public class StartDialog extends DialogWrapper {
     private void updatePreview() {
         String preview = "";
         try {
-            preview = YAMLBuilder.createPreview(inputs, outputs);
+            preview = YAMLBuilder.createPreview(model);
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage());
         }
@@ -275,7 +281,7 @@ public class StartDialog extends DialogWrapper {
     }
 
     private void setInputValue(String inputName, String value) {
-        for (Input input: inputs) {
+        for (Input input: model.getInputs()) {
             if (input.name().equals(inputName)) {
                 input.setValue(value);
                 break;
@@ -286,6 +292,37 @@ public class StartDialog extends DialogWrapper {
     private void registerListeners() {
         // listener for when preview refresh button is clicked
         previewRefreshBtn.addActionListener(actionEvent -> updatePreview());
+
+        // listener for when value in tsa combo box changes
+        saCB.addItemListener(itemEvent -> {
+            // when combo box value change update sa value
+            if (itemEvent.getStateChange() == 1) {
+                String serviceAccountSelected = (String) itemEvent.getItem();
+                model.setServiceAccount(serviceAccountSelected);
+                updatePreview();
+            }
+        });
+
+        // listener for when value in tsa combo box changes
+        tsaCB.addItemListener(itemEvent -> {
+            // when combo box value change update tsa value textbox
+            if (itemEvent.getStateChange() == 1) {
+                String taskSelected = (String) itemEvent.getItem();
+                String value = model.getTaskServiceAccounts().get(taskSelected);
+                saForTaskCB.setSelectedItem(value);
+            }
+        });
+
+        // listener for when value in tsa combo box changes
+        saForTaskCB.addItemListener(itemEvent -> {
+            // when combo box value change update tsa value textbox
+            if (itemEvent.getStateChange() == 1) {
+                String saSelected = (String) itemEvent.getItem();
+                String taskSelected = tsaCB.getSelectedItem().toString();
+                model.getTaskServiceAccounts().put(taskSelected, saSelected);
+                updatePreview();
+            }
+        });
 
         // listener for when value in parameters input combo box changes
         inputParamsCB.addItemListener(itemEvent -> {
@@ -339,7 +376,7 @@ public class StartDialog extends DialogWrapper {
                 Output currentOutput = (Output) itemEvent.getItem();
                 fillOutResourcesComboBox(currentOutput);
                 if (currentOutput.value() == null && outputsResourcesCB.getItemCount() > 0) {
-                    outputs.get(outputsCB.getSelectedIndex()).setValue(((Resource) outputsResourcesCB.getItemAt(0)).name());
+                    model.getOutputs().get(outputsCB.getSelectedIndex()).setValue(((Resource) outputsResourcesCB.getItemAt(0)).name());
                 }
             }
         });
@@ -350,7 +387,7 @@ public class StartDialog extends DialogWrapper {
                 // when outputsResourcesCB combo box value changes, the new value is saved and preview is updated
                 int outputSelectedIndex = outputsCB.getSelectedIndex();
                 Resource resourceSelected = (Resource) itemEvent.getItem();
-                outputs.get(outputSelectedIndex).setValue(resourceSelected.name());
+                model.getOutputs().get(outputSelectedIndex).setValue(resourceSelected.name());
                 updatePreview();
             }
         });

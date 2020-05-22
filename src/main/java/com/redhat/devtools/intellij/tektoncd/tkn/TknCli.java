@@ -34,6 +34,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCE
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_OUTPUTRESOURCE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUNT;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 
 public class TknCli implements Tkn {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
@@ -69,6 +71,11 @@ public class TknCli implements Tkn {
         } else {
             return client.namespaces().list().getItems().stream().map(namespace -> namespace.getMetadata().getName()).collect(Collectors.toList());
         }
+    }
+
+    @Override
+    public List<String> getServiceAccounts(KubernetesClient client, String namespace) {
+        return client.serviceAccounts().inNamespace(namespace).list().getItems().stream().map(serviceAccount -> serviceAccount.getMetadata().getName()).collect(Collectors.toList());
     }
 
     @Override
@@ -261,8 +268,12 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> resources) throws IOException {
+    public void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> resources, String serviceAccount, Map<String, String> taskServiceAccount) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("pipeline", "start", pipeline, "-n", namespace));
+        if (!serviceAccount.isEmpty()) {
+            args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
+        }
+        args.addAll(argsToList(taskServiceAccount, FLAG_TASKSERVICEACCOUNT));
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(resources, FLAG_INPUTRESOURCEPIPELINE));
         ExecHelper.execute(command, args.toArray(new String[0]));
@@ -273,8 +284,11 @@ public class TknCli implements Tkn {
         ExecHelper.execute(command, "pipeline", "start", pipeline, "--last", "-n", namespace);
     }
 
-    public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources) throws IOException {
+    public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
+        if (!serviceAccount.isEmpty()) {
+            args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
+        }
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCETASK));
         args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
@@ -290,8 +304,10 @@ public class TknCli implements Tkn {
         List<String> args = new ArrayList<>();
         if (argMap != null) {
             argMap.entrySet().stream().forEach(param -> {
-                args.add(flag);
-                args.add(param.getKey() + "=" + param.getValue());
+                if (!param.getKey().isEmpty() && !param.getValue().isEmpty()) {
+                    args.add(flag);
+                    args.add(param.getKey() + "=" + param.getValue());
+                }
             });
         }
         return args;

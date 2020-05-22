@@ -19,22 +19,43 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class YAMLBuilder {
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
 
-    public static String createPreview(List<Input> inputs, List<Output> outputs) throws IOException {
+    public static String createPreview(StartResourceModel model) throws IOException {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
-        if (inputs != null) {
-            ObjectNode inputsNode = createInputNode(inputs);
-            rootNode.set("inputs", inputsNode);
+        if (!model.getServiceAccount().isEmpty()) {
+            rootNode.put("serviceAccountName", model.getServiceAccount());
         }
-        if (outputs != null) {
-            ObjectNode outputsNode = createOutputNode(outputs);
-            rootNode.set("outputs", outputsNode);
+
+        ArrayNode tsaNode = createTaskServiceAccountNode(model.getTaskServiceAccounts());
+        if (tsaNode.size() > 0) {
+            rootNode.set("serviceAccountNames", tsaNode);
         }
+
+        ObjectNode inputsNode = createInputNode(model.getInputs());
+        rootNode.set("inputs", inputsNode);
+
+        ObjectNode outputsNode = createOutputNode(model.getOutputs());
+        rootNode.set("outputs", outputsNode);
+
         return new YAMLMapper().writeValueAsString(rootNode);
+    }
+
+    private static ArrayNode createTaskServiceAccountNode(Map<String, String> tsa) {
+        ArrayNode serviceAccountNamesNode = YAML_MAPPER.createArrayNode();
+        for (String task: tsa.keySet()) {
+            if (!tsa.get(task).isEmpty()) {
+                ObjectNode tsaNode = YAML_MAPPER.createObjectNode();
+                tsaNode.put("taskName", task);
+                tsaNode.put("serviceAccountName", tsa.get(task));
+                serviceAccountNamesNode.add(tsaNode);
+            }
+        }
+        return serviceAccountNamesNode;
     }
 
     private static ObjectNode createInputNode(List<Input> inputs) {
