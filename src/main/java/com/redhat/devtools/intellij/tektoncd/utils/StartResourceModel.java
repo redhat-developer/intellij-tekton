@@ -102,6 +102,7 @@ public class StartResourceModel {
     }
 
     private void buildInputs(String configuration) throws IOException {
+        this.inputs = new ArrayList<>();
         JsonNode paramsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "params"});
         if (paramsNode != null) {
             this.inputs.addAll(getInputsFromNode(paramsNode, FLAG_PARAMETER));
@@ -187,19 +188,20 @@ public class StartResourceModel {
 
     private List<Input> getInputsFromNodeInternal(JsonNode node, Input.Kind kind) {
         List<Input> result = new ArrayList<>();
-        for (Iterator<JsonNode> it = node.elements(); it.hasNext(); ) {
-            JsonNode item = it.next();
-            result.add(new Input().fromJson(item, kind));
+        if (node != null) {
+            for (Iterator<JsonNode> it = node.elements(); it.hasNext(); ) {
+                JsonNode item = it.next();
+                result.add(new Input().fromJson(item, kind));
+            }
         }
         return result;
     }
 
     private List<Output> getOutputs(JsonNode outputsNode) {
         List<Output> result = new ArrayList<>();
-        JsonNode resources = outputsNode.get("resources");
 
-        if (resources != null) {
-            for (Iterator<JsonNode> it = resources.elements(); it.hasNext(); ) {
+        if (outputsNode != null) {
+            for (Iterator<JsonNode> it = outputsNode.elements(); it.hasNext(); ) {
                 result.add(new Output().fromJson(it.next()));
             }
         }
