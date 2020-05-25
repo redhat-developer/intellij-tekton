@@ -1,11 +1,11 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: foo
   namespace: tekton
 spec:
-  inputs:
-    resources:
+  resources:
+    inputs:
       - name: resource1
         type: git
       - name: resource2

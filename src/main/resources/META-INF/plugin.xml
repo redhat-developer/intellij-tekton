@@ -16,8 +16,8 @@
   <p><b>0.0.1</b></p>
   <p>Initial release</p>
   <p>Allow create, edit and start actions for pipelines, tasks and resources</p>
-  <p><b>WARNING</b>: this plugin has been tested and validated against Tekton Pipelines Alpha1.
-  You may have some issues against Tekton Pipelines Beta1</b>
+  <p><b>WARNING</b>: this plugin has been tested and validated against Tekton Pipelines Beta1.
+  You may have some issues against Tekton Pipelines Alpha1</b>
     ]]>
   </change-notes>
 

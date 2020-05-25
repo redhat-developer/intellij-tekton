@@ -1,11 +1,11 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: foo
   namespace: tekton
 spec:
-  outputs:
-    resources:
+  resources:
+    outputs:
       - name: resource1
         type: image
   steps:
