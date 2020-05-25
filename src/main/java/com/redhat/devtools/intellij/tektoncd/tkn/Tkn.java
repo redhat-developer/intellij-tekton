@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 
@@ -59,6 +60,33 @@ public interface Tkn {
      * @return the list of service account names
      */
     List<String> getServiceAccounts(KubernetesClient client, String namespace);
+
+    /**
+     * Return the names of the secrets for a namespace
+     *
+     * @param client the cluster client object
+     * @param namespace the namespace to use
+     * @return the list of secrets names
+     */
+    List<String> getSecrets(KubernetesClient client, String namespace);
+
+    /**
+     * Return the names of the configmaps for a namespace
+     *
+     * @param client the cluster client object
+     * @param namespace the namespace to use
+     * @return the list of configmaps names
+     */
+    List<String> getConfigMaps(KubernetesClient client, String namespace);
+
+    /**
+     * Return the names of the persistentVolumeClaims for a namespace
+     *
+     * @param client the cluster client object
+     * @param namespace the namespace to use
+     * @return the list of persistentVolumeClaims names
+     */
+    List<String> getPersistentVolumeClaim(KubernetesClient client, String namespace);
 
     /**
      * Return the names of Tekton pipelines for a namespace
@@ -355,9 +383,10 @@ public interface Tkn {
      * @param inputResources the input resources to start pipeline
      * @param serviceAccount the service account to use when running the pipeline
      * @param taskServiceAccount the service account corresponding to the task
+     * @param workspaces the workspaces to start pipeline
      * @throws IOException if communication errored
      */
-    void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount) throws IOException;
+    void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces) throws IOException;
 
     /**
      * Re-run the pipeline using last pipelinerun values
@@ -377,9 +406,10 @@ public interface Tkn {
      * @param inputResources the input resources to start task
      * @param outputResources the output resources to start task
      * @param serviceAccount the service account to use when running the task
+     * @param workspaces the workspaces to start the task
      * @throws IOException if communication errored
      */
-    void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount) throws IOException;
+    void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces) throws IOException;
 
     /**
      * Re-run the task using last taskrun values

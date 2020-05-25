@@ -33,7 +33,7 @@ public class StartResourceModelTest {
     @Test
     public void checkEmptyTask() throws IOException {
         String content = load("task1.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
@@ -43,7 +43,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleServiceNameTask() throws IOException {
         String content = load("task1.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"));
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertFalse(model.getServiceAccounts().isEmpty());
         assertEquals(1, model.getServiceAccounts().size());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
@@ -54,7 +54,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleServiceNamePipeline() throws IOException {
         String content = load("pipeline1.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"));
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertFalse(model.getServiceAccounts().isEmpty());
         assertEquals(1, model.getServiceAccounts().size());
         assertFalse(model.getTaskServiceAccounts().isEmpty());
@@ -68,7 +68,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleInputParameter() throws IOException {
         String content = load("task2.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -84,7 +84,7 @@ public class StartResourceModelTest {
     @Test
     public void checkServiceNameMultipleTasksPipeline() throws IOException {
         String content = load("pipeline2.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"));
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertFalse(model.getServiceAccounts().isEmpty());
         assertEquals(1, model.getServiceAccounts().size());
         assertFalse(model.getTaskServiceAccounts().isEmpty());
@@ -100,7 +100,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleInputParameterWithDefault() throws IOException {
         String content = load("task3.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -117,7 +117,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleInputParameterWithDescription() throws IOException {
         String content = load("task4.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -134,7 +134,7 @@ public class StartResourceModelTest {
     @Test
     public void checkMultipleInputParameter() throws IOException {
         String content = load("task5.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -149,7 +149,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleInputResource() throws IOException {
         String content = load("task6.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertFalse(model.getInputs().isEmpty());
         assertEquals(1, model.getInputs().size());
         assertEquals("resource1", model.getInputs().get(0).name());
@@ -163,7 +163,7 @@ public class StartResourceModelTest {
     @Test
     public void checkMultipleInputResource() throws IOException {
         String content = load("task7.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -178,7 +178,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleOutputResource() throws IOException {
         String content = load("task8.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
@@ -192,7 +192,7 @@ public class StartResourceModelTest {
     @Test
     public void checkMultipleOutputResource() throws IOException {
         String content = load("task9.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
@@ -209,7 +209,7 @@ public class StartResourceModelTest {
     @Test
     public void checkMultipleOutputResourceWithResources() throws IOException {
         String content = load("task9.yaml");
-        StartResourceModel model = new StartResourceModel(content, Arrays.asList(new Resource("resourceDefault1", "image")), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Arrays.asList(new Resource("resourceDefault1", "image")), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());

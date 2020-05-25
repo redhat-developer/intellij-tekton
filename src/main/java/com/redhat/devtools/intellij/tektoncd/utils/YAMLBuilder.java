@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,6 +37,11 @@ public class YAMLBuilder {
             rootNode.set("serviceAccountNames", tsaNode);
         }
 
+        ArrayNode workspacesNode = createWorkspaceNode(model.getWorkspaces());
+        if (workspacesNode.size() > 0) {
+            rootNode.set("workspaces", workspacesNode);
+        }
+
         ObjectNode inputsNode = createInputNode(model.getInputs());
         rootNode.set("inputs", inputsNode);
 
@@ -43,6 +49,50 @@ public class YAMLBuilder {
         rootNode.set("outputs", outputsNode);
 
         return new YAMLMapper().writeValueAsString(rootNode);
+    }
+
+    private static ArrayNode createWorkspaceNode(Map<String, Workspace> workspaces) {
+        ArrayNode workspacesNode = YAML_MAPPER.createArrayNode();
+        for (Workspace workspace: workspaces.values()) {
+            if (workspace != null) {
+                ObjectNode workspaceNode = createWorkspaceResourceNode(workspace);
+                // TODO need to add subpath and items
+                workspacesNode.add(workspaceNode);
+            }
+        }
+        return workspacesNode;
+    }
+
+    private static ObjectNode createWorkspaceResourceNode(Workspace workspace) {
+        ObjectNode workspaceNode = YAML_MAPPER.createObjectNode();
+        workspaceNode.put("name", workspace.getName());
+
+        ObjectNode workspaceResourceNode = YAML_MAPPER.createObjectNode();
+        switch(workspace.getKind()) {
+            case CONFIGMAP: {
+                workspaceResourceNode.put("name", workspace.getResource());
+                workspaceNode.set(workspace.getKind().toString(), workspaceResourceNode);
+                break;
+            }
+            case SECRET: {
+                workspaceResourceNode.put("secretName", workspace.getResource());
+                workspaceNode.set(workspace.getKind().toString(), workspaceResourceNode);
+                break;
+            }
+            case PVC: {
+                workspaceResourceNode.put("claimName", workspace.getResource());
+                workspaceNode.set(workspace.getKind().toString(), workspaceResourceNode);
+                break;
+            }
+            case EMPTYDIR: {
+                workspaceNode.put(workspace.getKind().toString(), "{}");
+                break;
+            }
+            default:
+                workspaceNode.put("Error", "An error occurred while building the preview");
+                break;
+        }
+        return workspaceNode;
     }
 
     private static ArrayNode createTaskServiceAccountNode(Map<String, String> tsa) {

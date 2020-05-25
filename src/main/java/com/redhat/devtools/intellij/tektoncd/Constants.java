@@ -31,12 +31,18 @@ public class Constants {
     public static final String KIND_PIPELINERUN = "pipelinerun";
     public static final String KIND_TASKRUN = "taskrun";
 
+    public static final String KIND_PVC =  "PersistentVolumeClaim";
+    public static final String KIND_CONFIGMAP =  "ConfigMap";
+    public static final String KIND_SECRET =  "Secret";
+    public static final String KIND_EMPTYDIR =  "EmptyDir";
+
     public static final String FLAG_SERVICEACCOUNT = "-s";
     public static final String FLAG_TASKSERVICEACCOUNT = "--task-serviceaccount";
     public static final String FLAG_PARAMETER = "-p";
     public static final String FLAG_INPUTRESOURCEPIPELINE = "-r";
     public static final String FLAG_INPUTRESOURCETASK = "-i";
     public static final String FLAG_OUTPUTRESOURCE = "-o";
+    public static final String FLAG_WORKSPACE = "-w";
 
     public static final String TERMINAL_TITLE = "Tekton";
 

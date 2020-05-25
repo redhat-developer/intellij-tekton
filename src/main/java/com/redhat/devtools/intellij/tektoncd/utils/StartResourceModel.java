@@ -16,6 +16,7 @@ import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,12 +38,13 @@ public class StartResourceModel {
     private List<Input> inputs;
     private List<Output> outputs;
     private List<Resource> resources;
-    private List<String> serviceAccounts;
+    private List<String> serviceAccounts, secrets, configMaps, persistenceVolumeClaims;
     private boolean isValid = true;
     private String errorMessage;
     private Map<String, String> parameters, inputResources, outputResources, taskServiceAccountNames;
+    private Map<String, Workspace> workspaces;
 
-    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts) {
+    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistenceVolumeClaims) {
         this.errorMessage = "Tekton configuration has an invalid format:\n";
         this.inputs = Collections.emptyList();
         this.outputs = Collections.emptyList();
@@ -53,6 +55,10 @@ public class StartResourceModel {
         this.outputResources = Collections.emptyMap();
         this.taskServiceAccountNames = Collections.emptyMap();
         this.serviceAccounts = serviceAccounts;
+        this.workspaces = Collections.emptyMap();
+        this.secrets = secrets;
+        this.configMaps = configMaps;
+        this.persistenceVolumeClaims = persistenceVolumeClaims;
 
         buildModel(configuration);
     }
@@ -75,6 +81,7 @@ public class StartResourceModel {
                 isValid = false;
             }
             initTaskServiceAccounts(configuration);
+            buildWorkspaces(configuration);
             buildInputs(configuration);
             buildOutputs(configuration);
 
@@ -124,6 +131,17 @@ public class StartResourceModel {
             JsonNode outputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "resources", "outputs"});
             if (outputsNode != null) {
                 this.outputs = getOutputs(outputsNode);
+            }
+        }
+    }
+
+    private void buildWorkspaces(String configuration) throws IOException {
+        JsonNode workspacesNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "workspaces"});
+        if (workspacesNode != null) {
+            workspaces = new HashMap<>();
+            for (Iterator<JsonNode> it = workspacesNode.elements(); it.hasNext(); ) {
+                JsonNode item = it.next();
+                workspaces.put(item.get("name").asText(), null);
             }
         }
     }
@@ -278,4 +296,19 @@ public class StartResourceModel {
 
     public Map<String, String> getTaskServiceAccounts() { return this.taskServiceAccountNames; }
 
+    public Map<String, Workspace> getWorkspaces() {
+        return this.workspaces;
+    }
+
+    public List<String> getSecrets() {
+        return this.secrets;
+    }
+
+    public List<String> getConfigMaps() {
+        return this.configMaps;
+    }
+
+    public List<String> getPersistenceVolumeClaims() {
+        return this.persistenceVolumeClaims;
+    }
 }

@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +33,9 @@ import java.util.Map;
 import java.util.TimerTask;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.CONFIGMAP;
+import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.PVC;
+import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.SECRET;
 
 public class StartDialog extends DialogWrapper {
     Logger logger = LoggerFactory.getLogger(StartDialog.class);
@@ -63,6 +67,12 @@ public class StartDialog extends DialogWrapper {
     private JLabel tsaLbl;
     private JComboBox saCB;
     private JComboBox saForTaskCB;
+    private JComboBox wsCB;
+    private JComboBox wsTypeCB;
+    private JComboBox wsTypeOptionsCB;
+    private JPanel workspacesPanel;
+    private JLabel wsLabel;
+    private JLabel noResFoundLbl;
 
     private StartResourceModel model;
 
@@ -78,6 +88,7 @@ public class StartDialog extends DialogWrapper {
 
         // init dialog
         initServiceAccountArea(isPipeline);
+        initWorkspacesArea();
         initInputsArea();
         initOutputsArea(isPipeline);
         // fill serviceAccount ComboBox
@@ -167,6 +178,80 @@ public class StartDialog extends DialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
         return contentPane;
+    }
+
+    private void initWorkspacesArea() {
+        if (model.getWorkspaces().isEmpty()) {
+            return;
+        }
+
+        workspacesPanel.setVisible(true);
+        for (String workspace: model.getWorkspaces().keySet()) {
+            wsCB.addItem(workspace);
+        }
+        setWorkspaceTypesCombo(null);
+    }
+
+    private void setWorkspaceTypesCombo(String workspaceName) {
+        if (wsTypeCB.getItemCount() == 0) {
+            wsTypeCB.addItem("");
+            wsTypeCB.addItem(Workspace.Kind.EMPTYDIR);
+            wsTypeCB.addItem(CONFIGMAP);
+            wsTypeCB.addItem(Workspace.Kind.SECRET);
+            wsTypeCB.addItem(Workspace.Kind.PVC);
+        }
+
+        Workspace.Kind typeToBeSelected = workspaceName == null ? null : model.getWorkspaces().get(workspaceName) == null ? null : model.getWorkspaces().get(workspaceName).getKind();
+        if (typeToBeSelected != null) {
+            wsTypeCB.setSelectedItem(typeToBeSelected);
+        } else {
+            wsTypeCB.setSelectedItem("");
+        }
+
+    }
+
+    private void setWorkspaceTypeOptionsCombo(String workspaceName, Workspace.Kind kind) {
+        noResFoundLbl.setVisible(false);
+        wsTypeOptionsCB.setVisible(false);
+
+        List<String> options;
+        if (kind == CONFIGMAP) {
+            options = model.getConfigMaps();
+        } else if(kind == SECRET) {
+            options = model.getSecrets();
+        } else if ( kind == PVC) {
+            options = model.getPersistenceVolumeClaims();
+        } else {
+            return;
+        }
+
+        if (options.isEmpty()) {
+            // show message no resource exists for this type
+            noResFoundLbl.setVisible(true);
+            return;
+        }
+
+        wsTypeOptionsCB.setVisible(true);
+        wsTypeOptionsCB.removeAll();
+        for (String option: options) {
+            wsTypeOptionsCB.addItem(option);
+        }
+
+        String resource = model.getWorkspaces().get(workspaceName) == null ? null : model.getWorkspaces().get(workspaceName).getKind() == kind ? model.getWorkspaces().get(workspaceName).getResource() : null;
+        if (resource != null) {
+            wsTypeOptionsCB.setSelectedItem(resource);
+        } else {
+            wsTypeOptionsCB.setSelectedIndex(0);
+        }
+    }
+
+    private void updateWorkspaceModel(String workspaceName, Workspace.Kind kind, String resource) {
+        if (resource == null && kind != Workspace.Kind.EMPTYDIR) {
+            model.getWorkspaces().put(workspaceName, null);
+        } else {
+            Workspace workspace = new Workspace(workspaceName, kind, resource);
+            model.getWorkspaces().put(workspaceName, workspace);
+        }
     }
 
     private void initServiceAccountArea(boolean isPipeline) {
@@ -388,6 +473,33 @@ public class StartDialog extends DialogWrapper {
                 int outputSelectedIndex = outputsCB.getSelectedIndex();
                 Resource resourceSelected = (Resource) itemEvent.getItem();
                 model.getOutputs().get(outputSelectedIndex).setValue(resourceSelected.name());
+                updatePreview();
+            }
+        });
+
+        wsCB.addItemListener(itemEvent -> {
+            if (itemEvent.getStateChange() == 1) {
+                // when wsCB combo box value changes, wsTypesCB combo box is filled with all possible options
+                setWorkspaceTypesCombo(wsCB.getSelectedItem().toString());
+            }
+        });
+
+        wsTypeCB.addItemListener(itemEvent -> {
+            if (itemEvent.getStateChange() == 1) {
+                // when wsTypesCB combo box value changes, wsTypeOptions combo box is filled with all possible options
+                String workspaceName = wsCB.getSelectedItem().toString();
+                Workspace.Kind kindSelected = wsTypeCB.getSelectedItem().equals("") ? null : (Workspace.Kind) wsTypeCB.getSelectedItem();
+                setWorkspaceTypeOptionsCombo(workspaceName, kindSelected);
+                String resource = wsTypeOptionsCB.isVisible() && wsTypeOptionsCB.getItemCount() > 0 ? wsTypeOptionsCB.getSelectedItem().toString() : null;
+                updateWorkspaceModel(workspaceName, kindSelected, resource);
+                updatePreview();
+            }
+        });
+
+        wsTypeOptionsCB.addItemListener(itemEvent -> {
+            if (itemEvent.getStateChange() == 1) {
+                // when wsCB combo box value changes, wsTypesCB combo box is filled with all possible options
+                updateWorkspaceModel(wsCB.getSelectedItem().toString(), (Workspace.Kind) wsTypeCB.getSelectedItem(), itemEvent.getItem().toString());
                 updatePreview();
             }
         });
