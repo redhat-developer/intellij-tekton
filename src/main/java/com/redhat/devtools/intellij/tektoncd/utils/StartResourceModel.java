@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -92,8 +91,7 @@ public class StartResourceModel {
             JsonNode tasksNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "tasks"});
             if (tasksNode != null) {
                 this.taskServiceAccountNames = new HashMap<>();
-                for (Iterator<JsonNode> it = tasksNode.elements(); it.hasNext(); ) {
-                    JsonNode item = it.next();
+                for(JsonNode item : tasksNode) {
                     String task = item.get("name").asText();
                     this.taskServiceAccountNames.put(task, "");
                 }
@@ -189,8 +187,7 @@ public class StartResourceModel {
     private List<Input> getInputsFromNodeInternal(JsonNode node, Input.Kind kind) {
         List<Input> result = new ArrayList<>();
         if (node != null) {
-            for (Iterator<JsonNode> it = node.elements(); it.hasNext(); ) {
-                JsonNode item = it.next();
+            for (JsonNode item : node) {
                 result.add(new Input().fromJson(item, kind));
             }
         }
@@ -201,8 +198,8 @@ public class StartResourceModel {
         List<Output> result = new ArrayList<>();
 
         if (outputsNode != null) {
-            for (Iterator<JsonNode> it = outputsNode.elements(); it.hasNext(); ) {
-                result.add(new Output().fromJson(it.next()));
+            for (JsonNode item : outputsNode) {
+                result.add(new Output().fromJson(item));
             }
         }
 
