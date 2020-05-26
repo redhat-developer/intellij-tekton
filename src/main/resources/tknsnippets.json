@@ -2,7 +2,7 @@
   "Tekton: ClusterTask": {
     "prefix": "Tekton: ClusterTask",
     "body": [
-      "apiVersion: tekton.dev/v1alpha1",
+      "apiVersion: tekton.dev/v1beta1",
       "kind: ClusterTask",
       "metadata:",
       "  name: foo",
@@ -36,7 +36,7 @@
   "Tekton: Pipeline": {
     "prefix": "Tekton: Pipeline",
     "body": [
-      "apiVersion: tekton.dev/v1alpha1",
+      "apiVersion: tekton.dev/v1beta1",
       "kind: Pipeline",
       "metadata:",
       "  name: app-deploy",
@@ -130,7 +130,7 @@
   "Tekton: PipelineRun": {
     "prefix": "Tekton: PipelineRun",
     "body": [
-      "apiVersion: tekton.dev/v1alpha1",
+      "apiVersion: tekton.dev/v1beta1",
       "kind: PipelineRun",
       "metadata:",
       "  name: foo-run",
@@ -168,22 +168,21 @@
   "Tekton: Task": {
     "prefix": "Tekton: Task",
     "body": [
-      "apiVersion: tekton.dev/v1alpha1",
+      "apiVersion: tekton.dev/v1beta1",
       "kind: Task",
       "metadata:",
       "  name: foo",
       "spec:",
-      "  inputs:",
-      "    params:",
+      "  params:",
       "    - name: pathToDockerFile",
       "      type: string",
       "      description: The path to the dockerfile to build",
       "      default: /workspace/workspace/Dockerfile",
-      "    resources:",
+      "  resources:",
+      "    inputs:",
       "    - name: workspace",
       "      type: git",
-      "  outputs:",
-      "    resources:",
+      "    outputs:",
       "    - name: buildImage",
       "      type: image",
       "  steps:",
@@ -202,17 +201,16 @@
   "Tekton: TaskInput": {
     "prefix": "Tekton: TaskInput",
     "body": [
-      "inputs:",
-      "  resources:",
+      "params:",
+      "- name: foo",
+      "  description: Parameter description",
+      "  default: default value",
+      "  type: string",
+      "resources:",
+      "  inputs:",
       "  - name: source",
       "    type: git",
-      "  params:",
-      "  - name: foo",
-      "    description: Parameter description",
-      "    default: default value",
-      "    type: string",
-      "outputs:",
-      "  resources:",
+      "  outputs:",
       "  - name: builtImage",
       "    outputImageDir: path/to/image",
       "    targetPath: \"\"",
@@ -246,7 +244,7 @@
   "Tekton: TaskRun": {
     "prefix": "Tekton: TaskRun",
     "body": [
-      "apiVersion: tekton.dev/v1alpha1",
+      "apiVersion: tekton.dev/v1beta1",
       "kind: TaskRun",
       "metadata:",
       "  name: echo-hello-world-run",

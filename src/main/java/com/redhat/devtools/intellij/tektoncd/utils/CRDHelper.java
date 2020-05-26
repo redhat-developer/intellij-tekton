@@ -20,9 +20,11 @@ public class CRDHelper {
     public static CustomResourceDefinitionContext getCRDContext(String apiVersion, String plural) {
         if (Strings.isNullOrEmpty(apiVersion) || Strings.isNullOrEmpty(plural)) return null;
         String[] groupVersion = apiVersion.split("/");
-        if (groupVersion.length != 2) return null;
+        if (groupVersion.length != 2 && !apiVersion.equalsIgnoreCase("triggers.tekton.dev")) {
+            return null;
+        }
         String group = groupVersion[0];
-        String version = groupVersion[1];
+        String version = groupVersion.length > 1 ? groupVersion[1]: "v1alpha1";
         return new CustomResourceDefinitionContext.Builder()
                 .withName(plural + "." + group)
                 .withGroup(group)

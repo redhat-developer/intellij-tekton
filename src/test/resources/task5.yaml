@@ -1,15 +1,14 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: foo
   namespace: tekton
 spec:
-  inputs:
-    params:
-      - name: parm1
-        type: string
-      - name: parm2
-        type: string
+  params:
+    - name: parm1
+      type: string
+    - name: parm2
+      type: string
   steps:
     - args:
         - -c
