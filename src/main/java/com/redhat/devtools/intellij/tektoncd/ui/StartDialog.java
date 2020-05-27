@@ -232,7 +232,7 @@ public class StartDialog extends DialogWrapper {
         }
 
         wsTypeOptionsCB.setVisible(true);
-        wsTypeOptionsCB.removeAll();
+        wsTypeOptionsCB.removeAllItems();
         for (String option: options) {
             wsTypeOptionsCB.addItem(option);
         }

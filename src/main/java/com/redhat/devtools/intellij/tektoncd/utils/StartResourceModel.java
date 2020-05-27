@@ -139,8 +139,7 @@ public class StartResourceModel {
         JsonNode workspacesNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "workspaces"});
         if (workspacesNode != null) {
             workspaces = new HashMap<>();
-            for (Iterator<JsonNode> it = workspacesNode.elements(); it.hasNext(); ) {
-                JsonNode item = it.next();
+            for(JsonNode item : workspacesNode) {
                 workspaces.put(item.get("name").asText(), null);
             }
         }
