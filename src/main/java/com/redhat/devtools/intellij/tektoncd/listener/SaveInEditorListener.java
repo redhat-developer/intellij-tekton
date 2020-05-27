@@ -30,6 +30,7 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
@@ -51,6 +52,7 @@ import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 
 public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
     Logger logger = LoggerFactory.getLogger(SaveInEditorListener.class);
@@ -111,11 +113,13 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         String errorMsg = "An error occurred while saving " + StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " " + name + "\n";
 
         Tree tree;
+        TektonTreeStructure treeStructure;
         KubernetesClient client;
         Tkn tknCli;
         try {
             tree = TreeHelper.getTree(project);
-            TektonRootNode root = (TektonRootNode) ((TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY)).getRootElement();
+            treeStructure = (TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
+            TektonRootNode root = (TektonRootNode) treeStructure.getRootElement();
             client = root.getClient();
             if (client == null) {
                 throw new IOException("Kubernetes client has not been initialized.");
@@ -136,7 +140,10 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             Map<String, Object> resource = tknCli.getCustomResource(client, resourceNamespace, name, crdContext);
             if (resource == null) {
                 tknCli.createCustomResource(client, resourceNamespace, crdContext, document.getText());
-                TreeHelper.refreshNode(tree, vf.getUserData(KIND_PLURAL), namespace);
+                ParentableNode selected = vf.getUserData(TARGET_NODE);
+                if (selected != null) {
+                    treeStructure.fireModified(selected);
+                }
             } else {
                 JsonNode customResource = JSONHelper.MapToJSON(resource);
                 ((ObjectNode) customResource).set("spec", spec);

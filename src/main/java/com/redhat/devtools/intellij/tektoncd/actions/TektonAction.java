@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
-import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
@@ -21,6 +20,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
@@ -36,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 
 public class TektonAction extends StructureTreeAction {
     Logger logger = LoggerFactory.getLogger(TektonAction.class);
@@ -69,12 +70,13 @@ public class TektonAction extends StructureTreeAction {
         return content;
     }
 
-    public void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind) {
+    public void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode targetNode) {
         try {
             VirtualFile vf = createTempFile(name, content);
             vf.putUserData(KIND_PLURAL, kind);
             vf.putUserData(PROJECT, project);
             vf.putUserData(NAMESPACE, namespace);
+            vf.putUserData(TARGET_NODE, targetNode);
             File fileToDelete = new File(vf.getPath());
             fileToDelete.deleteOnExit();
             FileEditorManager.getInstance(project).openFile(vf, true);
