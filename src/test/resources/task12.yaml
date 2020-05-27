@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  workspaces:
+    - name: write-allowed
+    - name: write-disallowed
+      readOnly: true
+  resources:
+    inputs:
+      - name: resource1
+        type: git
+  steps:
+    - args:
+        - -c
+        - echo hello world
+      command:
+        - /bin/bash
+      image: fedora
+      name: build-sources
+      resources: {}
