@@ -33,7 +33,7 @@ public class StartResourceModelTest {
     @Test
     public void checkEmptyTask() throws IOException {
         String content = load("task1.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
@@ -43,7 +43,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleServiceNameTask() throws IOException {
         String content = load("task1.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"));
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertFalse(model.getServiceAccounts().isEmpty());
         assertEquals(1, model.getServiceAccounts().size());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
@@ -54,7 +54,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleServiceNamePipeline() throws IOException {
         String content = load("pipeline1.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"));
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertFalse(model.getServiceAccounts().isEmpty());
         assertEquals(1, model.getServiceAccounts().size());
         assertFalse(model.getTaskServiceAccounts().isEmpty());
@@ -68,7 +68,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleInputParameter() throws IOException {
         String content = load("task2.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -84,7 +84,7 @@ public class StartResourceModelTest {
     @Test
     public void checkServiceNameMultipleTasksPipeline() throws IOException {
         String content = load("pipeline2.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"));
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertFalse(model.getServiceAccounts().isEmpty());
         assertEquals(1, model.getServiceAccounts().size());
         assertFalse(model.getTaskServiceAccounts().isEmpty());
@@ -100,7 +100,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleInputParameterWithDefault() throws IOException {
         String content = load("task3.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -117,7 +117,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleInputParameterWithDescription() throws IOException {
         String content = load("task4.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -134,7 +134,7 @@ public class StartResourceModelTest {
     @Test
     public void checkMultipleInputParameter() throws IOException {
         String content = load("task5.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -149,7 +149,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleInputResource() throws IOException {
         String content = load("task6.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertFalse(model.getInputs().isEmpty());
         assertEquals(1, model.getInputs().size());
         assertEquals("resource1", model.getInputs().get(0).name());
@@ -163,7 +163,7 @@ public class StartResourceModelTest {
     @Test
     public void checkMultipleInputResource() throws IOException {
         String content = load("task7.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertFalse(model.getInputs().isEmpty());
@@ -178,7 +178,7 @@ public class StartResourceModelTest {
     @Test
     public void checkSingleOutputResource() throws IOException {
         String content = load("task8.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
@@ -192,7 +192,7 @@ public class StartResourceModelTest {
     @Test
     public void checkMultipleOutputResource() throws IOException {
         String content = load("task9.yaml");
-        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
@@ -209,7 +209,7 @@ public class StartResourceModelTest {
     @Test
     public void checkMultipleOutputResourceWithResources() throws IOException {
         String content = load("task9.yaml");
-        StartResourceModel model = new StartResourceModel(content, Arrays.asList(new Resource("resourceDefault1", "image")), Collections.emptyList());
+        StartResourceModel model = new StartResourceModel(content, Arrays.asList(new Resource("resourceDefault1", "image")), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
@@ -223,5 +223,106 @@ public class StartResourceModelTest {
         assertEquals("resourceDefault1", model.getOutputs().get(1).value());
     }
 
+    @Test
+    public void checkTaskWithWorkspaces() throws IOException {
+        String content = load("task10.yaml");
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        assertEquals(2, model.getWorkspaces().size());
+        assertTrue(model.getServiceAccounts().isEmpty());
+        assertTrue(model.getTaskServiceAccounts().isEmpty());
+        assertTrue(model.getInputs().isEmpty());
+        assertTrue(model.getOutputs().isEmpty());
+    }
+
+    @Test
+    public void checkTaskWithWorkspaceAndInputParameter() throws IOException {
+        String content = load("task11.yaml");
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        assertTrue(model.getServiceAccounts().isEmpty());
+        assertTrue(model.getTaskServiceAccounts().isEmpty());
+        assertFalse(model.getInputs().isEmpty());
+        assertEquals(1, model.getInputs().size());
+        assertEquals("parm1", model.getInputs().get(0).name());
+        assertEquals("string", model.getInputs().get(0).type());
+        assertEquals(Input.Kind.PARAMETER, model.getInputs().get(0).kind());
+        assertFalse(model.getInputs().get(0).defaultValue().isPresent());
+        assertFalse(model.getInputs().get(0).description().isPresent());
+        assertTrue(model.getOutputs().isEmpty());
+        assertEquals(2, model.getWorkspaces().size());
+        assertTrue(model.getWorkspaces().containsKey("write-allowed"));
+        assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
+        assertNull(model.getWorkspaces().get(0));
+        assertNull(model.getWorkspaces().get(1));
+    }
+
+    @Test
+    public void checkTaskWithWorkspaceAndInputResourceParameter() throws IOException {
+        String content = load("task12.yaml");
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        assertFalse(model.getInputs().isEmpty());
+        assertEquals(1, model.getInputs().size());
+        assertEquals("resource1", model.getInputs().get(0).name());
+        assertEquals("git", model.getInputs().get(0).type());
+        assertEquals(Input.Kind.RESOURCE, model.getInputs().get(0).kind());
+        assertFalse(model.getInputs().get(0).defaultValue().isPresent());
+        assertFalse(model.getInputs().get(0).description().isPresent());
+        assertTrue(model.getOutputs().isEmpty());
+        assertEquals(2, model.getWorkspaces().size());
+        assertTrue(model.getWorkspaces().containsKey("write-allowed"));
+        assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
+        assertNull(model.getWorkspaces().get(0));
+        assertNull(model.getWorkspaces().get(1));
+    }
+
+    @Test
+    public void checkTaskWithWorkspaceAndOutputResourceParameter() throws IOException {
+        String content = load("task13.yaml");
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        assertTrue(model.getServiceAccounts().isEmpty());
+        assertTrue(model.getTaskServiceAccounts().isEmpty());
+        assertTrue(model.getInputs().isEmpty());
+        assertFalse(model.getOutputs().isEmpty());
+        assertEquals(2, model.getOutputs().size());
+        assertEquals("resource1", model.getOutputs().get(0).name());
+        assertEquals("image", model.getOutputs().get(0).type());
+        assertNull(model.getOutputs().get(0).value());
+        assertEquals(2, model.getWorkspaces().size());
+        assertTrue(model.getWorkspaces().containsKey("write-allowed"));
+        assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
+        assertNull(model.getWorkspaces().get(0));
+        assertNull(model.getWorkspaces().get(1));
+    }
+
+    @Test
+    public void checkTaskWithMultipleInputs() throws IOException {
+        String content = load("task14.yaml");
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        assertTrue(model.getServiceAccounts().isEmpty());
+        assertTrue(model.getTaskServiceAccounts().isEmpty());
+        assertFalse(model.getInputs().isEmpty());
+        assertEquals(2, model.getInputs().size());
+        assertEquals("parm1", model.getInputs().get(0).name());
+        assertEquals("string", model.getInputs().get(0).type());
+        assertEquals(Input.Kind.PARAMETER, model.getInputs().get(0).kind());
+        assertFalse(model.getInputs().get(0).defaultValue().isPresent());
+        assertFalse(model.getInputs().get(0).description().isPresent());
+        assertEquals("resource1", model.getInputs().get(1).name());
+        assertEquals("git", model.getInputs().get(1).type());
+        assertEquals(Input.Kind.RESOURCE, model.getInputs().get(1).kind());
+        assertFalse(model.getInputs().get(1).defaultValue().isPresent());
+        assertFalse(model.getInputs().get(1).description().isPresent());
+        assertFalse(model.getOutputs().isEmpty());
+        assertEquals(2, model.getOutputs().size());
+        assertEquals("resource1", model.getOutputs().get(0).name());
+        assertEquals("image", model.getOutputs().get(0).type());
+        assertEquals("resource2", model.getOutputs().get(1).name());
+        assertEquals("image", model.getOutputs().get(1).type());
+        assertFalse(model.getWorkspaces().isEmpty());
+        assertEquals(2, model.getWorkspaces().size());
+        assertTrue(model.getWorkspaces().containsKey("write-allowed"));
+        assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
+        assertNull(model.getWorkspaces().get(0));
+        assertNull(model.getWorkspaces().get(1));
+    }
 
 }

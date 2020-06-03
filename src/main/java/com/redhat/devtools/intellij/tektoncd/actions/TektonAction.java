@@ -41,8 +41,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 public class TektonAction extends StructureTreeAction {
     Logger logger = LoggerFactory.getLogger(TektonAction.class);
     public TektonAction(Class... filters) {
-    super(filters);
-  }
+        super(filters);
+    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
