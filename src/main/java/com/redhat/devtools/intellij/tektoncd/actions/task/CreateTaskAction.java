@@ -25,11 +25,12 @@ public class CreateTaskAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        String namespace = ((TasksNode)getElement(selected)).getParent().getName();
+        TasksNode item = getElement(selected);
+        String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: Task");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtask.yaml", content, KIND_TASKS);
+            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtask.yaml", content, KIND_TASKS, item);
         }
     }
 }
