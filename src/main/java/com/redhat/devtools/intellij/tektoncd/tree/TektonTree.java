@@ -13,7 +13,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
-import com.redhat.devtools.intellij.tektoncd.utils.VirtualDocumentHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,10 +80,9 @@ public class TektonTree extends Tree implements DataProvider {
             Project project = node.getRoot().getProject();
             String namespace = node.getNamespace();
             Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
-                    filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + node.getName() + ".yaml") &&
-                            fileEditor.getFile().getExtension().equals("yaml")).findFirst();
+                    filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + node.getName() + ".yaml")).findFirst();
             if (!editor.isPresent()) {
-                VirtualDocumentHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + node.getName() + ".yaml", content, kind);
+                VirtualFileHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + node.getName() + ".yaml", content, kind);
             } else {
                 FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
             }

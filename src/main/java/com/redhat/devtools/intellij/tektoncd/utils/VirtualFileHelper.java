@@ -16,8 +16,8 @@ import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 
-public class VirtualDocumentHelper {
-    static Logger logger = LoggerFactory.getLogger(VirtualDocumentHelper.class);
+public class VirtualFileHelper {
+    static Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
 
     public static void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind) {
         try {

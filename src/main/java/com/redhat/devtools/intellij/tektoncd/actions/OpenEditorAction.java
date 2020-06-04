@@ -19,9 +19,19 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tree.*;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
+import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
+import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
-import com.redhat.devtools.intellij.tektoncd.utils.VirtualDocumentHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
@@ -37,7 +47,6 @@ public class OpenEditorAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
-        String content = "";
         String namespace = element.getParent().getParent().getName();
         Pair<String, String> yamlAndKind = null;
         try {
@@ -50,10 +59,9 @@ public class OpenEditorAction extends TektonAction {
             Project project = anActionEvent.getProject();
 
             Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
-                    filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + element.getName() + ".yaml") &&
-                            fileEditor.getFile().getExtension().equals("yaml")).findFirst();
+                    filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + element.getName() + ".yaml")).findFirst();
             if (!editor.isPresent()) {
-                VirtualDocumentHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + element.getName() + ".yaml", yamlAndKind.first, yamlAndKind.second);
+                VirtualFileHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + element.getName() + ".yaml", yamlAndKind.first, yamlAndKind.second);
             } else {
                 FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
             }
