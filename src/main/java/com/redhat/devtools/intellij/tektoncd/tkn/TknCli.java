@@ -370,4 +370,9 @@ public class TknCli implements Tkn {
     public void followLogsTaskRun(String namespace, String taskRun) throws IOException {
         ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
     }
+
+    @Override
+    public String getTaskRunYAML(String namespace, String taskRun) throws IOException {
+        return ExecHelper.execute(command, "taskrun", "describe", taskRun, "-n", namespace, "-o", "yaml");
+    }
 }
