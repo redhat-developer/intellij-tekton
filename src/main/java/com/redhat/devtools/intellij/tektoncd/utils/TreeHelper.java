@@ -11,19 +11,40 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
+import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tree.*;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
+import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.*;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
 
 public class TreeHelper {
 
@@ -77,5 +98,29 @@ public class TreeHelper {
         }
 
         return Pair.pair(content, kind);
+    }
+
+    public static void handleDoubleClick(Tree tektonTree) {
+        TreePath[] paths = tektonTree.getSelectionPaths();
+        if (paths == null) {
+            return;
+        }
+        for (TreePath path : paths) {
+            Object node = path.getLastPathComponent();
+            ParentableNode<? extends ParentableNode<?>> element = StructureTreeAction.getElement(node);
+
+            Pair<String, String> yamlAndKind = null;
+            try {
+                yamlAndKind = getYAMLAndKindFromNode(element);
+            } catch (IOException e) {
+                UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
+            }
+
+            if (yamlAndKind != null && !yamlAndKind.first.isEmpty()) {
+                Project project = element.getRoot().getProject();
+                String namespace = element.getNamespace();
+                VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.first, yamlAndKind.second);
+            }
+        }
     }
 }

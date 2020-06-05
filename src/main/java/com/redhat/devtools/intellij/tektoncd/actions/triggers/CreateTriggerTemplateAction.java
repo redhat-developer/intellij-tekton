@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 
 import javax.swing.tree.TreePath;
 
@@ -30,7 +31,7 @@ public class CreateTriggerTemplateAction extends TektonAction {
         String content = getSnippet("Tekton: TriggerTemplate");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggertemplate.yaml", content, KIND_TRIGGERTEMPLATES, item);
+            VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggertemplate.yaml", content, KIND_TRIGGERTEMPLATES, item);
         }
     }
 }

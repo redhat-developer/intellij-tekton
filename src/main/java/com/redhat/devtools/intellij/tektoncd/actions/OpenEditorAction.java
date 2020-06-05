@@ -11,9 +11,6 @@
 package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Pair;
@@ -35,8 +32,6 @@ import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Optional;
 
 public class OpenEditorAction extends TektonAction {
     public OpenEditorAction() {
@@ -58,13 +53,7 @@ public class OpenEditorAction extends TektonAction {
         if (yamlAndKind != null && !yamlAndKind.first.isEmpty()) {
             Project project = anActionEvent.getProject();
 
-            Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
-                    filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + element.getName() + ".yaml")).findFirst();
-            if (!editor.isPresent()) {
-                VirtualFileHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + element.getName() + ".yaml", yamlAndKind.first, yamlAndKind.second);
-            } else {
-                FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
-            }
+            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.first, yamlAndKind.second);
         }
     }
 }
