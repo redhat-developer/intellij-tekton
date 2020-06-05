@@ -27,12 +27,26 @@ import java.io.IOException;
 
 public class TektonAction extends StructureTreeAction {
     Logger logger = LoggerFactory.getLogger(TektonAction.class);
+
     public TektonAction(Class... filters) {
         super(filters);
     }
 
+    public TektonAction(boolean acceptMultipleItems, Class... filters) {
+        super(acceptMultipleItems, filters);
+    }
+
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
+        try {
+            this.actionPerformed(anActionEvent, path, selected, getTkn(anActionEvent));
+        } catch (IOException e) {
+            Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error");
+        }
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected) {
         try {
             this.actionPerformed(anActionEvent, path, selected, getTkn(anActionEvent));
         } catch (IOException e) {
@@ -46,6 +60,8 @@ public class TektonAction extends StructureTreeAction {
     }
 
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkn) {}
+
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected, Tkn tkn) {}
 
     public String getSnippet(String snippet) {
         String content = null;
