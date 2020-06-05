@@ -23,8 +23,8 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
-import com.intellij.util.EditSourceOnDoubleClickHandler;
 import com.redhat.devtools.intellij.common.tree.MutableModelSynchronizer;
+import com.redhat.devtools.intellij.tektoncd.tree.DoubleClickHandler;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import org.jetbrains.annotations.NotNull;
@@ -46,9 +46,7 @@ public class WindowToolFactory implements ToolWindowFactory {
             tree.setCellRenderer(new NodeRenderer());
             PopupHandler.installPopupHandler(tree, "com.redhat.devtools.intellij.tektoncd.tree", ActionPlaces.UNKNOWN);
             toolWindow.getContentManager().addContent(contentFactory.createContent(new JBScrollPane(tree), "", false));
-            EditSourceOnDoubleClickHandler.install(tree, () -> {
-                TreeHelper.handleDoubleClick(tree);
-            });
+            DoubleClickHandler.install(tree, TreeHelper::openTektonResourceInEditor);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             throw new RuntimeException((e));
         }

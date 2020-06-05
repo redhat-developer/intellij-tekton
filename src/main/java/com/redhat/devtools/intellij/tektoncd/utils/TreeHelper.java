@@ -56,11 +56,12 @@ public class TreeHelper {
 
     /**
      * Get YAML and Tekton kind from Tekton tree node.
+     *
      * @param node the Tekton tree node
      * @return Pair where 'first' is YAML content and 'second' is Tekton kind
      * @throws IOException
      */
-    public static Pair<String, String> getYAMLAndKindFromNode(ParentableNode<? extends ParentableNode<?>> node ) throws IOException {
+    public static Pair<String, String> getYAMLAndKindFromNode(ParentableNode<? extends ParentableNode<?>> node) throws IOException {
         String namespace = node.getNamespace();
         Tkn tkncli = node.getRoot().getTkn();
         String content = "";
@@ -92,7 +93,7 @@ public class TreeHelper {
         } else if (node instanceof EventListenerNode) {
             content = tkncli.getEventListenerYAML(namespace, node.getName());
             kind = KIND_EVENTLISTENER;
-        } else if(node instanceof TaskRunNode){
+        } else if (node instanceof TaskRunNode) {
             content = tkncli.getTaskRunYAML(namespace, node.getName());
             kind = KIND_TASKRUN;
         }
@@ -100,27 +101,25 @@ public class TreeHelper {
         return Pair.pair(content, kind);
     }
 
-    public static void handleDoubleClick(Tree tektonTree) {
-        TreePath[] paths = tektonTree.getSelectionPaths();
-        if (paths == null) {
+    public static void openTektonResourceInEditor(TreePath path) {
+        if (path == null) {
             return;
         }
-        for (TreePath path : paths) {
-            Object node = path.getLastPathComponent();
-            ParentableNode<? extends ParentableNode<?>> element = StructureTreeAction.getElement(node);
 
-            Pair<String, String> yamlAndKind = null;
-            try {
-                yamlAndKind = getYAMLAndKindFromNode(element);
-            } catch (IOException e) {
-                UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
-            }
+        Object node = path.getLastPathComponent();
+        ParentableNode<? extends ParentableNode<?>> element = StructureTreeAction.getElement(node);
 
-            if (yamlAndKind != null && !yamlAndKind.first.isEmpty()) {
-                Project project = element.getRoot().getProject();
-                String namespace = element.getNamespace();
-                VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.first, yamlAndKind.second);
-            }
+        Pair<String, String> yamlAndKind = null;
+        try {
+            yamlAndKind = getYAMLAndKindFromNode(element);
+        } catch (IOException e) {
+            UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
+        }
+
+        if (yamlAndKind != null && !yamlAndKind.first.isEmpty()) {
+            Project project = element.getRoot().getProject();
+            String namespace = element.getNamespace();
+            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.first, yamlAndKind.second);
         }
     }
 }
