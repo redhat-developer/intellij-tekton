@@ -16,11 +16,14 @@ import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.tekton.client.DefaultTektonClient;
+import io.fabric8.tekton.client.TektonClient;
 
 import java.util.concurrent.CompletableFuture;
 
 public class TektonRootNode {
   private KubernetesClient client = loadClient();
+  private TektonClient tektonClient = loadTektonClient();
   private final Project project;
   private Tkn tkn;
 
@@ -32,8 +35,16 @@ public class TektonRootNode {
     return client;
   }
 
+  public TektonClient getTektonClient() {
+    return tektonClient;
+  }
+
   private KubernetesClient loadClient() {
     return new DefaultKubernetesClient(new ConfigBuilder().build());
+  }
+
+  private TektonClient loadTektonClient() {
+    return new DefaultTektonClient(new ConfigBuilder().build());
   }
 
   public CompletableFuture<Tkn> initializeTkn() {
