@@ -13,9 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
-import com.redhat.devtools.intellij.tektoncd.tree.EventListenersNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
@@ -23,8 +21,6 @@ import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
-import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
@@ -110,10 +106,6 @@ public class WatchHandler {
                element instanceof TasksNode ||
                element instanceof TaskRunsNode ||
                element instanceof ClusterTasksNode ||
-               element instanceof ConditionsNode ||
-               element instanceof TriggerTemplatesNode ||
-               element instanceof TriggerBindingsNode ||
-               element instanceof ClusterTriggerBindingsNode ||
-               element instanceof EventListenersNode;
+               element instanceof ConditionsNode;
     }
 }
