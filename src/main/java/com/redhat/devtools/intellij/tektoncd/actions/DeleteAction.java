@@ -62,7 +62,7 @@ public class DeleteAction extends TektonAction {
 
         CompletableFuture.runAsync(() -> {
             if (resultDialog == Messages.OK) {
-                Arrays.stream(elements).forEach(element -> {
+                for(ParentableNode<? extends ParentableNode<NamespaceNode>> element : elements) {
                     try {
                         String namespace = element.getNamespace();
                         if (element instanceof PipelineNode) {
@@ -88,7 +88,7 @@ public class DeleteAction extends TektonAction {
                     } catch (IOException e) {
                         UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
                     }
-                });
+                }
             }
         });
 
