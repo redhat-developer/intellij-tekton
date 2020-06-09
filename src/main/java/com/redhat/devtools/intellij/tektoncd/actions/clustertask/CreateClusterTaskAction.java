@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 
 import javax.swing.tree.TreePath;
 
@@ -31,7 +32,7 @@ public class CreateClusterTaskAction extends TektonAction {
         String content = getSnippet("Tekton: ClusterTask");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, "newclustertask.yaml", content, KIND_CLUSTERTASKS, item);
+            VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, "newclustertask.yaml", content, KIND_CLUSTERTASKS, item);
         }
     }
 }

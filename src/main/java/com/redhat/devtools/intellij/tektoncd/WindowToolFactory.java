@@ -24,6 +24,7 @@ import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.tree.MutableModelSynchronizer;
+import com.redhat.devtools.intellij.tektoncd.listener.TreeDoubleClickListener;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,12 +39,13 @@ public class WindowToolFactory implements ToolWindowFactory {
 
             TektonTreeStructure structure = new TektonTreeStructure(project);
             StructureTreeModel<TektonTreeStructure> model = buildModel(structure, project);
-            new MutableModelSynchronizer<Object>(model, structure, structure);
+            new MutableModelSynchronizer<>(model, structure, structure);
             Tree tree = new Tree(new AsyncTreeModel(model, project));
             tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
             tree.setCellRenderer(new NodeRenderer());
             PopupHandler.installPopupHandler(tree, "com.redhat.devtools.intellij.tektoncd.tree", ActionPlaces.UNKNOWN);
             toolWindow.getContentManager().addContent(contentFactory.createContent(new JBScrollPane(tree), "", false));
+           new TreeDoubleClickListener(tree);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             throw new RuntimeException((e));
         }

@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 
 import javax.swing.tree.TreePath;
 
@@ -30,7 +31,7 @@ public class CreateConditionAction extends TektonAction {
         String content = getSnippet("Tekton: Condition");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newcondition.yaml", content, KIND_CONDITIONS, item);
+            VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newcondition.yaml", content, KIND_CONDITIONS, item);
         }
     }
 }

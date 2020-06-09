@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 
 import javax.swing.tree.TreePath;
 
@@ -30,7 +31,7 @@ public class CreateTriggerBindingAction extends TektonAction {
         String content = getSnippet("Tekton: TriggerBinding");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggerbinding.yaml", content, KIND_TRIGGERBINDINGS, item);
+            VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggerbinding.yaml", content, KIND_TRIGGERBINDINGS, item);
         }
     }
 }

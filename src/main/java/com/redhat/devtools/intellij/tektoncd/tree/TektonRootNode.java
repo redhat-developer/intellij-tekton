@@ -47,4 +47,8 @@ public class TektonRootNode {
   public void load() {
       client = loadClient();
   }
+
+  public Project getProject() {
+    return project;
+  }
 }

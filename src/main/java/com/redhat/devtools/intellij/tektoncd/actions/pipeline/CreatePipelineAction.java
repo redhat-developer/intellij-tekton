@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 
 import javax.swing.tree.TreePath;
 
@@ -31,7 +32,7 @@ public class CreatePipelineAction extends TektonAction {
         String content = getSnippet("Tekton: Pipeline");
 
         if (!Strings.isNullOrEmpty(content)) {
-            createAndOpenVirtualFile(anActionEvent.getProject(), namespace,namespace + "-newpipeline.yaml", content, KIND_PIPELINES, item);
+            VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace,namespace + "-newpipeline.yaml", content, KIND_PIPELINES, item);
         }
     }
 }

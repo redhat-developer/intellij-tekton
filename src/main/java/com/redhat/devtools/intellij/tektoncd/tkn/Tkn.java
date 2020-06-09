@@ -450,4 +450,11 @@ public interface Tkn {
      */
     void followLogsTaskRun(String namespace, String taskRun) throws IOException;
 
+    /**
+     * Get TaskRun configuration in YAML
+     *
+     * @param namespace the namespace to use
+     * @param taskRun name of the TaskRun
+     */
+    String getTaskRunYAML(String namespace, String taskRun) throws IOException;
 }
