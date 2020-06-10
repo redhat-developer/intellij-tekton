@@ -61,7 +61,9 @@ public class TektonAction extends StructureTreeAction {
 
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkn) {}
 
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected, Tkn tkn) {}
+    public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected, Tkn tkn) {
+        actionPerformed(anActionEvent, path[0], selected[0], tkn);
+    }
 
     public String getSnippet(String snippet) {
         String content = null;
