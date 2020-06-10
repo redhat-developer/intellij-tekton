@@ -13,10 +13,18 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.0.2</b></p>
+  <p>v1beta1 support</p>
+  <p>Support for workspaces and service accounts in start wizard</p>
+  <p>Support for Tekton Triggers resources</p>
+  <p>Enhanced code assist and validation based on JSON schemas</p>
+  <p>Editing a resource through double click</p>
+  <p>Added Start Last Run command</p>
+  <p>Switch to tkn 0.9.0</p>
   <p><b>0.0.1</b></p>
   <p>Initial release</p>
   <p>Allow create, edit and start actions for pipelines, tasks and resources</p>
-  <p><b>WARNING</b>: this plugin has been tested and validated against Tekton Pipelines Alpha1.
+  <p><b>WARNING</b>: Version 0.0.1 of this plugin has been tested and validated against Tekton Pipelines Alpha1.
   You may have some issues against Tekton Pipelines Beta1</b>
     ]]>
   </change-notes>
