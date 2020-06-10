@@ -31,7 +31,7 @@ The start wizard has been enhanced to support:
 
 ### Tekton Triggers support
 
-This plugin now supports the Tekton Triggers resources:
+This plugin now supports the Tekton Triggers resources (if Tekton Triggers runtime is installed on the cluster):
 
 * TriggerTemplates
 * TriggerBindings
@@ -44,6 +44,14 @@ The following commands have been added:
 
 * Start Last Run (for pipelines and tasks)
 * Edit any Tekton resource by double clicking on the resource in the tree
+
+The Tekton tree now displays:
+
+* TaskRuns
+* PipelineRuns
+* Conditions
+
+as separate nodes.
 
 
 ### Provides easy editing support for Tekton assets (pipelines, task, ...)

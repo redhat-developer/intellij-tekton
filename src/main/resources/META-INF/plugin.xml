@@ -20,6 +20,7 @@
   <p>Enhanced code assist and validation based on JSON schemas</p>
   <p>Editing a resource through double click</p>
   <p>Added Start Last Run command</p>
+  <p>New nodes for TaskRuns, PipelineRuns and Conditions</p>
   <p>Switch to tkn 0.9.0</p>
   <p><b>0.0.1</b></p>
   <p>Initial release</p>
