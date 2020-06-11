@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.components.JBScrollPane;
@@ -26,11 +25,13 @@ import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
+import kotlin.Triple;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
@@ -39,6 +40,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
@@ -61,11 +63,12 @@ public class TreeHelper {
      * @return Pair where 'first' is YAML content and 'second' is Tekton kind
      * @throws IOException
      */
-    public static Pair<String, String> getYAMLAndKindFromNode(ParentableNode<? extends ParentableNode<?>> node) throws IOException {
+    public static Triple<String, String, Boolean> getYAMLAndKindFromNode(ParentableNode<?> node) throws IOException {
         String namespace = node.getNamespace();
         Tkn tkncli = node.getRoot().getTkn();
         String content = "";
         String kind = "";
+        boolean readonly = false;
         if (node instanceof PipelineNode) {
             content = tkncli.getPipelineYAML(namespace, node.getName());
             kind = KIND_PIPELINES;
@@ -96,9 +99,14 @@ public class TreeHelper {
         } else if (node instanceof TaskRunNode) {
             content = tkncli.getTaskRunYAML(namespace, node.getName());
             kind = KIND_TASKRUN;
+            readonly = true;
+        } else if (node instanceof PipelineRunNode){
+            content = tkncli.getPipelineRunYAML(namespace, node.getName());
+            kind = KIND_PIPELINERUN;
+            readonly = true;
         }
 
-        return Pair.pair(content, kind);
+        return new Triple<>(content, kind, readonly);
     }
 
     public static void openTektonResourceInEditor(TreePath path) {
@@ -109,17 +117,17 @@ public class TreeHelper {
         Object node = path.getLastPathComponent();
         ParentableNode<? extends ParentableNode<?>> element = StructureTreeAction.getElement(node);
 
-        Pair<String, String> yamlAndKind = null;
+        Triple<String, String, Boolean> yamlAndKind = null;
         try {
             yamlAndKind = getYAMLAndKindFromNode(element);
         } catch (IOException e) {
             UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
         }
 
-        if (yamlAndKind != null && !yamlAndKind.first.isEmpty()) {
+        if (yamlAndKind != null && !yamlAndKind.getFirst().isEmpty()) {
             Project project = element.getRoot().getProject();
             String namespace = element.getNamespace();
-            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.first, yamlAndKind.second);
+            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.getFirst(), yamlAndKind.getSecond(), yamlAndKind.getThird());
         }
     }
 }

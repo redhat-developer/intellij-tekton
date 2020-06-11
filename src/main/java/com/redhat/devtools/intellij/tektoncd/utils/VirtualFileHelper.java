@@ -6,6 +6,7 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.testFramework.LightVirtualFile;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -25,26 +26,37 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 public class VirtualFileHelper {
     static Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
 
-    public static void openVirtualFileInEditor(Project project, String namespace, String name, String content, String kind) {
+    public static void openVirtualFileInEditor(Project project, String namespace, String name, String content, String kind, boolean readonly) {
         Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
                 filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + name + ".yaml")).findFirst();
         if (!editor.isPresent()) {
-            VirtualFileHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + name + ".yaml", content, kind, null);
+            VirtualFileHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + name + ".yaml", content, kind, null, readonly);
         } else {
             FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
         }
     }
 
+    public static void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode){
+        createAndOpenVirtualFile(project, namespace, name, content, kind, targetNode, false);
+    }
 
-    public static void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode) {
+    public static void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode, boolean readonly) {
         try {
-            VirtualFile vf = createTempFile(name, content);
+            VirtualFile vf;
+
+            if (readonly) {
+                vf = new LightVirtualFile(name, content);
+                vf.setWritable(false);
+            } else {
+                vf = createTempFile(name, content);
+                File fileToDelete = new File(vf.getPath());
+                fileToDelete.deleteOnExit();
+            }
             vf.putUserData(KIND_PLURAL, kind);
             vf.putUserData(PROJECT, project);
             vf.putUserData(NAMESPACE, namespace);
             vf.putUserData(TARGET_NODE, targetNode);
-            File fileToDelete = new File(vf.getPath());
-            fileToDelete.deleteOnExit();
+
             FileEditorManager.getInstance(project).openFile(vf, true);
         } catch (IOException e) {
             logger.warn(e.getLocalizedMessage(), e);
