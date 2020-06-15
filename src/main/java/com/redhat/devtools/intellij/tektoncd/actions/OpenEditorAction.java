@@ -39,8 +39,7 @@ public class OpenEditorAction extends TektonAction {
                 ClusterTriggerBindingNode.class,
                 EventListenerNode.class,
                 PipelineRunNode.class,
-                TaskRunNode.class,
-                ConditionNode.class);
+                TaskRunNode.class);
     }
 
 
