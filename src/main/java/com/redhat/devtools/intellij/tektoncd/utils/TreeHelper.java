@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.components.JBScrollPane;
@@ -31,7 +32,6 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
-import kotlin.Triple;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
@@ -63,12 +63,11 @@ public class TreeHelper {
      * @return Pair where 'first' is YAML content and 'second' is Tekton kind
      * @throws IOException
      */
-    public static Triple<String, String, Boolean> getYAMLAndKindFromNode(ParentableNode<?> node) throws IOException {
+    public static Pair<String, String> getYAMLAndKindFromNode(ParentableNode<?> node) throws IOException {
         String namespace = node.getNamespace();
         Tkn tkncli = node.getRoot().getTkn();
         String content = "";
         String kind = "";
-        boolean readonly = false;
         if (node instanceof PipelineNode) {
             content = tkncli.getPipelineYAML(namespace, node.getName());
             kind = KIND_PIPELINES;
@@ -99,14 +98,12 @@ public class TreeHelper {
         } else if (node instanceof TaskRunNode) {
             content = tkncli.getTaskRunYAML(namespace, node.getName());
             kind = KIND_TASKRUN;
-            readonly = true;
         } else if (node instanceof PipelineRunNode){
             content = tkncli.getPipelineRunYAML(namespace, node.getName());
             kind = KIND_PIPELINERUN;
-            readonly = true;
         }
 
-        return new Triple<>(content, kind, readonly);
+        return Pair.create(content, kind);
     }
 
     public static void openTektonResourceInEditor(TreePath path) {
@@ -117,7 +114,7 @@ public class TreeHelper {
         Object node = path.getLastPathComponent();
         ParentableNode<? extends ParentableNode<?>> element = StructureTreeAction.getElement(node);
 
-        Triple<String, String, Boolean> yamlAndKind = null;
+        Pair<String, String> yamlAndKind = null;
         try {
             yamlAndKind = getYAMLAndKindFromNode(element);
         } catch (IOException e) {
@@ -127,7 +124,7 @@ public class TreeHelper {
         if (yamlAndKind != null && !yamlAndKind.getFirst().isEmpty()) {
             Project project = element.getRoot().getProject();
             String namespace = element.getNamespace();
-            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.getFirst(), yamlAndKind.getSecond(), yamlAndKind.getThird());
+            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.getFirst(), yamlAndKind.getSecond());
         }
     }
 }
