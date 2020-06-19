@@ -27,6 +27,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import io.fabric8.kubernetes.api.model.Config;
 import io.fabric8.kubernetes.api.model.Context;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -326,6 +327,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             } else {
                 namespaces.add(new MessageNode(element, element, NO_TEKTON));
             }
+        } catch (KubernetesClientException e) {
+            namespaces.add(new MessageNode(element, element, ERROR));
         } catch (IOException e) {
             namespaces.add(new MessageNode(element, element, ERROR));
         }
