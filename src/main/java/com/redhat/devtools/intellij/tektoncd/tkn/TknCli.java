@@ -51,13 +51,21 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public boolean isTektonAware(KubernetesClient client) throws KubernetesClientException {
-        return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("tekton.dev")).findFirst().isPresent();
+    public boolean isTektonAware(KubernetesClient client) throws IOException {
+        try {
+            return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("tekton.dev")).findFirst().isPresent();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
-    public boolean isTektonTriggersAware(KubernetesClient client) throws KubernetesClientException {
-        return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("triggers.tekton.dev")).findFirst().isPresent();
+    public boolean isTektonTriggersAware(KubernetesClient client) {
+        try {
+            return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("triggers.tekton.dev")).findFirst().isPresent();
+        } catch (KubernetesClientException e) {
+            return false;
+        }
     }
 
     @Override
