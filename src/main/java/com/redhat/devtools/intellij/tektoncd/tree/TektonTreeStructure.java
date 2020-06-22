@@ -28,6 +28,7 @@ import io.fabric8.kubernetes.api.model.Config;
 import io.fabric8.kubernetes.api.model.Context;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
+import io.fabric8.tekton.client.TektonClient;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -287,7 +288,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> tasks = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getClusterTasks(element.getParent().getName()).forEach(name -> tasks.add(new ClusterTaskNode(element.getRoot(), element, name)));
+            TektonClient client = element.getRoot().getTektonClient();
+            tkn.getClusterTasks(client).forEach(name -> tasks.add(new ClusterTaskNode(element.getRoot(), element, name)));
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load cluster tasks"));
         }
@@ -298,7 +300,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> pipelines = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getPipelines(element.getParent().getName()).forEach(name -> pipelines.add(new PipelineNode(element.getRoot(), element, name)));
+            TektonClient client = element.getRoot().getTektonClient();
+            tkn.getPipelines(client, element.getParent().getName()).forEach(name -> pipelines.add(new PipelineNode(element.getRoot(), element, name)));
         } catch (IOException e) {
             pipelines.add(new MessageNode(element.getRoot(), element, "Failed to load pipelines"));
         }
@@ -309,7 +312,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> tasks = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getTasks(element.getParent().getName()).forEach(name -> tasks.add(new TaskNode(element.getRoot(), element, name, false)));
+            TektonClient client = element.getRoot().getTektonClient();
+            tkn.getTasks(client, element.getParent().getName()).forEach(name -> tasks.add(new TaskNode(element.getRoot(), element, name, false)));
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load tasks"));
         }
