@@ -13,13 +13,9 @@ import (
 )
 
 
-func dump(v interface{}, apiVersion string, kind string, list bool) {
+func dump(v interface{}, apiVersion string, kind string) {
 	fmt.Printf("Starting generation of %s %s\n", apiVersion, kind)
-	var realKind string
-	if realKind = kind; list {
-		realKind = kind + "List"
-	}
-	filename := fmt.Sprintf("%s_%s.json", apiVersion, realKind)
+	filename := fmt.Sprintf("%s_%s.json", apiVersion, kind)
 	reflect := jsonschema.Reflect(v)
 	JSON, _ := reflect.MarshalJSON()
 	file, _ := os.Create(filename)
@@ -34,41 +30,38 @@ func dump(v interface{}, apiVersion string, kind string, list bool) {
 
 func main() {
 	os.Create("index.properties")
-	dump(&v1alpha1.Pipeline{}, "tekton.dev/v1alpha1", "Pipeline", false)
-	dump(&v1alpha1.PipelineList{}, "tekton.dev/v1alpha1", "Pipeline", true)
-	dump(&v1alpha1.PipelineRun{}, "tekton.dev/v1alpha1", "PipelineRun", false)
-	dump(&v1alpha1.PipelineRunList{}, "tekton.dev/v1alpha1", "PipelineRun", true)
-	dump(&v1alpha1.Task{}, "tekton.dev/v1alpha1", "Task", false)
-	dump(&v1alpha1.TaskList{}, "tekton.dev/v1alpha1", "Task", true)
-	dump(&v1alpha1.TaskRun{}, "tekton.dev/v1alpha1", "TaskRun", false)
-	dump(&v1alpha1.TaskRunList{}, "tekton.dev/v1alpha1", "TaskRun", true)
-	dump(&v1alpha1.ClusterTask{}, "tekton.dev/v1alpha1", "ClusterTask", false)
-	dump(&v1alpha1.ClusterTaskList{}, "tekton.dev/v1alpha1", "ClusterTask", true)
-	dump(&v1alpha1.Condition{}, "tekton.dev/v1alpha1", "Condition", false)
-	dump(&v1alpha1.ConditionList{}, "tekton.dev/v1alpha1", "Condition", true)
-	dump(&resource.PipelineResource{}, "tekton.dev/v1alpha1", "PipelineResource", false)
-	dump(&resource.PipelineResourceList{}, "tekton.dev/v1alpha1", "PipelineResource", true)
+	dump(&v1alpha1.Pipeline{}, "tekton.dev/v1alpha1", "Pipeline")
+	dump(&v1alpha1.PipelineList{}, "tekton.dev/v1alpha1", "PipelineList")
+	dump(&v1alpha1.PipelineRun{}, "tekton.dev/v1alpha1", "PipelineRun")
+	dump(&v1alpha1.PipelineRunList{}, "tekton.dev/v1alpha1", "PipelineRunList")
+	dump(&v1alpha1.Task{}, "tekton.dev/v1alpha1", "Task")
+	dump(&v1alpha1.TaskList{}, "tekton.dev/v1alpha1", "TaskList")
+	dump(&v1alpha1.TaskRun{}, "tekton.dev/v1alpha1", "TaskRun")
+	dump(&v1alpha1.TaskRunList{}, "tekton.dev/v1alpha1", "TaskRunList")
+	dump(&v1alpha1.ClusterTask{}, "tekton.dev/v1alpha1", "ClusterTask")
+	dump(&v1alpha1.ClusterTaskList{}, "tekton.dev/v1alpha1", "ClusterTaskList")
+	dump(&v1alpha1.Condition{}, "tekton.dev/v1alpha1", "Condition")
+	dump(&v1alpha1.ConditionList{}, "tekton.dev/v1alpha1", "ConditionList")
+	dump(&resource.PipelineResource{}, "tekton.dev/v1alpha1", "PipelineResource")
+	dump(&resource.PipelineResourceList{}, "tekton.dev/v1alpha1", "PipelineResourceList")
 
-	dump(&v1beta1.Pipeline{}, "tekton.dev/v1beta1", "Pipeline", false)
-	dump(&v1beta1.PipelineList{}, "tekton.dev/v1beta1", "Pipeline", true)
-	dump(&v1beta1.PipelineRun{}, "tekton.dev/v1beta1", "PipelineRun", false)
-	dump(&v1beta1.PipelineRunList{}, "tekton.dev/v1beta1", "PipelineRun", true)
-	dump(&v1beta1.Task{}, "tekton.dev/v1beta1", "Task", false)
-	dump(&v1beta1.TaskList{}, "tekton.dev/v1beta1", "Task", true)
-	dump(&v1beta1.TaskRun{}, "tekton.dev/v1beta1", "TaskRun", false)
-	dump(&v1beta1.TaskRunList{}, "tekton.dev/v1beta1", "TaskRun", true)
-	dump(&v1beta1.ClusterTask{}, "tekton.dev/v1beta1", "ClusterTask", false)
-	dump(&v1beta1.ClusterTaskList{}, "tekton.dev/v1beta1", "ClusterTask", true)
+	dump(&v1beta1.Pipeline{}, "tekton.dev/v1beta1", "Pipeline")
+	dump(&v1beta1.PipelineList{}, "tekton.dev/v1beta1", "PipelineList")
+	dump(&v1beta1.PipelineRun{}, "tekton.dev/v1beta1", "PipelineRun")
+	dump(&v1beta1.PipelineRunList{}, "tekton.dev/v1beta1", "PipelineRunList")
+	dump(&v1beta1.Task{}, "tekton.dev/v1beta1", "Task")
+	dump(&v1beta1.TaskList{}, "tekton.dev/v1beta1", "TaskList")
+	dump(&v1beta1.TaskRun{}, "tekton.dev/v1beta1", "TaskRun")
+	dump(&v1beta1.TaskRunList{}, "tekton.dev/v1beta1", "TaskRunList")
+	dump(&v1beta1.ClusterTask{}, "tekton.dev/v1beta1", "ClusterTask")
+	dump(&v1beta1.ClusterTaskList{}, "tekton.dev/v1beta1", "ClusterTaskList")
 
-	dump(&triggers.EventListener{}, "triggers.tekton.dev/v1alpha1", "EventListener", false)
-	dump(&triggers.EventListenerList{}, "triggers.tekton.dev/v1alpha1", "EventListener", true)
-	dump(&triggers.TriggerTemplate{}, "triggers.tekton.dev/v1alpha1", "TriggerTemplate", false)
-	dump(&triggers.TriggerTemplateList{}, "triggers.tekton.dev/v1alpha1", "TriggerTemplate", true)
-	dump(&triggers.TriggerBinding{}, "triggers.tekton.dev/v1alpha1", "TriggerBinding", false)
-	dump(&triggers.TriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "TriggerBinding", true)
-	dump(&triggers.ClusterTriggerBinding{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBinding", false)
-	dump(&triggers.ClusterTriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBinding", true)
-
+	dump(&triggers.EventListener{}, "triggers.tekton.dev/v1alpha1", "EventListener")
+	dump(&triggers.EventListenerList{}, "triggers.tekton.dev/v1alpha1", "EventListenerList")
+	dump(&triggers.TriggerTemplate{}, "triggers.tekton.dev/v1alpha1", "TriggerTemplate")
+	dump(&triggers.TriggerTemplateList{}, "triggers.tekton.dev/v1alpha1", "TriggerTemplateList")
+	dump(&triggers.TriggerBinding{}, "triggers.tekton.dev/v1alpha1", "TriggerBinding")
+	dump(&triggers.TriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "TriggerBindingList")
+	dump(&triggers.ClusterTriggerBinding{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBinding")
+	dump(&triggers.ClusterTriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBindingList")
 }
-
-
