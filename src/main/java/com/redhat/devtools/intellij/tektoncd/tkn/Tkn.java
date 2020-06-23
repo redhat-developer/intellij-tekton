@@ -25,7 +25,7 @@ public interface Tkn {
      * @param client the cluster client object
      * @return true if Tekton is installed on cluster false otherwise
      */
-    boolean isTektonAware(KubernetesClient client);
+    boolean isTektonAware(KubernetesClient client) throws IOException;
 
     /**
      * Check if the cluster is Tekton Triggers aware.
