@@ -10,13 +10,36 @@ import (
 	triggers "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
 	"os"
 	"encoding/json"
+	"reflect"
 )
+
+func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
+	if (i == reflect.TypeOf(v1alpha1.ArrayOrString{}) || i == reflect.TypeOf(v1beta1.ArrayOrString{})) {
+		return &jsonschema.Type{
+			OneOf: []*jsonschema.Type{
+				{
+					Type: "string",
+				},
+				{
+					Type: "array",
+					Items: &jsonschema.Type{
+						Type:                 "string",
+					},
+				},
+			},
+		}
+	}
+	return nil
+}
 
 
 func dump(v interface{}, apiVersion string, kind string) {
 	fmt.Printf("Starting generation of %s %s\n", apiVersion, kind)
 	filename := fmt.Sprintf("%s_%s.json", apiVersion, kind)
-	reflect := jsonschema.Reflect(v)
+	reflector := jsonschema.Reflector{
+		TypeMapper: arrayOrStringMapper,
+	}
+	reflect := reflector.Reflect(v)
 	JSON, _ := reflect.MarshalJSON()
 	file, _ := os.Create(filename)
 	defer file.Close()
