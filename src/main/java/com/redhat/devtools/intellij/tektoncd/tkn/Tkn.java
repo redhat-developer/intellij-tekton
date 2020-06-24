@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
+import io.fabric8.tekton.client.TektonClient;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,11 +38,11 @@ public interface Tkn {
 
     /**
      * Returns the names of ClusterTask for a namespace
-     * @param namespace the namespace to use
+     * @param client the tekton client to use
      * @return the list of ClusterTasks names
      * @throws IOException if communication errored
      */
-    List<String> getClusterTasks(String namespace) throws IOException;
+    List<String> getClusterTasks(TektonClient client) throws IOException;
 
     /**
      * Return the names of the namespace (projects for OpenShift).
@@ -91,11 +92,12 @@ public interface Tkn {
     /**
      * Return the names of Tekton pipelines for a namespace
      *
+     * @param client the tekton client object
      * @param namespace the namespace to use
      * @return the list of pipelines names
      * @throws IOException if communication errored
      */
-    List<String> getPipelines(String namespace) throws IOException;
+    List<String> getPipelines(TektonClient client, String namespace) throws IOException;
 
     /**
      * Return the list of pipeline runs for a pipeline
@@ -119,11 +121,12 @@ public interface Tkn {
     /**
      * Return the names of Tekton tasks for a namespace.
      *
+     * @param client the tekton client object
      * @param namespace the namespace to use
      * @return the list of tasks names
      * @throws IOException if communication errored
      */
-    List<String> getTasks(String namespace) throws IOException;
+    List<String> getTasks(TektonClient client, String namespace) throws IOException;
 
     /**
      * Return the list of task runs for a task.

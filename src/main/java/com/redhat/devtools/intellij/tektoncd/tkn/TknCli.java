@@ -21,6 +21,10 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.client.OpenShiftClient;
+import io.fabric8.tekton.client.TektonClient;
+import io.fabric8.tekton.pipeline.v1beta1.ClusterTaskList;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineList;
+import io.fabric8.tekton.pipeline.v1beta1.TaskList;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,9 +73,13 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getClusterTasks(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, "clustertask", "ls", "-o", "jsonpath={.items[*].metadata.name}");
-        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    public List<String> getClusterTasks(TektonClient client) throws IOException {
+        try {
+            ClusterTaskList clusterTasks = client.v1beta1().clusterTasks().list();
+            return clusterTasks.getItems().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
@@ -104,9 +112,13 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getPipelines(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, "pipeline", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
-        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    public List<String> getPipelines(TektonClient client, String namespace) throws IOException {
+        try {
+            PipelineList pipelines = client.v1beta1().pipelines().inNamespace(namespace).list();
+            return pipelines.getItems().stream().map(pipeline -> pipeline.getMetadata().getName()).collect(Collectors.toList());
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
@@ -122,9 +134,13 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getTasks(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, "task", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
-        return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    public List<String> getTasks(TektonClient client, String namespace) throws IOException {
+        try {
+            TaskList tasks = client.v1beta1().tasks().inNamespace(namespace).list();
+            return tasks.getItems().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
