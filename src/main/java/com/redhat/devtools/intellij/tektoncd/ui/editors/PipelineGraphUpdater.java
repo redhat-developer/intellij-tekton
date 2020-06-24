@@ -16,6 +16,7 @@ import com.mxgraph.view.mxGraph;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTask;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTaskCondition;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineTaskInputResource;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 public class PipelineGraphUpdater implements GraphUpdater {
+    public static final String TASK_PREFIX = "Task:";
+    public static final String CONDITION_PREFIX = "Condition:";
     private final ObjectMapper MAPPER  = new ObjectMapper(new YAMLFactory());
 
     @Override
@@ -38,21 +41,29 @@ public class PipelineGraphUpdater implements GraphUpdater {
                 for (PipelineTask task : tasks) {
                     if (task.getName() != null) {
                         String name = task.getName();
-                        String taskId = "Task:" + name;
+                        String taskId = TASK_PREFIX + name;
                         nodes.put(taskId, graph.insertVertex(null, taskId, name, 0, 200, WIDTH, HEIGHT));
                         if (task.getRunAfter() != null) {
                             for (String parentName : task.getRunAfter()) {
-                                String parentTaskId = "Task:" + parentName;
+                                String parentTaskId = TASK_PREFIX + parentName;
                                 relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
                                 relations.get(parentTaskId).add(taskId);
                             }
                         }
                         if (task.getConditions() != null) {
                             for(PipelineTaskCondition condition : task.getConditions()) {
-                                String conditionId = "Condition:" + condition.getConditionRef();
+                                String conditionId = CONDITION_PREFIX + condition.getConditionRef();
                                 conditions.put(conditionId, condition);
                                 relations.computeIfAbsent(conditionId, k -> new ArrayList<>());
                                 relations.get(conditionId).add(taskId);
+                                for(PipelineTaskInputResource resource : condition.getResources()) {
+                                    for(String parentName : resource.getFrom()) {
+                                        String parentTaskId = TASK_PREFIX + parentName;
+                                        relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
+                                        relations.get(parentTaskId).add(conditionId);
+
+                                    }
+                                }
                             }
                         }
                     }
