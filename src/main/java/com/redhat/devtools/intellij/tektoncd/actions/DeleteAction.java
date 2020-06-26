@@ -39,7 +39,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class DeleteAction extends TektonAction {
-    public DeleteAction() { super(true,
+    public DeleteAction() {
+        super(true,
             TaskNode.class,
             TaskRunNode.class,
             PipelineNode.class,
@@ -50,7 +51,8 @@ public class DeleteAction extends TektonAction {
             TriggerTemplateNode.class,
             TriggerBindingNode.class,
             ClusterTriggerBindingNode.class,
-            EventListenerNode.class); }
+            EventListenerNode.class);
+    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected, Tkn tkncli) {
