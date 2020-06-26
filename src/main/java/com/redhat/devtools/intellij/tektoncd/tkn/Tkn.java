@@ -267,81 +267,101 @@ public interface Tkn {
     String getEventListenerYAML(String namespace, String eventListener) throws IOException;
 
     /**
-     * Delete a pipeline
+     * Delete a list of pipelines
      *
      * @param namespace the namespace to use
-     * @param pipeline the pipeline to delete
+     * @param pipelines the list of pipelines to delete
      * @throws IOException if communication errored
      */
-    void deletePipeline(String namespace, String pipeline) throws IOException;
+    void deletePipelines(String namespace, List<String> pipelines) throws IOException;
 
     /**
-     * Delete a task
+     * Delete a list of pipelineruns
      *
      * @param namespace the namespace to use
-     * @param task the task to delete
+     * @param prs the list of pipelineRuns to delete
      * @throws IOException if communication errored
      */
-    void deleteTask(String namespace, String task) throws IOException;
+    void deletePipelineRuns(String namespace, List<String> prs) throws IOException;
 
     /**
-     * Delete a clusterTask
-     *
-     * @param task the task to delete
-     * @throws IOException if communication errored
-     */
-    void deleteClusterTask(String task) throws IOException;
-
-    /**
-     * Delete a resource
+     * Delete a list of tasks
      *
      * @param namespace the namespace to use
-     * @param resource the resource to delete
+     * @param tasks the list of tasks to delete
      * @throws IOException if communication errored
      */
-    void deleteResource(String namespace, String resource) throws IOException;
+    void deleteTasks(String namespace, List<String> tasks) throws IOException;
 
     /**
-     * Delete a condition
+     * Delete a list of clusterTasks
+     *
+     * @param tasks the list of tasks to delete
+     * @throws IOException if communication errored
+     */
+    void deleteClusterTasks(List<String> tasks) throws IOException;
+
+    /**
+     * Delete a list of taskruns
      *
      * @param namespace the namespace to use
-     * @param condition the condition to delete
+     * @param trs the list of taskRuns to delete
      * @throws IOException if communication errored
      */
-    void deleteCondition(String namespace, String condition) throws IOException;
+    void deleteTaskRuns(String namespace, List<String> trs) throws IOException;
 
     /**
+     * Delete a list of resources
      *
      * @param namespace the namespace to use
-     * @param triggerTemplate the triggerTemplate to delete
+     * @param resources the list of resources to delete
      * @throws IOException if communication errored
      */
-    void deleteTriggerTemplate(String namespace, String triggerTemplate) throws IOException;
+    void deleteResources(String namespace, List<String> resources) throws IOException;
 
     /**
-     * Delete a triggerBinding
+     * Delete a list of conditions
      *
      * @param namespace the namespace to use
-     * @param triggerBinding the triggerBinding to delete
+     * @param conditions the list of conditions to delete
      * @throws IOException if communication errored
      */
-    void deleteTriggerBinding(String namespace, String triggerBinding) throws IOException;
+    void deleteConditions(String namespace, List<String> conditions) throws IOException;
 
     /**
-     * Delete a clusterTriggerBinding
+     * Delete a list of triggerTemplates
+     *
      * @param namespace the namespace to use
-     * @param ctb the clusterTriggerBinding to delete
+     * @param triggerTemplates the list of triggerTemplates to delete
      * @throws IOException if communication errored
      */
-    void deleteClusterTriggerBinding(String namespace, String ctb) throws IOException;
+    void deleteTriggerTemplates(String namespace, List<String> triggerTemplates) throws IOException;
 
     /**
-     * Delete a eventListener
+     * Delete a list of triggerBindings
+     *
      * @param namespace the namespace to use
-     * @param eventListener the eventListener to delete
+     * @param triggerBindings the list of triggerBindings to delete
      * @throws IOException if communication errored
      */
-    void deleteEventListener(String namespace, String eventListener) throws IOException;
+    void deleteTriggerBindings(String namespace, List<String> triggerBindings) throws IOException;
+
+    /**
+     * Delete a list of clusterTriggerBindings
+     *
+     * @param ctbs the list of clusterTriggerBindings to delete
+     * @throws IOException if communication errored
+     */
+    void deleteClusterTriggerBindings(List<String> ctbs) throws IOException;
+
+    /**
+     * Delete a list of eventListeners
+     *
+     * @param namespace the namespace to use
+     * @param eventListeners the list of eventListeners to delete
+     * @throws IOException if communication errored
+     */
+    void deleteEventListeners(String namespace, List<String> eventListeners) throws IOException;
 
     /**
      * Get a custom resource from the cluster which is namespaced.

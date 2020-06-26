@@ -233,48 +233,67 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void deletePipeline(String namespace, String pipeline) throws IOException {
-        ExecHelper.execute(command, "pipeline", "delete", "-f", pipeline, "-n", namespace);
+    public void deletePipelines(String namespace, List<String> pipelines) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs(namespace, "pipeline", pipelines));
     }
 
     @Override
-    public void deleteTask(String namespace, String task) throws IOException {
-        ExecHelper.execute(command, "task", "delete", "-f", task, "-n", namespace);
+    public void deletePipelineRuns(String namespace, List<String> prs) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs(namespace, "pr", prs));
     }
 
     @Override
-    public void deleteClusterTask(String task) throws IOException {
-        ExecHelper.execute(command, "clustertask", "delete", "-f", task);
+    public void deleteTasks(String namespace, List<String> tasks) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs(namespace, "task", tasks));
     }
 
     @Override
-    public void deleteResource(String namespace, String resource) throws IOException {
-        ExecHelper.execute(command, "resource", "delete", "-f", resource, "-n", namespace);
+    public void deleteClusterTasks(List<String> tasks) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs("", "clustertask", tasks));
     }
 
     @Override
-    public void deleteCondition(String namespace, String condition) throws IOException {
-        ExecHelper.execute(command, "conditions", "delete", "-f", condition, "-n", namespace);
+    public void deleteTaskRuns(String namespace, List<String> trs) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs(namespace, "tr", trs));
     }
 
     @Override
-    public void deleteTriggerTemplate(String namespace, String triggerTemplate) throws IOException {
-        ExecHelper.execute(command, "triggertemplate", "delete", "-f", triggerTemplate, "-n", namespace);
+    public void deleteResources(String namespace, List<String> resources) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs(namespace, "resource", resources));
     }
 
     @Override
-    public void deleteTriggerBinding(String namespace, String triggerBinding) throws IOException {
-        ExecHelper.execute(command, "triggerbinding", "delete", "-f", triggerBinding, "-n", namespace);
+    public void deleteConditions(String namespace, List<String> conditions) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs(namespace, "conditions", conditions));
     }
 
     @Override
-    public void deleteClusterTriggerBinding(String namespace, String ctb) throws IOException {
-        ExecHelper.execute(command, "ctb", "delete", "-f", ctb, "-n", namespace);
+    public void deleteTriggerTemplates(String namespace, List<String> triggerTemplates) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs(namespace, "triggertemplate", triggerTemplates));
     }
 
     @Override
-    public void deleteEventListener(String namespace, String eventListener) throws IOException {
-        ExecHelper.execute(command, "eventlistener", "delete", "-f", eventListener, "-n", namespace);
+    public void deleteTriggerBindings(String namespace, List<String> triggerBindings) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs(namespace, "triggerbinding", triggerBindings));
+    }
+
+    @Override
+    public void deleteClusterTriggerBindings(List<String> ctbs) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs("", "ctb", ctbs));
+    }
+
+    @Override
+    public void deleteEventListeners(String namespace, List<String> eventListeners) throws IOException {
+        ExecHelper.execute(command, getDeleteArgs(namespace, "eventlistener", eventListeners));
+    }
+
+    private String[] getDeleteArgs(String namespace, String kind, List<String> resourcesToDelete) {
+        List<String> args = new ArrayList<>(Arrays.asList(kind, "delete", "-f"));
+        args.addAll(resourcesToDelete);
+        if (!namespace.isEmpty()) {
+            args.addAll(Arrays.asList("-n", namespace));
+        }
+        return args.toArray(new String[0]);
     }
 
     @Override
