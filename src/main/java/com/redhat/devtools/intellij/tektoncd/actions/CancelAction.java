@@ -15,13 +15,11 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.RunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +44,6 @@ public class CancelAction extends TektonAction {
                 } else if (element instanceof TaskRunNode) {
                     tkncli.cancelTaskRun(namespace, element.getName());
                 }
-                ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
             } catch (IOException e) {
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
