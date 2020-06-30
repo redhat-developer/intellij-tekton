@@ -26,11 +26,14 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.tekton.client.TektonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class WatchHandler {
+    private static final Logger logger = LoggerFactory.getLogger(WatchHandler.class);
     private Map<String, Watch> watches;
 
     private static WatchHandler instance;
@@ -52,20 +55,25 @@ public class WatchHandler {
         String namespace = element.getNamespace();
         String watchId = getWatchId(element);
         Watch watch = null;
-        if (element instanceof PipelinesNode) {
-            watch = client.v1beta1().pipelines().inNamespace(namespace).watch(getWatcher(element));
-        } else if (element instanceof PipelineRunsNode) {
-            watch = client.v1beta1().pipelineRuns().inNamespace(namespace).watch(getWatcher(element));
-        } else if (element instanceof ResourcesNode) {
-            watch = client.v1alpha1().pipelineResources().inNamespace(namespace).watch(getWatcher(element));
-        } else if (element instanceof TasksNode) {
-            watch = client.v1beta1().tasks().inNamespace(namespace).watch(getWatcher(element));
-        } else if (element instanceof TaskRunsNode) {
-            watch = client.v1beta1().taskRuns().inNamespace(namespace).watch(getWatcher(element));
-        } else if (element instanceof ClusterTasksNode) {
-            watch = client.v1beta1().clusterTasks().watch(getWatcher(element));
-        } else if (element instanceof ConditionsNode) {
-            watch = client.v1alpha1().conditions().inNamespace(namespace).watch(getWatcher(element));
+
+        try {
+            if (element instanceof PipelinesNode) {
+                watch = client.v1beta1().pipelines().inNamespace(namespace).watch(getWatcher(element));
+            } else if (element instanceof PipelineRunsNode) {
+                watch = client.v1beta1().pipelineRuns().inNamespace(namespace).watch(getWatcher(element));
+            } else if (element instanceof ResourcesNode) {
+                watch = client.v1alpha1().pipelineResources().inNamespace(namespace).watch(getWatcher(element));
+            } else if (element instanceof TasksNode) {
+                watch = client.v1beta1().tasks().inNamespace(namespace).watch(getWatcher(element));
+            } else if (element instanceof TaskRunsNode) {
+                watch = client.v1beta1().taskRuns().inNamespace(namespace).watch(getWatcher(element));
+            } else if (element instanceof ClusterTasksNode) {
+                watch = client.v1beta1().clusterTasks().watch(getWatcher(element));
+            } else if (element instanceof ConditionsNode) {
+                watch = client.v1alpha1().conditions().inNamespace(namespace).watch(getWatcher(element));
+            }
+        } catch (KubernetesClientException e) {
+            logger.warn("Error: " + e.getLocalizedMessage());
         }
 
         if (watch != null) {
