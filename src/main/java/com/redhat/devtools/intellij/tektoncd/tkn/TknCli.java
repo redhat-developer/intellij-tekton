@@ -451,6 +451,16 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public void cancelPipelineRun(String namespace, String pipelineRun) throws IOException {
+        ExecHelper.execute(command, "pipelinerun", "cancel", pipelineRun, "-n", namespace);
+    }
+
+    @Override
+    public void cancelTaskRun(String namespace, String taskRun) throws IOException {
+        ExecHelper.execute(command, "taskrun", "cancel", taskRun, "-n", namespace);
+    }
+
+    @Override
     public Watch watchPipelines(String namespace, Watcher<Pipeline> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1beta1().pipelines().inNamespace(namespace).watch(watcher);
