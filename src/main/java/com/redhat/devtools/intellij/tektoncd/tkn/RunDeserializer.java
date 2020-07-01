@@ -80,13 +80,15 @@ public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
     private Run createTaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime, JsonNode conditionChecksNode, String failedReason) {
         List<TaskRun> conditionChecks = new ArrayList<>();
         if (conditionChecksNode != null) {
-            for (Iterator<JsonNode> it = conditionChecksNode.elements(); it.hasNext(); ) {
-                JsonNode conditionCheckNode = it.next();
+            for (Iterator<Map.Entry<String,JsonNode>> it = conditionChecksNode.fields(); it.hasNext(); ) {
+                Map.Entry<String,JsonNode> entry = it.next();
+                String taskRunName = entry.getKey();
+                JsonNode conditionCheckNode = entry.getValue();
                 String conditionName = conditionCheckNode.get("conditionName").asText("");
                 Optional<Boolean> isConditionCompleted = isCompleted(conditionCheckNode);
                 Instant conditionCompletionTime = getCompletionTime(conditionCheckNode);
                 Instant conditionStartTime = getStartTime(conditionCheckNode);
-                conditionChecks.add(new TaskRun(conditionName, "", "", isConditionCompleted, conditionStartTime, conditionCompletionTime, new ArrayList<>(), ""));
+                conditionChecks.add(new TaskRun(taskRunName, "", conditionName, isConditionCompleted, conditionStartTime, conditionCompletionTime, new ArrayList<>(), ""));
             }
         }
         return new TaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks, failedReason);

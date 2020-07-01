@@ -17,8 +17,10 @@ import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
@@ -27,7 +29,17 @@ import javax.swing.tree.TreePath;
 
 public class OpenEditorAction extends TektonAction {
     public OpenEditorAction() {
-        super(TaskNode.class, PipelineNode.class, ResourceNode.class, ClusterTaskNode.class, ConditionNode.class, TriggerTemplateNode.class, TriggerBindingNode.class, ClusterTriggerBindingNode.class, EventListenerNode.class);
+        super(TaskNode.class,
+                PipelineNode.class,
+                ResourceNode.class,
+                ClusterTaskNode.class,
+                ConditionNode.class,
+                TriggerTemplateNode.class,
+                TriggerBindingNode.class,
+                ClusterTriggerBindingNode.class,
+                EventListenerNode.class,
+                PipelineRunNode.class,
+                TaskRunNode.class);
     }
 
 

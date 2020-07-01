@@ -26,6 +26,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
@@ -39,6 +40,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
@@ -61,7 +63,7 @@ public class TreeHelper {
      * @return Pair where 'first' is YAML content and 'second' is Tekton kind
      * @throws IOException
      */
-    public static Pair<String, String> getYAMLAndKindFromNode(ParentableNode<? extends ParentableNode<?>> node) throws IOException {
+    public static Pair<String, String> getYAMLAndKindFromNode(ParentableNode<?> node) throws IOException {
         String namespace = node.getNamespace();
         Tkn tkncli = node.getRoot().getTkn();
         String content = "";
@@ -96,9 +98,12 @@ public class TreeHelper {
         } else if (node instanceof TaskRunNode) {
             content = tkncli.getTaskRunYAML(namespace, node.getName());
             kind = KIND_TASKRUN;
+        } else if (node instanceof PipelineRunNode){
+            content = tkncli.getPipelineRunYAML(namespace, node.getName());
+            kind = KIND_PIPELINERUN;
         }
 
-        return Pair.pair(content, kind);
+        return Pair.create(content, kind);
     }
 
     public static void openTektonResourceInEditor(TreePath path) {
@@ -116,10 +121,10 @@ public class TreeHelper {
             UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
         }
 
-        if (yamlAndKind != null && !yamlAndKind.first.isEmpty()) {
+        if (yamlAndKind != null && !yamlAndKind.getFirst().isEmpty()) {
             Project project = element.getRoot().getProject();
             String namespace = element.getNamespace();
-            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.first, yamlAndKind.second);
+            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.getFirst(), yamlAndKind.getSecond());
         }
     }
 }

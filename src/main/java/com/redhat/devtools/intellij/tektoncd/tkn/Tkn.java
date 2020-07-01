@@ -460,4 +460,12 @@ public interface Tkn {
      * @param taskRun name of the TaskRun
      */
     String getTaskRunYAML(String namespace, String taskRun) throws IOException;
+
+    /**
+     * Get PipelineRun configuration in YAML
+     *
+     * @param namespace the namespace to use
+     * @param pipelineRun name of the PipelineRun
+     */
+    String getPipelineRunYAML(String namespace, String pipelineRun) throws IOException;
 }

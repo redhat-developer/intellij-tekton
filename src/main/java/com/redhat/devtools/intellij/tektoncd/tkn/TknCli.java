@@ -399,4 +399,9 @@ public class TknCli implements Tkn {
     public String getTaskRunYAML(String namespace, String taskRun) throws IOException {
         return ExecHelper.execute(command, "taskrun", "describe", taskRun, "-n", namespace, "-o", "yaml");
     }
+
+    @Override
+    public String getPipelineRunYAML(String namespace, String pipelineRun) throws IOException {
+        return ExecHelper.execute(command, "pipelinerun", "describe", pipelineRun, "-n", namespace, "-o", "yaml");
+    }
 }
