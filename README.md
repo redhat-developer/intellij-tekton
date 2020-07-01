@@ -16,7 +16,48 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 ## New and Noteworthy
 
+This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
+
+The Tekton CLI in use has been upgrated to 0.9.0.
+
+### Enhanced start wizard (for pipelines and tasks)
+
+The start wizard has been enhanced to support:
+
+* workspaces
+* service accounts
+
+![](images/demo3.gif)
+
+### Tekton Triggers support
+
+This plugin now supports the Tekton Triggers resources (if Tekton Triggers runtime is installed on the cluster):
+
+* TriggerTemplates
+* TriggerBindings
+* ClusterTriggerBindings
+* EventListeners
+
+### Additional commands
+
+The following commands have been added:
+
+* Start Last Run (for pipelines and tasks)
+* Edit any Tekton resource by double clicking on the resource in the tree
+
+The Tekton tree now displays:
+
+* TaskRuns
+* PipelineRuns
+* Conditions
+
+as separate nodes.
+
+
 ### Provides easy editing support for Tekton assets (pipelines, task, ...)
+
+Code assist and syntax validation based on JSON schemas has been added to the Tekton
+resources editing experience in addition to the code snippets.
 
 ![](images/demo2.gif)
 
