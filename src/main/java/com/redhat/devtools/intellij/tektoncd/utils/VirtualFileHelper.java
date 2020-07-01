@@ -48,8 +48,6 @@ public class VirtualFileHelper {
                 vf.setWritable(false);
             } else {
                 vf = createTempFile(name, content);
-                File fileToDelete = new File(vf.getPath());
-                fileToDelete.deleteOnExit();
             }
             vf.putUserData(KIND_PLURAL, kind);
             vf.putUserData(PROJECT, project);
