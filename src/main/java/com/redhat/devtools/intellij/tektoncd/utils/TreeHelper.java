@@ -35,6 +35,11 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
@@ -126,5 +131,13 @@ public class TreeHelper {
             String namespace = element.getNamespace();
             VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.getFirst(), yamlAndKind.getSecond());
         }
+    }
+
+    public static Map<Class, List<ParentableNode>> getResourcesByClass(ParentableNode[] elements) {
+        Map<Class, List<ParentableNode>> resourcesByClass = new HashMap<>();
+        Arrays.stream(elements).forEach(element ->
+                resourcesByClass.computeIfAbsent(element.getClass(), value -> new ArrayList<>())
+                        .add(element));
+        return resourcesByClass;
     }
 }
