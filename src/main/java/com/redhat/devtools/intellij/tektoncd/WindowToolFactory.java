@@ -13,6 +13,8 @@ package com.redhat.devtools.intellij.tektoncd;
 import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.ActionGroup;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -26,6 +28,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.tree.MutableModelSynchronizer;
 import com.redhat.devtools.intellij.tektoncd.listener.TreeDoubleClickListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TreeExpansionListener;
+import com.redhat.devtools.intellij.tektoncd.listener.TreePopupMenuListener;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +48,10 @@ public class WindowToolFactory implements ToolWindowFactory {
             tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
             tree.setCellRenderer(new NodeRenderer());
             tree.addTreeWillExpandListener(new TreeExpansionListener());
-            PopupHandler.installPopupHandler(tree, "com.redhat.devtools.intellij.tektoncd.tree", ActionPlaces.UNKNOWN);
+            //PopupHandler.installPopupHandler(tree, "com.redhat.devtools.intellij.tektoncd.tree", ActionPlaces.UNKNOWN);
+            ActionManager actionManager = ActionManager.getInstance();
+            ActionGroup group = (ActionGroup)actionManager.getAction("com.redhat.devtools.intellij.tektoncd.tree");
+            PopupHandler.installPopupHandler(tree, group, ActionPlaces.UNKNOWN, actionManager, new TreePopupMenuListener());
             toolWindow.getContentManager().addContent(contentFactory.createContent(new JBScrollPane(tree), "", false));
             new TreeDoubleClickListener(tree);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
