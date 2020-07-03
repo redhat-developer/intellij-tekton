@@ -16,19 +16,22 @@ import com.redhat.devtools.intellij.tektoncd.listener.TreePopupMenuListener;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class RefreshQueue {
     private static RefreshQueue instance;
     private Queue<ParentableNode> queue;
-    private Timer timer;
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private ScheduledFuture scheduler;
 
     private RefreshQueue() {
-        queue = new LinkedList<>();
+        queue = new ConcurrentLinkedQueue<>();
     }
 
     public static RefreshQueue get() {
@@ -39,8 +42,8 @@ public class RefreshQueue {
     }
 
     public void addAll(List<ParentableNode> nodes) {
-        if (timer != null) {
-            timer.cancel();
+        if (scheduler != null && !scheduler.isCancelled() && !scheduler.isDone()) {
+            scheduler.cancel(true);
         }
 
         for (ParentableNode node: nodes) {
@@ -49,24 +52,16 @@ public class RefreshQueue {
             }
         }
 
-        timer = new Timer();
-        timer.schedule(
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        if (!TreePopupMenuListener.isTreeMenuVisible()) {
-                            refresh();
-                        }
-                    }
-                },
-                500
-        );
+        scheduler = executor.schedule(() -> {
+            if (!TreePopupMenuListener.isTreeMenuVisible()) {
+                update();
+            }
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
-    public void refresh() {
+    public void update() {
         while (!queue.isEmpty()) {
             ParentableNode element = queue.poll();
-            if (element == null) return;
             Tree tree = TreeHelper.getTree(element.getRoot().getProject());
             TektonTreeStructure treeStructure = (TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
             treeStructure.fireModified(element);

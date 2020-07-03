@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,8 @@ public class WatchHandler {
         Watch watch = null;
         WatchNodes wn = null;
 
+        // a watch can be associated to multiple nodes
+        // (e.g a taskRuns watcher, when a change happens, could update multiple nodes such as a single Task node and the TaskRuns node)
         if (this.watches.containsKey(watchId)) {
             wn = this.watches.get(watchId);
             wn.addNode(element);
@@ -107,7 +110,9 @@ public class WatchHandler {
         String watchId = getWatchId(element);
         if (watches.containsKey(watchId)) {
             WatchNodes wn = watches.get(watchId);
-            if (wn.removeNodeAndStopWatchIfLast(element)) {
+            wn.removeNode(element);
+            if (wn.isNodesEmpty()) {
+                wn.getWatch().close();
                 watches.remove(watchId);
             }
         }
@@ -157,32 +162,32 @@ public class WatchHandler {
 
 class WatchNodes {
     private Watch watch;
-    private List<ParentableNode> nodes;
+    private List<ParentableNode> nodesToBeUpdated;
 
     public WatchNodes(Watch watch, ParentableNode... nodes) {
         this.watch = watch;
-        this.nodes = new ArrayList<>();
-        for(ParentableNode node: nodes) {
-            this.nodes.add(node);
-        }
+        this.nodesToBeUpdated = new ArrayList<>(Arrays.asList(nodes));
+    }
+
+    public Watch getWatch() {
+        return this.watch;
     }
 
     public List<ParentableNode> getNodes() {
-        return this.nodes;
+        return this.nodesToBeUpdated;
     }
 
     public void addNode(ParentableNode node) {
-        if (!this.nodes.contains(node)) {
-            this.nodes.add(node);
+        if (!this.nodesToBeUpdated.stream().anyMatch(element -> element.getName().equals(node.getName()) && element.getParent().equals(node.getParent()))) {
+            this.nodesToBeUpdated.add(node);
         }
     }
 
-    public boolean removeNodeAndStopWatchIfLast(ParentableNode node) {
-        this.nodes.remove(node);
-        if (this.nodes.isEmpty()) {
-            this.watch.close();
-            return true;
-        }
-        return false;
+    public void removeNode(ParentableNode node) {
+        this.nodesToBeUpdated.remove(node);
+    }
+
+    public boolean isNodesEmpty() {
+        return this.nodesToBeUpdated.isEmpty();
     }
 }

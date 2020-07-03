@@ -16,7 +16,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 public class TreePopupMenuListener implements PopupMenuListener {
-    private static RefreshQueue queue = RefreshQueue.get();
+    private static final RefreshQueue queue = RefreshQueue.get();
     private static boolean isMenuVisible = false;
 
     public static boolean isTreeMenuVisible() {
@@ -31,12 +31,12 @@ public class TreePopupMenuListener implements PopupMenuListener {
     @Override
     public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
         isMenuVisible = false;
-        queue.refresh();
+        queue.update();
     }
 
     @Override
     public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
         isMenuVisible = false;
-        queue.refresh();
+        queue.update();
     }
 }
