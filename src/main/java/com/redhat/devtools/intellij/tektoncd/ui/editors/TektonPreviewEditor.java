@@ -99,6 +99,7 @@ public class TektonPreviewEditor extends UserDataHolderBase implements FileEdito
                     }
                 }
             });
+            graphComponent.getConnectionHandler().setEnabled(false);
             pane = new JBScrollPane(graphComponent);
         } catch (IOException e) {
             pane = new JLabel("Can't load model");

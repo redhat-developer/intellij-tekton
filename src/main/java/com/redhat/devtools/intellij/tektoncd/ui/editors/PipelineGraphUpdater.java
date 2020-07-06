@@ -42,7 +42,7 @@ public class PipelineGraphUpdater implements GraphUpdater {
                     if (task.getName() != null) {
                         String name = task.getName();
                         String taskId = TASK_PREFIX + name;
-                        nodes.put(taskId, graph.insertVertex(null, taskId, name, 0, 200, WIDTH, HEIGHT));
+                        nodes.put(taskId, graph.insertVertex(null, taskId, name, 0, 200, WIDTH, HEIGHT, "editable=false;"));
                         if (task.getRunAfter() != null) {
                             for (String parentName : task.getRunAfter()) {
                                 String parentTaskId = TASK_PREFIX + parentName;
