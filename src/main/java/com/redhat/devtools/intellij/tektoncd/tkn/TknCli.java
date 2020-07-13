@@ -15,8 +15,11 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import io.fabric8.kubernetes.client.ConfigBuilder;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
@@ -27,6 +30,8 @@ import io.fabric8.tekton.pipeline.v1beta1.PipelineList;
 import io.fabric8.tekton.pipeline.v1beta1.TaskList;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,14 +53,24 @@ public class TknCli implements Tkn {
 
     private String command;
     private final Project project;
+    private final KubernetesClient client;
+
+    private Map<String, String> envVars;
+
 
     TknCli(Project project, String command) {
         this.command = command;
         this.project = project;
+        this.client = new DefaultKubernetesClient(new ConfigBuilder().build());
+        try {
+            this.envVars = NetworkUtils.buildEnvironmentVariables(client.getMasterUrl().toString());
+        } catch (URISyntaxException e) {
+            this.envVars = Collections.emptyMap();
+        }
     }
 
     @Override
-    public boolean isTektonAware(KubernetesClient client) throws IOException {
+    public boolean isTektonAware() throws IOException {
         try {
             return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("tekton.dev")).findFirst().isPresent();
         } catch (KubernetesClientException e) {
@@ -64,7 +79,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public boolean isTektonTriggersAware(KubernetesClient client) {
+    public boolean isTektonTriggersAware() {
         try {
             return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("triggers.tekton.dev")).findFirst().isPresent();
         } catch (KubernetesClientException e) {
@@ -73,9 +88,9 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getClusterTasks(TektonClient client) throws IOException {
+    public List<String> getClusterTasks() throws IOException {
         try {
-            ClusterTaskList clusterTasks = client.v1beta1().clusterTasks().list();
+            ClusterTaskList clusterTasks = client.adapt(TektonClient.class).v1beta1().clusterTasks().list();
             return clusterTasks.getItems().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         } catch (KubernetesClientException e) {
             throw new IOException(e);
@@ -83,7 +98,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getNamespaces(KubernetesClient client) throws IOException {
+    public List<String> getNamespaces() throws IOException {
         if (client.isAdaptable(OpenShiftClient.class)) {
             return client.adapt(OpenShiftClient.class).projects().list().getItems().stream().map(project -> project.getMetadata().getName()).collect(Collectors.toList());
         } else {
@@ -92,29 +107,29 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getServiceAccounts(KubernetesClient client, String namespace) {
+    public List<String> getServiceAccounts(String namespace) {
         return client.serviceAccounts().inNamespace(namespace).list().getItems().stream().map(serviceAccount -> serviceAccount.getMetadata().getName()).collect(Collectors.toList());
     }
 
     @Override
-    public List<String> getSecrets(KubernetesClient client, String namespace) {
+    public List<String> getSecrets(String namespace) {
         return client.secrets().inNamespace(namespace).list().getItems().stream().map(secret -> secret.getMetadata().getName()).collect(Collectors.toList());
     }
 
     @Override
-    public List<String> getConfigMaps(KubernetesClient client, String namespace) {
+    public List<String> getConfigMaps(String namespace) {
         return client.configMaps().inNamespace(namespace).list().getItems().stream().map(configMap -> configMap.getMetadata().getName()).collect(Collectors.toList());
     }
 
     @Override
-    public List<String> getPersistentVolumeClaim(KubernetesClient client, String namespace) {
+    public List<String> getPersistentVolumeClaim(String namespace) {
         return client.persistentVolumeClaims().inNamespace(namespace).list().getItems().stream().map(volume -> volume.getMetadata().getName()).collect(Collectors.toList());
     }
 
     @Override
-    public List<String> getPipelines(TektonClient client, String namespace) throws IOException {
+    public List<String> getPipelines(String namespace) throws IOException {
         try {
-            PipelineList pipelines = client.v1beta1().pipelines().inNamespace(namespace).list();
+            PipelineList pipelines = client.adapt(TektonClient.class).v1beta1().pipelines().inNamespace(namespace).list();
             return pipelines.getItems().stream().map(pipeline -> pipeline.getMetadata().getName()).collect(Collectors.toList());
         } catch (KubernetesClientException e) {
             throw new IOException(e);
@@ -123,20 +138,20 @@ public class TknCli implements Tkn {
 
     @Override
     public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
-        String json = ExecHelper.execute(command, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
+        String json = ExecHelper.execute(command, envVars, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
         return getCustomCollection(json, PipelineRun.class);
     }
 
     @Override
     public List<Resource> getResources(String namespace) throws IOException {
-        String json = ExecHelper.execute(command, "resource", "ls", "-n", namespace, "-o", "json");
+        String json = ExecHelper.execute(command, envVars, "resource", "ls", "-n", namespace, "-o", "json");
         return getCustomCollection(json, Resource.class);
     }
 
     @Override
-    public List<String> getTasks(TektonClient client, String namespace) throws IOException {
+    public List<String> getTasks(String namespace) throws IOException {
         try {
-            TaskList tasks = client.v1beta1().tasks().inNamespace(namespace).list();
+            TaskList tasks = client.adapt(TektonClient.class).v1beta1().tasks().inNamespace(namespace).list();
             return tasks.getItems().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         } catch (KubernetesClientException e) {
             throw new IOException(e);
@@ -145,13 +160,13 @@ public class TknCli implements Tkn {
 
     @Override
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
-        String json = ExecHelper.execute(command, "taskrun", "ls", task, "-n", namespace, "-o", "json");
+        String json = ExecHelper.execute(command, envVars, "taskrun", "ls", task, "-n", namespace, "-o", "json");
         return getCustomCollection(json, TaskRun.class);
     }
 
     @Override
     public List<Condition> getConditions(String namespace) throws IOException, NullPointerException {
-        String conditionListJson = ExecHelper.execute(command, "conditions", "ls", "-n", namespace, "-o", "json");
+        String conditionListJson = ExecHelper.execute(command, envVars, "conditions", "ls", "-n", namespace, "-o", "json");
         return getCustomCollection(conditionListJson, Condition.class);
     }
 
@@ -165,126 +180,126 @@ public class TknCli implements Tkn {
 
     @Override
     public List<String> getTriggerTemplates(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, "triggertemplates", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        String output = ExecHelper.execute(command, envVars, "triggertemplates", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
 
     @Override
     public List<String> getTriggerBindings(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, "triggerbindings", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        String output = ExecHelper.execute(command, envVars, "triggerbindings", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
 
     @Override
     public List<String> getClusterTriggerBindings(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, "ctb", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        String output = ExecHelper.execute(command, envVars, "ctb", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
 
     @Override
     public List<String> getEventListeners(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, "eventlisteners", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+        String output = ExecHelper.execute(command, envVars, "eventlisteners", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
 
     @Override
     public String getPipelineYAML(String namespace, String pipeline) throws IOException {
-        return ExecHelper.execute(command, "pipeline", "describe", pipeline, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "pipeline", "describe", pipeline, "-n", namespace, "-o", "yaml");
     }
 
     @Override
     public String getResourceYAML(String namespace, String resource) throws IOException {
-        return ExecHelper.execute(command, "resource", "describe", resource, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "resource", "describe", resource, "-n", namespace, "-o", "yaml");
     }
 
     @Override
     public String getTaskYAML(String namespace, String task) throws IOException {
-        return ExecHelper.execute(command, "task", "describe", task, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "task", "describe", task, "-n", namespace, "-o", "yaml");
     }
 
     @Override
     public String getClusterTaskYAML(String task) throws IOException {
-        return ExecHelper.execute(command, "clustertask", "describe", task, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "clustertask", "describe", task, "-o", "yaml");
     }
 
     @Override
     public String getConditionYAML(String namespace, String condition) throws IOException {
-        return ExecHelper.execute(command, "condition", "describe", condition, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "condition", "describe", condition, "-n", namespace, "-o", "yaml");
     }
 
     @Override
     public String getTriggerTemplateYAML(String namespace, String triggerTemplate) throws IOException {
-        return ExecHelper.execute(command, "triggertemplate", "describe", triggerTemplate, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "triggertemplate", "describe", triggerTemplate, "-n", namespace, "-o", "yaml");
     }
 
     @Override
     public String getTriggerBindingYAML(String namespace, String triggerBinding) throws IOException {
-        return ExecHelper.execute(command, "triggerbinding", "describe", triggerBinding, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "triggerbinding", "describe", triggerBinding, "-n", namespace, "-o", "yaml");
     }
 
     @Override
     public String getClusterTriggerBindingYAML(String namespace, String ctb) throws IOException {
-        return ExecHelper.execute(command, "ctb", "describe", ctb, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "ctb", "describe", ctb, "-n", namespace, "-o", "yaml");
     }
 
     @Override
     public String getEventListenerYAML(String namespace, String eventListener) throws IOException {
-        return ExecHelper.execute(command, "eventlistener", "describe", eventListener, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "eventlistener", "describe", eventListener, "-n", namespace, "-o", "yaml");
     }
 
     @Override
     public void deletePipelines(String namespace, List<String> pipelines) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs(namespace, "pipeline", pipelines));
+        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "pipeline", pipelines));
     }
 
     @Override
     public void deletePipelineRuns(String namespace, List<String> prs) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs(namespace, "pr", prs));
+        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "pr", prs));
     }
 
     @Override
     public void deleteTasks(String namespace, List<String> tasks) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs(namespace, "task", tasks));
+        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "task", tasks));
     }
 
     @Override
     public void deleteClusterTasks(List<String> tasks) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs("", "clustertask", tasks));
+        ExecHelper.execute(command, envVars, getDeleteArgs("", "clustertask", tasks));
     }
 
     @Override
     public void deleteTaskRuns(String namespace, List<String> trs) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs(namespace, "tr", trs));
+        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "tr", trs));
     }
 
     @Override
     public void deleteResources(String namespace, List<String> resources) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs(namespace, "resource", resources));
+        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "resource", resources));
     }
 
     @Override
     public void deleteConditions(String namespace, List<String> conditions) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs(namespace, "conditions", conditions));
+        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "conditions", conditions));
     }
 
     @Override
     public void deleteTriggerTemplates(String namespace, List<String> triggerTemplates) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs(namespace, "triggertemplate", triggerTemplates));
+        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "triggertemplate", triggerTemplates));
     }
 
     @Override
     public void deleteTriggerBindings(String namespace, List<String> triggerBindings) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs(namespace, "triggerbinding", triggerBindings));
+        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "triggerbinding", triggerBindings));
     }
 
     @Override
     public void deleteClusterTriggerBindings(List<String> ctbs) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs("", "ctb", ctbs));
+        ExecHelper.execute(command, envVars, getDeleteArgs("", "ctb", ctbs));
     }
 
     @Override
     public void deleteEventListeners(String namespace, List<String> eventListeners) throws IOException {
-        ExecHelper.execute(command, getDeleteArgs(namespace, "eventlistener", eventListeners));
+        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "eventlistener", eventListeners));
     }
 
     private String[] getDeleteArgs(String namespace, String kind, List<String> resourcesToDelete) {
@@ -297,7 +312,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext) {
+    public Map<String, Object> getCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext) {
         try {
             if (namespace.isEmpty()) {
                 return new TreeMap<>(client.customResource(crdContext).get(name));
@@ -310,7 +325,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void editCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
+    public void editCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
         if (namespace.isEmpty()) {
             client.customResource(crdContext).edit(name, objectAsString);
         } else {
@@ -319,7 +334,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
+    public void createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
         if (namespace.isEmpty()) {
             client.customResource(crdContext).create(objectAsString);
         } else {
@@ -337,12 +352,12 @@ public class TknCli implements Tkn {
         args.addAll(workspaceArgsToList(workspaces));
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(resources, FLAG_INPUTRESOURCEPIPELINE));
-        ExecHelper.execute(command, args.toArray(new String[0]));
+        ExecHelper.execute(command, envVars, args.toArray(new String[0]));
     }
 
     @Override
     public void startLastPipeline(String namespace, String pipeline) throws IOException {
-        ExecHelper.execute(command, "pipeline", "start", pipeline, "--last", "-n", namespace);
+        ExecHelper.execute(command, envVars, "pipeline", "start", pipeline, "--last", "-n", namespace);
     }
 
     public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces) throws IOException {
@@ -354,12 +369,12 @@ public class TknCli implements Tkn {
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCETASK));
         args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
-        ExecHelper.execute(command, args.toArray(new String[0]));
+        ExecHelper.execute(command, envVars, args.toArray(new String[0]));
     }
 
     @Override
     public void startLastTask(String namespace, String task) throws IOException {
-        ExecHelper.execute(command, "task", "start", task, "--last", "-n", namespace);
+        ExecHelper.execute(command, envVars, "task", "start", task, "--last", "-n", namespace);
     }
 
     private List<String> argsToList(Map<String, String> argMap, String flag) {
@@ -396,31 +411,41 @@ public class TknCli implements Tkn {
 
     @Override
     public void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
+        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
     }
 
     @Override
     public void showLogsTaskRun(String namespace, String taskRun) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, command, "taskrun", "logs", taskRun, "-n", namespace);
+        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-n", namespace);
     }
 
     @Override
     public void followLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
     }
 
     @Override
     public void followLogsTaskRun(String namespace, String taskRun) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
     }
 
     @Override
     public String getTaskRunYAML(String namespace, String taskRun) throws IOException {
-        return ExecHelper.execute(command, "taskrun", "describe", taskRun, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "taskrun", "describe", taskRun, "-n", namespace, "-o", "yaml");
     }
 
     @Override
     public String getPipelineRunYAML(String namespace, String pipelineRun) throws IOException {
-        return ExecHelper.execute(command, "pipelinerun", "describe", pipelineRun, "-n", namespace, "-o", "yaml");
+        return ExecHelper.execute(command, envVars, "pipelinerun", "describe", pipelineRun, "-n", namespace, "-o", "yaml");
+    }
+
+    @Override
+    public URL getMasterUrl() {
+        return client.getMasterUrl();
+    }
+
+    @Override
+    public <T> T getClient(Class<T> clazz) {
+        return client.adapt(clazz);
     }
 }

@@ -18,11 +18,6 @@ import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
-import io.fabric8.kubernetes.client.ConfigBuilder;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.tekton.client.DefaultTektonClient;
-import io.fabric8.tekton.client.TektonClient;
 import org.junit.After;
 import org.junit.Before;
 
@@ -30,8 +25,6 @@ public abstract class BaseTest {
     private CodeInsightTestFixture myFixture;
     private TestDialog previousTestDialog;
     protected Tkn tkn;
-    protected KubernetesClient client;
-    protected TektonClient tektonClient;
 
     @Before
     public void setUp() throws Exception {
@@ -47,8 +40,6 @@ public abstract class BaseTest {
             }
         });
         tkn = TknCliFactory.getInstance().getTkn(myFixture.getProject()).get();
-        client = new DefaultKubernetesClient(new ConfigBuilder().build());
-        tektonClient = new DefaultTektonClient(new ConfigBuilder().build());
     }
 
     @After

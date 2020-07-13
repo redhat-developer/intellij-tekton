@@ -59,10 +59,10 @@ public class StartAction extends TektonAction {
                     configuration = tkncli.getTaskYAML(namespace, element.getName());
                 }
                 resources = tkncli.getResources(namespace);
-                serviceAccounts = tkncli.getServiceAccounts(element.getRoot().getClient(), namespace);
-                secrets = tkncli.getSecrets(element.getRoot().getClient(), namespace);
-                configMaps = tkncli.getConfigMaps(element.getRoot().getClient(), namespace);
-                persistentVolumeClaims = tkncli.getPersistentVolumeClaim(element.getRoot().getClient(), namespace);
+                serviceAccounts = tkncli.getServiceAccounts(namespace);
+                secrets = tkncli.getSecrets(namespace);
+                configMaps = tkncli.getConfigMaps(namespace);
+                persistentVolumeClaims = tkncli.getPersistentVolumeClaim(namespace);
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(

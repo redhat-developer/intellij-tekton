@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 public class TknCliPipelineTest extends BaseTest {
     @Test
     public void verifyNoPipelines() throws IOException {
-        List<String> pipelines = tkn.getPipelines(tektonClient,"testns");
+        List<String> pipelines = tkn.getPipelines("testns");
         assertEquals(0, pipelines.size());
     }
 }
