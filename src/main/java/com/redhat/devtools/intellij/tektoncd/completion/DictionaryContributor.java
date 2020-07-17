@@ -20,6 +20,9 @@ public class DictionaryContributor extends CompletionContributor {
     public DictionaryContributor() {
         // completions for plain text yaml files
         extend(CompletionType.BASIC,
+                YamlElementPatternHelper.getSingleLineScalarKey("conditionRef"),
+                new ConditionCompletionProvider());
+        extend(CompletionType.BASIC,
                 PlatformPatterns.psiElement(PlainTextTokenTypes.PLAIN_TEXT),
                 new DictionaryCompletionProvider());
         extend(CompletionType.BASIC,
