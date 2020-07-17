@@ -19,9 +19,7 @@ import io.fabric8.tekton.resource.v1alpha1.ResourceDeclaration;
 import io.fabric8.tekton.v1alpha1.internal.pipeline.pkg.apis.pipeline.v1alpha2.ParamSpec;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-
-public class ConditionAutoInsertHandler implements InsertHandler<LookupElement> {
+public class ConditionAutoInsertHandler extends BaseAutoInsertHandler implements InsertHandler<LookupElement> {
 
     @Override
     public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement item) {
@@ -48,15 +46,5 @@ public class ConditionAutoInsertHandler implements InsertHandler<LookupElement> 
             }
         }
         document.replaceString(startOffset, tailOffset, completionText);
-    }
-
-    private int getParentIndentation(Document document, int offset) {
-        int positionNewLine = document.getText().substring(0, offset).lastIndexOf("\n");
-        int nSpaces = document.getText().indexOf("- conditionRef", positionNewLine);
-        return (nSpaces + 1) - (positionNewLine + 2);
-    }
-
-    private String getIndentationAsText(int indentationParent, int indentSize, int level) {
-        return String.join("", Collections.nCopies(indentationParent + (indentSize * level), " "));
     }
 }
