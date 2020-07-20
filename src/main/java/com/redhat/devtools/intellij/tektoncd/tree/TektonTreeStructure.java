@@ -26,9 +26,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import io.fabric8.kubernetes.api.model.Config;
 import io.fabric8.kubernetes.api.model.Context;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
-import io.fabric8.tekton.client.TektonClient;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -126,7 +124,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                         new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new ConditionsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
-                if (!tkn.isTektonTriggersAware(root.getClient())) {
+                if (!tkn.isTektonTriggersAware()) {
                     return generalNodes;
                 }
                 Object[] triggersNode = new Object[] {
@@ -288,8 +286,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> tasks = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            TektonClient client = element.getRoot().getTektonClient();
-            tkn.getClusterTasks(client).forEach(name -> tasks.add(new ClusterTaskNode(element.getRoot(), element, name)));
+            tkn.getClusterTasks().forEach(name -> tasks.add(new ClusterTaskNode(element.getRoot(), element, name)));
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load cluster tasks"));
         }
@@ -300,8 +297,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> pipelines = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            TektonClient client = element.getRoot().getTektonClient();
-            tkn.getPipelines(client, element.getParent().getName()).forEach(name -> pipelines.add(new PipelineNode(element.getRoot(), element, name)));
+            tkn.getPipelines(element.getParent().getName()).forEach(name -> pipelines.add(new PipelineNode(element.getRoot(), element, name)));
         } catch (IOException e) {
             pipelines.add(new MessageNode(element.getRoot(), element, "Failed to load pipelines"));
         }
@@ -312,8 +308,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> tasks = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            TektonClient client = element.getRoot().getTektonClient();
-            tkn.getTasks(client, element.getParent().getName()).forEach(name -> tasks.add(new TaskNode(element.getRoot(), element, name, false)));
+            tkn.getTasks(element.getParent().getName()).forEach(name -> tasks.add(new TaskNode(element.getRoot(), element, name, false)));
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load tasks"));
         }
@@ -324,9 +319,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> namespaces = new ArrayList<>();
         try {
             Tkn tkn = element.getTkn();
-            KubernetesClient client = element.getClient();
-            if (tkn.isTektonAware(client)) {
-                element.getTkn().getNamespaces(element.getClient()).forEach(name -> namespaces.add(new NamespaceNode(element, name)));
+            if (tkn.isTektonAware()) {
+                element.getTkn().getNamespaces().forEach(name -> namespaces.add(new NamespaceNode(element, name)));
             } else {
                 namespaces.add(new MessageNode(element, element, NO_TEKTON));
             }
@@ -349,7 +343,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
     @Override
     public NodeDescriptor createDescriptor(Object element, NodeDescriptor parentDescriptor) {
         if (element instanceof TektonRootNode) {
-            return new LabelAndIconDescriptor(project, element, ((TektonRootNode)element).getClient().getMasterUrl().toString(), CLUSTER_ICON, parentDescriptor);
+            Tkn tkn = ((TektonRootNode)element).getTkn();
+            return new LabelAndIconDescriptor(project, element, tkn != null?tkn.getMasterUrl().toString():"Loading", CLUSTER_ICON, parentDescriptor);
         }
         if (element instanceof NamespaceNode) {
             return new LabelAndIconDescriptor(project, element, ((NamespaceNode)element).getName(), NAMESPACE_ICON, parentDescriptor);

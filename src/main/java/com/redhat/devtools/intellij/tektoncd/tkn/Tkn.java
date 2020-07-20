@@ -11,11 +11,11 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.tekton.client.TektonClient;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -23,81 +23,72 @@ public interface Tkn {
     /**
      * Check if the cluster is Tekton aware.
      *
-     * @param client the cluster client object
      * @return true if Tekton is installed on cluster false otherwise
      */
-    boolean isTektonAware(KubernetesClient client) throws IOException;
+    boolean isTektonAware() throws IOException;
 
     /**
      * Check if the cluster is Tekton Triggers aware.
      *
-     * @param client the cluster client object
      * @return true if Tekton triggers are installed on cluster false otherwise
      */
-    boolean isTektonTriggersAware(KubernetesClient client);
+    boolean isTektonTriggersAware();
 
     /**
      * Returns the names of ClusterTask for a namespace
-     * @param client the tekton client to use
      * @return the list of ClusterTasks names
      * @throws IOException if communication errored
      */
-    List<String> getClusterTasks(TektonClient client) throws IOException;
+    List<String> getClusterTasks() throws IOException;
 
     /**
      * Return the names of the namespace (projects for OpenShift).
      *
-     * @param client the cluster client object
      * @return the list of namespaces names
      * @throws IOException if communication errored
      */
-    List<String> getNamespaces(KubernetesClient client) throws IOException;
+    List<String> getNamespaces() throws IOException;
 
     /**
      * Return the names of the serviceAccounts for a namespace
      *
-     * @param client the cluster client object
      * @param namespace the namespace to use
      * @return the list of service account names
      */
-    List<String> getServiceAccounts(KubernetesClient client, String namespace);
+    List<String> getServiceAccounts(String namespace);
 
     /**
      * Return the names of the secrets for a namespace
      *
-     * @param client the cluster client object
      * @param namespace the namespace to use
      * @return the list of secrets names
      */
-    List<String> getSecrets(KubernetesClient client, String namespace);
+    List<String> getSecrets(String namespace);
 
     /**
      * Return the names of the configmaps for a namespace
      *
-     * @param client the cluster client object
      * @param namespace the namespace to use
      * @return the list of configmaps names
      */
-    List<String> getConfigMaps(KubernetesClient client, String namespace);
+    List<String> getConfigMaps(String namespace);
 
     /**
      * Return the names of the persistentVolumeClaims for a namespace
      *
-     * @param client the cluster client object
      * @param namespace the namespace to use
      * @return the list of persistentVolumeClaims names
      */
-    List<String> getPersistentVolumeClaim(KubernetesClient client, String namespace);
+    List<String> getPersistentVolumeClaim(String namespace);
 
     /**
      * Return the names of Tekton pipelines for a namespace
      *
-     * @param client the tekton client object
      * @param namespace the namespace to use
      * @return the list of pipelines names
      * @throws IOException if communication errored
      */
-    List<String> getPipelines(TektonClient client, String namespace) throws IOException;
+    List<String> getPipelines(String namespace) throws IOException;
 
     /**
      * Return the list of pipeline runs for a pipeline
@@ -121,12 +112,11 @@ public interface Tkn {
     /**
      * Return the names of Tekton tasks for a namespace.
      *
-     * @param client the tekton client object
      * @param namespace the namespace to use
      * @return the list of tasks names
      * @throws IOException if communication errored
      */
-    List<String> getTasks(TektonClient client, String namespace) throws IOException;
+    List<String> getTasks(String namespace) throws IOException;
 
     /**
      * Return the list of task runs for a task.
@@ -366,36 +356,33 @@ public interface Tkn {
     /**
      * Get a custom resource from the cluster which is namespaced.
      *
-     * @param client the cluster client object
      * @param namespace the namespace to use
      * @param name name of custom resource
      * @param crdContext the custom resource definition context of the resource kind
      * @return Object as HashMap, null if no resource was found
      */
-    Map<String, Object> getCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext);
+    Map<String, Object> getCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext);
 
     /**
      * Edit a custom resource object which is a namespaced object
      *
-     * @param client the cluster client object
      * @param namespace the namespace to use
      * @param name name of custom resource
      * @param crdContext the custom resource definition context of the resource kind
      * @param objectAsString new object as a JSON string
      * @throws IOException
      */
-    void editCustomResource(KubernetesClient client, String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
+    void editCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
 
     /**
      * Create a custom resource which is a namespaced object.
      *
-     * @param client the cluster client object
      * @param namespace the namespace to use
      * @param crdContext the custom resource definition context of the resource kind
      * @param objectAsString new object as a JSON string
      * @throws IOException
      */
-    void createCustomResource(KubernetesClient client, String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
+    void createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
 
     /**
      * Start the execution of a pipeline
@@ -488,4 +475,8 @@ public interface Tkn {
      * @param pipelineRun name of the PipelineRun
      */
     String getPipelineRunYAML(String namespace, String pipelineRun) throws IOException;
+
+    public URL getMasterUrl();
+
+    public <T> T getClient(Class<T> clazz);
 }

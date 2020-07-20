@@ -47,7 +47,7 @@ public class WatchHandler {
     }
 
     public void setWatch(ParentableNode<? extends ParentableNode<?>> element) {
-        TektonClient client = element.getRoot().getTektonClient();
+        TektonClient client = element.getRoot().getTkn().getClient(TektonClient.class);
 
         String namespace = element.getNamespace();
         String watchId = getWatchId(element);

@@ -36,7 +36,6 @@ import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import io.fabric8.kubernetes.api.model.Status;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import org.apache.commons.lang.StringUtils;
@@ -114,20 +113,12 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         Tree tree;
         TektonTreeStructure treeStructure;
-        KubernetesClient client;
         Tkn tknCli;
         try {
             tree = TreeHelper.getTree(project);
             treeStructure = (TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
             TektonRootNode root = (TektonRootNode) treeStructure.getRootElement();
-            client = root.getClient();
-            if (client == null) {
-                throw new IOException("Kubernetes client has not been initialized.");
-            }
             tknCli = root.getTkn();
-            if (client == null) {
-                throw new IOException("Tekton Cli not found.");
-            }
         } catch (Exception e) {
             notification = new Notification(NOTIFICATION_ID, "Error", errorMsg + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
@@ -137,9 +128,9 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL)) ? "" : namespace;
-            Map<String, Object> resource = tknCli.getCustomResource(client, resourceNamespace, name, crdContext);
+            Map<String, Object> resource = tknCli.getCustomResource(resourceNamespace, name, crdContext);
             if (resource == null) {
-                tknCli.createCustomResource(client, resourceNamespace, crdContext, document.getText());
+                tknCli.createCustomResource(resourceNamespace, crdContext, document.getText());
                 ParentableNode selected = vf.getUserData(TARGET_NODE);
                 if (selected != null) {
                     treeStructure.fireModified(selected);
@@ -147,7 +138,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             } else {
                 JsonNode customResource = JSONHelper.MapToJSON(resource);
                 ((ObjectNode) customResource).set("spec", spec);
-                tknCli.editCustomResource(client, resourceNamespace, name, crdContext, customResource.toString());
+                tknCli.editCustomResource(resourceNamespace, name, crdContext, customResource.toString());
             }
         } catch (KubernetesClientException e) {
             Status errorStatus = e.getStatus();
