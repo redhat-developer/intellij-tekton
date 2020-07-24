@@ -18,7 +18,11 @@ import org.jetbrains.yaml.YAMLLanguage;
 
 public class DictionaryContributor extends CompletionContributor {
     public DictionaryContributor() {
-        // completions for plain text yaml files
+        // conditions
+        extend(CompletionType.BASIC,
+                YamlElementPatternHelper.getSingleLineScalarKey("conditionRef"),
+                new ConditionCompletionProvider());
+        // general tekton snippets
         extend(CompletionType.BASIC,
                 PlatformPatterns.psiElement(PlainTextTokenTypes.PLAIN_TEXT),
                 new DictionaryCompletionProvider());

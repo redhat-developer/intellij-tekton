@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.tekton.client.TektonClient;
+import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 
 import java.io.IOException;
 import java.net.URL;

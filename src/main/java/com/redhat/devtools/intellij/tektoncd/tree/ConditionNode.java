@@ -10,12 +10,12 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tree;
 
-import com.redhat.devtools.intellij.tektoncd.tkn.Condition;
+import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 
 public class ConditionNode extends ParentableNode<ConditionsNode> {
     private final Condition condition;
     public ConditionNode(TektonRootNode root, ConditionsNode parent, Condition condition) {
-        super(root, parent, condition.getName());
+        super(root, parent, condition.getMetadata().getName());
         this.condition = condition;
     }
 
