@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.completion;
 
+import com.intellij.application.options.CodeStyle;
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -27,7 +28,7 @@ public class ConditionAutoInsertHandler extends BaseAutoInsertHandler implements
         Condition condition = (Condition) item.getObject();
         int startOffset = context.getStartOffset();
         int tailOffset = context.getTailOffset();
-        int indentationSize = context.getCodeStyleSettings().getIndentOptions().INDENT_SIZE;
+        int indentationSize = CodeStyle.getIndentOptions(context.getProject(), document).INDENT_SIZE;
         int indentationParent = getParentIndentation(document, startOffset);
 
         String completionText = condition.getMetadata().getName() + "\n";
