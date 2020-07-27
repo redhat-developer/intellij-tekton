@@ -13,11 +13,13 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
@@ -97,12 +99,18 @@ public class StartAction extends TektonAction {
                     Map<String, Workspace> workspaces = model.getWorkspaces();
                     Map<String, String> inputResources = model.getInputResources();
                     Map<String, String> outputResources = model.getOutputResources();
+                    String runName = null;
                     if (element instanceof PipelineNode) {
-                        tkncli.startPipeline(namespace, element.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces);
+                        runName = tkncli.startPipeline(namespace, element.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces);
+
                     } else if (element instanceof TaskNode) {
-                        tkncli.startTask(namespace, element.getName(), params, inputResources, outputResources, serviceAccount, workspaces);
+                        runName = tkncli.startTask(namespace, element.getName(), params, inputResources, outputResources, serviceAccount, workspaces);
                     }
                     ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
+                    if(runName != null) {
+                        FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
+                        followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
+                    }
                 } catch (IOException e) {
                     notification = new Notification(NOTIFICATION_ID,
                             "Error",

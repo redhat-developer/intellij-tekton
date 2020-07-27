@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
-import io.fabric8.tekton.client.TektonClient;
 
 import java.io.IOException;
 import java.net.URL;
@@ -395,8 +394,9 @@ public interface Tkn {
      * @param taskServiceAccount the service account corresponding to the task
      * @param workspaces the workspaces to start pipeline
      * @throws IOException if communication errored
+     * @return PipelineRun name
      */
-    void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces) throws IOException;
+    String startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces) throws IOException;
 
     /**
      * Re-run the pipeline using last pipelinerun values
@@ -404,8 +404,9 @@ public interface Tkn {
      * @param namespace the namespace of the task
      * @param pipeline the pipeline that has to be run
      * @throws IOException if communication errored
+     * @return PipelineRun name
      */
-    void startLastPipeline(String namespace, String pipeline) throws IOException;
+    String startLastPipeline(String namespace, String pipeline) throws IOException;
 
     /**
      * Start the execution of a task
@@ -418,8 +419,9 @@ public interface Tkn {
      * @param serviceAccount the service account to use when running the task
      * @param workspaces the workspaces to start the task
      * @throws IOException if communication errored
+     * @return TaskRun name
      */
-    void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces) throws IOException;
+    String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces) throws IOException;
 
     /**
      * Re-run the task using last taskrun values
@@ -427,8 +429,9 @@ public interface Tkn {
      * @param namespace the namespace of the task
      * @param task the task that has to be run
      * @throws IOException if communication errored
+     * @return TaskRun name
      */
-    void startLastTask(String namespace, String task) throws IOException;
+    String startLastTask(String namespace, String task) throws IOException;
 
     /**
      * Get logs for a PipelineRun

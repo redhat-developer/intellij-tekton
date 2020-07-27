@@ -13,9 +13,11 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
@@ -41,12 +43,17 @@ public class StartLastRunAction extends TektonAction {
             ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
             String namespace = element.getParent().getParent().getName();
             try {
+                String runName = null;
                 if (element instanceof PipelineNode) {
-                    tkncli.startLastPipeline(namespace, element.getName());
+                    runName = tkncli.startLastPipeline(namespace, element.getName());
                 } else if (element instanceof TaskNode) {
-                    tkncli.startLastTask(namespace, element.getName());
+                    runName = tkncli.startLastTask(namespace, element.getName());
                 }
-                ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
+                ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
+                if (runName != null) {
+                    FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
+                    followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
+                }
             } catch (IOException e) {
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
