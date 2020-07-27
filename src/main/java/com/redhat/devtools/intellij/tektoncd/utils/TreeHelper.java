@@ -19,6 +19,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
@@ -30,6 +31,8 @@ import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 
@@ -59,6 +62,16 @@ public class TreeHelper {
         ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow("Tekton");
         JBScrollPane pane = (JBScrollPane) window.getContentManager().findContent("").getComponent();
         return (Tree) pane.getViewport().getView();
+    }
+
+    public static Tkn getTkn(Project project) {
+        try {
+            TektonTreeStructure treeStructure = (TektonTreeStructure) getTree(project).getClientProperty(Constants.STRUCTURE_PROPERTY);
+            TektonRootNode root = (TektonRootNode) treeStructure.getRootElement();
+            return root.getTkn();
+        } catch(Exception ex) {
+            return null;
+        }
     }
 
     /**
