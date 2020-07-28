@@ -106,11 +106,11 @@ public class StartAction extends TektonAction {
                     } else if (element instanceof TaskNode) {
                         runName = tkncli.startTask(namespace, element.getName(), params, inputResources, outputResources, serviceAccount, workspaces);
                     }
-                    ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
                     if(runName != null) {
                         FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
                         followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
                     }
+                    ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
                 } catch (IOException e) {
                     notification = new Notification(NOTIFICATION_ID,
                             "Error",

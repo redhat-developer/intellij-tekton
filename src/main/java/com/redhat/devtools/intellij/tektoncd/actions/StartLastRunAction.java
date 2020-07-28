@@ -49,11 +49,11 @@ public class StartLastRunAction extends TektonAction {
                 } else if (element instanceof TaskNode) {
                     runName = tkncli.startLastTask(namespace, element.getName());
                 }
-                ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
                 if (runName != null) {
                     FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
                     followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
                 }
+                ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
             } catch (IOException e) {
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
