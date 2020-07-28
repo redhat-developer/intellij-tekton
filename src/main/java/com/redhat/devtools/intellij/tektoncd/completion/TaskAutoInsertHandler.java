@@ -10,27 +10,22 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.completion;
 
-import com.intellij.application.options.CodeStyle;
-import com.intellij.codeInsight.completion.InsertHandler;
-import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.openapi.editor.Document;
 import io.fabric8.tekton.pipeline.v1beta1.ParamSpec;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskResource;
 import io.fabric8.tekton.pipeline.v1beta1.TaskResources;
-import org.jetbrains.annotations.NotNull;
 
-public class TaskAutoInsertHandler extends BaseAutoInsertHandler implements InsertHandler<LookupElement> {
+public class TaskAutoInsertHandler extends BaseAutoInsertHandler {
 
     @Override
-    public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement item) {
-        Document document = context.getEditor().getDocument();
+    public String getParentName() {
+        return "taskRef";
+    }
+
+    @Override
+    public String getCompletionText(LookupElement item, int indentationSize, int indentationParent) {
         Task task = (Task) item.getObject();
-        int startOffset = context.getStartOffset();
-        int tailOffset = context.getTailOffset();
-        int indentationSize = CodeStyle.getIndentOptions(context.getProject(), document).INDENT_SIZE;
-        int indentationParent = getParentIndentation(document, "taskRef", startOffset);
 
         String completionText = task.getMetadata().getName() + "\n";
         if (task.getSpec().getParams() != null && task.getSpec().getParams().size() > 0) {
@@ -61,6 +56,6 @@ public class TaskAutoInsertHandler extends BaseAutoInsertHandler implements Inse
             }
 
         }
-        document.replaceString(startOffset, tailOffset, completionText);
+        return completionText;
     }
 }
