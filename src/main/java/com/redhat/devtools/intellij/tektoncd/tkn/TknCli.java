@@ -344,7 +344,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> resources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces) throws IOException {
+    public String startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> resources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("pipeline", "start", pipeline, "-n", namespace));
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
@@ -353,15 +353,17 @@ public class TknCli implements Tkn {
         args.addAll(workspaceArgsToList(workspaces));
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(resources, FLAG_INPUTRESOURCEPIPELINE));
-        ExecHelper.execute(command, envVars, args.toArray(new String[0]));
+        String output = ExecHelper.execute(command, envVars, args.toArray(new String[0]));
+        return this.getTektonRunName(output);
     }
 
     @Override
-    public void startLastPipeline(String namespace, String pipeline) throws IOException {
-        ExecHelper.execute(command, envVars, "pipeline", "start", pipeline, "--last", "-n", namespace);
+    public String startLastPipeline(String namespace, String pipeline) throws IOException {
+        String output = ExecHelper.execute(command, envVars, "pipeline", "start", pipeline, "--last", "-n", namespace);
+        return this.getTektonRunName(output);
     }
 
-    public void startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces) throws IOException {
+    public String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
@@ -370,12 +372,14 @@ public class TknCli implements Tkn {
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCETASK));
         args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
-        ExecHelper.execute(command, envVars, args.toArray(new String[0]));
+        String output = ExecHelper.execute(command, envVars, args.toArray(new String[0]));
+        return getTektonRunName(output);
     }
 
     @Override
-    public void startLastTask(String namespace, String task) throws IOException {
-        ExecHelper.execute(command, envVars, "task", "start", task, "--last", "-n", namespace);
+    public String startLastTask(String namespace, String task) throws IOException {
+        String output = ExecHelper.execute(command, envVars, "task", "start", task, "--last", "-n", namespace);
+        return getTektonRunName(output);
     }
 
     private List<String> argsToList(Map<String, String> argMap, String flag) {
@@ -448,5 +452,17 @@ public class TknCli implements Tkn {
     @Override
     public <T> T getClient(Class<T> clazz) {
         return client.adapt(clazz);
+    }
+
+    private String getTektonRunName(String output) {
+        String[] strings = output.split("\n");
+        if(strings.length > 0){
+            String firstString = strings[0];
+            String[] pipelineNameArr = firstString.split(":");
+            if(pipelineNameArr.length >= 2){
+                return pipelineNameArr[1].trim();
+            }
+        }
+        return null;
     }
 }
