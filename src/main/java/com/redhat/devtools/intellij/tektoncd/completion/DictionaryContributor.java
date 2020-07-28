@@ -22,6 +22,10 @@ public class DictionaryContributor extends CompletionContributor {
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getSingleLineScalarKey("conditionRef"),
                 new ConditionCompletionProvider());
+        // tasks
+        extend(CompletionType.BASIC,
+                YamlElementPatternHelper.getSingleLineScalarKey("taskRef"),
+                new TaskCompletionProvider());
         // runAfter
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getMultipleLineScalarKey("runAfter"),

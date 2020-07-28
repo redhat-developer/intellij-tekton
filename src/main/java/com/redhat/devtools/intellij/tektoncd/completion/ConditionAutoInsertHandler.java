@@ -29,7 +29,7 @@ public class ConditionAutoInsertHandler extends BaseAutoInsertHandler implements
         int startOffset = context.getStartOffset();
         int tailOffset = context.getTailOffset();
         int indentationSize = CodeStyle.getIndentOptions(context.getProject(), document).INDENT_SIZE;
-        int indentationParent = getParentIndentation(document, startOffset);
+        int indentationParent = getParentIndentation(document, "- conditionRef", startOffset);
 
         String completionText = condition.getMetadata().getName() + "\n";
         if (condition.getSpec().getParams() != null && condition.getSpec().getParams().size() > 0) {

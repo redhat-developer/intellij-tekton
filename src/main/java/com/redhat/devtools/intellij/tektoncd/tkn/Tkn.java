@@ -19,6 +19,7 @@ import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -121,7 +122,7 @@ public interface Tkn {
      * @return the list of tasks names
      * @throws IOException if communication errored
      */
-    List<String> getTasks(String namespace) throws IOException;
+    List<Task> getTasks(String namespace) throws IOException;
 
     /**
      * Return the list of task runs for a task.

@@ -15,9 +15,9 @@ import com.intellij.openapi.editor.Document;
 import java.util.Collections;
 
 public class BaseAutoInsertHandler {
-    protected int getParentIndentation(Document document, int offset) {
+    protected int getParentIndentation(Document document, String label, int offset) {
         int positionNewLine = document.getText().substring(0, offset).lastIndexOf("\n");
-        int nSpaces = document.getText().indexOf("- conditionRef", positionNewLine);
+        int nSpaces = document.getText().indexOf(label, positionNewLine);
         return (nSpaces + 1) - (positionNewLine + 2);
     }
 
