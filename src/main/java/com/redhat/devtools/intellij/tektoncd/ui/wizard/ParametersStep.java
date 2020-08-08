@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import java.awt.GridBagConstraints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.ArrayList;
@@ -19,7 +20,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import org.jetbrains.annotations.NotNull;
+
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_LABEL_NAME;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.FONT_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.RED_BORDER_SHOW_ERROR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.ROW_DIMENSION;
 
 public class ParametersStep extends BaseStep {
 
@@ -27,22 +33,15 @@ public class ParametersStep extends BaseStep {
 
     public ParametersStep(StartResourceModel model) {
         super("Parameters", model);
-        textFields = new ArrayList<>();
-        setContent(model);
-    }
-
-    @NotNull
-    @Override
-    public Object getStepId() {
-        return "ParametersStep";
     }
 
     @Override
     public boolean isComplete() {
+        if (textFields == null) return false;
         AtomicBoolean isComplete = new AtomicBoolean(true);
         textFields.stream().forEach(field -> {
             if (field.getText().isEmpty()) {
-                field.setBorder(defaultErrorBorderValue);
+                field.setBorder(RED_BORDER_SHOW_ERROR);
                 isComplete.set(false);
             }
         });
@@ -54,8 +53,8 @@ public class ParametersStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#specifying-parameters";
     }
 
-    private void setContent(StartResourceModel model) {
-        initContentPanel();
+    public void setContent(StartResourceModel model) {
+        textFields = new ArrayList<>();
         final int[] row = {0};
 
         model.getInputs().stream().filter(input -> input.kind() == Input.Kind.PARAMETER).forEach(input -> {
@@ -67,22 +66,20 @@ public class ParametersStep extends BaseStep {
                 tooltip += "The parameter " + input.name() + " expects an array value (e.g. val1,val2,val3 ...).";
             }
             JLabel lblNameParam = new JLabel(label);
-            addComponent(lblNameParam, null, defaultBorderName, defaultRowDimension, 0, row[0], defaultAnchor);
+            addComponent(lblNameParam, null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             addTooltip(lblNameParam, tooltip);
             row[0] += 1;
 
             JTextField txtValueParam = new JTextField(input.defaultValue().orElse(""));
             textFields.add(txtValueParam);
-            txtValueParam = (JTextField) addComponent(txtValueParam, defaultFontValueComponent, defaultBorderValue, defaultRowDimension, 0, row[0], defaultAnchor);
+            txtValueParam = (JTextField) addComponent(txtValueParam, FONT_COMPONENT_VALUE, BORDER_COMPONENT_VALUE, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             addListener(input.name(), txtValueParam);
             row[0] += 1;
         });
-
-        adjustContentPanel();
     }
 
     private void addListener(String idParam, JTextField txtValueParam) {
-        // listen to when the focus is lost from the textbox then the model is updated so the preview shows the current model
+        // listen to when the focus is lost by the textbox and update the model so the preview shows the updated value
         txtValueParam.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -90,7 +87,7 @@ public class ParametersStep extends BaseStep {
                 setInputValue(idParam, txtValueParam.getText());
                 // reset the border in case an error occured before and the border is red
                 if (!txtValueParam.getText().isEmpty()) {
-                    txtValueParam.setBorder(defaultBorderValue);
+                    txtValueParam.setBorder(BORDER_COMPONENT_VALUE);
                 }
                 fireStateChanged();
             }

@@ -67,12 +67,6 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
     private final Map<Component, String> myComponentToIdMap = new HashMap<>();
     private final StepListener myStepListener = () -> updateStep();
 
-    public AbstractWizard(final String title, final Component dialogParent) {
-        super(dialogParent, true);
-        mySteps = new ArrayList<>();
-        initWizard(title);
-    }
-
     public AbstractWizard(final String title, @Nullable final Project project) {
         super(project, true);
         mySteps = new ArrayList<>();
@@ -186,10 +180,6 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
         return myFooterPanel;
     }
 
-    public JPanel getContentComponent() {
-        return myContentPanel;
-    }
-
     private static void add(final GroupLayout.Group hGroup,
                             final GroupLayout.Group vGroup,
                             @Nullable final Collection<? super Component> collection,
@@ -255,8 +245,7 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
         super.init();
         updateStep();
     }
-
-
+    
     protected String addStepComponent(final Component component) {
         String id = myComponentToIdMap.get(component);
         if (id == null) {
@@ -278,20 +267,6 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
     }
 
     protected void doPreviousAction() {
-        // Commit data of current step
-        final Step currentStep = mySteps.get(myCurrentStep);
-        LOG.assertTrue(currentStep != null);
-        try {
-            currentStep._commit(false);
-        }
-        catch (final CommitStepException exc) {
-            Messages.showErrorDialog(
-                    myContentPanel,
-                    exc.getMessage()
-            );
-            return;
-        }
-
         myCurrentStep = getPreviousStep(myCurrentStep);
         updateStep(JBCardLayout.SwipeDirection.BACKWARD);
     }
@@ -310,7 +285,7 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
 
     protected void doNextAction() {
         // Commit data of current step
-        final Step currentStep = mySteps.get(myCurrentStep);
+        /*final Step currentStep = mySteps.get(myCurrentStep);
         LOG.assertTrue(currentStep != null);
         LOG.assertTrue(!isLastStep(), "steps: " + mySteps + " current: " + currentStep);
         try {
@@ -322,7 +297,7 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
                     exc.getMessage()
             );
             return;
-        }
+        }*/
 
         myCurrentStep = getNextStep(myCurrentStep);
         updateStep(JBCardLayout.SwipeDirection.FORWARD);
@@ -334,21 +309,11 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
      * @return the next step's index
      */
     protected int getNextStep(int step) {
-
         final int stepCount = mySteps.size();
         if (++step >= stepCount) {
             step = stepCount - 1;
         }
         return step;
-    }
-
-    protected final int getNextStep() {
-        return getNextStep(getCurrentStep());
-    }
-
-    protected T getNextStepObject() {
-        int step = getNextStep();
-        return mySteps.get(step);
     }
 
     /**
@@ -369,10 +334,7 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
         }
 
         final Step step = mySteps.get(myCurrentStep);
-        LOG.assertTrue(step != null);
-        step._init();
         myCurrentStepComponent = step.getComponent();
-        LOG.assertTrue(myCurrentStepComponent != null);
         showStepComponent(myCurrentStepComponent);
 
         updateButtons();
@@ -410,20 +372,15 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
 
     public void updateButtons(boolean lastStep, boolean canGoNext, boolean firstStep) {
         if (lastStep) {
-            if (mySteps.size() > 1) {
-                myNextButton.setText(UIUtil.removeMnemonic(IdeBundle.message("button.finish")));
-                myNextButton.setMnemonic('F');
-            }
-            else {
-                myNextButton.setText(IdeBundle.message("button.ok"));
-            }
-            myNextButton.setEnabled(canGoNext);
+            myNextButton.setText(UIUtil.removeMnemonic("&Start"));
+            myNextButton.setMnemonic('F');
         }
         else {
             myNextButton.setText(UIUtil.removeMnemonic(IdeBundle.message("button.wizard.next")));
             myNextButton.setMnemonic('N');
-            myNextButton.setEnabled(canGoNext);
         }
+
+        myNextButton.setEnabled(canGoNext);
 
         if (myNextButton.isEnabled() && !ApplicationManager.getApplication().isUnitTestMode() && getRootPane() != null) {
             getRootPane().setDefaultButton(myNextButton);
@@ -448,24 +405,12 @@ public abstract class AbstractWizard<T extends Step> extends DialogWrapper {
         return myPreviousButton;
     }
 
-    protected JButton getHelpButton() {
-        return myHelpButton;
-    }
-
-    public JButton getCancelButton() {
-        return myCancelButton;
-    }
-
     /**
      * @deprecated unused
      */
     @Deprecated
     protected JButton getFinishButton() {
         return new JButton();
-    }
-
-    public Component getCurrentStepComponent() {
-        return myCurrentStepComponent;
     }
 
     protected void helpAction() {

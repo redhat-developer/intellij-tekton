@@ -174,9 +174,6 @@ public class StartWizard extends AbstractWizard<BaseStep> {
 
         int oldStep = myCurrentStep;
         myCurrentStep = getNextStep(myCurrentStep);
-        //((NoSelectionModel)navigationList.getSelectionModel()).setSelectItem(myCurrentStep);
-
-        //navigationList.setSelectedIndex(myCurrentStep);
         setSelectItemNavigationList(oldStep, myCurrentStep);
         updateStep(JBCardLayout.SwipeDirection.FORWARD);
     }
@@ -242,11 +239,6 @@ public class StartWizard extends AbstractWizard<BaseStep> {
         for (BaseStep step : mySteps) {
             Disposer.dispose(step);
         }
-    }
-
-    @Override
-    public JPanel getContentComponent() {
-        return super.getContentComponent();
     }
 
     private void updatePreview(StartResourceModel model) {

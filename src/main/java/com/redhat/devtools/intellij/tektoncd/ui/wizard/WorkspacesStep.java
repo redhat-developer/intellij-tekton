@@ -20,12 +20,15 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import org.jetbrains.annotations.NotNull;
-
 
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.PVC;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.SECRET;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_LABEL_NAME;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.FONT_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.RED_BORDER_SHOW_ERROR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.ROW_DIMENSION;
 
 public class WorkspacesStep extends BaseStep {
 
@@ -33,14 +36,6 @@ public class WorkspacesStep extends BaseStep {
 
     public WorkspacesStep(StartResourceModel model) {
         super("Workspaces", model);
-        cmbsWorkspaceTypes = new ArrayList<>();
-        setContent(model);
-    }
-
-    @NotNull
-    @Override
-    public Object getStepId() {
-        return "WorkspacesStep";
     }
 
     @Override
@@ -49,7 +44,7 @@ public class WorkspacesStep extends BaseStep {
         if (!isComplete) {
             cmbsWorkspaceTypes.stream().forEach(cmb -> {
                 if (cmb.isVisible() && cmb.getSelectedIndex() == 0) {
-                    cmb.setBorder(defaultErrorBorderValue);
+                    cmb.setBorder(RED_BORDER_SHOW_ERROR);
                 }
             });
         }
@@ -61,18 +56,18 @@ public class WorkspacesStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/workspaces.md";
     }
 
-    private void setContent(StartResourceModel model) {
-        initContentPanel();
+    public void setContent(StartResourceModel model) {
+        cmbsWorkspaceTypes = new ArrayList<>();
         final int[] row = {0};
 
         model.getWorkspaces().keySet().forEach(workspaceName -> {
             JLabel lblNameWorkspace = new JLabel("<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">" + workspaceName + "</span></html");
-            addComponent(lblNameWorkspace,  null, defaultBorderName, defaultRowDimension, 0, row[0], defaultAnchor);
+            addComponent(lblNameWorkspace,  null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             row[0] += 1;
 
             JComboBox cmbWorkspaceTypes = new JComboBox();
-            Border compoundBorderBottomMargin = BorderFactory.createCompoundBorder(new EmptyBorder(0, 0, 3, 0), defaultBorderValue);
-            cmbWorkspaceTypes = (JComboBox) addComponent(cmbWorkspaceTypes, defaultFontValueComponent, compoundBorderBottomMargin, defaultRowDimension, 0, row[0], GridBagConstraints.NORTH);
+            Border compoundBorderBottomMargin = BorderFactory.createCompoundBorder(new EmptyBorder(0, 0, 3, 0), BORDER_COMPONENT_VALUE);
+            cmbWorkspaceTypes = (JComboBox) addComponent(cmbWorkspaceTypes, FONT_COMPONENT_VALUE, compoundBorderBottomMargin, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
 
             cmbWorkspaceTypes.addItem("");
             cmbWorkspaceTypes.addItem(Workspace.Kind.EMPTYDIR);
@@ -89,14 +84,12 @@ public class WorkspacesStep extends BaseStep {
             row[0] += 1;
 
             JComboBox cmbWorkspaceTypeValues = new JComboBox();
-            Border compoundBorderTopMargin = BorderFactory.createCompoundBorder(new EmptyBorder(3, 0, 0, 0), defaultBorderValue);
-            cmbWorkspaceTypeValues = (JComboBox) addComponent(cmbWorkspaceTypeValues, defaultFontValueComponent, compoundBorderTopMargin, defaultRowDimension, 0, row[0], GridBagConstraints.NORTH);
+            Border compoundBorderTopMargin = BorderFactory.createCompoundBorder(new EmptyBorder(3, 0, 0, 0), BORDER_COMPONENT_VALUE);
+            cmbWorkspaceTypeValues = (JComboBox) addComponent(cmbWorkspaceTypeValues, FONT_COMPONENT_VALUE, compoundBorderTopMargin, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             setCmbWorkspaceTypeValues(workspaceName, typeToBeSelected, cmbWorkspaceTypeValues);
             addListeners(workspaceName, cmbWorkspaceTypes, cmbWorkspaceTypeValues);
             row[0] += 1;
         });
-
-        adjustContentPanel();
     }
 
     private void addListeners(String workspace, JComboBox cmbWorkspaceTypes, JComboBox cmbWorkspaceTypeValues) {
@@ -108,7 +101,7 @@ public class WorkspacesStep extends BaseStep {
                 String resource = cmbWorkspaceTypeValues.isVisible() && cmbWorkspaceTypeValues.getItemCount() > 0 ? cmbWorkspaceTypeValues.getSelectedItem().toString() : null;
                 updateWorkspaceModel(workspace, kindSelected, resource);
                 // reset border if an error occured previously and the border is red
-                cmbWorkspaceTypes.setBorder(defaultBorderValue);
+                cmbWorkspaceTypes.setBorder(BORDER_COMPONENT_VALUE);
                 fireStateChanged();
             }
         });

@@ -19,19 +19,17 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.border.EmptyBorder;
-import org.jetbrains.annotations.NotNull;
+
+
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_LABEL_NAME;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.FONT_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.ROW_DIMENSION;
 
 public class AuthenticationStep extends BaseStep {
 
     public AuthenticationStep(StartResourceModel model) {
         super("Authentication", model);
-        setContent(model);
-    }
-
-    @NotNull
-    @Override
-    public Object getStepId() {
-        return "AuthenticationStep";
     }
 
     @Override
@@ -44,8 +42,7 @@ public class AuthenticationStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/auth.md";
     }
 
-    private void setContent(StartResourceModel model) {
-        initContentPanel();
+    public void setContent(StartResourceModel model) {
         final int[] row = {0};
 
         List<String> serviceAccounts = new ArrayList<>(model.getTaskServiceAccounts().keySet());
@@ -60,18 +57,22 @@ public class AuthenticationStep extends BaseStep {
             }
 
             JLabel lblServiceAccount = new JLabel("<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">" + name + "</span>  <span style=\\\"font-family:serif;font-size:10;font-weight:normal;font-style:italic;\\\">(optional)</span></html");
-            addComponent(lblServiceAccount, null, defaultBorderName, defaultRowDimension, 0, row[0], defaultAnchor);
+            addComponent(lblServiceAccount, null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             row[0] += 1;
 
             JComboBox cmbValueResource = new JComboBox();
-            cmbValueResource = (JComboBox) addComponent(cmbValueResource, defaultFontValueComponent, defaultBorderValue, defaultRowDimension, 0, row[0], GridBagConstraints.NORTH);
-            // fill serviceAccount ComboBox
-            fillComboBox(cmbValueResource, model.getServiceAccounts(), "");
+            cmbValueResource = (JComboBox) addComponent(cmbValueResource, FONT_COMPONENT_VALUE, BORDER_COMPONENT_VALUE, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
+            fillComboBox(cmbValueResource);
             addListener(name, cmbValueResource);
             row[0] += 1;
         });
+    }
 
-        adjustContentPanel();
+    private void fillComboBox(JComboBox comboBox) {
+        comboBox.addItem("");
+        for (String value : model.getServiceAccounts()) {
+            comboBox.addItem(value);
+        }
     }
 
     private void addListener(String idParam, JComboBox cmbValueResource) {

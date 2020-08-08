@@ -16,19 +16,17 @@ import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
 import java.awt.GridBagConstraints;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import org.jetbrains.annotations.NotNull;
+
+
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_LABEL_NAME;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.FONT_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.ROW_DIMENSION;
 
 public class InputResourcesStep extends BaseStep {
 
     public InputResourcesStep(StartResourceModel model) {
         super("Input Resources", model);
-        setContent(model);
-    }
-
-    @NotNull
-    @Override
-    public Object getStepId() {
-        return "InputResourcesStep";
     }
 
     @Override
@@ -41,31 +39,32 @@ public class InputResourcesStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/resources.md";
     }
 
-    private void setContent(StartResourceModel model) {
-        initContentPanel();
+    public void setContent(StartResourceModel model) {
         final int[] row = {0};
 
         model.getInputs().stream().filter(input -> input.kind() == Input.Kind.RESOURCE).forEach(input -> {
             JLabel lblNameResource = new JLabel("<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">" + input.name() + "</span></html");
-            addComponent(lblNameResource, null, defaultBorderName, defaultRowDimension, 0, row[0], defaultAnchor);
+            addComponent(lblNameResource, null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             addTooltip(lblNameResource, input.description().orElse(""));
             row[0] += 1;
 
             JComboBox cmbValueResource = new JComboBox();
-            cmbValueResource = (JComboBox) addComponent(cmbValueResource, defaultFontValueComponent, defaultBorderValue, defaultRowDimension, 0, row[0], GridBagConstraints.NORTH);
-            for (Resource resource: model.getResources()) {
-                if (resource.type().equals(input.type())) {
-                    cmbValueResource.addItem(resource);
-                }
-            }
-            if (input.value() != null) {
-                cmbValueResource.setSelectedItem(input.value());
-            }
+            cmbValueResource = (JComboBox) addComponent(cmbValueResource, FONT_COMPONENT_VALUE, BORDER_COMPONENT_VALUE, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
+            fillComboBox(cmbValueResource, input);
             addListener(input.name(), cmbValueResource);
             row[0] += 1;
         });
+    }
 
-        adjustContentPanel();
+    private void fillComboBox(JComboBox comboBox, Input input) {
+        for (Resource resource: model.getResources()) {
+            if (resource.type().equals(input.type())) {
+                comboBox.addItem(resource);
+            }
+        }
+        if (input.value() != null) {
+            comboBox.setSelectedItem(input.value());
+        }
     }
 
     private void addListener(String idParam, JComboBox cmbValueResource) {
