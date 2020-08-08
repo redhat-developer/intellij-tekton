@@ -21,11 +21,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_COMPONENT_VALUE;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.BORDER_LABEL_NAME;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.FONT_COMPONENT_VALUE;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.RED_BORDER_SHOW_ERROR;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.ROW_DIMENSION;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.FONT_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 
 public class ParametersStep extends BaseStep {
 

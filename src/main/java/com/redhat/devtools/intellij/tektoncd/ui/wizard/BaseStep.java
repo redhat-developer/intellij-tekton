@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-import static com.redhat.devtools.intellij.tektoncd.ui.UIContants.NO_BORDER;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
 
 public abstract class BaseStep implements Step, Disposable {
     @Nullable

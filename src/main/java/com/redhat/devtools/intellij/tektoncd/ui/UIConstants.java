@@ -17,7 +17,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 
-public class UIContants {
+public class UIConstants {
     public static final Color RED = new Color(229,77,4);
     public static final Color LIGHT_GREY = new Color(212,212,212);
 
