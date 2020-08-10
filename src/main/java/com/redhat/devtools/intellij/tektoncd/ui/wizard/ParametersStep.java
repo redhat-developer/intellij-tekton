@@ -45,7 +45,7 @@ public class ParametersStep extends BaseStep {
         AtomicBoolean isComplete = new AtomicBoolean(true);
         final int[] row = {1};
         textFields.stream().forEach(field -> {
-            if (field.getText().isEmpty()) {
+            if (!isValid(field)) {
                 field.setBorder(RED_BORDER_SHOW_ERROR);
                 JLabel lblErrorText = new JLabel("Please enter a value.");
                 lblErrorText.setForeground(Color.red);
@@ -83,7 +83,6 @@ public class ParametersStep extends BaseStep {
             JTextField txtValueParam = new JTextField(input.defaultValue().orElse(""));
             textFields.add(txtValueParam);
             txtValueParam = (JTextField) addComponent(txtValueParam, TIMES_PLAIN_14, BORDER_COMPONENT_VALUE, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
-            //txtValueParam.setPreferredSize(TEXTFIELD_DIMENSION);//new EmptyBorder(0, 0, 10, 0));
             addListener(input.name(), txtValueParam, row[0]);
             row[0] += 1;
         });
@@ -96,13 +95,20 @@ public class ParametersStep extends BaseStep {
             public void focusLost(FocusEvent e) {
                 super.focusLost(e);
                 setInputValue(idParam, txtValueParam.getText());
-                // reset reset error graphics if an error occured before and the border is red
-                if (!txtValueParam.getText().isEmpty()) {
+                // reset error graphics if an error occurred earlier
+                if (isValid(txtValueParam)) {
                     txtValueParam.setBorder(BORDER_COMPONENT_VALUE);
-                    contentPanel.remove(errorFieldsByRow.get(row));
+                    if (errorFieldsByRow.containsKey(row)) {
+                        deleteComponent(errorFieldsByRow.get(row));
+                    }
+
                 }
                 fireStateChanged();
             }
         });
+    }
+
+    private boolean isValid(JTextField component) {
+        return !component.getText().isEmpty();
     }
 }

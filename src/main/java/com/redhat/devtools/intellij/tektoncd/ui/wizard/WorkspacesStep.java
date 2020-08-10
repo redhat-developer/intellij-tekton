@@ -23,16 +23,17 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.CONFIGMAP;
+import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.EMPTYDIR;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.PVC;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.SECRET;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_COMPONENT_VALUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_TOP_35;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION_ERROR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_10;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 
 public class WorkspacesStep extends BaseStep {
 
@@ -48,14 +49,13 @@ public class WorkspacesStep extends BaseStep {
         if (!isComplete) {
             final int[] row = {1};
             cmbsWorkspaceTypes.stream().forEach(cmb -> {
-                if (cmb.isVisible() && cmb.getSelectedIndex() == 0) {
+                if (!isValid(cmb)) {
                     cmb.setBorder(RED_BORDER_SHOW_ERROR);
                     JLabel lblErrorText = new JLabel("Please select a value.");
                     lblErrorText.setForeground(Color.red);
                     addComponent(lblErrorText, TIMES_PLAIN_10, MARGIN_TOP_35, ROW_DIMENSION_ERROR, 0, row[0], GridBagConstraints.PAGE_END);
                     errorFieldsByRow.put(row[0], lblErrorText);
                     lblErrorText.setEnabled(true);
-
                 }
                 row[0] += 3;
             });
@@ -82,10 +82,10 @@ public class WorkspacesStep extends BaseStep {
             cmbWorkspaceTypes = (JComboBox) addComponent(cmbWorkspaceTypes, TIMES_PLAIN_14, compoundBorderBottomMargin, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
 
             cmbWorkspaceTypes.addItem("");
-            cmbWorkspaceTypes.addItem(Workspace.Kind.EMPTYDIR);
+            cmbWorkspaceTypes.addItem(EMPTYDIR);
             cmbWorkspaceTypes.addItem(CONFIGMAP);
-            cmbWorkspaceTypes.addItem(Workspace.Kind.SECRET);
-            cmbWorkspaceTypes.addItem(Workspace.Kind.PVC);
+            cmbWorkspaceTypes.addItem(SECRET);
+            cmbWorkspaceTypes.addItem(PVC);
             Workspace.Kind typeToBeSelected = workspaceName == null ? null : model.getWorkspaces().get(workspaceName) == null ? null : model.getWorkspaces().get(workspaceName).getKind();
             if (typeToBeSelected != null) {
                 cmbWorkspaceTypes.setSelectedItem(typeToBeSelected);
@@ -98,7 +98,7 @@ public class WorkspacesStep extends BaseStep {
             JComboBox cmbWorkspaceTypeValues = new JComboBox();
             Border compoundBorderTopMargin = BorderFactory.createCompoundBorder(new EmptyBorder(3, 0, 0, 0), BORDER_COMPONENT_VALUE);
             cmbWorkspaceTypeValues = (JComboBox) addComponent(cmbWorkspaceTypeValues, TIMES_PLAIN_14, compoundBorderTopMargin, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
-            setCmbWorkspaceTypeValues(workspaceName, typeToBeSelected, cmbWorkspaceTypeValues);
+            setCmbWorkspaceTypeValues(workspaceName, typeToBeSelected, cmbWorkspaceTypeValues, row[0] - 1);
             addListeners(workspaceName, cmbWorkspaceTypes, cmbWorkspaceTypeValues, row[0] - 1);
             row[0] += 1;
         });
@@ -109,12 +109,16 @@ public class WorkspacesStep extends BaseStep {
             if (itemEvent.getStateChange() == 1) {
                 // when cmbWorkspaceTypes combo box value changes, a type (secret, emptyDir, pvcs ..) is chosen and cmbWorkspaceTypeValues combo box is filled with all existing resources of that kind
                 Workspace.Kind kindSelected = cmbWorkspaceTypes.getSelectedItem().equals("") ? null : (Workspace.Kind) cmbWorkspaceTypes.getSelectedItem();
-                setCmbWorkspaceTypeValues(workspace, kindSelected, cmbWorkspaceTypeValues);
+                setCmbWorkspaceTypeValues(workspace, kindSelected, cmbWorkspaceTypeValues, row);
                 String resource = cmbWorkspaceTypeValues.isVisible() && cmbWorkspaceTypeValues.getItemCount() > 0 ? cmbWorkspaceTypeValues.getSelectedItem().toString() : null;
                 updateWorkspaceModel(workspace, kindSelected, resource);
-                // reset error graphics if error occurred previously and the border is red
-                cmbWorkspaceTypes.setBorder(BORDER_COMPONENT_VALUE);
-                contentPanel.remove(errorFieldsByRow.get(row));
+                // reset error graphics if error occurred earlier
+                if (isValid(cmbWorkspaceTypes)) {
+                    cmbWorkspaceTypes.setBorder(BORDER_COMPONENT_VALUE);
+                    if (errorFieldsByRow.containsKey(row)) {
+                        deleteComponent(errorFieldsByRow.get(row));
+                    }
+                }
                 fireStateChanged();
             }
         });
@@ -128,25 +132,21 @@ public class WorkspacesStep extends BaseStep {
         });
     }
 
-    private void setCmbWorkspaceTypeValues(String workspaceName, Workspace.Kind kind, JComboBox cmbWorkspaceTypeValues) {
+    private void setCmbWorkspaceTypeValues(String workspaceName, Workspace.Kind kind, JComboBox cmbWorkspaceTypeValues, int row) {
         cmbWorkspaceTypeValues.removeAllItems();
-        if (kind == null) {
+        if (kind == null || kind == EMPTYDIR) {
             cmbWorkspaceTypeValues.setVisible(false);
             return;
         }
 
-        List<String> items = new ArrayList<>();
-        if (kind == CONFIGMAP) {
-            items = model.getConfigMaps();
-        } else if(kind == SECRET) {
-            items = model.getSecrets();
-        } else if ( kind == PVC) {
-            items = model.getPersistenceVolumeClaims();
-        }
+        List<String> items = getResources(kind);
 
         if (items.isEmpty()) {
             // show message no resource exists for this type
-            //noResFoundLbl.setVisible(true);
+            JLabel lblErrorText = new JLabel("There are no resources for this type in the cluster. Please select a different type.");
+            lblErrorText.setForeground(Color.red);
+            addComponent(lblErrorText, TIMES_PLAIN_10, MARGIN_TOP_35, ROW_DIMENSION_ERROR, 0, row, GridBagConstraints.PAGE_END);
+            errorFieldsByRow.put(row, lblErrorText);
             cmbWorkspaceTypeValues.setVisible(false);
             return;
         }
@@ -165,11 +165,31 @@ public class WorkspacesStep extends BaseStep {
     }
 
     private void updateWorkspaceModel(String workspaceName, Workspace.Kind kind, String resource) {
-        if (resource == null && kind != Workspace.Kind.EMPTYDIR) {
+        if (resource == null && kind != EMPTYDIR) {
             model.getWorkspaces().put(workspaceName, null);
         } else {
             Workspace workspace = new Workspace(workspaceName, kind, resource);
             model.getWorkspaces().put(workspaceName, workspace);
         }
+    }
+
+    private boolean isValid(JComboBox component) {
+        if (!component.isVisible() || component.getSelectedIndex() == 0) return false;
+        Workspace.Kind kind = (Workspace.Kind) component.getSelectedItem();
+        List<String> resourcesByKind = getResources(kind);
+        if (kind != EMPTYDIR && resourcesByKind.size() == 0) return false;
+        return true;
+    }
+
+    private List<String> getResources(Workspace.Kind kind) {
+        List<String> items = new ArrayList<>();
+        if (kind == CONFIGMAP) {
+            items = model.getConfigMaps();
+        } else if(kind == SECRET) {
+            items = model.getSecrets();
+        } else if ( kind == PVC) {
+            items = model.getPersistenceVolumeClaims();
+        }
+        return items;
     }
 }

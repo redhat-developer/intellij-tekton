@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
@@ -144,6 +145,14 @@ public abstract class BaseStep implements Step, Disposable {
         gridBagConstraints.anchor = anchor;
         contentPanel.add(component, gridBagConstraints);
         return component;
+    }
+
+    protected void deleteComponent(@NotNull JComponent component) {
+        if (Arrays.stream(contentPanel.getComponents()).anyMatch(comp -> comp.equals(component))) {
+            contentPanel.remove(component);
+            contentPanel.revalidate();
+            contentPanel.repaint();
+        }
     }
 
     protected void addTooltip(@NotNull JComponent component, String textToDisplay) {
