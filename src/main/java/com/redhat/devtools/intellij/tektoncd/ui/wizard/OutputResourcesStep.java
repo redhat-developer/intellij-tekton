@@ -17,10 +17,9 @@ import java.awt.GridBagConstraints;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 
-
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_COMPONENT_VALUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.FONT_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 
 public class OutputResourcesStep extends BaseStep {
@@ -49,7 +48,7 @@ public class OutputResourcesStep extends BaseStep {
             row[0] += 1;
 
             JComboBox cmbValueResource = new JComboBox();
-            cmbValueResource = (JComboBox) addComponent(cmbValueResource, FONT_COMPONENT_VALUE, BORDER_COMPONENT_VALUE, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
+            cmbValueResource = (JComboBox) addComponent(cmbValueResource, TIMES_PLAIN_14, BORDER_COMPONENT_VALUE, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             fillComboBox(cmbValueResource, output);
             addListener(output.name(), cmbValueResource);
             row[0] += 1;

@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -23,9 +24,12 @@ import javax.swing.JTextField;
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_COMPONENT_VALUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.FONT_COMPONENT_VALUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_TOP_35;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION_ERROR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_10;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
 public class ParametersStep extends BaseStep {
 
@@ -39,11 +43,17 @@ public class ParametersStep extends BaseStep {
     public boolean isComplete() {
         if (textFields == null) return false;
         AtomicBoolean isComplete = new AtomicBoolean(true);
+        final int[] row = {1};
         textFields.stream().forEach(field -> {
             if (field.getText().isEmpty()) {
                 field.setBorder(RED_BORDER_SHOW_ERROR);
+                JLabel lblErrorText = new JLabel("Please enter a value.");
+                lblErrorText.setForeground(Color.red);
+                addComponent(lblErrorText, TIMES_PLAIN_10, MARGIN_TOP_35, ROW_DIMENSION_ERROR, 0, row[0], GridBagConstraints.PAGE_END);
+                errorFieldsByRow.put(row[0], lblErrorText);
                 isComplete.set(false);
             }
+            row[0] += 2;
         });
         return isComplete.get();
     }
@@ -72,22 +82,24 @@ public class ParametersStep extends BaseStep {
 
             JTextField txtValueParam = new JTextField(input.defaultValue().orElse(""));
             textFields.add(txtValueParam);
-            txtValueParam = (JTextField) addComponent(txtValueParam, FONT_COMPONENT_VALUE, BORDER_COMPONENT_VALUE, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
-            addListener(input.name(), txtValueParam);
+            txtValueParam = (JTextField) addComponent(txtValueParam, TIMES_PLAIN_14, BORDER_COMPONENT_VALUE, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
+            //txtValueParam.setPreferredSize(TEXTFIELD_DIMENSION);//new EmptyBorder(0, 0, 10, 0));
+            addListener(input.name(), txtValueParam, row[0]);
             row[0] += 1;
         });
     }
 
-    private void addListener(String idParam, JTextField txtValueParam) {
+    private void addListener(String idParam, JTextField txtValueParam, int row) {
         // listen to when the focus is lost by the textbox and update the model so the preview shows the updated value
         txtValueParam.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 super.focusLost(e);
                 setInputValue(idParam, txtValueParam.getText());
-                // reset the border in case an error occured before and the border is red
+                // reset reset error graphics if an error occured before and the border is red
                 if (!txtValueParam.getText().isEmpty()) {
                     txtValueParam.setBorder(BORDER_COMPONENT_VALUE);
+                    contentPanel.remove(errorFieldsByRow.get(row));
                 }
                 fireStateChanged();
             }

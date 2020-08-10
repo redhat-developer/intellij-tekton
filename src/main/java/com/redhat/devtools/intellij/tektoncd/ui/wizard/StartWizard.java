@@ -56,6 +56,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import org.jetbrains.annotations.Nullable;
 
+
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BLUE;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.LIGHT_GREY_204;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
+
 public class StartWizard extends DialogWrapper {
 
     private final List<BaseStep> mySteps;
@@ -110,7 +115,7 @@ public class StartWizard extends DialogWrapper {
             myContentPanel.add(step.getComponent(), Integer.toString(index[0]));
             index[0]++;
         });
-        navigationList.get(0).setForeground(new Color(0, 102, 204));
+        navigationList.get(0).setForeground(BLUE);
 
 
         JCheckBox chk = new JCheckBox("Show Preview");
@@ -126,7 +131,7 @@ public class StartWizard extends DialogWrapper {
 
         previewTextArea = new JTextArea();
         previewTextArea.setEditable(false);
-        previewTextArea.setBorder(new EmptyBorder(10, 10, 10, 10));
+        previewTextArea.setBorder(MARGIN_10);
         previewTextArea.setFont(new Font ("TimesRoman", Font.PLAIN, 15));
         myRightPanel.add(previewTextArea);
         updatePreview(model);
@@ -148,9 +153,9 @@ public class StartWizard extends DialogWrapper {
         myContentPanel.setBackground(Color.white);
         myContentPanel.setPreferredSize(new Dimension(550, 400));
         myLeftPanel.setBackground(Color.white);
-        myLeftPanel.setBorder(new MatteBorder(0, 0, 0, 1, new Color(204, 204, 204)));
+        myLeftPanel.setBorder(new MatteBorder(0, 0, 0, 1, LIGHT_GREY_204));
         myRightPanel.setBackground(Color.white);
-        myRightPanel.setBorder(new MatteBorder(0, 1, 0, 0, new Color(204, 204, 204)));
+        myRightPanel.setBorder(new MatteBorder(0, 1, 0, 0, LIGHT_GREY_204));
         myRightPanel.setVisible(false);
 
         navigationPanel = new JPanel();
@@ -374,8 +379,8 @@ public class StartWizard extends DialogWrapper {
         if (newStep >= navigationList.size()) {
             newStep = navigationList.size() - 1;
         }
-        navigationList.get(oldStep).setForeground(new Color(0, 0, 0));
-        navigationList.get(newStep).setForeground(new Color(0, 102, 204));
+        navigationList.get(oldStep).setForeground(Color.black);
+        navigationList.get(newStep).setForeground(BLUE);
     }
 
     private StartResourceModel getModelCurrentStep() {

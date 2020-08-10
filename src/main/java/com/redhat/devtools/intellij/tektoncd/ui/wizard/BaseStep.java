@@ -24,14 +24,16 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
 
@@ -43,10 +45,12 @@ public abstract class BaseStep implements Step, Disposable {
     protected JPanel contentPanel;
     protected GridBagLayout gridBagLayout;
     protected GridBagConstraints gridBagConstraints;
+    protected Map<Integer, JLabel> errorFieldsByRow;
 
     public BaseStep(@Nullable String title, StartResourceModel model) {
         this.title = title;
         this.model = model;
+        this.errorFieldsByRow = new HashMap<>();
         _init();
     }
 
