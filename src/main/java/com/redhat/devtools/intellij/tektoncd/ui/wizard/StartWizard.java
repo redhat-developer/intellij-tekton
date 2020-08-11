@@ -24,6 +24,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.ui.JBCardLayout;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.mac.TouchbarDataKeys;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.update.UiNotifyConnector;
@@ -60,6 +61,7 @@ import org.jetbrains.annotations.Nullable;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BLUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.LIGHT_GREY_204;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
 
 public class StartWizard extends DialogWrapper {
 
@@ -134,7 +136,16 @@ public class StartWizard extends DialogWrapper {
         previewTextArea.setEditable(false);
         previewTextArea.setBorder(MARGIN_10);
         previewTextArea.setFont(new Font ("TimesRoman", Font.PLAIN, 15));
-        myRightPanel.add(previewTextArea);
+
+        JPanel previewPanel = new JPanel();
+        previewPanel.add(previewTextArea);
+
+        JBScrollPane scroll = new JBScrollPane(previewPanel);
+        scroll.setBorder(NO_BORDER);
+        scroll.setBackground(Color.white);
+
+        myRightPanel.add(scroll);
+
         updatePreview(model);
 
     }
@@ -148,7 +159,7 @@ public class StartWizard extends DialogWrapper {
         myHeaderPanel = new JPanel(new BorderLayout());
         myContentPanel = new JPanel(new JBCardLayout());
         myLeftPanel = new JPanel(new JBCardLayout());
-        myRightPanel = new JPanel(new JBCardLayout());
+        myRightPanel = new JPanel(new BorderLayout());
         myFooterPanel = new JPanel(new BorderLayout());
 
         myContentPanel.setBackground(Color.white);
