@@ -63,6 +63,7 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
 
 public class StartWizard extends DialogWrapper {
 
+    private String myTitle;
     private final List<BaseStep> mySteps;
     private int myCurrentStep;
     private JButton myPreviousButton;
@@ -83,7 +84,7 @@ public class StartWizard extends DialogWrapper {
 
     public StartWizard(String title, @Nullable Project project, StartResourceModel model) {
         super(project, true);
-        setTitle(title);
+        myTitle = title;
         buildStructure();
         myCurrentStep = 0;
         mySteps = getSteps(model);
@@ -400,7 +401,7 @@ public class StartWizard extends DialogWrapper {
         requestFocusTo(component != null ? component : myNextButton);
 
         String stepTitle = step.getTitle();
-        setTitle(stepTitle != null ? getTitle() + ": " + stepTitle : getTitle());
+        setTitle(stepTitle != null ? myTitle + ": " + stepTitle : myTitle);
     }
 
     private void updateStep(JBCardLayout.SwipeDirection direction) {
