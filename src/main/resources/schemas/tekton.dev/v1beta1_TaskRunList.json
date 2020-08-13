@@ -539,11 +539,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "Duration": {
-      "properties": {},
-      "additionalProperties": false,
-      "type": "object"
-    },
     "EmptyDirVolumeSource": {
       "properties": {
         "medium": {
@@ -2482,8 +2477,7 @@
           "type": "string"
         },
         "timeout": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/Duration"
+          "type": "string"
         },
         "podTemplate": {
           "$schema": "http://json-schema.org/draft-04/schema#",

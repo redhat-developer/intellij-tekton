@@ -59,4 +59,10 @@ public class PipelineSchemasTest {
         myFixture.configureByFile("schemas/pipeline2.yaml");
         myFixture.checkHighlighting();
     }
+
+    @Test
+    public void testPipelineWithTimeout() {
+        myFixture.configureByFile("schemas/pipeline3.yaml");
+        myFixture.checkHighlighting();
+    }
 }
