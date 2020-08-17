@@ -32,7 +32,9 @@ public abstract class BaseAutoInsertHandler implements InsertHandler<LookupEleme
     }
 
     protected int getParentIndentation(Document document, String label, int offset) {
-        int positionNewLine = document.getText().substring(0, offset).lastIndexOf("\n");
+        String textUntilOffset = document.getText().substring(0, offset);
+        int positionLabel = textUntilOffset.lastIndexOf(label);
+        int positionNewLine = document.getText().substring(0, positionLabel).lastIndexOf("\n");
         int nSpaces = document.getText().indexOf(label, positionNewLine);
         return (nSpaces + 1) - (positionNewLine + 2);
     }
