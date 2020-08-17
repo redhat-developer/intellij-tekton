@@ -55,7 +55,7 @@ public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
             JsonNode conditionChecks = item.get("conditionChecks");
             JsonNode conditions = item.get("status").get("conditions");
             String failedReason = "";
-            if (conditions.isArray() && conditions.size() > 0) {
+            if (conditions != null && conditions.isArray() && conditions.size() > 0) {
                 failedReason = conditions.get(0).get("reason").asText("");
             }
 
