@@ -470,7 +470,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     private boolean hasContextChanged(Config newConfig, Config currentConfig) {
         Context currentContext = KubeConfigUtils.getCurrentContext(currentConfig);
-        Context newContext = KubeConfigUtils.getCurrentContext(currentConfig);
+        Context newContext = KubeConfigUtils.getCurrentContext(newConfig);
         return hasServerChanged(newContext, currentContext)
                 || hasNewToken(newContext, newConfig, currentContext, currentConfig);
     }

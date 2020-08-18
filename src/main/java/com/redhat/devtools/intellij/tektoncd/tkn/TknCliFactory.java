@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
-
 import java.util.concurrent.CompletableFuture;
 
 public class TknCliFactory {
@@ -32,8 +31,12 @@ public class TknCliFactory {
 
     public CompletableFuture<Tkn> getTkn(Project project) {
         if (future == null) {
-            future = DownloadHelper.getInstance().downloadIfRequiredAsync("tkn", TknCliFactory.class.getResource("/tkn.json")).thenApply(command -> new TknCli(project, command));
+            setTkn(project);
         }
         return future;
+    }
+
+    public void setTkn(Project project) {
+        future = DownloadHelper.getInstance().downloadIfRequiredAsync("tkn", TknCliFactory.class.getResource("/tkn.json")).thenApply(command -> new TknCli(project, command));
     }
 }
