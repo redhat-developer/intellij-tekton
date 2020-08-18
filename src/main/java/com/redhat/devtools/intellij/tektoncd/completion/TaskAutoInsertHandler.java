@@ -39,7 +39,7 @@ public class TaskAutoInsertHandler extends BaseAutoInsertHandler {
         if (resources!= null) {
             completionText += getIndentationAsText(indentationParent, indentationSize, 0) + "resources:\n";
             // inputs resources
-            if (resources.getInputs() != null) {
+            if (resources.getInputs() != null && !resources.getInputs().isEmpty()) {
                 completionText += getIndentationAsText(indentationParent, indentationSize, 1) + "inputs:\n";
                 for (TaskResource resource: resources.getInputs()) {
                     completionText += getIndentationAsText(indentationParent, indentationSize, 1) + "- name: " + resource.getName() + "\n";
@@ -47,7 +47,7 @@ public class TaskAutoInsertHandler extends BaseAutoInsertHandler {
                 }
             }
             // outputs resources
-            if (resources.getOutputs() != null) {
+            if (resources.getOutputs() != null && !resources.getOutputs().isEmpty()) {
                 completionText += getIndentationAsText(indentationParent, indentationSize, 1) + "outputs:\n";
                 for (TaskResource resource: resources.getOutputs()) {
                     completionText += getIndentationAsText(indentationParent, indentationSize, 1) + "- name: " + resource.getName() + "\n";
