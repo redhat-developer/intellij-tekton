@@ -33,7 +33,8 @@ public class TektonRootNode {
   }
 
   public void load() {
-      initializeTkn();
+    TknCliFactory.getInstance().resetTkn();
+    initializeTkn();
   }
 
   public Project getProject() {
