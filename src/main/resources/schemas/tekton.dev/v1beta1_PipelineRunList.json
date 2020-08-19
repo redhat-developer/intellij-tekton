@@ -264,6 +264,14 @@
           },
           "type": "array"
         },
+        "annotations": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "podName": {
           "type": "string"
         },
@@ -1553,6 +1561,9 @@
         "value": {
           "type": "string"
         },
+        "resourceName": {
+          "type": "string"
+        },
         "resourceRef": {
           "$ref": "#/definitions/PipelineResourceRef"
         },
@@ -1775,6 +1786,14 @@
           },
           "type": "array"
         },
+        "annotations": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "startTime": {
           "$ref": "#/definitions/Time"
         },
@@ -1862,6 +1881,12 @@
           "items": {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "$ref": "#/definitions/PipelineResult"
+          },
+          "type": "array"
+        },
+        "finally": {
+          "items": {
+            "$ref": "#/definitions/PipelineTask"
           },
           "type": "array"
         }
@@ -2905,6 +2930,14 @@
           },
           "type": "array"
         },
+        "annotations": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "podName": {
           "type": "string"
         },
@@ -3021,11 +3054,6 @@
       "type": "object"
     },
     "Template": {
-      "required": [
-        "schedulerName",
-        "ImagePullSecrets",
-        "hostNetwork"
-      ],
       "properties": {
         "nodeSelector": {
           "patternProperties": {
@@ -3078,7 +3106,7 @@
         "schedulerName": {
           "type": "string"
         },
-        "ImagePullSecrets": {
+        "imagePullSecrets": {
           "items": {
             "$ref": "#/definitions/LocalObjectReference"
           },

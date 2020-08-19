@@ -264,6 +264,14 @@
           },
           "type": "array"
         },
+        "annotations": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "podName": {
           "type": "string"
         },
@@ -1590,6 +1598,9 @@
         "value": {
           "type": "string"
         },
+        "resourceName": {
+          "type": "string"
+        },
         "resourceRef": {
           "$ref": "#/definitions/PipelineResourceRef"
         },
@@ -1811,6 +1822,14 @@
             "$ref": "#/definitions/Condition"
           },
           "type": "array"
+        },
+        "annotations": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
         },
         "startTime": {
           "$ref": "#/definitions/Time"
@@ -2942,6 +2961,14 @@
           },
           "type": "array"
         },
+        "annotations": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "podName": {
           "type": "string"
         },
@@ -3066,11 +3093,6 @@
       "type": "object"
     },
     "Template": {
-      "required": [
-        "schedulerName",
-        "ImagePullSecrets",
-        "hostNetwork"
-      ],
       "properties": {
         "nodeSelector": {
           "patternProperties": {
@@ -3123,7 +3145,7 @@
         "schedulerName": {
           "type": "string"
         },
-        "ImagePullSecrets": {
+        "imagePullSecrets": {
           "items": {
             "$ref": "#/definitions/LocalObjectReference"
           },

@@ -109,4 +109,10 @@ public class PipelineSchemasTest {
         myFixture.configureByFile("schemas/pipeline-timeout-several-units.yaml");
         myFixture.checkHighlighting();
     }
+
+    @Test
+    public void testPipelineWithFinally() {
+        myFixture.configureByFile("schemas/pipeline-finally.yaml");
+        myFixture.checkHighlighting();
+    }
 }

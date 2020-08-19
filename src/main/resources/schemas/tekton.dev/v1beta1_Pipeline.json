@@ -1155,6 +1155,12 @@
             "$ref": "#/definitions/PipelineResult"
           },
           "type": "array"
+        },
+        "finally": {
+          "items": {
+            "$ref": "#/definitions/PipelineTask"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
