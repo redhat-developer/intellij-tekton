@@ -31,12 +31,12 @@ public class TknCliFactory {
 
     public CompletableFuture<Tkn> getTkn(Project project) {
         if (future == null) {
-            setTkn(project);
+            future = DownloadHelper.getInstance().downloadIfRequiredAsync("tkn", TknCliFactory.class.getResource("/tkn.json")).thenApply(command -> new TknCli(project, command));
         }
         return future;
     }
 
-    public void setTkn(Project project) {
-        future = DownloadHelper.getInstance().downloadIfRequiredAsync("tkn", TknCliFactory.class.getResource("/tkn.json")).thenApply(command -> new TknCli(project, command));
+    public void resetTkn() {
+        future = null;
     }
 }
