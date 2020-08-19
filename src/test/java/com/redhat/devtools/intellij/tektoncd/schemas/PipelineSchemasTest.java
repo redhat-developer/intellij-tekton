@@ -103,4 +103,10 @@ public class PipelineSchemasTest {
         myFixture.configureByFile("schemas/pipeline-timeout-nanoseconds.yaml");
         myFixture.checkHighlighting();
     }
+
+    @Test
+    public void testPipelineWithTimeoutWithSeveralUnits() {
+        myFixture.configureByFile("schemas/pipeline-timeout-several-units.yaml");
+        myFixture.checkHighlighting();
+    }
 }

@@ -33,7 +33,7 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 	if (i == reflect.TypeOf(v1.Duration{})) {
 		return &jsonschema.Type{
 			Type: "string",
-			Pattern: "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))$",
+			Pattern: "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
 		}
 	}
 	return nil
