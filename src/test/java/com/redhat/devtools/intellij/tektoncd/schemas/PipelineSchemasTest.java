@@ -10,15 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.schemas;
 
-import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
-import com.intellij.testFramework.fixtures.TempDirTestFixture;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import com.jetbrains.jsonSchema.impl.inspections.JsonSchemaBasedInspectionBase;
-import com.jetbrains.jsonSchema.impl.inspections.JsonSchemaComplianceInspection;
 import org.jetbrains.yaml.schema.YamlJsonSchemaHighlightingInspection;
 import org.junit.After;
 import org.junit.Before;
@@ -57,6 +53,60 @@ public class PipelineSchemasTest {
     @Test
     public void testPipelineWithArrayStringParameter() {
         myFixture.configureByFile("schemas/pipeline2.yaml");
+        myFixture.checkHighlighting();
+    }
+
+    @Test
+    public void testPipelineWithTimeoutInHours() {
+        myFixture.configureByFile("schemas/pipeline-timeout-hours.yaml");
+        myFixture.checkHighlighting();
+    }
+
+    @Test
+    public void testPipelineWithTimeoutInMinutes() {
+        myFixture.configureByFile("schemas/pipeline-timeout-minutes.yaml");
+        myFixture.checkHighlighting();
+    }
+
+    @Test
+    public void testPipelineWithTimeoutInSeconds() {
+        myFixture.configureByFile("schemas/pipeline-timeout-seconds.yaml");
+        myFixture.checkHighlighting();
+    }
+
+    @Test
+    public void testPipelineWithTimeoutInMillisSeconds() {
+        myFixture.configureByFile("schemas/pipeline-timeout-milliseconds.yaml");
+        myFixture.checkHighlighting();
+    }
+
+    @Test
+    public void testPipelineWithTimeoutInMicroSeconds() {
+        myFixture.configureByFile("schemas/pipeline-timeout-microseconds.yaml");
+        myFixture.checkHighlighting();
+    }
+
+    @Test
+    public void testPipelineWithTimeoutInMicroSeconds1() {
+        myFixture.configureByFile("schemas/pipeline-timeout-microseconds1.yaml");
+        myFixture.checkHighlighting();
+    }
+
+    @Test
+    public void testPipelineWithTimeoutInMicroSeconds2() {
+        myFixture.configureByFile("schemas/pipeline-timeout-microseconds2.yaml");
+        myFixture.checkHighlighting();
+    }
+
+    @Test
+    public void testPipelineWithTimeoutInNanoSeconds() {
+        myFixture.configureByFile("schemas/pipeline-timeout-nanoseconds.yaml");
+        myFixture.checkHighlighting();
+    }
+
+    @Test
+    public void testPipelineWithTimeoutWithSeveralUnits() {
+        myFixture.configureByFile("schemas/pipeline-timeout-several-units.yaml");
         myFixture.checkHighlighting();
     }
 }

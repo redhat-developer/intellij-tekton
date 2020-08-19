@@ -8,6 +8,7 @@ import (
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	resource "github.com/tektoncd/pipeline/pkg/apis/resource/v1alpha1"
 	triggers "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"encoding/json"
 	"reflect"
@@ -27,6 +28,12 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 					},
 				},
 			},
+		}
+	}
+	if (i == reflect.TypeOf(v1.Duration{})) {
+		return &jsonschema.Type{
+			Type: "string",
+			Pattern: "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
 		}
 	}
 	return nil
