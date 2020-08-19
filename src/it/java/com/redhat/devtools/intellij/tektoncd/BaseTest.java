@@ -10,21 +10,20 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd;
 
-import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.TestDialog;
+import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 
 public abstract class BaseTest {
     private CodeInsightTestFixture myFixture;
-    private TestDialog previousTestDialog;
-    protected Tkn tkn;
+    protected Project project;
 
     @Before
     public void setUp() throws Exception {
@@ -33,18 +32,15 @@ public abstract class BaseTest {
         IdeaProjectTestFixture fixture = fixtureBuilder.getFixture();
         myFixture = IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(fixture);
         myFixture.setUp();
-        previousTestDialog = Messages.setTestDialog(new TestDialog() {
-            @Override
-            public int show(String message) {
-                return 0;
-            }
-        });
-        tkn = TknCliFactory.getInstance().getTkn(myFixture.getProject()).get();
+        project = myFixture.getProject();
     }
 
     @After
     public void tearDown() throws Exception {
         myFixture.tearDown();
-        Messages.setTestDialog(previousTestDialog);
+    }
+
+    protected String load(String name) throws IOException {
+        return IOUtils.toString(BaseTest.class.getResource("/" + name), StandardCharsets.UTF_8);
     }
 }

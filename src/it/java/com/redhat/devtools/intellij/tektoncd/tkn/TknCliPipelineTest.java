@@ -10,18 +10,48 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
-import com.redhat.devtools.intellij.tektoncd.BaseTest;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.List;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
+
 
 import static org.junit.Assert.assertEquals;
 
-public class TknCliPipelineTest extends BaseTest {
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class TknCliPipelineTest extends TknCliTest {
     @Test
     public void verifyNoPipelines() throws IOException {
-        List<String> pipelines = tkn.getPipelines("testns");
+        List<String> pipelines = tkn.getPipelines(NAMESPACE);
+        assertEquals(0, pipelines.size());
+    }
+
+    @Test
+    public void verifyCreatePipelineAndDelete() throws IOException {
+        saveResource(load("pipeline1.yaml"), NAMESPACE, "pipelines");
+        // verify pipeline has been created
+        List<String> pipelines = tkn.getPipelines(NAMESPACE);
+        assertEquals(1, pipelines.size());
+        // clean up and verify cleaning succeed
+        tkn.deletePipelines(NAMESPACE, pipelines);
+        pipelines = tkn.getPipelines(NAMESPACE);
+        assertEquals(0, pipelines.size());
+    }
+
+    @Test
+    public void verifyPipelineYAMLIsReturnedCorrectly() throws IOException {
+        String resourceBody = load("pipeline1.yaml");
+        saveResource(resourceBody, NAMESPACE, "pipelines");
+        // verify pipeline has been created
+        List<String> pipelines = tkn.getPipelines(NAMESPACE);
+        assertEquals(1, pipelines.size());
+        // get YAML from cluster and verify is the same uploaded
+        String resourceBodyFromCluster = tkn.getPipelineYAML(NAMESPACE, pipelines.get(0));
+        assertEquals(getSpecFromResource(resourceBody), getSpecFromResource(resourceBodyFromCluster));
+        // clean up and verify cleaning succeed
+        tkn.deletePipelines(NAMESPACE, pipelines);
+        pipelines = tkn.getPipelines(NAMESPACE);
         assertEquals(0, pipelines.size());
     }
 }
