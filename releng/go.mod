@@ -6,7 +6,8 @@ require (
 	github.com/alecthomas/jsonschema v0.0.0-20200217214135-7152f22193c9
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0
 	github.com/tektoncd/pipeline v0.15.1
-	github.com/tektoncd/triggers v0.5.0 // indirect
+	github.com/tektoncd/triggers v0.7.0
+	k8s.io/apimachinery v0.18.2
 )
 
 replace (
