@@ -10,15 +10,12 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
-import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.listener.TreePopupMenuListener;
-import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -26,7 +23,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 public class RefreshQueue {
