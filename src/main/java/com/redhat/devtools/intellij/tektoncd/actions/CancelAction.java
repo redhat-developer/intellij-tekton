@@ -20,11 +20,12 @@ import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.RunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
+import java.io.IOException;
+import java.util.Arrays;
+import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.tree.TreePath;
-import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
@@ -32,6 +33,18 @@ public class CancelAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(CancelAction.class);
 
     public CancelAction() { super(RunNode.class); }
+
+    @Override
+    public boolean isVisible(Object[] selected) {
+        boolean isCancellable = Arrays.stream(selected).allMatch(item -> isVisible(item));
+        return isCancellable;
+    }
+
+    @Override
+    public boolean isVisible(Object selected) {
+        ParentableNode element = getElement(selected);
+        return element instanceof RunNode && (!(((RunNode) element).getRun().isCompleted().isPresent()) || ((RunNode) element).getRun().isCompleted().get().equals(false));
+    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
