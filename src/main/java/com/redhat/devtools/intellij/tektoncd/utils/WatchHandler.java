@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
@@ -26,16 +27,16 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
-import io.fabric8.tekton.client.TektonClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import javax.swing.tree.TreePath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WatchHandler {
     private static final Logger logger = LoggerFactory.getLogger(WatchHandler.class);
@@ -54,7 +55,7 @@ public class WatchHandler {
         return instance;
     }
 
-    public void setWatch(ParentableNode<?> element) {
+    public void setWatch(ParentableNode<?> element, TreePath treePath) {
         Tkn tkn = element.getRoot().getTkn();
 
         String namespace = element.getNamespace();
@@ -67,7 +68,7 @@ public class WatchHandler {
         // (e.g a taskRuns watcher, when a change happens, could update multiple nodes such as a single Task node and the TaskRuns node)
         if (this.watches.containsKey(watchId)) {
             wn = this.watches.get(watchId);
-            wn.addNode(element);
+            wn.addNode(element, treePath);
             return;
         }
 
@@ -96,7 +97,7 @@ public class WatchHandler {
             } else if (element instanceof ConditionsNode) {
                 watch = tkn.watchConditions(namespace, watcher);
             }
-            wn = new WatchNodes(watch, element);
+            wn = new WatchNodes(watch, treePath);
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage());
         }
@@ -106,11 +107,11 @@ public class WatchHandler {
         }
     }
 
-    public void removeWatch(ParentableNode<?> element) {
+    public void removeWatch(ParentableNode<?> element, TreePath treePath) {
         String watchId = getWatchId(element);
         if (watches.containsKey(watchId)) {
             WatchNodes wn = watches.get(watchId);
-            wn.removeNode(element);
+            wn.removeNode(element, treePath);
             if (wn.isNodesEmpty()) {
                 wn.getWatch().close();
                 watches.remove(watchId);
@@ -162,9 +163,9 @@ public class WatchHandler {
 
 class WatchNodes {
     private Watch watch;
-    private List<ParentableNode> nodesToBeUpdated;
+    private List<TreePath> nodesToBeUpdated;
 
-    public WatchNodes(Watch watch, ParentableNode... nodes) {
+    public WatchNodes(Watch watch, TreePath... nodes) {
         this.watch = watch;
         this.nodesToBeUpdated = new ArrayList<>(Arrays.asList(nodes));
     }
@@ -173,18 +174,24 @@ class WatchNodes {
         return this.watch;
     }
 
-    public List<ParentableNode> getNodes() {
+    public List<TreePath> getNodes() {
         return this.nodesToBeUpdated;
     }
 
-    public void addNode(ParentableNode node) {
-        if (!this.nodesToBeUpdated.stream().anyMatch(element -> element.getName().equals(node.getName()) && element.getParent().equals(node.getParent()))) {
-            this.nodesToBeUpdated.add(node);
-        }
+    public void addNode(ParentableNode element, TreePath node) {
+        removeNode(element, node);
+        this.nodesToBeUpdated.add(node);
     }
 
-    public void removeNode(ParentableNode node) {
+    public void removeNode(ParentableNode element, TreePath node) {
         this.nodesToBeUpdated.remove(node);
+        removeCollapsedNodes(element);
+    }
+
+    public void removeCollapsedNodes(ParentableNode element) {
+        Tree tree = TreeHelper.getTree(element.getRoot().getProject());
+        List<TreePath> nodesToDelete = this.nodesToBeUpdated.stream().filter(path -> !tree.isExpanded(path)).collect(Collectors.toList());
+        this.nodesToBeUpdated.removeAll(nodesToDelete);
     }
 
     public boolean isNodesEmpty() {
