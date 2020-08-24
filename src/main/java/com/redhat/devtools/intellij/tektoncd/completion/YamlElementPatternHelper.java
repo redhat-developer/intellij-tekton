@@ -17,6 +17,8 @@ import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLScalar;
+import org.jetbrains.yaml.psi.YAMLSequence;
+import org.jetbrains.yaml.psi.YAMLSequenceItem;
 
 public class YamlElementPatternHelper {
     public static ElementPattern<PsiElement> getSingleLineScalarKey(String... keyName) {
@@ -33,6 +35,37 @@ public class YamlElementPatternHelper {
                                                      PlatformPatterns.string().oneOf(keyName)
                                              )
                              )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE);
+
+    }
+
+
+    public static ElementPattern<PsiElement> getMultipleLineScalarKey(String keyName) {
+        // it finds
+        // key:
+        //  - "value"
+        //  - "value 1"
+        return PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(
+                        PlatformPatterns
+                            .psiElement(YAMLScalar.class)
+                            .withParent(
+                                PlatformPatterns.
+                                    psiElement(YAMLSequenceItem.class)
+                                    .withParent(
+                                            PlatformPatterns.
+                                                psiElement(YAMLSequence.class)
+                                                .withParent(
+                                                        PlatformPatterns
+                                                            .psiElement(YAMLKeyValue.class)
+                                                            .withName(
+                                                                    PlatformPatterns.string().equalTo(keyName)
+                                                            )
+                                                )
+                                    )
+                            )
                 )
                 .withLanguage(YAMLLanguage.INSTANCE);
 

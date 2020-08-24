@@ -22,6 +22,10 @@ public class DictionaryContributor extends CompletionContributor {
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getSingleLineScalarKey("conditionRef"),
                 new ConditionCompletionProvider());
+        // runAfter
+        extend(CompletionType.BASIC,
+                YamlElementPatternHelper.getMultipleLineScalarKey("runAfter"),
+                new RunAfterCompletionProvider());
         // general tekton snippets
         extend(CompletionType.BASIC,
                 PlatformPatterns.psiElement(PlainTextTokenTypes.PLAIN_TEXT),
