@@ -11,11 +11,11 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.ui.treeStructure.Tree;
+import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.listener.TreePopupMenuListener;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
-
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -23,10 +23,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import javax.swing.tree.TreePath;
 
 public class RefreshQueue {
     private static RefreshQueue instance;
-    private Queue<ParentableNode> queue;
+    private Queue<TreePath> queue;
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private ScheduledFuture scheduler;
 
@@ -41,15 +42,14 @@ public class RefreshQueue {
         return instance;
     }
 
-    public void addAll(List<ParentableNode> nodes) {
+    public void addAll(List<TreePath> nodes) {
         if (scheduler != null && !scheduler.isCancelled() && !scheduler.isDone()) {
             scheduler.cancel(true);
         }
 
-        for (ParentableNode node: nodes) {
-            if (!queue.stream().anyMatch(element -> element.getName().equals(node.getName()) && element.getParent().equals(node.getParent()))) {
-                queue.add(node);
-            }
+        for (TreePath node: nodes) {
+            queue.removeIf(element -> element.getParentPath().equals(node.getParentPath()));
+            queue.add(node);
         }
 
         scheduler = executor.schedule(() -> {
@@ -61,10 +61,15 @@ public class RefreshQueue {
 
     public void update() {
         while (!queue.isEmpty()) {
-            ParentableNode element = queue.poll();
+            TreePath treePath = queue.poll();
+            ParentableNode element = StructureTreeAction.getElement(treePath.getLastPathComponent());
             Tree tree = TreeHelper.getTree(element.getRoot().getProject());
-            TektonTreeStructure treeStructure = (TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
-            treeStructure.fireModified(element);
+            TektonTreeStructure treeStructure = (TektonTreeStructure) tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
+            boolean isExpanded = tree.isExpanded(treePath);
+            if (isExpanded) {
+                treeStructure.fireModified(element);
+            }
         }
     }
+
 }

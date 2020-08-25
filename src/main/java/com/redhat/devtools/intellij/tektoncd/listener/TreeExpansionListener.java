@@ -22,7 +22,7 @@ public class TreeExpansionListener implements TreeWillExpandListener {
     public void treeWillExpand(TreeExpansionEvent treeExpansionEvent) {
         ParentableNode<? extends ParentableNode<?>> expandingElement = StructureTreeAction.getElement(treeExpansionEvent.getPath().getLastPathComponent());
         if (WatchHandler.get().canBeWatched(expandingElement)) {
-            WatchHandler.get().setWatch(expandingElement);
+            WatchHandler.get().setWatch(expandingElement, treeExpansionEvent.getPath());
         }
     }
 
@@ -30,7 +30,8 @@ public class TreeExpansionListener implements TreeWillExpandListener {
     public void treeWillCollapse(TreeExpansionEvent treeExpansionEvent) {
         ParentableNode<? extends ParentableNode<?>> collapsingElement = StructureTreeAction.getElement(treeExpansionEvent.getPath().getLastPathComponent());
         if (WatchHandler.get().canBeWatched(collapsingElement)) {
-            WatchHandler.get().removeWatch(collapsingElement);
+            WatchHandler.get().removeWatch(collapsingElement, treeExpansionEvent.getPath());
         }
     }
+
 }

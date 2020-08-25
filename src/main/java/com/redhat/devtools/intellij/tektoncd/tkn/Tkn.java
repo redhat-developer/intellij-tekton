@@ -444,6 +444,7 @@ public interface Tkn {
      *
      * @param namespace the namespace to use
      * @param pipelineRun name of the PipelineRun
+     * @throws IOException if communication errored
      */
     void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException;
 
@@ -451,6 +452,7 @@ public interface Tkn {
      * Get logs for a TaskRun
      * @param namespace the namespace to use
      * @param taskRun name of the TaskRun
+     * @throws IOException if communication errored
      */
     void showLogsTaskRun(String namespace, String taskRun) throws IOException;
 
@@ -459,6 +461,7 @@ public interface Tkn {
      *
      * @param namespace the namespace to use
      * @param pipelineRun name of the PipelineRun
+     * @throws IOException if communication errored
      */
     void followLogsPipelineRun(String namespace, String pipelineRun) throws IOException;
 
@@ -466,6 +469,7 @@ public interface Tkn {
      * Follow logs for a TaskRun
      * @param namespace the namespace to use
      * @param taskRun name of the TaskRun
+     * @throws IOException if communication errored
      */
     void followLogsTaskRun(String namespace, String taskRun) throws IOException;
 
@@ -474,6 +478,7 @@ public interface Tkn {
      *
      * @param namespace the namespace to use
      * @param taskRun name of the TaskRun
+     * @throws IOException if communication errored
      */
     String getTaskRunYAML(String namespace, String taskRun) throws IOException;
 
@@ -484,6 +489,24 @@ public interface Tkn {
      * @param pipelineRun name of the PipelineRun
      */
     String getPipelineRunYAML(String namespace, String pipelineRun) throws IOException;
+
+    /**
+     *  Cancel the pipelineRun
+     *
+     * @param namespace the namespace to use
+     * @param pipelineRun name of the PipelineRun
+     * @throws IOException if communication errored
+     */
+    void cancelPipelineRun(String namespace, String pipelineRun) throws IOException;
+
+    /**
+     *  Cancel the taskRun
+     *
+     * @param namespace the namespace to use
+     * @param taskRun name of the TaskRun
+     * @throws IOException if communication errored
+     */
+    void cancelTaskRun(String namespace, String taskRun) throws IOException;
 
     /**
      * Set a watch on Pipeline resources
@@ -557,4 +580,5 @@ public interface Tkn {
     public URL getMasterUrl();
 
     public <T> T getClient(Class<T> clazz);
+
 }
