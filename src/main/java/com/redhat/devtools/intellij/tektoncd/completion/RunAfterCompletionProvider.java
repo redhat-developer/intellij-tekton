@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,25 +43,37 @@ public class RunAfterCompletionProvider extends CompletionProvider<CompletionPar
 
         try {
             // get the list of tasks already added in the runAfter array to avoid showing them again
-            String[] tasksAlreadyAdded = parameters.getPosition().getParent().getParent().getParent().getText().split("\n");
-            tasksAlreadyAdded = Arrays.stream(tasksAlreadyAdded).map(task -> task.trim().replaceFirst("- ", "")).toArray(String[]::new);
+            List<String> tasksAlreadyAdded = Arrays.asList(parameters.getPosition().getParent().getParent().getParent().getText().split("\n"));
+            tasksAlreadyAdded = tasksAlreadyAdded.stream().map(task -> task.trim().replaceFirst("- ", "")).collect(Collectors.toList());
 
-            // get current task node
+            // get current task node position
             PsiElement currentTask = parameters.getPosition().getParent().getParent().getParent().getParent().getParent().getContext();
-
-            // get all tasks node found in the pipeline before the selected one
             String yamlUntilTask = parameters.getEditor().getDocument().getText(new TextRange(0, currentTask.getTextOffset()));
-            JsonNode tasksNode = YAMLHelper.getValueFromYAML(yamlUntilTask, new String[]{"spec", "tasks"} );
+            long taskPosition = 0;
+            try {
+                JsonNode tasksNodeUntilSelected = YAMLHelper.getValueFromYAML(yamlUntilTask, new String[]{"spec"} );
+                if (tasksNodeUntilSelected.has("tasks")) {
+                    taskPosition = StreamSupport.stream(tasksNodeUntilSelected.get("tasks").spliterator(),true).count();
+                }
+            } catch (IOException e) {
+                logger.warn("Error: " + e.getLocalizedMessage());
+            }
+
+            // get all tasks node found in the pipeline and add valid options to lookup list
+            String yaml = parameters.getEditor().getDocument().getText();
+            JsonNode tasksNode = YAMLHelper.getValueFromYAML(yaml, new String[]{"spec", "tasks"} );
+            int cont = 0;
             if (tasksNode != null) {
                 for (JsonNode item : tasksNode) {
-                    if (item != null) {
-                        String name = item.get("name").asText("");
+                    if (item != null && cont != taskPosition) {
+                        String name = item.has("name") ? item.get("name").asText("") : "";
                         if (!name.isEmpty() && !Arrays.asList(tasksAlreadyAdded).contains(name)) {
                             lookups.add(0, LookupElementBuilder.create(name)
                                     .withPresentableText(name)
                                     .withLookupString(name));
                         }
                     }
+                    cont++;
                 }
             }
         } catch (IOException e) {
