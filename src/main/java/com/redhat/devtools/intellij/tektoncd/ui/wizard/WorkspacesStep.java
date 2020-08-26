@@ -79,7 +79,7 @@ public class WorkspacesStep extends BaseStep {
 
             JComboBox cmbWorkspaceTypes = new JComboBox();
             Border compoundBorderBottomMargin = BorderFactory.createCompoundBorder(new EmptyBorder(0, 0, 3, 0), BORDER_COMPONENT_VALUE);
-            cmbWorkspaceTypes = (JComboBox) addComponent(cmbWorkspaceTypes, TIMES_PLAIN_14, compoundBorderBottomMargin, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
+            cmbWorkspaceTypes = (JComboBox) addComponent(cmbWorkspaceTypes, TIMES_PLAIN_14, null, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
 
             cmbWorkspaceTypes.addItem("");
             cmbWorkspaceTypes.addItem(EMPTYDIR);
@@ -97,14 +97,14 @@ public class WorkspacesStep extends BaseStep {
 
             JComboBox cmbWorkspaceTypeValues = new JComboBox();
             Border compoundBorderTopMargin = BorderFactory.createCompoundBorder(new EmptyBorder(3, 0, 0, 0), BORDER_COMPONENT_VALUE);
-            cmbWorkspaceTypeValues = (JComboBox) addComponent(cmbWorkspaceTypeValues, TIMES_PLAIN_14, compoundBorderTopMargin, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
+            cmbWorkspaceTypeValues = (JComboBox) addComponent(cmbWorkspaceTypeValues, TIMES_PLAIN_14, null, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             setCmbWorkspaceTypeValues(workspaceName, typeToBeSelected, cmbWorkspaceTypeValues, row[0] - 1);
-            addListeners(workspaceName, cmbWorkspaceTypes, cmbWorkspaceTypeValues, row[0] - 1);
+            addListeners(workspaceName, cmbWorkspaceTypes, cmbWorkspaceTypeValues, cmbWorkspaceTypeValues.getBorder(), row[0] - 1);
             row[0] += 1;
         });
     }
 
-    private void addListeners(String workspace, JComboBox cmbWorkspaceTypes, JComboBox cmbWorkspaceTypeValues, int row) {
+    private void addListeners(String workspace, JComboBox cmbWorkspaceTypes, JComboBox cmbWorkspaceTypeValues, Border defaultBorder, int row) {
         cmbWorkspaceTypes.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
                 // when cmbWorkspaceTypes combo box value changes, a type (secret, emptyDir, pvcs ..) is chosen and cmbWorkspaceTypeValues combo box is filled with all existing resources of that kind
@@ -114,7 +114,7 @@ public class WorkspacesStep extends BaseStep {
                 updateWorkspaceModel(workspace, kindSelected, resource);
                 // reset error graphics if error occurred earlier
                 if (isValid(cmbWorkspaceTypes)) {
-                    cmbWorkspaceTypes.setBorder(BORDER_COMPONENT_VALUE);
+                    cmbWorkspaceTypes.setBorder(defaultBorder);
                     if (errorFieldsByRow.containsKey(row)) {
                         deleteComponent(errorFieldsByRow.get(row));
                     }

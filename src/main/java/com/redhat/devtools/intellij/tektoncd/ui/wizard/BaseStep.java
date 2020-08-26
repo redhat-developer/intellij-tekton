@@ -14,6 +14,7 @@ import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.ide.wizard.Step;
 import com.intellij.ide.wizard.StepListener;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.EventDispatcher;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
@@ -36,6 +37,7 @@ import javax.swing.border.EmptyBorder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
 
 public abstract class BaseStep implements Step, Disposable {
@@ -47,11 +49,13 @@ public abstract class BaseStep implements Step, Disposable {
     protected GridBagLayout gridBagLayout;
     protected GridBagConstraints gridBagConstraints;
     protected Map<Integer, JLabel> errorFieldsByRow;
+    protected Color backgroundTheme;
 
     public BaseStep(@Nullable String title, StartResourceModel model) {
         this.title = title;
         this.model = model;
         this.errorFieldsByRow = new HashMap<>();
+        this.backgroundTheme = EditorColorsManager.getInstance().getGlobalScheme().getDefaultBackground();
         _init();
     }
 
@@ -63,18 +67,18 @@ public abstract class BaseStep implements Step, Disposable {
     public void _init() {
         // mainPanel is the panel displayed in the center of the wizard as it is
         this.mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(Color.white);
+        mainPanel.setBackground(backgroundTheme);
 
         gridBagLayout = new GridBagLayout();
         gridBagConstraints = new GridBagConstraints();
         contentPanel = new JPanel(gridBagLayout);
 
-        contentPanel.setBackground(Color.white);
+        contentPanel.setBackground(backgroundTheme);
         contentPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
 
         JBScrollPane scroll = new JBScrollPane(contentPanel);
         scroll.setBorder(NO_BORDER);
-        scroll.setBackground(Color.white);
+        scroll.setBackground(backgroundTheme);
 
         mainPanel.add(scroll);
 

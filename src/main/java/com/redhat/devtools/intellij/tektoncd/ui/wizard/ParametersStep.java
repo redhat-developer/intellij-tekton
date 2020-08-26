@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
 
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_COMPONENT_VALUE;
+
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_TOP_35;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
@@ -82,13 +83,13 @@ public class ParametersStep extends BaseStep {
 
             JTextField txtValueParam = new JTextField(input.defaultValue().orElse(""));
             textFields.add(txtValueParam);
-            txtValueParam = (JTextField) addComponent(txtValueParam, TIMES_PLAIN_14, BORDER_COMPONENT_VALUE, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
-            addListener(input.name(), txtValueParam, row[0]);
+            txtValueParam = (JTextField) addComponent(txtValueParam, TIMES_PLAIN_14, null, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
+            addListener(input.name(), txtValueParam, txtValueParam.getBorder(), row[0]);
             row[0] += 1;
         });
     }
 
-    private void addListener(String idParam, JTextField txtValueParam, int row) {
+    private void addListener(String idParam, JTextField txtValueParam, Border defaultBorder, int row) {
         // listen to when the focus is lost by the textbox and update the model so the preview shows the updated value
         txtValueParam.addFocusListener(new FocusAdapter() {
             @Override
@@ -97,7 +98,7 @@ public class ParametersStep extends BaseStep {
                 setInputValue(idParam, txtValueParam.getText());
                 // reset error graphics if an error occurred earlier
                 if (isValid(txtValueParam)) {
-                    txtValueParam.setBorder(BORDER_COMPONENT_VALUE);
+                    txtValueParam.setBorder(defaultBorder);
                     if (errorFieldsByRow.containsKey(row)) {
                         deleteComponent(errorFieldsByRow.get(row));
                     }

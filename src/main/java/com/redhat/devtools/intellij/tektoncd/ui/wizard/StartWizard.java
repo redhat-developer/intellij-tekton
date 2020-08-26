@@ -17,6 +17,8 @@ import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.ide.wizard.Step;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.colors.ColorKey;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -36,7 +38,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,9 +60,9 @@ import org.jetbrains.annotations.Nullable;
 
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BLUE;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.LIGHT_GREY_204;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
 public class StartWizard extends DialogWrapper {
 
@@ -81,11 +82,13 @@ public class StartWizard extends DialogWrapper {
     private JPanel navigationPanel;
     private JPanel previewFooterPanel;
     private JTextArea previewTextArea;
+    private Color backgroundTheme;
 
     private JBCardLayout.SwipeDirection myTransitionDirection = JBCardLayout.SwipeDirection.AUTO;
 
     public StartWizard(String title, @Nullable Project project, StartResourceModel model) {
         super(project, true);
+        this.backgroundTheme = EditorColorsManager.getInstance().getGlobalScheme().getDefaultBackground();
         myTitle = title;
         buildStructure();
         myCurrentStep = 0;
@@ -107,7 +110,7 @@ public class StartWizard extends DialogWrapper {
         final int[] index = {0};
         mySteps.stream().forEach(step -> {
             JLabel currentStepLabel = new JLabel(step.getTitle());
-            currentStepLabel.setForeground(Color.black);
+            currentStepLabel.setForeground(EditorColorsManager.getInstance().getGlobalScheme().getColor(ColorKey.find("CARET_COLOR")));
             currentStepLabel.setBorder(new EmptyBorder(0, 0, 5, 0));
 
             box.add(currentStepLabel);
@@ -135,14 +138,14 @@ public class StartWizard extends DialogWrapper {
         previewTextArea = new JTextArea();
         previewTextArea.setEditable(false);
         previewTextArea.setBorder(MARGIN_10);
-        previewTextArea.setFont(new Font ("TimesRoman", Font.PLAIN, 15));
+        previewTextArea.setFont(TIMES_PLAIN_14);
 
         JPanel previewPanel = new JPanel();
         previewPanel.add(previewTextArea);
 
         JBScrollPane scroll = new JBScrollPane(previewPanel);
         scroll.setBorder(NO_BORDER);
-        scroll.setBackground(Color.white);
+        scroll.setBackground(backgroundTheme);
 
         myRightPanel.add(scroll);
 
@@ -162,16 +165,16 @@ public class StartWizard extends DialogWrapper {
         myRightPanel = new JPanel(new BorderLayout());
         myFooterPanel = new JPanel(new BorderLayout());
 
-        myContentPanel.setBackground(Color.white);
+        myContentPanel.setBackground(backgroundTheme);
         myContentPanel.setPreferredSize(new Dimension(550, 400));
-        myLeftPanel.setBackground(Color.white);
-        myLeftPanel.setBorder(new MatteBorder(0, 0, 0, 1, LIGHT_GREY_204));
-        myRightPanel.setBackground(Color.white);
-        myRightPanel.setBorder(new MatteBorder(0, 1, 0, 0, LIGHT_GREY_204));
+        myLeftPanel.setBackground(backgroundTheme);
+        myLeftPanel.setBorder(new MatteBorder(0, 0, 0, 1, EditorColorsManager.getInstance().getGlobalScheme().getColor(ColorKey.find("SEPARATOR_BELOW_COLOR"))));
+        myRightPanel.setBackground(backgroundTheme);
+        myRightPanel.setBorder(new MatteBorder(0, 1, 0, 0, EditorColorsManager.getInstance().getGlobalScheme().getColor(ColorKey.find("SEPARATOR_BELOW_COLOR"))));
         myRightPanel.setVisible(false);
 
         navigationPanel = new JPanel();
-        navigationPanel.setBackground(Color.white);
+        navigationPanel.setBackground(backgroundTheme);
         navigationPanel.setBorder(new EmptyBorder(10, 15, 0, 15));
 
         myLeftPanel.add(navigationPanel);
@@ -391,7 +394,8 @@ public class StartWizard extends DialogWrapper {
         if (newStep >= navigationList.size()) {
             newStep = navigationList.size() - 1;
         }
-        navigationList.get(oldStep).setForeground(Color.black);
+        //navigationList.get(oldStep).setForeground(Color.black);
+        navigationList.get(oldStep).setForeground(EditorColorsManager.getInstance().getGlobalScheme().getColor(ColorKey.find("CARET_COLOR")));
         navigationList.get(newStep).setForeground(BLUE);
     }
 
