@@ -47,31 +47,27 @@ public class RunAfterCompletionProviderTest {
 
     @Test
     public void testCompletionWithASingleLookup() {
-        testCompletion(new String[] { "pipeline1.yaml"}, "step1");
+        assertOrderedEquals(getSuggestionsForFile("pipeline1.yaml"), "step1");
     }
 
     @Test
     public void testCompletionWithMultipleLookups() {
-        testCompletion(new String[] { "pipeline2.yaml"}, "step2", "step3");
+        assertOrderedEquals(getSuggestionsForFile("pipeline2.yaml"), "step2", "step3");
     }
 
     @Test
     public void testCompletionWithMultipleLookupsAndTasksAlreadyUsed() {
-        testCompletion(new String[] { "pipeline3.yaml"}, "step4", "step5");
+        assertOrderedEquals(getSuggestionsForFile("pipeline3.yaml"), "step4", "step5");
     }
 
     @Test
     public void testCompletionWithNoLookups() {
-        myFixture.configureByFiles(new String[] { "pipeline4.yaml"});
-        myFixture.complete(CompletionType.BASIC, 1);
-        final List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue(strings.isEmpty());
+        assertTrue(getSuggestionsForFile("pipeline4.yaml").isEmpty());
     }
 
-    private void testCompletion(String[] fileNames, String... expectedSuggestions) {
-        myFixture.configureByFiles(fileNames);
-        myFixture.complete(CompletionType.BASIC, 1);
-        final List<String> strings = myFixture.getLookupElementStrings();
-        assertOrderedEquals(strings, expectedSuggestions);
+    private List<String> getSuggestionsForFile(String fileName) {
+        myFixture.configureByFile(fileName);
+        myFixture.complete(CompletionType.BASIC);
+        return myFixture.getLookupElementStrings();
     }
 }
