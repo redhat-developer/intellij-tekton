@@ -11,10 +11,12 @@
 package com.redhat.devtools.intellij.tektoncd.completion;
 
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
+import java.io.File;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
@@ -38,6 +40,7 @@ public class RunAfterCompletionProviderTest {
 
         myFixture.setTestDataPath("src/test/resources/completion");
         myFixture.setUp();
+        VfsRootAccess.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
     }
 
     @After
