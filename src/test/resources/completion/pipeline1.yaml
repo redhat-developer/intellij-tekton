@@ -1,0 +1,15 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  tasks:
+    - name: step1
+      taskRef:
+        name: task1
+    - name: step2
+      taskRef:
+        name: task1
+      runAfter:
+        - <caret>
