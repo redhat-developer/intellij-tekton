@@ -67,7 +67,7 @@ public class RunAfterCompletionProvider extends CompletionProvider<CompletionPar
                 for (JsonNode item : tasksNode) {
                     if (item != null && cont != taskPosition) {
                         String name = item.has("name") ? item.get("name").asText("") : "";
-                        if (!name.isEmpty() && !Arrays.asList(tasksAlreadyAdded).contains(name)) {
+                        if (!name.isEmpty() && !tasksAlreadyAdded.contains(name)) {
                             lookups.add(0, LookupElementBuilder.create(name)
                                     .withPresentableText(name)
                                     .withLookupString(name));
