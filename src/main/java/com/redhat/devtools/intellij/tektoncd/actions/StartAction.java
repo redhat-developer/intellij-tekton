@@ -28,15 +28,15 @@ import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
-import com.redhat.devtools.intellij.tektoncd.ui.StartDialog;
+import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import javax.swing.tree.TreePath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
@@ -82,16 +82,22 @@ public class StartAction extends TektonAction {
             }
 
             boolean noInputsAndOuputs = model.getInputs().isEmpty() && model.getOutputs().isEmpty() && model.getWorkspaces().isEmpty();
-            StartDialog stdialog = null;
+            StartWizard startWizard = null;
 
             if (!noInputsAndOuputs) {
-                stdialog = UIHelper.executeInUI(() -> {
-                    StartDialog dialog = new StartDialog(null, model);
-                    dialog.show();
-                    return dialog;
+                startWizard = UIHelper.executeInUI(() -> {
+                    String titleDialog;
+                    if (element instanceof PipelineNode) {
+                        titleDialog = "Pipeline " + element.getName();
+                    } else {
+                        titleDialog = "Task " + element.getName();
+                    }
+                    StartWizard wizard = new StartWizard(titleDialog, getEventProject(anActionEvent), model);
+                    wizard.show();
+                    return wizard;
                 });
             }
-            if (noInputsAndOuputs || stdialog.isOK()) {
+            if (noInputsAndOuputs || startWizard.isOK()) {
                 try {
                     String serviceAccount = model.getServiceAccount();
                     Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
