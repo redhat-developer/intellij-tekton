@@ -65,7 +65,8 @@ public class RefreshQueue {
             ParentableNode element = StructureTreeAction.getElement(treePath.getLastPathComponent());
             Tree tree = TreeHelper.getTree(element.getRoot().getProject());
             TektonTreeStructure treeStructure = (TektonTreeStructure) tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
-            boolean isExpanded = tree.isExpanded(treePath);
+            boolean isExpanded = tree.isExpanded(treePath) && tree.val;
+            tree.
             if (isExpanded) {
                 treeStructure.fireModified(element);
             }
