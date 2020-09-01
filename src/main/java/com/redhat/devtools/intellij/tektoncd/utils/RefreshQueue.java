@@ -48,8 +48,10 @@ public class RefreshQueue {
         }
 
         for (TreePath node: nodes) {
-            queue.removeIf(element -> element.getParentPath().equals(node.getParentPath()));
-            queue.add(node);
+            if (isValid(node)) {
+                queue.removeIf(element -> element.getParentPath().equals(node.getParentPath()));
+                queue.add(node);
+            }
         }
 
         scheduler = executor.schedule(() -> {
@@ -59,9 +61,23 @@ public class RefreshQueue {
         }, 500, TimeUnit.MILLISECONDS);
     }
 
+    private boolean isValid(TreePath node) {
+        // if node is a parent of one element in the queue, remove that element
+        queue.removeIf(element -> node.isDescendant(element));
+
+        // if node is a descendant does not have to be added, a parent will be refreshed soon
+        boolean isDescendant = queue.stream().anyMatch(element -> element.isDescendant(node));
+        if (isDescendant) {
+            return false;
+        }
+
+        return true;
+    }
+
     public void update() {
         while (!queue.isEmpty()) {
             TreePath treePath = queue.poll();
+            if (!isValid(treePath)) return;
             ParentableNode element = StructureTreeAction.getElement(treePath.getLastPathComponent());
             Tree tree = TreeHelper.getTree(element.getRoot().getProject());
             TektonTreeStructure treeStructure = (TektonTreeStructure) tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
