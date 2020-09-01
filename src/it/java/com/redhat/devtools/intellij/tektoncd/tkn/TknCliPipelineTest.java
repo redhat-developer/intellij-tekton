@@ -34,7 +34,7 @@ public class TknCliPipelineTest extends TknCliTest {
         List<String> pipelines = tkn.getPipelines(NAMESPACE);
         assertEquals(1, pipelines.size());
         // clean up and verify cleaning succeed
-        tkn.deletePipelines(NAMESPACE, pipelines);
+        tkn.deletePipelines(NAMESPACE, pipelines, false);
         pipelines = tkn.getPipelines(NAMESPACE);
         assertEquals(0, pipelines.size());
     }
@@ -50,7 +50,7 @@ public class TknCliPipelineTest extends TknCliTest {
         String resourceBodyFromCluster = tkn.getPipelineYAML(NAMESPACE, pipelines.get(0));
         assertEquals(getSpecFromResource(resourceBody), getSpecFromResource(resourceBodyFromCluster));
         // clean up and verify cleaning succeed
-        tkn.deletePipelines(NAMESPACE, pipelines);
+        tkn.deletePipelines(NAMESPACE, pipelines, false);
         pipelines = tkn.getPipelines(NAMESPACE);
         assertEquals(0, pipelines.size());
     }

@@ -34,7 +34,7 @@ public class TknCliTaskTest extends TknCliTest {
         List<String> tasks = tkn.getTasks(NAMESPACE);
         assertEquals(1, tasks.size());
         // clean up and verify cleaning succeed
-        tkn.deleteTasks(NAMESPACE, tasks);
+        tkn.deleteTasks(NAMESPACE, tasks, false);
         tasks = tkn.getTasks(NAMESPACE);
         assertEquals(0, tasks.size());
     }
@@ -50,7 +50,7 @@ public class TknCliTaskTest extends TknCliTest {
         String resourceBodyFromCluster = tkn.getTaskYAML(NAMESPACE, tasks.get(0));
         assertEquals(getSpecFromResource(resourceBody), getSpecFromResource(resourceBodyFromCluster));
         // clean up and verify cleaning succeed
-        tkn.deleteTasks(NAMESPACE, tasks);
+        tkn.deleteTasks(NAMESPACE, tasks, false);
         tasks = tkn.getTasks(NAMESPACE);
         assertEquals(0, tasks.size());
     }
