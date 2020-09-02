@@ -13,8 +13,8 @@ package com.redhat.devtools.intellij.tektoncd.completion;
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PlainTextTokenTypes;
-import org.jetbrains.yaml.YAMLLanguage;
+import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLScalar;
 
 public class DictionaryContributor extends CompletionContributor {
     public DictionaryContributor() {
@@ -26,12 +26,13 @@ public class DictionaryContributor extends CompletionContributor {
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getMultipleLineScalarKey("runAfter"),
                 new RunAfterCompletionProvider());
-        // general tekton snippets
+        // code completion not related to a specific place in a file. It doesn't depend on any tag
         extend(CompletionType.BASIC,
-                PlatformPatterns.psiElement(PlainTextTokenTypes.PLAIN_TEXT),
-                new DictionaryCompletionProvider());
-        extend(CompletionType.BASIC,
-                PlatformPatterns.psiElement().withLanguage(YAMLLanguage.INSTANCE),
-                new DictionaryCompletionProvider());
+                PlatformPatterns
+                        .psiElement(YAMLTokenTypes.TEXT)
+                        .withParent(
+                                PlatformPatterns
+                                        .psiElement(YAMLScalar.class)),
+                new GeneralCompletionProvider());
     }
 }
