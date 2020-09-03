@@ -1,0 +1,13 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  workspaces:
+    - name: password-vault
+    - name: recipe-store
+  tasks:
+    - name: step1
+      taskRef:
+        name: task1

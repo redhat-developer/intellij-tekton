@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  resources:
+    - name: workspace
+      type: git
+  check:
+    image: alpine
+    script: 'test -f $(resources.workspace.path)'

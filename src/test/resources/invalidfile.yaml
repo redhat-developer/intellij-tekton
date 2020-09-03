@@ -1,0 +1,8 @@
+apiVersion: tekton.dev/v1beta1
+metadata:
+  namespace: tekton
+spec:
+  tasks:
+    - name: step1
+      taskRef:
+        name: task1

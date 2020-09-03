@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  resources:
+    outputs:
+      - name: resource1
+        type: image
+      - name: resource2
+        type: image
+  steps:
+    - args:
+        - -c
+        - $(res<caret>
+      command:
+        - /bin/bash
+      image: fedora
+      name: build-sources
+      resources: {}

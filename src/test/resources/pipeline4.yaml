@@ -1,0 +1,13 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  resources:
+    - name: resource1
+      type: git
+  tasks:
+    - name: step1
+      taskRef:
+        name: task1
