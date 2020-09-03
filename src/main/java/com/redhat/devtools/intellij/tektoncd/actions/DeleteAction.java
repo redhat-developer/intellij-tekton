@@ -28,17 +28,33 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
+import com.redhat.devtools.intellij.tektoncd.ui.DeleteDialog;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
-
-import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import javax.swing.tree.TreePath;
 
 public class DeleteAction extends TektonAction {
+
+    /**
+     * The default code for the delete action.
+     */
+    public static final int OK_DELETE_CODE = 0;
+
+    /**
+     * The default code for "Cancel" action.
+     */
+    public static final int CANCEL_CODE = 1;
+
+    /**
+     * The default code for the delete item + related resources action.
+     */
+    public static final int OK_DELETE_RESOURCES_CODE = 2;
+
     public DeleteAction() {
         super(true,
             TaskNode.class,
@@ -58,41 +74,57 @@ public class DeleteAction extends TektonAction {
     public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected, Tkn tkncli) {
         ParentableNode[] elements = Arrays.stream(selected).map(item -> getElement(item)).toArray(ParentableNode[]::new);
         int resultDialog = UIHelper.executeInUI(() -> {
-            String name = "";
-            String dialogText = "";
+            String name, kind, title, deleteResourcesText, deleteChkText;
+            String dialogText = "Are you sure you want to delete ";
+
             if (elements.length == 1) {
                 name = elements[0].getName();
-                dialogText = elements[0].getClass().getSimpleName().toLowerCase().replace("node", "") + " " + name + " ?";
+                kind = elements[0].getClass().getSimpleName().toLowerCase().replace("node", "");
+                title = "Delete " + name;
+                dialogText += kind + " " + name + " ?";
+                deleteResourcesText = "The " + kind + " may also have some related resources (" + kind + "Runs).";
+                deleteChkText = "Yes, delete the " + kind + " and its related resources";
             } else {
-                dialogText = "the following items?\n";
+                title = "Delete multiple items";
+                dialogText += "the following items?\n";
                 for (ParentableNode element: elements) {
                     dialogText += element.getName() + "\n";
                 }
+                deleteResourcesText = "These items may also have some related resources (PipelineRuns, TaskRuns..).";
+                deleteChkText = "Yes, delete all items and their related resources";
+            }
+            deleteResourcesText += " Do you wish to delete them all as well?";
+
+
+            DeleteDialog delDialog = new DeleteDialog(null, title, dialogText, deleteResourcesText, deleteChkText);
+            delDialog.show();
+
+
+            if (delDialog.isOK()) {
+                return delDialog.hasToDeleteResources() ? OK_DELETE_RESOURCES_CODE : OK_DELETE_CODE;
             }
 
-            return Messages.showYesNoDialog("Are you sure you want to delete " + dialogText,
-                    "Delete " + name,
-                    null
-            );
+            return CANCEL_CODE;
         });
 
         CompletableFuture.runAsync(() -> {
-            if (resultDialog == Messages.OK) {
+            if (resultDialog != CANCEL_CODE) {
                 String namespace = elements[0].getNamespace();
+                boolean deleteRelatedResources = resultDialog == OK_DELETE_RESOURCES_CODE;
                 Map<Class, List<ParentableNode>> resourcesByClass = TreeHelper.getResourcesByClass(elements);
                 for(Class type: resourcesByClass.keySet()) {
                     try {
                         List<String> resources = resourcesByClass.get(type).stream().map(x -> x.getName()).collect(Collectors.toList());
                         if (type.equals(PipelineNode.class)) {
-                            tkncli.deletePipelines(namespace, resources);
+                            tkncli.deletePipelines(namespace, resources, deleteRelatedResources);
                         } else if (type.equals(PipelineRunNode.class)) {
                             tkncli.deletePipelineRuns(namespace, resources);
                         } else if (type.equals(ResourceNode.class)) {
                             tkncli.deleteResources(namespace, resources);
                         } else if (type.equals(TaskNode.class)) {
-                            tkncli.deleteTasks(namespace, resources);
+                            tkncli.deleteTasks(namespace, resources, deleteRelatedResources);
                         } else if (type.equals(ClusterTaskNode.class)) {
-                            tkncli.deleteClusterTasks(resources);
+                            tkncli.deleteClusterTasks(resources, deleteRelatedResources);
                         } else if (type.equals(TaskRunNode.class)) {
                             tkncli.deleteTaskRuns(namespace, resources);
                         } else if (type.equals(ConditionNode.class)) {

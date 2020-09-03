@@ -266,9 +266,10 @@ public interface Tkn {
      *
      * @param namespace the namespace to use
      * @param pipelines the list of pipelines to delete
+     * @param deleteRelatedResources boolean to delete related resources (e.g pipelinerun)
      * @throws IOException if communication errored
      */
-    void deletePipelines(String namespace, List<String> pipelines) throws IOException;
+    void deletePipelines(String namespace, List<String> pipelines, boolean deleteRelatedResources) throws IOException;
 
     /**
      * Delete a list of pipelineruns
@@ -284,17 +285,19 @@ public interface Tkn {
      *
      * @param namespace the namespace to use
      * @param tasks the list of tasks to delete
+     * @param deleteRelatedResources boolean to delete related resources (e.g taskrun)
      * @throws IOException if communication errored
      */
-    void deleteTasks(String namespace, List<String> tasks) throws IOException;
+    void deleteTasks(String namespace, List<String> tasks, boolean deleteRelatedResources) throws IOException;
 
     /**
      * Delete a list of clusterTasks
      *
      * @param tasks the list of tasks to delete
+     * @param deleteRelatedResources boolean to delete related resources (e.g taskrun)
      * @throws IOException if communication errored
      */
-    void deleteClusterTasks(List<String> tasks) throws IOException;
+    void deleteClusterTasks(List<String> tasks, boolean deleteRelatedResources) throws IOException;
 
     /**
      * Delete a list of taskruns

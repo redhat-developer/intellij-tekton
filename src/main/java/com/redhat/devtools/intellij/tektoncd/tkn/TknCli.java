@@ -178,9 +178,9 @@ public class TknCli implements Tkn {
     }
 
     private <T> List<T> getCustomCollection(String json, Class<T> customClass) throws IOException {
-        if (!JSON_MAPPER.readTree(json).has("items")) {
-            return Collections.emptyList();
-        }
+        if (!JSON_MAPPER.readTree(json).has("items")) return Collections.emptyList();
+        if (JSON_MAPPER.readTree(json).get("items").isNull()) return Collections.emptyList();
+
         JavaType customClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, customClass);
         return JSON_MAPPER.readValue(JSON_MAPPER.readTree(json).get("items").toString(), customClassCollection);
     }
@@ -255,8 +255,12 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void deletePipelines(String namespace, List<String> pipelines) throws IOException {
-        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "pipeline", pipelines));
+    public void deletePipelines(String namespace, List<String> pipelines, boolean deleteRelatedResources) throws IOException {
+        if (deleteRelatedResources) {
+            ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "pipeline", pipelines, "--prs=true"));
+        } else {
+            ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "pipeline", pipelines));
+        }
     }
 
     @Override
@@ -265,13 +269,21 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void deleteTasks(String namespace, List<String> tasks) throws IOException {
-        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "task", tasks));
+    public void deleteTasks(String namespace, List<String> tasks, boolean deleteRelatedResources) throws IOException {
+        if (deleteRelatedResources) {
+            ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "task", tasks, "--trs=true"));
+        } else {
+            ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "task", tasks));
+        }
     }
 
     @Override
-    public void deleteClusterTasks(List<String> tasks) throws IOException {
-        ExecHelper.execute(command, envVars, getDeleteArgs("", "clustertask", tasks));
+    public void deleteClusterTasks(List<String> tasks, boolean deleteRelatedResources) throws IOException {
+        if (deleteRelatedResources) {
+            ExecHelper.execute(command, envVars, getDeleteArgs("", "clustertask", tasks, "--trs=true"));
+        } else {
+            ExecHelper.execute(command, envVars, getDeleteArgs("", "clustertask", tasks));
+        }
     }
 
     @Override
@@ -309,9 +321,10 @@ public class TknCli implements Tkn {
         ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "eventlistener", eventListeners));
     }
 
-    private String[] getDeleteArgs(String namespace, String kind, List<String> resourcesToDelete) {
+    private String[] getDeleteArgs(String namespace, String kind, List<String> resourcesToDelete, String... flags) {
         List<String> args = new ArrayList<>(Arrays.asList(kind, "delete", "-f"));
         args.addAll(resourcesToDelete);
+        if (flags.length > 0) args.addAll(Arrays.asList(flags));
         if (!namespace.isEmpty()) {
             args.addAll(Arrays.asList("-n", namespace));
         }
