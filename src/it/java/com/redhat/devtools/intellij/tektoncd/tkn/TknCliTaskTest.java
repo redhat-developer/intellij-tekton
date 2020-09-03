@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 
@@ -68,9 +69,9 @@ public class TknCliTaskTest extends TknCliTest {
         Thread.sleep(500); // adding a bit delay to allow run to be created
         List<TaskRun> taskruns = tkn.getTaskRuns(NAMESPACE, TASK_NAME);
         assertTrue(taskruns.stream().anyMatch(run -> run.getName().equals(TASK_RUN_NAME)));
-        tkn.cancelTaskRun(NAMESPACE, taskruns.get(0).getName());
+        tkn.cancelTaskRun(NAMESPACE, TASK_RUN_NAME);
         // clean up and verify cleaning succeed
-        tkn.deleteTasks(NAMESPACE, tasks, true);
+        tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);
         tasks = tkn.getTasks(NAMESPACE);
         assertFalse(tasks.contains(TASK_NAME));
         taskruns = tkn.getTaskRuns(NAMESPACE, TASK_NAME);

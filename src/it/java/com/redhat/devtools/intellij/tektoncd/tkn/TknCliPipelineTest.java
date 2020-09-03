@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 
@@ -76,7 +77,7 @@ public class TknCliPipelineTest extends TknCliTest {
         assertTrue(pipelineRuns.stream().anyMatch(run -> run.getName().equals(PIPELINE_RUN_NAME)));
         tkn.cancelPipelineRun(NAMESPACE, PIPELINE_RUN_NAME);
         // clean up and verify cleaning succeed
-        tkn.deletePipelines(NAMESPACE, pipelines, true);
+        tkn.deletePipelines(NAMESPACE, Arrays.asList(PIPELINE_NAME), true);
         pipelines = tkn.getPipelines(NAMESPACE);
         assertFalse(pipelines.contains(PIPELINE_NAME));
         pipelineRuns = tkn.getPipelineRuns(NAMESPACE, PIPELINE_NAME);
