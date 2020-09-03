@@ -87,32 +87,6 @@ public class PipelineConfigurationModel extends ConfigurationModel {
 
     }
 
-    private List<Input> getInputsFromNode(JsonNode inputsNode, String flag) {
-        List<Input> result = new ArrayList<>();
-
-        if (flag.equals(FLAG_PARAMETER)) {
-            result.addAll(getInputsFromNodeInternal(inputsNode, Input.Kind.PARAMETER));
-        } else {
-            result.addAll(getInputsFromNodeInternal(inputsNode, Input.Kind.RESOURCE));
-        }
-
-        return result;
-    }
-
-    private List<Input> getInputsFromNodeInternal(JsonNode node, Input.Kind kind) {
-        List<Input> result = new ArrayList<>();
-        if (node != null) {
-            for (JsonNode item : node) {
-                try {
-                    result.add(new Input().fromJson(item, kind));
-                } catch (Exception e) {
-                    logger.warn(e.getLocalizedMessage());
-                }
-            }
-        }
-        return result;
-    }
-
     @Override
     public List<Input> getParams() {
         return this.params;

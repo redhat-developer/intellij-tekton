@@ -10,13 +10,18 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 
 public abstract class ConfigurationModel {
     Logger logger = LoggerFactory.getLogger(ConfigurationModel.class);
@@ -59,4 +64,30 @@ public abstract class ConfigurationModel {
     public abstract List<Output> getOutputResources();
 
     public abstract List<String> getWorkspaces();
+
+    protected List<Input> getInputsFromNode(JsonNode inputsNode, String flag) {
+        List<Input> result = new ArrayList<>();
+
+        if (flag.equals(FLAG_PARAMETER)) {
+            result.addAll(getInputsFromNodeInternal(inputsNode, Input.Kind.PARAMETER));
+        } else {
+            result.addAll(getInputsFromNodeInternal(inputsNode, Input.Kind.RESOURCE));
+        }
+
+        return result;
+    }
+
+    protected List<Input> getInputsFromNodeInternal(JsonNode node, Input.Kind kind) {
+        List<Input> result = new ArrayList<>();
+        if (node != null) {
+            for (JsonNode item : node) {
+                try {
+                    result.add(new Input().fromJson(item, kind));
+                } catch (Exception e) {
+                    logger.warn(e.getLocalizedMessage());
+                }
+            }
+        }
+        return result;
+    }
 }
