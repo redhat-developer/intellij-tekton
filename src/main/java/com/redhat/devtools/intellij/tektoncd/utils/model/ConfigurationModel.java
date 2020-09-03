@@ -65,6 +65,55 @@ public abstract class ConfigurationModel {
 
     public abstract List<String> getWorkspaces();
 
+    protected List<Input> findInputResources(String configuration, String[] fieldNames) {
+        List<Input> inputs = new ArrayList<>();
+
+        try {
+            JsonNode inputsNode = YAMLHelper.getValueFromYAML(configuration, fieldNames);
+            if (inputsNode != null) {
+                inputs.addAll(getInputsFromNode(inputsNode, ""));
+            }
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage());
+        }
+
+        return inputs;
+
+    }
+
+    protected List<Input> findParams(String configuration) {
+        List<Input> inputs = new ArrayList<>();
+
+        try {
+            JsonNode paramsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "params"});
+            if (paramsNode != null) {
+                inputs.addAll(getInputsFromNode(paramsNode, FLAG_PARAMETER));
+            }
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage());
+        }
+
+        return inputs;
+
+    }
+
+    protected List<String> findWorkspaces(String configuration) {
+        List<String> workspaces = new ArrayList<>();
+        try {
+            JsonNode workspacesNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "workspaces"});
+            if (workspacesNode != null) {
+                for(JsonNode item : workspacesNode) {
+                    if (item.has("name")) {
+                        workspaces.add(item.get("name").asText());
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage());
+        }
+        return workspaces;
+    }
+
     protected List<Input> getInputsFromNode(JsonNode inputsNode, String flag) {
         List<Input> result = new ArrayList<>();
 

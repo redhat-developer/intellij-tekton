@@ -10,62 +10,19 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
-import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 
 public class ConditionConfigurationModel extends ConfigurationModel {
-    Logger logger = LoggerFactory.getLogger(ConditionConfigurationModel.class);
     private List<Input> params;
     private List<Input> inputResource;
 
     public ConditionConfigurationModel(String configuration) {
         super(configuration);
         this.params = findParams(configuration);
-        this.inputResource = findResources(configuration);
-    }
-
-    private List<Input> findResources(String configuration) {
-        List<Input> inputs = new ArrayList<>();
-
-        try {
-            JsonNode inputsNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "resources"});
-            if (inputsNode != null) {
-                inputs.addAll(getInputsFromNode(inputsNode, FLAG_INPUTRESOURCEPIPELINE));
-            }
-        } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
-        }
-
-        return inputs;
-
-    }
-
-    private List<Input> findParams(String configuration) {
-        List<Input> inputs = new ArrayList<>();
-
-        try {
-            JsonNode paramsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "params"});
-            if (paramsNode != null) {
-                inputs.addAll(getInputsFromNode(paramsNode, FLAG_PARAMETER));
-            }
-        } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
-        }
-
-        return inputs;
-
+        this.inputResource = findInputResources(configuration, new String[] {"spec", "resources"});
     }
 
     @Override

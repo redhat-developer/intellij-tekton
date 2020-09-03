@@ -20,10 +20,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
-
 public class TaskConfigurationModel extends ConfigurationModel {
     Logger logger = LoggerFactory.getLogger(TaskConfigurationModel.class);
     private List<Input> params;
@@ -34,26 +30,9 @@ public class TaskConfigurationModel extends ConfigurationModel {
     public TaskConfigurationModel(String configuration) {
         super(configuration);
         this.params = findParams(configuration);
-        this.inputResources = findInputResources(configuration);
+        this.inputResources = findInputResources(configuration, new String[] {"spec", "resources", "inputs"});
         this.outputResources = findOutputs(configuration);
         this.workspaces = findWorkspaces(configuration);
-    }
-
-    private List<String> findWorkspaces(String configuration) {
-        List<String> workspaces = new ArrayList<>();
-        try {
-            JsonNode workspacesNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "workspaces"});
-            if (workspacesNode != null) {
-                for(JsonNode item : workspacesNode) {
-                    if (item.has("name")) {
-                        workspaces.add(item.get("name").asText());
-                    }
-                }
-            }
-        } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
-        }
-        return workspaces;
     }
 
     private List<Output> findOutputs(String configuration) {
@@ -79,38 +58,6 @@ public class TaskConfigurationModel extends ConfigurationModel {
         }
 
         return result;
-    }
-
-    private List<Input> findInputResources(String configuration) {
-        List<Input> inputs = new ArrayList<>();
-
-        try {
-            JsonNode resourceInputsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "resources", "inputs"});
-            if (resourceInputsNode != null) {
-                inputs.addAll(getInputsFromNode(resourceInputsNode, FLAG_INPUTRESOURCETASK));
-            }
-        } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
-        }
-
-        return inputs;
-
-    }
-
-    private List<Input> findParams(String configuration) {
-        List<Input> inputs = new ArrayList<>();
-
-        try {
-            JsonNode paramsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "params"});
-            if (paramsNode != null) {
-                inputs.addAll(getInputsFromNode(paramsNode, FLAG_PARAMETER));
-            }
-        } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
-        }
-
-        return inputs;
-
     }
 
     @Override
