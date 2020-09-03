@@ -1,0 +1,9 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: taskrunfoo
+  namespace: testns
+spec:
+  taskRef:
+    kind: Task
+    name: taskfoo

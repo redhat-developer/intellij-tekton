@@ -178,9 +178,9 @@ public class TknCli implements Tkn {
     }
 
     private <T> List<T> getCustomCollection(String json, Class<T> customClass) throws IOException {
-        if (!JSON_MAPPER.readTree(json).has("items")) {
-            return Collections.emptyList();
-        }
+        if (!JSON_MAPPER.readTree(json).has("items")) return Collections.emptyList();
+        if (JSON_MAPPER.readTree(json).get("items").isNull()) return Collections.emptyList();
+
         JavaType customClassCollection = JSON_MAPPER.getTypeFactory().constructCollectionType(List.class, customClass);
         return JSON_MAPPER.readValue(JSON_MAPPER.readTree(json).get("items").toString(), customClassCollection);
     }

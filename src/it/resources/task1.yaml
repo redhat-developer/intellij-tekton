@@ -1,13 +1,13 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: foo
+  name: taskfoo
   namespace: testns
 spec:
   steps:
     - args:
         - -c
-        - echo hello world
+        - sleep 60
       command:
         - /bin/bash
       image: fedora
