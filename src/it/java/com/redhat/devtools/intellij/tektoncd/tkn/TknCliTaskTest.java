@@ -54,8 +54,8 @@ public class TknCliTaskTest extends TknCliTest {
 
     @Test
     public void verifyCreateTaskAndTaskRunAndDeleteAll() throws IOException, InterruptedException {
-        final String TASK_NAME = "third";
-        final String TASK_RUN_NAME = "run-third";
+        final String TASK_NAME = "third-task-test";
+        final String TASK_RUN_NAME = "run-third-task-test";
         String taskConfig = load("task1.yaml").replace("taskfoo", TASK_NAME);
         String taskRunConfig = load("taskrun1.yaml").replace("taskfoo", TASK_NAME).replace("taskrunfoo", TASK_RUN_NAME);
         saveResource(taskConfig, NAMESPACE, "tasks");
