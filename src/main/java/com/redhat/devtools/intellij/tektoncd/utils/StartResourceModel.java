@@ -18,6 +18,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 
+import com.redhat.devtools.intellij.tektoncd.utils.model.RunConfigurationModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -309,5 +310,41 @@ public class StartResourceModel {
 
     public List<String> getPersistenceVolumeClaims() {
         return this.persistenceVolumeClaims;
+    }
+
+    public void adaptsToRun(String configuration) {
+        // TODO once #187 is merged we will use the factory to get the model
+        RunConfigurationModel conf = new RunConfigurationModel(configuration);
+        /* TODO
+        if (!(conf instanceof RunConfigurationModel)) return;
+         */
+
+        // update params/input resources
+        this.inputs.stream().forEach(input -> {
+            // for each input, update its defaultValue/Value with the value taken from the *run model
+            if (input.kind().equals(Input.Kind.PARAMETER)) {
+                if (conf.getParameters().containsKey(input.name())) {
+                    String value = conf.getParameters().get(input.name());
+                    input.setDefaultValue(value);
+                }
+            } else {
+                String value = conf.getResources().get(input.name());
+                input.setValue(value);
+            }
+        });
+
+        // update workspaces
+        this.workspaces.keySet().forEach(workspaceName -> {
+            this.workspaces.put(workspaceName, conf.getWorkspacesValues().get(workspaceName));
+        });
+
+        //this.serviceAccountName = conf.getServiceAccount();
+
+        /*this.taskServiceAccountNames.keySet().forEach(task -> {
+            if (conf.getTaskServiceAccountNames().has(task)) {
+                this.taskServiceAccountNames.put(task, conf.getTaskServiceAccountNames.get(task));
+            }
+        });*/
+
     }
 }

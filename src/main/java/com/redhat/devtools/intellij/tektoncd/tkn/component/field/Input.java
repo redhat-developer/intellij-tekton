@@ -46,6 +46,10 @@ public class Input {
         return defaultValue;
     }
 
+    public void setDefaultValue(String value) {
+        this.defaultValue = Optional.of(value);
+    }
+
     public String value() {
         return value;
     }
