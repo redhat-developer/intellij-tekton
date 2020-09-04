@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  params:
+    - name: "path"
+  check:
+    image: alpine
+    script: 'test -f $(params.path)'

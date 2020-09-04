@@ -1,0 +1,19 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  workspaces:
+    - name: write-allowed
+    - name: write-disallowed
+      readOnly: true
+  steps:
+    - args:
+        - -c
+        - $(work<caret>
+      command:
+        - /bin/bash
+      image: fedora
+      name: build-sources
+      resources: {}

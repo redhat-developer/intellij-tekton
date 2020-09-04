@@ -1,0 +1,19 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  params:
+    - name: param1
+    - name: param2
+  tasks:
+    - name: step1
+      taskRef:
+        name: task1
+      params:
+        - name: foo2
+          value: $(par<caret>
+    - name: step2
+      taskRef:
+        name: task1

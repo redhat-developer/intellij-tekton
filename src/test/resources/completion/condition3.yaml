@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  params:
+    - name: param1
+    - name: param2
+  check:
+    image: alpine
+    script: $(para<caret>

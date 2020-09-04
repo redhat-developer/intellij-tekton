@@ -1,0 +1,14 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Condition
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  resources:
+    - name: resource1
+      type: git
+    - name: resource2
+      type: image
+  check:
+    image: alpine
+    script: $(<caret>
