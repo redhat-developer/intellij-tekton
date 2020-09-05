@@ -12,9 +12,10 @@ package com.redhat.devtools.intellij.tektoncd.ui.editors;
 
 import com.mxgraph.view.mxGraph;
 
-public interface GraphUpdater {
+public interface GraphUpdater<T> {
     public static final double WIDTH = 80d;
     public static final double HEIGHT = 30d;
 
-    void update(String content, mxGraph graph);
+    void update(T content, mxGraph graph);
+    T adapt(String content);
 }

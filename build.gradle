@@ -25,8 +25,8 @@ intellij {
 }
 
 dependencies {
-    compile 'io.fabric8:openshift-client:4.10.2'
-    compile 'io.fabric8:tekton-client:4.10.2'
+    compile 'io.fabric8:openshift-client:4.11.1'
+    compile 'io.fabric8:tekton-client:4.11.1'
     compile 'com.redhat.devtools.intellij:intellij-common:0.0.1-SNAPSHOT'
     testCompile 'org.mockito:mockito-inline:3.4.6'
     compile 'com.github.graphstream:gs-core:dev-SNAPSHOT'

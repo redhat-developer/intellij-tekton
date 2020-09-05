@@ -21,8 +21,6 @@ import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiTreeChangeEvent;
 import com.intellij.ui.components.JBScrollPane;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxGraphModel;
@@ -35,13 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 
 public class TektonPreviewEditor extends UserDataHolderBase implements FileEditor, DocumentListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(TektonPreviewEditor.class);
@@ -67,16 +63,18 @@ public class TektonPreviewEditor extends UserDataHolderBase implements FileEdito
         }
     }
 
-    private void loadModel() throws IOException {
-        String content = document.getText();
-        graph.setModel(new mxGraphModel());
-        Object parent = graph.getDefaultParent();
-        graph.getModel().beginUpdate();
-        graphUpdater.update(content, graph);
-        mxHierarchicalLayout layout = new mxHierarchicalLayout(graph, SwingConstants.WEST);
-        layout.setUseBoundingBox(false);
-        layout.execute(parent);
-        graph.getModel().endUpdate();
+    private void loadModel() {
+        Object content = graphUpdater.adapt(document.getText());
+        if (content != null) {
+            graph.setModel(new mxGraphModel());
+            Object parent = graph.getDefaultParent();
+            graph.getModel().beginUpdate();
+            graphUpdater.update(content, graph);
+            mxHierarchicalLayout layout = new mxHierarchicalLayout(graph, SwingConstants.WEST);
+            layout.setUseBoundingBox(false);
+            layout.execute(parent);
+            graph.getModel().endUpdate();
+        }
     }
 
     TektonPreviewEditor(Project project, VirtualFile file, GraphUpdater graphUpdater) {
@@ -86,24 +84,20 @@ public class TektonPreviewEditor extends UserDataHolderBase implements FileEdito
         this.graphUpdater = graphUpdater;
         document.addDocumentListener(this, this);
         graph = new mxGraph();
-        try {
-            loadModel();
-            mxGraphComponent graphComponent = new mxGraphComponent(graph);
-            graphComponent.addMouseWheelListener(new MouseAdapter() {
-                @Override
-                public void mouseWheelMoved(MouseWheelEvent e) {
-                    if (e.getWheelRotation() > 0) {
-                        graphComponent.zoomOut();
-                    } else {
-                        graphComponent.zoomIn();
-                    }
+        loadModel();
+        mxGraphComponent graphComponent = new mxGraphComponent(graph);
+        graphComponent.addMouseWheelListener(new MouseAdapter() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation() > 0) {
+                    graphComponent.zoomOut();
+                } else {
+                    graphComponent.zoomIn();
                 }
-            });
-            graphComponent.getConnectionHandler().setEnabled(false);
-            pane = new JBScrollPane(graphComponent);
-        } catch (IOException e) {
-            pane = new JLabel("Can't load model");
-        }
+            }
+        });
+        graphComponent.getConnectionHandler().setEnabled(false);
+        pane = new JBScrollPane(graphComponent);
     }
 
     @NotNull
@@ -176,39 +170,8 @@ public class TektonPreviewEditor extends UserDataHolderBase implements FileEdito
 
     }
 
-    private void dump(String prefix, PsiElement val) {
-        if (val != null) {
-            System.out.println(prefix + val + " text=" + val.getText() + " class=" + val.getClass() + " id=" + System.identityHashCode(val));
-            dumpParentChain(val.getParent());
-        }
-    }
-
-    private void dumpParentChain(PsiElement parent) {
-        while (parent != null) {
-            System.out.println("parentId=" + System.identityHashCode(parent) + " class=" + parent.getClass());
-            parent = parent.getParent();
-        }
-    }
-
-    private void dumpEvent(String label, PsiTreeChangeEvent event) {
-        if (file.equals(event.getFile().getVirtualFile())) {
-            System.out.println(label);
-            dump("Element=", event.getElement());
-            dump("Parent=", event.getParent());
-            dump("oldParent=", event.getOldParent());
-            dump("newParent=", event.getNewParent());
-            dump("Child=", event.getChild());
-            dump("oldChild=", event.getNewChild());
-            dump("newChild=", event.getNewChild());
-        }
-    }
-
     @Override
     public void documentChanged(@NotNull DocumentEvent event) {
-        try {
-            loadModel();
-        } catch (IOException e) {
-            LOGGER.warn(e.getLocalizedMessage(), e);
-        }
+        loadModel();
     }
 }
