@@ -12,6 +12,11 @@ package com.redhat.devtools.intellij.tektoncd.utils.model;
 
 import com.google.common.base.Strings;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.model.runs.PipelineRunConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.runs.TaskRunConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.ConditionConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +32,8 @@ public class ConfigurationModelFactory {
                     case "pipeline": return new PipelineConfigurationModel(configuration);
                     case "task": return new TaskConfigurationModel(configuration);
                     case "condition": return new ConditionConfigurationModel(configuration);
+                    case "pipelinerun": return new PipelineRunConfigurationModel(configuration);
+                    case "taskrun": return new TaskRunConfigurationModel(configuration);
                     default: break;
                 }
             }

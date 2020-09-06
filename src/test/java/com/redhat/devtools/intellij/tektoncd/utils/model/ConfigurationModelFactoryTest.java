@@ -11,6 +11,9 @@
 package com.redhat.devtools.intellij.tektoncd.utils.model;
 
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.ConditionConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
 import java.io.IOException;
 import org.junit.Test;
 

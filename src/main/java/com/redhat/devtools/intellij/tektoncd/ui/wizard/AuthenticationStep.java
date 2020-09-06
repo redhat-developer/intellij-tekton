@@ -61,16 +61,27 @@ public class AuthenticationStep extends BaseStep {
 
             JComboBox cmbValueResource = new JComboBox();
             cmbValueResource = (JComboBox) addComponent(cmbValueResource, TIMES_PLAIN_14, null, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
-            fillComboBox(cmbValueResource);
+            fillComboBox(name, cmbValueResource);
             addListener(name, cmbValueResource);
             row[0] += 1;
         });
     }
 
-    private void fillComboBox(JComboBox comboBox) {
+    private void fillComboBox(String serviceAccountName, JComboBox comboBox) {
         comboBox.addItem("");
         for (String value : model.getServiceAccounts()) {
             comboBox.addItem(value);
+        }
+
+        if (serviceAccountName.equals("Global Service Account")) {
+            if (!model.getServiceAccount().isEmpty()) {
+                comboBox.setSelectedItem(model.getServiceAccount());
+            }
+        } else {
+            if (model.getTaskServiceAccounts().containsKey(serviceAccountName) &&
+                    !model.getTaskServiceAccounts().get(serviceAccountName).isEmpty()) {
+                comboBox.setSelectedItem(model.getTaskServiceAccounts().get(serviceAccountName));
+            }
         }
     }
 

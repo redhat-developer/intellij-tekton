@@ -12,26 +12,20 @@ package com.redhat.devtools.intellij.tektoncd.utils.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class RunConfigurationModel extends ConfigurationModel {
+public abstract class RunConfigurationModel extends ConfigurationModel {
     private String serviceAccountName;
-    private Map<String, String> parameters, inputResources, outputResources, taskServiceAccountNames;
+    private Map<String, String> parameters, taskServiceAccountNames;
     private Map<String, Workspace> workspaces;
 
     public RunConfigurationModel(String configuration) {
         super(configuration);
         this.parameters = findParamsValues(configuration);
         this.taskServiceAccountNames = findServiceAccountNames(configuration);
-
-        this.inputResources = findResourcesValues(configuration);
         this.workspaces = getWorkspaces(configuration);
         this.serviceAccountName = findServiceAccountName(configuration);
     }
@@ -83,15 +77,15 @@ public class RunConfigurationModel extends ConfigurationModel {
         return null;
     }
 
-    protected Map<String, String> findResourcesValues(String configuration) {
+    protected Map<String, String> findResources(String configuration, String[] fields) {
         Map<String, String> resources = new HashMap<>();
 
         try {
-            JsonNode paramsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "resources"});
+            JsonNode paramsNode = YAMLHelper.getValueFromYAML(configuration, fields);
             if (paramsNode != null) {
                 for (JsonNode item : paramsNode) {
                     if (!item.has("name") || !item.has("resourceRef") ) continue;
-                    resources.put(item.get("name").asText(), item.get("value").asText());
+                    resources.put(item.get("name").asText(), item.get("resourceRef").get("name").asText());
                 }
             }
         } catch (IOException e) {
@@ -130,31 +124,15 @@ public class RunConfigurationModel extends ConfigurationModel {
         return this.parameters;
     }
 
-    public Map<String, String> getResources() {
-        return this.inputResources;
-    }
-
     public Map<String, Workspace> getWorkspacesValues() {
         return this.workspaces;
     }
 
-    @Override
-    public List<Input> getParams() {
-        return Collections.emptyList();
+    public String getServiceAccountName() {
+        return this.serviceAccountName;
     }
 
-    @Override
-    public List<Input> getInputResources() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<Output> getOutputResources() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<String> getWorkspaces() {
-        return Collections.emptyList();
+    public Map<String, String> getTaskServiceAccountNames() {
+        return this.taskServiceAccountNames;
     }
 }

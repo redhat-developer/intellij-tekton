@@ -17,8 +17,11 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
-
+import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.RunConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.runs.PipelineRunConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.runs.TaskRunConfigurationModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
@@ -313,38 +317,61 @@ public class StartResourceModel {
     }
 
     public void adaptsToRun(String configuration) {
-        // TODO once #187 is merged we will use the factory to get the model
-        RunConfigurationModel conf = new RunConfigurationModel(configuration);
-        /* TODO
-        if (!(conf instanceof RunConfigurationModel)) return;
-         */
+        ConfigurationModel model = ConfigurationModelFactory.getModel(configuration);
+        if (!(model instanceof RunConfigurationModel)) return;
 
         // update params/input resources
         this.inputs.stream().forEach(input -> {
             // for each input, update its defaultValue/Value with the value taken from the *run model
             if (input.kind().equals(Input.Kind.PARAMETER)) {
-                if (conf.getParameters().containsKey(input.name())) {
-                    String value = conf.getParameters().get(input.name());
+                if (((RunConfigurationModel) model).getParameters().containsKey(input.name())) {
+                    String value = ((RunConfigurationModel) model).getParameters().get(input.name());
                     input.setDefaultValue(value);
                 }
             } else {
-                String value = conf.getResources().get(input.name());
-                input.setValue(value);
+                String value = null;
+                if (model instanceof PipelineRunConfigurationModel) {
+                    if (((PipelineRunConfigurationModel) model).getResources().containsKey(input.name())) {
+                        value = ((PipelineRunConfigurationModel) model).getResources().get(input.name());
+                    }
+                } else {
+                    if (((TaskRunConfigurationModel) model).getInputResources().containsKey(input.name())) {
+                        value = ((TaskRunConfigurationModel) model).getInputResources().get(input.name());
+                    }
+                }
+                if (value != null) {
+                    input.setValue(value);
+                }
             }
         });
+
+        // update output resource if its a taskrun
+        if (model instanceof TaskRunConfigurationModel) {
+            this.outputs.stream().forEach(output -> {
+                if (((TaskRunConfigurationModel) model).getOutputResources().containsKey(output.name())) {
+                    output.setValue(((TaskRunConfigurationModel) model).getOutputResources().get(output.name()));
+                }
+            });
+        }
 
         // update workspaces
         this.workspaces.keySet().forEach(workspaceName -> {
-            this.workspaces.put(workspaceName, conf.getWorkspacesValues().get(workspaceName));
+            if (((RunConfigurationModel) model).getWorkspacesValues().containsKey(workspaceName)) {
+                this.workspaces.put(workspaceName, ((RunConfigurationModel) model).getWorkspacesValues().get(workspaceName));
+            }
         });
 
-        //this.serviceAccountName = conf.getServiceAccount();
+        //update serviceAccount/taskServiceAccount
+        String sa = ((RunConfigurationModel) model).getServiceAccountName();
+        if (sa != null) {
+            this.serviceAccountName = sa;
+        }
 
-        /*this.taskServiceAccountNames.keySet().forEach(task -> {
-            if (conf.getTaskServiceAccountNames().has(task)) {
-                this.taskServiceAccountNames.put(task, conf.getTaskServiceAccountNames.get(task));
+        this.taskServiceAccountNames.keySet().forEach(task -> {
+            if (((RunConfigurationModel) model).getTaskServiceAccountNames().containsKey(task)) {
+                this.taskServiceAccountNames.put(task, ((RunConfigurationModel) model).getTaskServiceAccountNames().get(task));
             }
-        });*/
+        });
 
     }
 }
