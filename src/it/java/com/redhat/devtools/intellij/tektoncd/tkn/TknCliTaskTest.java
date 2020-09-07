@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.Test;
 
 
@@ -28,11 +29,11 @@ public class TknCliTaskTest extends TknCliTest {
         String resourceBody = load("task1.yaml").replace("taskfoo", TASK_NAME);
         saveResource(resourceBody, NAMESPACE, "tasks");
         // verify task has been created
-        List<String> tasks = tkn.getTasks(NAMESPACE);
+        List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // clean up and verify cleaning succeed
         tkn.deleteTasks(NAMESPACE, tasks, false);
-        tasks = tkn.getTasks(NAMESPACE);
+        tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertFalse(tasks.contains(TASK_NAME));
     }
 
@@ -42,14 +43,14 @@ public class TknCliTaskTest extends TknCliTest {
         String resourceBody = load("task1.yaml").replace("taskfoo", TASK_NAME);
         saveResource(resourceBody, NAMESPACE, "tasks");
         // verify pipeline has been created
-        List<String> tasks = tkn.getTasks(NAMESPACE);
+        List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // get YAML from cluster and verify is the same uploaded
         String resourceBodyFromCluster = tkn.getTaskYAML(NAMESPACE, TASK_NAME);
         assertEquals(getSpecFromResource(resourceBody), getSpecFromResource(resourceBodyFromCluster));
         // clean up and verify cleaning succeed
         tkn.deleteTasks(NAMESPACE, tasks, false);
-        tasks = tkn.getTasks(NAMESPACE);
+        tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertFalse(tasks.contains(TASK_NAME));
     }
 
@@ -63,7 +64,7 @@ public class TknCliTaskTest extends TknCliTest {
         saveResource(taskRunConfig, NAMESPACE, "taskruns");
 
         // verify task has been created
-        List<String> tasks = tkn.getTasks(NAMESPACE);
+        List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // verify taskrun has been created
         Thread.sleep(500); // adding a bit delay to allow run to be created
@@ -72,7 +73,7 @@ public class TknCliTaskTest extends TknCliTest {
         tkn.cancelTaskRun(NAMESPACE, TASK_RUN_NAME);
         // clean up and verify cleaning succeed
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);
-        tasks = tkn.getTasks(NAMESPACE);
+        tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertFalse(tasks.contains(TASK_NAME));
         taskruns = tkn.getTaskRuns(NAMESPACE, TASK_NAME);
         assertTrue(taskruns.stream().noneMatch(run -> run.getName().equals(TASK_RUN_NAME)));
