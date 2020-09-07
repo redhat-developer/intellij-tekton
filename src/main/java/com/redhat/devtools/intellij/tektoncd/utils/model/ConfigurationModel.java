@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class ConfigurationModel {
     Logger logger = LoggerFactory.getLogger(ConfigurationModel.class);
-    private String namespace, name, kind;
+    protected String namespace, name, kind;
 
     public ConfigurationModel() {
         this.name = "";

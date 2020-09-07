@@ -37,14 +37,13 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCE
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 
-public class StartResourceModel {
+public class StartResourceModel extends ConfigurationModel{
 
-    private String namespace, name, kind;
     private String serviceAccountName;
     private List<Input> inputs;
     private List<Output> outputs;
     private List<Resource> resources;
-    private List<String> serviceAccounts, secrets, configMaps, persistenceVolumeClaims;
+    private List<String> serviceAccounts, secrets, configMaps, persistentVolumeClaims;
     private boolean isValid = true;
     private String errorMessage;
     private Map<String, String> parameters, inputResources, outputResources, taskServiceAccountNames;
@@ -52,6 +51,7 @@ public class StartResourceModel {
     private List<? extends Run> runs;
 
     public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
+        super(configuration);
         this.errorMessage = "Tekton configuration has an invalid format:\n";
         this.inputs = Collections.emptyList();
         this.outputs = Collections.emptyList();
@@ -65,7 +65,7 @@ public class StartResourceModel {
         this.workspaces = Collections.emptyMap();
         this.secrets = secrets;
         this.configMaps = configMaps;
-        this.persistenceVolumeClaims = persistentVolumeClaims;
+        this.persistentVolumeClaims = persistentVolumeClaims;
 
         buildModel(configuration);
     }
@@ -77,17 +77,14 @@ public class StartResourceModel {
 
     private void buildModel(String configuration) {
         try {
-            this.namespace = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "namespace"});
             if (Strings.isNullOrEmpty(namespace)) {
                 errorMessage += " * Namespace field is missing or its value is not valid.\n";
                 isValid = false;
             }
-            this.name = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "name"});
-            if (Strings.isNullOrEmpty(this.name)) {
+            if (Strings.isNullOrEmpty(name)) {
                 errorMessage += " * Name field is missing or its value is not valid.\n";
                 isValid = false;
             }
-            this.kind = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"kind"});
             if (Strings.isNullOrEmpty(kind)) {
                 errorMessage += " * Kind field is missing or its value is not valid.\n";
                 isValid = false;
@@ -243,18 +240,6 @@ public class StartResourceModel {
         return this.isValid;
     }
 
-    public String getNamespace() {
-        return this.namespace;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getKind() {
-        return this.kind;
-    }
-
     public List<Input> getInputs() {
         return this.inputs;
     }
@@ -319,8 +304,8 @@ public class StartResourceModel {
         return this.configMaps;
     }
 
-    public List<String> getPersistenceVolumeClaims() {
-        return this.persistenceVolumeClaims;
+    public List<String> getPersistentVolumeClaims() {
+        return this.persistentVolumeClaims;
     }
 
     public List<? extends Run> getRuns() {

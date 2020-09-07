@@ -27,6 +27,8 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_1
 
 public class AuthenticationStep extends BaseStep {
 
+    private static final String GLOBALSA = "Global Service Account";
+
     public AuthenticationStep(StartResourceModel model) {
         super("Authentication", model);
     }
@@ -45,7 +47,7 @@ public class AuthenticationStep extends BaseStep {
         final int[] row = {0};
 
         List<String> serviceAccounts = new ArrayList<>(model.getTaskServiceAccounts().keySet());
-        serviceAccounts.add(0, "Global Service Account");
+        serviceAccounts.add(0, GLOBALSA);
 
         serviceAccounts.forEach(name -> {
             if (row[0] == 2) {
@@ -67,20 +69,20 @@ public class AuthenticationStep extends BaseStep {
         });
     }
 
-    private void fillComboBox(String serviceAccountName, JComboBox comboBox) {
+    private void fillComboBox(String saAssociatedToComboBox, JComboBox comboBox) {
         comboBox.addItem("");
         for (String value : model.getServiceAccounts()) {
             comboBox.addItem(value);
         }
 
-        if (serviceAccountName.equals("Global Service Account")) {
+        if (saAssociatedToComboBox.equals(GLOBALSA)) {
             if (!model.getServiceAccount().isEmpty()) {
                 comboBox.setSelectedItem(model.getServiceAccount());
             }
         } else {
-            if (model.getTaskServiceAccounts().containsKey(serviceAccountName) &&
-                    !model.getTaskServiceAccounts().get(serviceAccountName).isEmpty()) {
-                comboBox.setSelectedItem(model.getTaskServiceAccounts().get(serviceAccountName));
+            if (model.getTaskServiceAccounts().containsKey(saAssociatedToComboBox) &&
+                    !model.getTaskServiceAccounts().get(saAssociatedToComboBox).isEmpty()) {
+                comboBox.setSelectedItem(model.getTaskServiceAccounts().get(saAssociatedToComboBox));
             }
         }
     }
@@ -91,7 +93,7 @@ public class AuthenticationStep extends BaseStep {
             // when combo box value change update sa value
             if (itemEvent.getStateChange() == 1) {
                 String serviceAccountSelected = (String) itemEvent.getItem();
-                if (idParam.equals("Global Service Account")) {
+                if (idParam.equals(GLOBALSA)) {
                     model.setServiceAccount(serviceAccountSelected);
                 } else {
                     model.getTaskServiceAccounts().put(idParam, serviceAccountSelected);
