@@ -21,6 +21,7 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
+import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
@@ -30,6 +31,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.tree.TreePath;
@@ -87,7 +89,7 @@ public class StartAction extends TektonAction {
                     } else {
                         titleDialog = "Task " + element.getName();
                     }
-                    StartWizard wizard = new StartWizard(titleDialog, getEventProject(anActionEvent), model);
+                    StartWizard wizard = new StartWizard(titleDialog, element, getEventProject(anActionEvent), model);
                     wizard.show();
                     return wizard;
                 });
@@ -128,11 +130,14 @@ public class StartAction extends TektonAction {
 
     protected StartResourceModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "";
+        List<? extends Run> runs = new ArrayList<>();
         if (element instanceof PipelineNode) {
             configuration = tkncli.getPipelineYAML(namespace, element.getName());
+            runs = tkncli.getPipelineRuns(namespace, element.getName());
         } else if (element instanceof TaskNode) {
             configuration = tkncli.getTaskYAML(namespace, element.getName());
+            runs = tkncli.getTaskRuns(namespace, element.getName());
         }
-        return new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
+        return new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
     }
 }

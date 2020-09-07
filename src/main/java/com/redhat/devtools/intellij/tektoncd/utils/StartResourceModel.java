@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
+import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
@@ -48,8 +49,9 @@ public class StartResourceModel {
     private String errorMessage;
     private Map<String, String> parameters, inputResources, outputResources, taskServiceAccountNames;
     private Map<String, Workspace> workspaces;
+    private List<? extends Run> runs;
 
-    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistenceVolumeClaims) {
+    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
         this.errorMessage = "Tekton configuration has an invalid format:\n";
         this.inputs = Collections.emptyList();
         this.outputs = Collections.emptyList();
@@ -63,9 +65,14 @@ public class StartResourceModel {
         this.workspaces = Collections.emptyMap();
         this.secrets = secrets;
         this.configMaps = configMaps;
-        this.persistenceVolumeClaims = persistenceVolumeClaims;
+        this.persistenceVolumeClaims = persistentVolumeClaims;
 
         buildModel(configuration);
+    }
+
+    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<? extends Run> runs) {
+        this(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
+        this.runs = runs;
     }
 
     private void buildModel(String configuration) {
@@ -314,6 +321,10 @@ public class StartResourceModel {
 
     public List<String> getPersistenceVolumeClaims() {
         return this.persistenceVolumeClaims;
+    }
+
+    public List<? extends Run> getRuns() {
+        return this.runs;
     }
 
     public void adaptsToRun(String configuration) {
