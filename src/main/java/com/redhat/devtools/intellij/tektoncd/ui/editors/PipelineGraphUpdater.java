@@ -64,7 +64,7 @@ public class PipelineGraphUpdater implements GraphUpdater<Pipeline> {
 
     @Override
     public void update(Pipeline content, mxGraph graph) {
-        List<PipelineTask> tasks = content.getSpec().getTasks();
+        List<PipelineTask> tasks = content.getSpec()!=null?content.getSpec().getTasks():null;
         if (tasks != null && !tasks.isEmpty()) {
             List<PipelineTask> finallyTasks = content.getSpec().getFinally();
             Collection<Node> finallyNodes = Collections.emptyList();
