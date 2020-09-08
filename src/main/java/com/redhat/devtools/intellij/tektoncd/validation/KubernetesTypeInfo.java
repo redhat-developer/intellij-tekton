@@ -10,11 +10,22 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.validation;
 
+import com.intellij.json.psi.JsonFile;
+import com.intellij.json.psi.JsonProperty;
+import com.intellij.json.psi.JsonValue;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.PsiFile;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLValue;
+
 import java.util.Objects;
 
 public class KubernetesTypeInfo {
-    private String apiGroup;
-    private String kind;
+    private String apiGroup = "";
+    private String kind= "";
 
     public KubernetesTypeInfo(String apiGroup, String kind) {
         this.apiGroup = apiGroup;
@@ -22,6 +33,57 @@ public class KubernetesTypeInfo {
     }
 
     public KubernetesTypeInfo() {}
+
+    public static KubernetesTypeInfo extractMeta(PsiFile file) {
+        KubernetesTypeInfo info = new KubernetesTypeInfo();
+        if (file instanceof JsonFile) {
+            extractJsonMeta((JsonFile) file, info);
+        } else if (file instanceof YAMLFile) {
+            extractYAMLMeta((YAMLFile) file, info);
+        }
+        return info;
+    }
+
+    private static void extractJsonMeta(JsonFile file, KubernetesTypeInfo info) {
+        JsonValue content = file.getTopLevelValue();
+        if (content != null) {
+            content.acceptChildren(new PsiElementVisitor() {
+                @Override
+                public void visitElement(@NotNull PsiElement element) {
+                    if (element instanceof JsonProperty) {
+                        JsonProperty property = (JsonProperty) element;
+                        if (property.getName().equals("apiVersion")) {
+                            info.setApiGroup(property.getValue().getText());
+                        } else if (property.getName().equals("kind")) {
+                            info.setKind(property.getValue().getText());
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    private static void extractYAMLMeta(YAMLFile file, KubernetesTypeInfo info) {
+        if (!file.getDocuments().isEmpty()) {
+            YAMLValue content = file.getDocuments().get(0).getTopLevelValue();
+            if (content != null) {
+            content.acceptChildren(new PsiElementVisitor() {
+                    @Override
+                    public void visitElement(@NotNull PsiElement element) {
+                        if (element instanceof YAMLKeyValue) {
+                            YAMLKeyValue property = (YAMLKeyValue) element;
+                            if (property.getKeyText().equals("apiVersion")) {
+                                info.setApiGroup(property.getValueText());
+                            } else if (property.getKeyText().equals("kind")) {
+                                info.setKind(property.getValueText());
+                            }
+                        }
+                    }
+                });
+
+            }
+        }
+    }
 
     public String getApiGroup() {
         return apiGroup;

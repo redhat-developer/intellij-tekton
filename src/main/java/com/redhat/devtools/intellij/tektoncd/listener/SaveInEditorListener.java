@@ -20,6 +20,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -165,9 +166,9 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
     }
 
     private boolean isFileToPush(Project project, Document document, VirtualFile vf) {
-        Editor selectedEditor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+        FileEditor selectedEditor = FileEditorManager.getInstance(project).getSelectedEditor();
         // if file is not the one selected, skip it
-        if (selectedEditor == null || selectedEditor.getDocument() != document) return false;
+        if (selectedEditor == null || !selectedEditor.getFile().equals(vf)) return false;
         // if file is not related to tekton, skip it
         if (vf == null || vf.getUserData(KIND_PLURAL) == null || vf.getUserData(KIND_PLURAL).isEmpty()) {
             return false;
