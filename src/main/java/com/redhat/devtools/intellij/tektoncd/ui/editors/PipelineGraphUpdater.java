@@ -110,7 +110,7 @@ public class PipelineGraphUpdater implements GraphUpdater<Pipeline> {
                     vertex = graph.insertVertex(null, node.id, node.name, 0, 200, WIDTH, HEIGHT, "editable=false;");
                     break;
                 case CONDITION:
-                    vertex = graph.insertVertex(null, node.id, node.name, 0, 200, WIDTH, HEIGHT, "shape=rhombus;");
+                    vertex = graph.insertVertex(null, node.id, node.name, 0, 200, WIDTH, HEIGHT, "shape=rhombus;editable=false;");
                     break;
             }
             vertexes.put(node.id, vertex);
