@@ -114,28 +114,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "EventListenerBinding": {
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "kind": {
-          "type": "string"
-        },
-        "ref": {
-          "type": "string"
-        },
-        "spec": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/TriggerBindingSpec"
-        },
-        "apiversion": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
     "EventListenerConfig": {
       "required": [
         "generatedName"
@@ -151,8 +129,7 @@
     "EventListenerSpec": {
       "required": [
         "serviceAccountName",
-        "triggers",
-        "replicas"
+        "triggers"
       ],
       "properties": {
         "serviceAccountName": {
@@ -214,37 +191,21 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "EventListenerTemplate": {
-      "required": [
-        "name"
-      ],
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "apiversion": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
     "EventListenerTrigger": {
-      "required": [
-        "bindings",
-        "template"
-      ],
       "properties": {
         "bindings": {
           "items": {
             "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/EventListenerBinding"
+            "$ref": "#/definitions/TriggerSpecBinding"
           },
           "type": "array"
         },
         "template": {
           "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/EventListenerTemplate"
+          "$ref": "#/definitions/TriggerSpecTemplate"
+        },
+        "triggerRef": {
+          "type": "string"
         },
         "name": {
           "type": "string"
@@ -256,8 +217,8 @@
           },
           "type": "array"
         },
-        "serviceAccount": {
-          "$ref": "#/definitions/ObjectReference"
+        "serviceAccountName": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -569,6 +530,43 @@
         "bitbucket": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/BitbucketInterceptor"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TriggerSpecBinding": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "spec": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/TriggerBindingSpec"
+        },
+        "apiversion": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TriggerSpecTemplate": {
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "apiversion": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
