@@ -146,7 +146,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getPipelineRuns((PipelineRunsNode) element, "");
             }
             if (element instanceof PipelineRunNode) {
-                return getTaskRuns((PipelineRunNode)element, ((PipelineRunNode) element).getRun().getChildren());
+                return getTaskRuns((PipelineRunNode)element, ((PipelineRunNode) element).getRun().getChildren(), false);
             }
             if (element instanceof TasksNode) {
                 return getTasks((TasksNode) element);
@@ -155,7 +155,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getTaskRuns((TaskNode) element, ((TaskNode) element).getName());
             }
             if (element instanceof TaskRunNode) {
-                return getTaskRuns((TaskRunNode)element, ((TaskRunNode) element).getRun().getChildren());
+                return getTaskRuns((TaskRunNode)element, ((TaskRunNode) element).getRun().getChildren(), false);
             }
             if (element instanceof ClusterTasksNode) {
                 return getClusterTasks((ClusterTasksNode) element);
@@ -245,17 +245,21 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         try {
             Tkn tkn = element.getRoot().getTkn();
             List<TaskRun> taskRuns = tkn.getTaskRuns(element.getNamespace(), task);
-            taskRunsNodes = getTaskRuns(element, taskRuns);
+            taskRunsNodes = getTaskRuns(element, taskRuns, true);
         } catch (IOException e) {
             taskRunsNodes = new Object[] { new MessageNode(element.getRoot(), element, "Failed to load task runs") };
         }
         return taskRunsNodes;
     }
 
-    private Object[] getTaskRuns(ParentableNode element, List<TaskRun> taskRuns)  {
+    private Object[] getTaskRuns(ParentableNode element, List<TaskRun> taskRuns, boolean orderNewestToOldest)  {
         List<Object> taskRunsNodes = new ArrayList<>();
         if (taskRuns != null) {
-            taskRuns.stream().sorted(Comparator.comparing(Run::getStartTime, Comparator.nullsLast(Comparator.naturalOrder()))).forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+            if (orderNewestToOldest) {
+                taskRuns.stream().forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+            } else {
+                taskRuns.stream().sorted(Comparator.comparing(Run::getStartTime, Comparator.nullsLast(Comparator.naturalOrder()))).forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+            }
         }
         return taskRunsNodes.toArray(new Object[taskRunsNodes.size()]);
     }

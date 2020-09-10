@@ -181,8 +181,8 @@ public class TektonTreeStructureTest {
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
-        resultTaskRuns.add(taskRun1);
         resultTaskRuns.add(taskRun2);
+        resultTaskRuns.add(taskRun1);
 
         when(tkn.getTaskRuns(anyString(), anyString())).thenReturn(resultTaskRuns);
 
@@ -190,9 +190,9 @@ public class TektonTreeStructureTest {
         Object[] taskruns = structure.getChildElements(node);
 
         assertTrue(taskruns.length == 3);
-        assertEquals(((ParentableNode) taskruns[0]).getName(), "test1");
+        assertEquals(((ParentableNode) taskruns[0]).getName(), "test3");
         assertEquals(((ParentableNode) taskruns[1]).getName(), "test2");
-        assertEquals(((ParentableNode) taskruns[2]).getName(), "test3");
+        assertEquals(((ParentableNode) taskruns[2]).getName(), "test1");
     }
 
     @Test
@@ -249,8 +249,8 @@ public class TektonTreeStructureTest {
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
-        resultTaskRuns.add(taskRun1);
         resultTaskRuns.add(taskRun2);
+        resultTaskRuns.add(taskRun1);
 
         when(tkn.getTaskRuns(anyString(), anyString())).thenReturn(resultTaskRuns);
 
@@ -258,9 +258,9 @@ public class TektonTreeStructureTest {
         Object[] taskruns = structure.getChildElements(node);
 
         assertTrue(taskruns.length == 3);
-        assertEquals(((ParentableNode) taskruns[0]).getName(), "test1");
+        assertEquals(((ParentableNode) taskruns[0]).getName(), "test3");
         assertEquals(((ParentableNode) taskruns[1]).getName(), "test2");
-        assertEquals(((ParentableNode) taskruns[2]).getName(), "test3");
+        assertEquals(((ParentableNode) taskruns[2]).getName(), "test1");
     }
 
     @Test
@@ -314,8 +314,8 @@ public class TektonTreeStructureTest {
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
-        resultTaskRuns.add(taskRun1);
         resultTaskRuns.add(taskRun2);
+        resultTaskRuns.add(taskRun1);
 
         TaskRun run = new TaskRun("run", "", "", Optional.of(true), Instant.now(), Instant.now(), resultTaskRuns, "");
         TaskRunNode node = new TaskRunNode(root, parent, run);
@@ -364,8 +364,8 @@ public class TektonTreeStructureTest {
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
-        resultTaskRuns.add(taskRun1);
         resultTaskRuns.add(taskRun2);
+        resultTaskRuns.add(taskRun1);
 
         PipelineRun run = new PipelineRun("run", Optional.of(true), Instant.now(), Instant.now(), resultTaskRuns);
         PipelineRunNode node = new PipelineRunNode(root, parent, run);
