@@ -53,7 +53,7 @@ public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
                 stepName = pipelineTaskName.asText();
             }
             JsonNode conditionChecks = item.get("conditionChecks");
-            JsonNode conditions = item.get("status").get("conditions");
+            JsonNode conditions = item.get("status") == null ? null : item.get("status").get("conditions");
             String failedReason = "";
             if (conditions != null && conditions.isArray() && conditions.size() > 0) {
                 failedReason = conditions.get(0).get("reason").asText("");
@@ -61,7 +61,7 @@ public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
 
             return createTaskRun(name, triggeredBy, stepName, completed, startTime, completionTime, conditionChecks, failedReason);
         } else {
-            JsonNode taskRunsNode = item.get("status").get("taskRuns");
+            JsonNode taskRunsNode = item.get("status") == null ? null : item.get("status").get("taskRuns");
             return createPipelineRun(name, completed, startTime, completionTime, taskRunsNode);
         }
     }
@@ -97,7 +97,7 @@ public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
     private Instant getCompletionTime(JsonNode item) {
         Instant completionTime = null;
         try {
-            String completionTimeText = item.get("status").get("completionTime") == null ? null : item.get("status").get("completionTime").asText(null);
+            String completionTimeText = item.get("status") == null ? null : item.get("status").get("completionTime").asText(null);
             if (completionTimeText != null) completionTime = Instant.parse(completionTimeText);
         } catch (NullPointerException ne) { }
         return completionTime;
@@ -106,7 +106,7 @@ public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
     private Instant getStartTime(JsonNode item) {
         Instant startTime = null;
         try {
-            String startTimeText = item.get("status").get("startTime") == null ? null : item.get("status").get("startTime").asText(null);
+            String startTimeText = item.get("status") == null ? null : item.get("status").get("startTime").asText(null);
             if (startTimeText != null) startTime = Instant.parse(startTimeText);
         } catch (NullPointerException ne) { }
         return startTime;
@@ -115,8 +115,8 @@ public class RunDeserializer extends StdNodeBasedDeserializer<Run> {
     private Optional<Boolean> isCompleted(JsonNode item) {
         Optional<Boolean> completed = Optional.empty();
         try {
-            JsonNode conditions = item.get("status").get("conditions");
-            if (conditions.isArray() && conditions.size() > 0) {
+            JsonNode conditions = item.get("status") == null ? null : item.get("status").get("conditions");
+            if (conditions != null && conditions.isArray() && conditions.size() > 0) {
                 String status = conditions.get(0).get("status").asText();
                 if (status.equalsIgnoreCase("true")) {
                     completed = Optional.of(true);

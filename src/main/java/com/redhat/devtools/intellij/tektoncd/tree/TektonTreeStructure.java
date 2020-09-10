@@ -25,21 +25,19 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import io.fabric8.kubernetes.api.model.Config;
-import io.fabric8.kubernetes.api.model.Context;
 import io.fabric8.kubernetes.api.model.NamedContext;
 import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.Icon;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.swing.Icon;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TektonTreeStructure extends AbstractTreeStructure implements MutableModel<Object>, ConfigWatcher.Listener {
     private final Project project;
@@ -257,7 +255,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
     private Object[] getTaskRuns(ParentableNode element, List<TaskRun> taskRuns)  {
         List<Object> taskRunsNodes = new ArrayList<>();
         if (taskRuns != null) {
-            taskRuns.stream().sorted(Comparator.comparing(Run::getStartTime)).forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+            taskRuns.stream().sorted(Comparator.comparing(Run::getStartTime, Comparator.nullsLast(Comparator.naturalOrder()))).forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
         }
         return taskRunsNodes.toArray(new Object[taskRunsNodes.size()]);
     }
