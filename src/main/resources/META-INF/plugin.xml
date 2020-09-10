@@ -13,7 +13,26 @@
     ]]></description>
 
   <change-notes><![CDATA[
-  <p><b>0.0.2</b></p>
+  <p><b>0.1.0</b></p>
+  <p>Visual editor for pipelines next to the source one</p>
+  <p>Reviewed start wizard (for pipelines and tasks)</p>
+  <p>Enhanced code completion</p>
+  <p><ul>
+  <li>Variable substitution for parameters values</li>
+  <li>Existing conditions are proposed when editing <i>conditionRef</i> field</li>
+  <li>Existing tasks from the pipeline are proposed when editing <i>runAfter</i> field</li>
+  </ul></p>
+  <p>UI enhancements</p>
+  <p></ul>
+  <li>Delete associated resources (task runs, pipeline runs) when deleting task or pipeline</li>
+  <li>Runs are now ordered by their starting time</li>
+  <li>Runs still active can now be canceled</li>
+  <li>Logs are now automatically displayed when a task or pipeline is started</li>
+  <li>Multiple elements can now be delete at once</li>
+  <li>Editor is in read-only mode for task runs and pipeline runs</li>
+  </ul></p>
+  <p>Proxy support</p>
+  <p><b>0.1.0</b></p>
   <p>v1beta1 support</p>
   <p>Support for workspaces and service accounts in start wizard</p>
   <p>Support for Tekton Triggers resources</p>
