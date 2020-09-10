@@ -136,15 +136,19 @@ public class PipelineGraphUpdater implements GraphUpdater<Pipeline> {
                 }
                 if (task.getConditions() != null) {
                     for(PipelineTaskCondition condition : task.getConditions()) {
-                        String conditionId = idPrefix + CONDITION_PREFIX + condition.getConditionRef();
-                        Node conditionNode = new Node(Type.CONDITION, conditionId,condition.getConditionRef());
-                        conditionNode.childs.add(taskNode);
-                        tree.put(conditionId, conditionNode);
-                        for(PipelineTaskInputResource resource : condition.getResources()) {
-                            for(String parentName : resource.getFrom()) {
-                                String parentTaskId = TASK_PREFIX + parentName;
-                                relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
-                                relations.get(parentTaskId).add(conditionId);
+                        if (condition != null && StringUtils.isNotBlank(condition.getConditionRef())) {
+                            String conditionId = idPrefix + CONDITION_PREFIX + condition.getConditionRef();
+                            Node conditionNode = new Node(Type.CONDITION, conditionId,condition.getConditionRef());
+                            conditionNode.childs.add(taskNode);
+                            tree.put(conditionId, conditionNode);
+                            for(PipelineTaskInputResource resource : condition.getResources()) {
+                                if (resource != null && resource.getFrom() != null) {
+                                    for(String parentName : resource.getFrom()) {
+                                        String parentTaskId = TASK_PREFIX + parentName;
+                                        relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
+                                        relations.get(parentTaskId).add(conditionId);
+                                    }
+                                }
                             }
                         }
                     }
