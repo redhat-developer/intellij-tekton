@@ -202,6 +202,8 @@ Feedback & Questions
 If you discover an issue please file a bug and we will fix it as soon as possible.
 * File a bug in [GitHub Issues](https://github.com/redhat-developer/intellij-tekton/issues).
 
+If you want to chat with us, you can contact us on the `#ide-integration` channel of the `tektoncd` Slack. Please click this [link](https://join.slack.com/t/tektoncd/shared_invite/enQtNjQ1NjQzNTQ3MDQwLTc5MWU4ODg3MGJiYjllZjlmMWI0YWFlMzJjMTkyZGEyMTFhYzY1ZTkzZGU0M2I3NGEyYjU2YzNhOTE4OWQyZTM) to join the `tektoncd` Slack.
+
 License
 =======
 EPL 2.0, See [LICENSE](LICENSE) for more information.
