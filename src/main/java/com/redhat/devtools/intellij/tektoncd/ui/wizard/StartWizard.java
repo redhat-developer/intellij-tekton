@@ -98,6 +98,9 @@ public class StartWizard extends DialogWrapper {
     private JTextArea previewTextArea;
     private Color backgroundTheme;
 
+    // options name
+    private static final String IMPORT_DATA_FROM_RUN = "import_data_from_run";
+
     private JBCardLayout.SwipeDirection myTransitionDirection = JBCardLayout.SwipeDirection.AUTO;
 
     public StartWizard(String title, ParentableNode element, @Nullable Project project, StartResourceModel model) {
@@ -179,41 +182,45 @@ public class StartWizard extends DialogWrapper {
         myRightPanel = new JPanel(new BorderLayout());
         myFooterPanel = new JPanel(new BorderLayout());
 
-        JPanel innerOptionsPanel = getOptionsPanel(model, element);
+        // if wizard requires an option panel
+        List<String> optionsToDisplay = getOptionsToDisplay(model);
+        if (!optionsToDisplay.isEmpty()) {
+            JPanel innerOptionsPanel = getOptionsPanel(optionsToDisplay, model, element);
 
-        optionsPanel = new JPanel();
-        optionsPanel.setBackground(backgroundTheme);
-        optionsPanel.add(innerOptionsPanel);
-        optionsPanel.setVisible(false);
+            optionsPanel = new JPanel();
+            optionsPanel.setBackground(backgroundTheme);
+            optionsPanel.add(innerOptionsPanel);
+            optionsPanel.setVisible(false);
 
-        JLabel openOptionsLabel = new JLabel("Advanced Options");
-        openOptionsLabel.setIcon(AllIcons.Actions.MoveDown);
-        openOptionsLabel.addMouseListener(
-                new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        if (optionsPanel.isVisible()) {
-                            openOptionsLabel.setIcon(AllIcons.Actions.MoveDown);
-                            optionsPanel.setVisible(false);
-                        } else {
-                            openOptionsLabel.setIcon(AllIcons.Actions.MoveUp);
-                            optionsPanel.setVisible(true);
+            JLabel openOptionsLabel = new JLabel("Advanced Options");
+            openOptionsLabel.setIcon(AllIcons.Actions.MoveDown);
+            openOptionsLabel.addMouseListener(
+                    new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (optionsPanel.isVisible()) {
+                                openOptionsLabel.setIcon(AllIcons.Actions.MoveDown);
+                                optionsPanel.setVisible(false);
+                            } else {
+                                openOptionsLabel.setIcon(AllIcons.Actions.MoveUp);
+                                optionsPanel.setVisible(true);
+                            }
                         }
                     }
-                }
-        );
+            );
 
-        JPanel openOptionsPanel = new JPanel(new GridBagLayout());
-        openOptionsPanel.setBackground(backgroundTheme);
-        Border lineSeparatorBelow = new MatteBorder(0, 0, 1, 0, EditorColorsManager.getInstance().getGlobalScheme().getColor(ColorKey.find("SEPARATOR_BELOW_COLOR")));
-        Border margin_5 = new EmptyBorder(5, 0, 5, 0);
-        Border compoundBorderMargin = BorderFactory.createCompoundBorder(lineSeparatorBelow, margin_5);
-        openOptionsPanel.setBorder(compoundBorderMargin);
-        openOptionsPanel.add(openOptionsLabel);
+            JPanel openOptionsPanel = new JPanel(new GridBagLayout());
+            openOptionsPanel.setBackground(backgroundTheme);
+            Border lineSeparatorBelow = new MatteBorder(0, 0, 1, 0, EditorColorsManager.getInstance().getGlobalScheme().getColor(ColorKey.find("SEPARATOR_BELOW_COLOR")));
+            Border margin_5 = new EmptyBorder(5, 0, 5, 0);
+            Border compoundBorderMargin = BorderFactory.createCompoundBorder(lineSeparatorBelow, margin_5);
+            openOptionsPanel.setBorder(compoundBorderMargin);
+            openOptionsPanel.add(openOptionsLabel);
 
-        myHeaderPanel.setBackground(backgroundTheme);
-        myHeaderPanel.add(optionsPanel, BorderLayout.LINE_START);
-        myHeaderPanel.add(openOptionsPanel, BorderLayout.PAGE_END);
+            myHeaderPanel.setBackground(backgroundTheme);
+            myHeaderPanel.add(optionsPanel, BorderLayout.LINE_START);
+            myHeaderPanel.add(openOptionsPanel, BorderLayout.PAGE_END);
+        }
 
         myContentPanel.setBackground(backgroundTheme);
         myContentPanel.setPreferredSize(new Dimension(550, 400));
@@ -238,60 +245,67 @@ public class StartWizard extends DialogWrapper {
         }
     }
 
-    private JPanel getOptionsPanel(StartResourceModel model, ParentableNode element) {
+    private JPanel getOptionsPanel(List<String> optionsToDisplay, StartResourceModel model, ParentableNode element) {
         JPanel innerOptionsPanel = new JPanel();
         innerOptionsPanel.setBackground(backgroundTheme);
         innerOptionsPanel.setBorder(MARGIN_10);
 
         // import data from *run
-        JCheckBox chkImportRunData = new JCheckBox("Import data from run");
-        chkImportRunData.setBackground(backgroundTheme);
-        JLabel warnNoRunsAvailable = new JLabel("No runs to choose from");
-        warnNoRunsAvailable.setVisible(false);
-        warnNoRunsAvailable.setForeground(Color.red);
-        JComboBox cmbPickRunToImportData = new ComboBox();
-        cmbPickRunToImportData.setVisible(false);
-        cmbPickRunToImportData.setPreferredSize(ROW_DIMENSION);
+        if (optionsToDisplay.contains(IMPORT_DATA_FROM_RUN)) {
+            JCheckBox chkImportRunData = new JCheckBox("Import data from run");
+            chkImportRunData.setBackground(backgroundTheme);
+            JComboBox cmbPickRunToImportData = new ComboBox();
+            cmbPickRunToImportData.setVisible(false);
+            cmbPickRunToImportData.setPreferredSize(ROW_DIMENSION);
 
-        chkImportRunData.addItemListener(itemEvent -> {
-            if (chkImportRunData.isSelected()) {
-                cmbPickRunToImportData.setVisible(true);
-                warnNoRunsAvailable.setVisible(true);
-            } else {
-                cmbPickRunToImportData.setVisible(false);
-                warnNoRunsAvailable.setVisible(false);
-            }
-        });
-        cmbPickRunToImportData.addItem("Please choose");
-        model.getRuns().forEach(run -> cmbPickRunToImportData.addItem(run.getName()));
+            chkImportRunData.addItemListener(itemEvent -> {
+                if (chkImportRunData.isSelected()) {
+                    cmbPickRunToImportData.setVisible(true);
+                } else {
+                    cmbPickRunToImportData.setVisible(false);
+                }
+            });
+            cmbPickRunToImportData.addItem("Please choose");
+            model.getRuns().forEach(run -> cmbPickRunToImportData.addItem(run.getName()));
 
-        cmbPickRunToImportData.addItemListener(itemEvent -> {
-            // when combo box value change
-            if (itemEvent.getStateChange() == 1) {
-                if (itemEvent.getItem().toString().equals("Please choose")) return;
-                Tkn tkncli = element.getRoot().getTkn();
-                String configuration = "";
-                String kind = model.getKind();
-                try {
-                    if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
-                        configuration = tkncli.getPipelineRunYAML(element.getNamespace(), itemEvent.getItem().toString());
-                    } else if (kind.equalsIgnoreCase(KIND_TASK) || kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
-                        configuration = tkncli.getTaskRunYAML(element.getNamespace(), itemEvent.getItem().toString());
+            cmbPickRunToImportData.addItemListener(itemEvent -> {
+                // when combo box value change
+                if (itemEvent.getStateChange() == 1) {
+                    if (itemEvent.getItem().toString().equals("Please choose")) return;
+                    Tkn tkncli = element.getRoot().getTkn();
+                    String configuration = "";
+                    String kind = model.getKind();
+                    try {
+                        if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
+                            configuration = tkncli.getPipelineRunYAML(element.getNamespace(), itemEvent.getItem().toString());
+                        } else if (kind.equalsIgnoreCase(KIND_TASK) || kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+                            configuration = tkncli.getTaskRunYAML(element.getNamespace(), itemEvent.getItem().toString());
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    if (!configuration.isEmpty()) {
+                        model.adaptsToRun(configuration);
+                        refreshSteps();
+                        updatePreview(model);
+                    }
                 }
-                if (!configuration.isEmpty()) {
-                    model.adaptsToRun(configuration);
-                    refreshSteps();
-                    updatePreview(model);
-                }
-            }
-        });
+            });
 
-        innerOptionsPanel.add(chkImportRunData);
-        innerOptionsPanel.add(cmbPickRunToImportData.getItemCount() > 1 ? cmbPickRunToImportData : warnNoRunsAvailable);
+            innerOptionsPanel.add(chkImportRunData);
+            innerOptionsPanel.add(cmbPickRunToImportData);
+        }
+
         return innerOptionsPanel;
+    }
+
+    private List<String> getOptionsToDisplay(StartResourceModel model) {
+        List<String> optionsEnabled = new ArrayList<>();
+
+        if (!model.getRuns().isEmpty()) {
+            optionsEnabled.add(IMPORT_DATA_FROM_RUN);
+        }
+        return optionsEnabled;
     }
 
     private List<BaseStep> getSteps(StartResourceModel model) {
