@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.intellij.CommonBundle;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.IdeBundle;
 import com.intellij.ide.wizard.CommitStepException;
@@ -20,6 +21,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Disposer;
@@ -30,14 +32,19 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.mac.TouchbarDataKeys;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.update.UiNotifyConnector;
+import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,18 +57,24 @@ import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import org.jetbrains.annotations.Nullable;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BLUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
 public class StartWizard extends DialogWrapper {
@@ -79,18 +92,22 @@ public class StartWizard extends DialogWrapper {
     protected JPanel myRightPanel;
     protected JPanel myFooterPanel;
     private List<JLabel> navigationList;
+    private JPanel optionsPanel;
     private JPanel navigationPanel;
     private JPanel previewFooterPanel;
     private JTextArea previewTextArea;
     private Color backgroundTheme;
 
+    // options name
+    private static final String IMPORT_DATA_FROM_RUN = "import_data_from_run";
+
     private JBCardLayout.SwipeDirection myTransitionDirection = JBCardLayout.SwipeDirection.AUTO;
 
-    public StartWizard(String title, @Nullable Project project, StartResourceModel model) {
+    public StartWizard(String title, ParentableNode element, @Nullable Project project, StartResourceModel model) {
         super(project, true);
         this.backgroundTheme = EditorColorsManager.getInstance().getGlobalScheme().getDefaultBackground();
         myTitle = title;
-        buildStructure();
+        buildStructure(model, element);
         myCurrentStep = 0;
         mySteps = getSteps(model);
         fill(model);
@@ -153,7 +170,7 @@ public class StartWizard extends DialogWrapper {
 
     }
 
-    private void buildStructure() {
+    private void buildStructure(StartResourceModel model, ParentableNode element) {
         myPreviousButton = new JButton(IdeBundle.message("button.wizard.previous"));
         myNextButton = new JButton(IdeBundle.message("button.wizard.next"));
         myCancelButton = new JButton(CommonBundle.getCancelButtonText());
@@ -164,6 +181,46 @@ public class StartWizard extends DialogWrapper {
         myLeftPanel = new JPanel(new JBCardLayout());
         myRightPanel = new JPanel(new BorderLayout());
         myFooterPanel = new JPanel(new BorderLayout());
+
+        // if wizard requires an option panel
+        List<String> optionsToDisplay = getOptionsToDisplay(model);
+        if (!optionsToDisplay.isEmpty()) {
+            JPanel innerOptionsPanel = getOptionsPanel(optionsToDisplay, model, element);
+
+            optionsPanel = new JPanel();
+            optionsPanel.setBackground(backgroundTheme);
+            optionsPanel.add(innerOptionsPanel);
+            optionsPanel.setVisible(false);
+
+            JLabel openOptionsLabel = new JLabel("Advanced Options");
+            openOptionsLabel.setIcon(AllIcons.Actions.MoveDown);
+            openOptionsLabel.addMouseListener(
+                    new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (optionsPanel.isVisible()) {
+                                openOptionsLabel.setIcon(AllIcons.Actions.MoveDown);
+                                optionsPanel.setVisible(false);
+                            } else {
+                                openOptionsLabel.setIcon(AllIcons.Actions.MoveUp);
+                                optionsPanel.setVisible(true);
+                            }
+                        }
+                    }
+            );
+
+            JPanel openOptionsPanel = new JPanel(new GridBagLayout());
+            openOptionsPanel.setBackground(backgroundTheme);
+            Border lineSeparatorBelow = new MatteBorder(0, 0, 1, 0, EditorColorsManager.getInstance().getGlobalScheme().getColor(ColorKey.find("SEPARATOR_BELOW_COLOR")));
+            Border margin_5 = new EmptyBorder(5, 0, 5, 0);
+            Border compoundBorderMargin = BorderFactory.createCompoundBorder(lineSeparatorBelow, margin_5);
+            openOptionsPanel.setBorder(compoundBorderMargin);
+            openOptionsPanel.add(openOptionsLabel);
+
+            myHeaderPanel.setBackground(backgroundTheme);
+            myHeaderPanel.add(optionsPanel, BorderLayout.LINE_START);
+            myHeaderPanel.add(openOptionsPanel, BorderLayout.PAGE_END);
+        }
 
         myContentPanel.setBackground(backgroundTheme);
         myContentPanel.setPreferredSize(new Dimension(550, 400));
@@ -186,6 +243,69 @@ public class StartWizard extends DialogWrapper {
         } else {
             myFooterPanel.add(previewFooterPanel, BorderLayout.LINE_START);
         }
+    }
+
+    private JPanel getOptionsPanel(List<String> optionsToDisplay, StartResourceModel model, ParentableNode element) {
+        JPanel innerOptionsPanel = new JPanel();
+        innerOptionsPanel.setBackground(backgroundTheme);
+        innerOptionsPanel.setBorder(MARGIN_10);
+
+        // import data from *run
+        if (optionsToDisplay.contains(IMPORT_DATA_FROM_RUN)) {
+            JCheckBox chkImportRunData = new JCheckBox("Import data from run");
+            chkImportRunData.setBackground(backgroundTheme);
+            JComboBox cmbPickRunToImportData = new ComboBox();
+            cmbPickRunToImportData.setVisible(false);
+            cmbPickRunToImportData.setPreferredSize(ROW_DIMENSION);
+
+            chkImportRunData.addItemListener(itemEvent -> {
+                if (chkImportRunData.isSelected()) {
+                    cmbPickRunToImportData.setVisible(true);
+                } else {
+                    cmbPickRunToImportData.setVisible(false);
+                }
+            });
+            cmbPickRunToImportData.addItem("Please choose");
+            model.getRuns().forEach(run -> cmbPickRunToImportData.addItem(run.getName()));
+
+            cmbPickRunToImportData.addItemListener(itemEvent -> {
+                // when combo box value change
+                if (itemEvent.getStateChange() == 1) {
+                    if (itemEvent.getItem().toString().equals("Please choose")) return;
+                    Tkn tkncli = element.getRoot().getTkn();
+                    String configuration = "";
+                    String kind = model.getKind();
+                    try {
+                        if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
+                            configuration = tkncli.getPipelineRunYAML(element.getNamespace(), itemEvent.getItem().toString());
+                        } else if (kind.equalsIgnoreCase(KIND_TASK) || kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+                            configuration = tkncli.getTaskRunYAML(element.getNamespace(), itemEvent.getItem().toString());
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (!configuration.isEmpty()) {
+                        model.adaptsToRun(configuration);
+                        refreshSteps();
+                        updatePreview(model);
+                    }
+                }
+            });
+
+            innerOptionsPanel.add(chkImportRunData);
+            innerOptionsPanel.add(cmbPickRunToImportData);
+        }
+
+        return innerOptionsPanel;
+    }
+
+    private List<String> getOptionsToDisplay(StartResourceModel model) {
+        List<String> optionsEnabled = new ArrayList<>();
+
+        if (!model.getRuns().isEmpty()) {
+            optionsEnabled.add(IMPORT_DATA_FROM_RUN);
+        }
+        return optionsEnabled;
     }
 
     private List<BaseStep> getSteps(StartResourceModel model) {
@@ -535,6 +655,10 @@ public class StartWizard extends DialogWrapper {
         model.setParameters(parameters);
         model.setInputResources(inputResources);
         model.setOutputResources(outputResources);
+    }
+
+    private void refreshSteps() {
+        this.mySteps.forEach(step -> step.refresh());
     }
 
 }

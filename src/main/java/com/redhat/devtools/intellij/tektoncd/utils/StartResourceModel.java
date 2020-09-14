@@ -14,10 +14,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
+import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
-
+import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
+import com.redhat.devtools.intellij.tektoncd.utils.model.RunConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.runs.PipelineRunConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.runs.TaskRunConfigurationModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,25 +31,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 
-public class StartResourceModel {
+public class StartResourceModel extends ConfigurationModel{
 
-    private String namespace, name, kind;
     private String serviceAccountName;
     private List<Input> inputs;
     private List<Output> outputs;
     private List<Resource> resources;
-    private List<String> serviceAccounts, secrets, configMaps, persistenceVolumeClaims;
+    private List<String> serviceAccounts, secrets, configMaps, persistentVolumeClaims;
     private boolean isValid = true;
     private String errorMessage;
     private Map<String, String> parameters, inputResources, outputResources, taskServiceAccountNames;
     private Map<String, Workspace> workspaces;
+    private List<? extends Run> runs;
 
-    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistenceVolumeClaims) {
+    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
+        super(configuration);
         this.errorMessage = "Tekton configuration has an invalid format:\n";
         this.inputs = Collections.emptyList();
         this.outputs = Collections.emptyList();
@@ -58,24 +65,26 @@ public class StartResourceModel {
         this.workspaces = Collections.emptyMap();
         this.secrets = secrets;
         this.configMaps = configMaps;
-        this.persistenceVolumeClaims = persistenceVolumeClaims;
+        this.persistentVolumeClaims = persistentVolumeClaims;
 
         buildModel(configuration);
     }
 
+    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<? extends Run> runs) {
+        this(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
+        this.runs = runs;
+    }
+
     private void buildModel(String configuration) {
         try {
-            this.namespace = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "namespace"});
             if (Strings.isNullOrEmpty(namespace)) {
                 errorMessage += " * Namespace field is missing or its value is not valid.\n";
                 isValid = false;
             }
-            this.name = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "name"});
-            if (Strings.isNullOrEmpty(this.name)) {
+            if (Strings.isNullOrEmpty(name)) {
                 errorMessage += " * Name field is missing or its value is not valid.\n";
                 isValid = false;
             }
-            this.kind = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"kind"});
             if (Strings.isNullOrEmpty(kind)) {
                 errorMessage += " * Kind field is missing or its value is not valid.\n";
                 isValid = false;
@@ -231,18 +240,6 @@ public class StartResourceModel {
         return this.isValid;
     }
 
-    public String getNamespace() {
-        return this.namespace;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getKind() {
-        return this.kind;
-    }
-
     public List<Input> getInputs() {
         return this.inputs;
     }
@@ -307,7 +304,70 @@ public class StartResourceModel {
         return this.configMaps;
     }
 
-    public List<String> getPersistenceVolumeClaims() {
-        return this.persistenceVolumeClaims;
+    public List<String> getPersistentVolumeClaims() {
+        return this.persistentVolumeClaims;
+    }
+
+    public List<? extends Run> getRuns() {
+        return this.runs;
+    }
+
+    public void adaptsToRun(String configuration) {
+        ConfigurationModel model = ConfigurationModelFactory.getModel(configuration);
+        if (!(model instanceof RunConfigurationModel)) return;
+
+        // update params/input resources
+        this.inputs.stream().forEach(input -> {
+            // for each input, update its defaultValue/Value with the value taken from the *run model
+            if (input.kind().equals(Input.Kind.PARAMETER)) {
+                if (((RunConfigurationModel) model).getParameters().containsKey(input.name())) {
+                    String value = ((RunConfigurationModel) model).getParameters().get(input.name());
+                    input.setDefaultValue(value);
+                }
+            } else {
+                String value = null;
+                if (model instanceof PipelineRunConfigurationModel) {
+                    if (((PipelineRunConfigurationModel) model).getResources().containsKey(input.name())) {
+                        value = ((PipelineRunConfigurationModel) model).getResources().get(input.name());
+                    }
+                } else {
+                    if (((TaskRunConfigurationModel) model).getInputResources().containsKey(input.name())) {
+                        value = ((TaskRunConfigurationModel) model).getInputResources().get(input.name());
+                    }
+                }
+                if (value != null) {
+                    input.setValue(value);
+                }
+            }
+        });
+
+        // update output resource if its a taskrun
+        if (model instanceof TaskRunConfigurationModel) {
+            this.outputs.stream().forEach(output -> {
+                if (((TaskRunConfigurationModel) model).getOutputResources().containsKey(output.name())) {
+                    output.setValue(((TaskRunConfigurationModel) model).getOutputResources().get(output.name()));
+                }
+            });
+        }
+
+        // update workspaces
+        this.workspaces.keySet().forEach(workspaceName -> {
+            if (((RunConfigurationModel) model).getWorkspacesValues().containsKey(workspaceName)) {
+                this.workspaces.put(workspaceName, ((RunConfigurationModel) model).getWorkspacesValues().get(workspaceName));
+            }
+        });
+
+        //update serviceAccount/taskServiceAccount
+        String sa = ((RunConfigurationModel) model).getServiceAccountName();
+        if (sa != null) {
+            this.serviceAccountName = sa;
+        }
+
+        this.taskServiceAccountNames.keySet().forEach(task -> {
+            if (((RunConfigurationModel) model).getTaskServiceAccountNames().containsKey(task)) {
+                this.taskServiceAccountNames.put(task, ((RunConfigurationModel) model).getTaskServiceAccountNames().get(task));
+            }
+        });
+
     }
 }

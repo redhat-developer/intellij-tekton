@@ -8,23 +8,22 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.utils.model;
+package com.redhat.devtools.intellij.tektoncd.utils.model.resources;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.utils.model.ResourceConfigurationModel;
 import java.util.Collections;
 import java.util.List;
 
-public class PipelineConfigurationModel extends ConfigurationModel {
+public class ConditionConfigurationModel extends ResourceConfigurationModel {
     private List<Input> params;
     private List<Input> inputResource;
-    private List<String> workspaces;
 
-    public PipelineConfigurationModel(String configuration) {
+    public ConditionConfigurationModel(String configuration) {
         super(configuration);
         this.params = findParams(configuration);
         this.inputResource = findInputResources(configuration, new String[] {"spec", "resources"});
-        this.workspaces = findWorkspaces(configuration);
     }
 
     @Override
@@ -44,6 +43,6 @@ public class PipelineConfigurationModel extends ConfigurationModel {
 
     @Override
     public List<String> getWorkspaces() {
-        return this.workspaces;
+        return Collections.emptyList();
     }
 }

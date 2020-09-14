@@ -8,19 +8,20 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.utils.model;
+package com.redhat.devtools.intellij.tektoncd.utils.model.resources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.utils.model.ResourceConfigurationModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TaskConfigurationModel extends ConfigurationModel {
+public class TaskConfigurationModel extends ResourceConfigurationModel {
     Logger logger = LoggerFactory.getLogger(TaskConfigurationModel.class);
     private List<Input> params;
     private List<Input> inputResources;

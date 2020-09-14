@@ -188,7 +188,7 @@ public class WorkspacesStep extends BaseStep {
         } else if(kind == SECRET) {
             items = model.getSecrets();
         } else if ( kind == PVC) {
-            items = model.getPersistenceVolumeClaims();
+            items = model.getPersistentVolumeClaims();
         }
         return items;
     }

@@ -19,6 +19,9 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.ConditionConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,7 +115,7 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
      * @return
      */
     private List<LookupElementBuilder> getLookupsPipeline(ConfigurationModel model, String prefix, String completionPrefix, int insertOffset) {
-        return getParamLookups(model.getParams(), prefix, completionPrefix, insertOffset);
+        return getParamLookups(((PipelineConfigurationModel)model).getParams(), prefix, completionPrefix, insertOffset);
     }
 
     /**
@@ -127,21 +130,21 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
     private List<LookupElementBuilder> getLookupsTask(ConfigurationModel model, String prefix, String completionPrefix, int insertOffset) {
         List<LookupElementBuilder> lookups = new ArrayList<>();
         // get lookups for params
-        lookups.addAll(getParamLookups(model.getParams(), prefix, completionPrefix, insertOffset));
+        lookups.addAll(getParamLookups(((TaskConfigurationModel)model).getParams(), prefix, completionPrefix, insertOffset));
 
         // get lookups for resources
         String headPrefix_19 = prefix.length() > 19 ? prefix.substring(0, 19) : prefix;
         if ("$(resources.inputs.".contains(headPrefix_19)) {
-            lookups.addAll(getInputResourceLookups(model.getInputResources(), "resources.inputs", prefix, completionPrefix, insertOffset));
+            lookups.addAll(getInputResourceLookups(((TaskConfigurationModel)model).getInputResources(), "resources.inputs", prefix, completionPrefix, insertOffset));
         }
 
         // get lookups for output resources
         String headPrefix_20 = prefix.length() > 20 ? prefix.substring(0, 20) : prefix;
         if ("$(resources.outputs.".contains(headPrefix_20)) {
-            lookups.addAll(getOutputResourceLookups(model.getOutputResources(), "resources.outputs", prefix, completionPrefix, insertOffset));
+            lookups.addAll(getOutputResourceLookups(((TaskConfigurationModel)model).getOutputResources(), "resources.outputs", prefix, completionPrefix, insertOffset));
         }
         // get lookups for workspaces
-        lookups.addAll(getWorkspaceLookups(model.getWorkspaces(), prefix, completionPrefix, insertOffset));
+        lookups.addAll(getWorkspaceLookups(((TaskConfigurationModel)model).getWorkspaces(), prefix, completionPrefix, insertOffset));
 
         return lookups;
     }
@@ -158,11 +161,11 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
     private List<LookupElementBuilder> getLookupsCondition(ConfigurationModel model, String prefix, String completionPrefix, int insertOffset) {
         List<LookupElementBuilder> lookups = new ArrayList<>();
 
-        lookups.addAll(getParamLookups(model.getParams(), prefix, completionPrefix, insertOffset));
+        lookups.addAll(getParamLookups(((ConditionConfigurationModel)model).getParams(), prefix, completionPrefix, insertOffset));
 
         String headPrefix_12 = prefix.length() > 12 ? prefix.substring(0, 12) : prefix;
         if ("$(resources.".contains(headPrefix_12)) {
-            lookups.addAll(getInputResourceLookups(model.getInputResources(), "resources", prefix, completionPrefix, insertOffset));
+            lookups.addAll(getInputResourceLookups(((ConditionConfigurationModel)model).getInputResources(), "resources", prefix, completionPrefix, insertOffset));
         }
 
         return lookups;

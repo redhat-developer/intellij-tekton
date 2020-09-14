@@ -58,7 +58,7 @@ public class InputResourcesStep extends BaseStep {
     private void fillComboBox(JComboBox comboBox, Input input) {
         for (Resource resource: model.getResources()) {
             if (resource.type().equals(input.type())) {
-                comboBox.addItem(resource);
+                comboBox.addItem(resource.name());
             }
         }
         if (input.value() != null) {
@@ -71,8 +71,8 @@ public class InputResourcesStep extends BaseStep {
         cmbValueResource.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
                 // when inputResourceValuesCB combo box value changes, the new value is saved and preview is updated
-                Resource resourceSelected = (Resource) itemEvent.getItem();
-                setInputValue(idParam, resourceSelected.name());
+                String resourceSelected = (String) itemEvent.getItem();
+                setInputValue(idParam, resourceSelected);
                 fireStateChanged();
             }
         });

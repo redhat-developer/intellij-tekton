@@ -174,6 +174,14 @@ public abstract class BaseStep implements Step, Disposable {
         }
     }
 
+    public void refresh() {
+        contentPanel.removeAll();
+        setContent(model);
+        adjustContentPanel();
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
     public abstract void setContent(StartResourceModel model);
     public abstract boolean isComplete();
     public abstract String getHelpId();

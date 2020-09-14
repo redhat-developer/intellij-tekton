@@ -31,6 +31,8 @@ public class Constants {
 
     public static final String KIND_PIPELINE = "pipeline";
     public static final String KIND_PIPELINERUN = "pipelinerun";
+    public static final String KIND_TASK = "task";
+    public static final String KIND_CLUSTERTASK = "clustertask";
     public static final String KIND_TASKRUN = "taskrun";
 
     public static final String KIND_PVC =  "PersistentVolumeClaim";
