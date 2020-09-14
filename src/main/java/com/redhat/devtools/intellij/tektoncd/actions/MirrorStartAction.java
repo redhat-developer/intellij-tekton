@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StartMirrorRunAction extends StartAction {
+public class MirrorStartAction extends StartAction {
 
-    public StartMirrorRunAction() { super(PipelineRunNode.class, TaskRunNode.class); }
+    public MirrorStartAction() { super(PipelineRunNode.class, TaskRunNode.class); }
 
     @Override
     protected StartResourceModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {

@@ -246,6 +246,9 @@ public class StartWizard extends DialogWrapper {
         // import data from *run
         JCheckBox chkImportRunData = new JCheckBox("Import data from run");
         chkImportRunData.setBackground(backgroundTheme);
+        JLabel warnNoRunsAvailable = new JLabel("No runs to choose from");
+        warnNoRunsAvailable.setVisible(false);
+        warnNoRunsAvailable.setForeground(Color.red);
         JComboBox cmbPickRunToImportData = new ComboBox();
         cmbPickRunToImportData.setVisible(false);
         cmbPickRunToImportData.setPreferredSize(ROW_DIMENSION);
@@ -253,8 +256,10 @@ public class StartWizard extends DialogWrapper {
         chkImportRunData.addItemListener(itemEvent -> {
             if (chkImportRunData.isSelected()) {
                 cmbPickRunToImportData.setVisible(true);
+                warnNoRunsAvailable.setVisible(true);
             } else {
                 cmbPickRunToImportData.setVisible(false);
+                warnNoRunsAvailable.setVisible(false);
             }
         });
         cmbPickRunToImportData.addItem("Please choose");
@@ -285,7 +290,7 @@ public class StartWizard extends DialogWrapper {
         });
 
         innerOptionsPanel.add(chkImportRunData);
-        innerOptionsPanel.add(cmbPickRunToImportData);
+        innerOptionsPanel.add(cmbPickRunToImportData.getItemCount() > 1 ? cmbPickRunToImportData : warnNoRunsAvailable);
         return innerOptionsPanel;
     }
 

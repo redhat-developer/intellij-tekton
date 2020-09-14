@@ -26,7 +26,9 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
@@ -39,6 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class StartAction extends TektonAction {
@@ -103,21 +107,26 @@ public class StartAction extends TektonAction {
                     Map<String, String> inputResources = model.getInputResources();
                     Map<String, String> outputResources = model.getOutputResources();
                     String runName = null;
-                    if (element instanceof PipelineNode) {
-                        runName = tkncli.startPipeline(namespace, element.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces);
+                    if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
+                        runName = tkncli.startPipeline(namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces);
 
-                    } else if (element instanceof TaskNode) {
-                        runName = tkncli.startTask(namespace, element.getName(), params, inputResources, outputResources, serviceAccount, workspaces);
+                    } else if (model.getKind().equalsIgnoreCase(KIND_TASK)) {
+                        runName = tkncli.startTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces);
                     }
                     if(runName != null) {
                         FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
                         followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
                     }
-                    ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
+
+                    ParentableNode nodeToRefresh = element;
+                    if (element instanceof PipelineRunNode || element instanceof TaskRunNode) {
+                        nodeToRefresh = (ParentableNode) element.getParent();
+                    }
+                    ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(nodeToRefresh);
                 } catch (IOException e) {
                     notification = new Notification(NOTIFICATION_ID,
                             "Error",
-                            element.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
+                            model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
                     logger.warn("Error: " + e.getLocalizedMessage());
