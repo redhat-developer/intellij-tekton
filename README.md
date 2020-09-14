@@ -33,6 +33,13 @@ The start wizard has been completely reviewed to better represent the current st
 
 ![](images/0.2.0/tekton2.gif)
 
+#### Initialize start wizard with settings from a previous  run
+
+As starting a task or pipeline may require a lot of inputs, it is also possible to start a task or pipeline using the settings from a previous run. The start wizard will have these input values initialized from the values used in the previous run instead of getting the default value.
+
+![](images/0.2.0/tekton9.gif)
+
+
 ### Improved code assist
 
 #### Value references
