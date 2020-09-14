@@ -18,16 +18,85 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
 
-The Tekton CLI in use has been upgrated to 0.9.0.
+The Tekton CLI in use has been upgrated to 0.11.0 (as 0.12.0 has some performance issues).
 
-### Enhanced start wizard (for pipelines and tasks)
+### Pipeline preview editor
 
-The start wizard has been enhanced to support:
+The pipeline editor has been enhanced to include a visual representation of the pipeline
+workflow. Conditions and finally clauses are also supported.
 
-* workspaces
-* service accounts
+![](images/0.2.0/tekton1.gif)
 
-![](images/demo3.gif)
+### Reviewed start wizard (for pipelines and tasks)
+
+The start wizard has been completely reviewed to better represent the current state:
+
+![](images/0.2.0/tekton2.gif)
+
+#### Initialize start wizard with settings from a previous  run
+
+As starting a task or pipeline may require a lot of inputs, it is also possible to start a task or pipeline using the settings from a previous run. The start wizard will have these input values initialized from the values used in the previous run instead of getting the default value.
+
+![](images/0.2.0/tekton9.gif)
+
+
+### Improved code assist
+
+#### Value references
+
+When a parameter/workspace/resource is to be set on a task, code assist will present the candidate values.
+
+![](images/0.2.0/tekton3.gif)
+
+#### Task graph
+
+Tasks inside a pipeline can be sequence through the *runAfter* field. When code completion is activate on such a field, the list of available tasks in the pipeline is proposed:
+
+![](images/0.2.0/tekton4.gif)
+
+#### Conditions
+
+When a task is to be conditionnaly executed through conditions (using the *conditionRef* field), the list of available conditions is proposed:
+
+![](images/0.2.0/tekton5.gif)
+
+### UI enhancements
+
+#### Delete
+
+When a task or pipeline resource is to be deleted, you now have the choice to delete associated resources (task runs / pipeline runs) through an option:
+
+![](images/0.2.0/tekton6.png)
+
+#### Runs ordering
+
+The taskruns/pipelineruns are now displayed ordered by the starting time (most recent started run is displayed first), allowing users to keep focusing on recent work
+
+![](images/0.2.0/tekton7.png)
+
+#### Cancel run
+
+A task or pipeline run still active (in the running state) can be canceled through a new Cancel action:
+
+![](images/0.2.0/tekton8.gif)
+
+#### Automatically show logs
+
+When a task or pipeline is started, the logs view is automatically displayed
+
+#### Delete multiple elements
+
+It is now possible to delete several different elements, even if they are of the same nature (ie task runs and pipeline runs)
+
+#### Read only editor
+
+Task runs and pipeline runs are now opened as read only in the editor
+
+### Proxy support
+
+Communication with the cluster is now supported automatically. The plugin will honor proxy settings from IntelliJ so proxy is configured by default or if proxy is associated with the cluster API server hostname, then communication from this plugin to the cluster will go through the configured proxy.
+
+## Previous releases
 
 ### Tekton Triggers support
 
@@ -132,6 +201,8 @@ Feedback & Questions
 ====================
 If you discover an issue please file a bug and we will fix it as soon as possible.
 * File a bug in [GitHub Issues](https://github.com/redhat-developer/intellij-tekton/issues).
+
+If you want to chat with us, you can contact us on the `#ide-integration` channel of the `tektoncd` Slack. Please click this [link](https://join.slack.com/t/tektoncd/shared_invite/enQtNjQ1NjQzNTQ3MDQwLTc5MWU4ODg3MGJiYjllZjlmMWI0YWFlMzJjMTkyZGEyMTFhYzY1ZTkzZGU0M2I3NGEyYjU2YzNhOTE4OWQyZTM) to join the `tektoncd` Slack.
 
 License
 =======
