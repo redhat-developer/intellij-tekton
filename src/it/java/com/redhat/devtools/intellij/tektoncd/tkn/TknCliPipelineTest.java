@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.Test;
 
 
@@ -66,7 +67,7 @@ public class TknCliPipelineTest extends TknCliTest {
         saveResource(pipelineRunConfig, NAMESPACE, "pipelineruns");
 
         // verify task has been created
-        List<String> tasks = tkn.getTasks(NAMESPACE);
+        List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // verify pipeline has been created
         List<String> pipelines = tkn.getPipelines(NAMESPACE);
