@@ -34,7 +34,7 @@ public class ResourceInPipelineCompletionProvider extends CompletionProvider<Com
     private List<LookupElementBuilder> getResourcesLookups(CompletionParameters parameters) {
         String configuration = parameters.getEditor().getDocument().getText();
         ConfigurationModel model = ConfigurationModelFactory.getModel(configuration);
-        if (model == null) return Collections.emptyList();
+        if (model == null || !(model instanceof PipelineConfigurationModel)) return Collections.emptyList();
 
         List<LookupElementBuilder> lookups = new ArrayList<>();
         ((PipelineConfigurationModel)model).getInputResources().forEach(resource -> {
