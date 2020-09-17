@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-an-image
+spec:
+  params:
+    - name: DOCKERFILE
+      description: The path to the dockerfile to build from GitHub Repo
+      default: "Dockerfile"
+  resources:
+    inputs:
+      - name: git-repo
+        type: git
+        optional: true
+        resource: <caret>
+    outputs:
+      - name: built-image
+        type: image
+        optional: true
+  steps:
+    - name: build-an-image
+      image: "gcr.io/kaniko-project/executor:latest"
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=$(params.DOCKERFILE)
+        - --destination=$(resources.outputs.built-image.url)
