@@ -106,12 +106,13 @@ public class StartAction extends TektonAction {
                     Map<String, Workspace> workspaces = model.getWorkspaces();
                     Map<String, String> inputResources = model.getInputResources();
                     Map<String, String> outputResources = model.getOutputResources();
+                    String runPrefixName = model.getRunPrefixName();
                     String runName = null;
                     if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
-                        runName = tkncli.startPipeline(namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces);
+                        runName = tkncli.startPipeline(namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
 
                     } else if (model.getKind().equalsIgnoreCase(KIND_TASK)) {
-                        runName = tkncli.startTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces);
+                        runName = tkncli.startTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
                     }
                     if(runName != null) {
                         FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");

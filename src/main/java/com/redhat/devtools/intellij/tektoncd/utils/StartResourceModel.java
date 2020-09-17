@@ -49,6 +49,7 @@ public class StartResourceModel extends ConfigurationModel{
     private Map<String, String> parameters, inputResources, outputResources, taskServiceAccountNames;
     private Map<String, Workspace> workspaces;
     private List<? extends Run> runs;
+    private String runPrefixName;
 
     public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
         super(configuration);
@@ -66,6 +67,7 @@ public class StartResourceModel extends ConfigurationModel{
         this.secrets = secrets;
         this.configMaps = configMaps;
         this.persistentVolumeClaims = persistentVolumeClaims;
+        this.runPrefixName = "";
 
         buildModel(configuration);
     }
@@ -310,6 +312,14 @@ public class StartResourceModel extends ConfigurationModel{
 
     public List<? extends Run> getRuns() {
         return this.runs;
+    }
+
+    public void setRunPrefixName(String runPrefixName) {
+        this.runPrefixName = runPrefixName;
+    }
+
+    public String getRunPrefixName() {
+        return runPrefixName;
     }
 
     public void adaptsToRun(String configuration) {

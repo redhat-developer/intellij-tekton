@@ -42,6 +42,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -62,11 +63,11 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import org.jetbrains.annotations.Nullable;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
@@ -97,8 +98,10 @@ public class StartWizard extends DialogWrapper {
     private JPanel previewFooterPanel;
     private JTextArea previewTextArea;
     private Color backgroundTheme;
+    private JTextField txtRunPrefixName;
 
     // options name
+    private static final String PREFIX_NAME_RUN = "prefix_name_for_run";
     private static final String IMPORT_DATA_FROM_RUN = "import_data_from_run";
 
     private JBCardLayout.SwipeDirection myTransitionDirection = JBCardLayout.SwipeDirection.AUTO;
@@ -246,23 +249,49 @@ public class StartWizard extends DialogWrapper {
     }
 
     private JPanel getOptionsPanel(List<String> optionsToDisplay, StartResourceModel model, ParentableNode element) {
-        JPanel innerOptionsPanel = new JPanel();
+        JPanel innerOptionsPanel = new JPanel(new GridBagLayout());
         innerOptionsPanel.setBackground(backgroundTheme);
         innerOptionsPanel.setBorder(MARGIN_10);
+        int row = 0;
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+
+        // set prefix for runs
+        if (optionsToDisplay.contains(PREFIX_NAME_RUN)) {
+            JLabel lblRunPrefixName = new JLabel("Prefix for the *Run name: ");
+            lblRunPrefixName.setFont(TIMES_PLAIN_14);
+            JLabel lblRunPrefixName_Help = new JLabel();
+            lblRunPrefixName_Help.setIcon(AllIcons.General.Information);
+            lblRunPrefixName_Help.setToolTipText("Specify a prefix for the *Run name (must be lowercase alphanumeric characters)");
+            txtRunPrefixName = new JTextField();
+            txtRunPrefixName.setPreferredSize(ROW_DIMENSION);
+
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = row;
+            innerOptionsPanel.add(lblRunPrefixName, gridBagConstraints);
+            gridBagConstraints.gridx = 1;
+            innerOptionsPanel.add(txtRunPrefixName, gridBagConstraints);
+            gridBagConstraints.gridx = 2;
+            innerOptionsPanel.add(lblRunPrefixName_Help, gridBagConstraints);
+            row++;
+        }
 
         // import data from *run
         if (optionsToDisplay.contains(IMPORT_DATA_FROM_RUN)) {
             JCheckBox chkImportRunData = new JCheckBox("Import data from run");
             chkImportRunData.setBackground(backgroundTheme);
+            JLabel chkImportRunData_Help = new JLabel();
+            chkImportRunData_Help.setIcon(AllIcons.General.Information);
+            chkImportRunData_Help.setToolTipText("Fill all wizard inputs with the values taken from an old *run");
             JComboBox cmbPickRunToImportData = new ComboBox();
-            cmbPickRunToImportData.setVisible(false);
+            cmbPickRunToImportData.setEnabled(false);
             cmbPickRunToImportData.setPreferredSize(ROW_DIMENSION);
 
             chkImportRunData.addItemListener(itemEvent -> {
                 if (chkImportRunData.isSelected()) {
-                    cmbPickRunToImportData.setVisible(true);
+                    cmbPickRunToImportData.setEnabled(true);
                 } else {
-                    cmbPickRunToImportData.setVisible(false);
+                    cmbPickRunToImportData.setEnabled(false);
                 }
             });
             cmbPickRunToImportData.addItem("Please choose");
@@ -292,8 +321,14 @@ public class StartWizard extends DialogWrapper {
                 }
             });
 
-            innerOptionsPanel.add(chkImportRunData);
-            innerOptionsPanel.add(cmbPickRunToImportData);
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = row;
+            innerOptionsPanel.add(chkImportRunData, gridBagConstraints);
+            gridBagConstraints.gridx = 1;
+            innerOptionsPanel.add(cmbPickRunToImportData, gridBagConstraints);
+            gridBagConstraints.gridx = 2;
+            innerOptionsPanel.add(chkImportRunData_Help, gridBagConstraints);
+            row++;
         }
 
         return innerOptionsPanel;
@@ -301,6 +336,8 @@ public class StartWizard extends DialogWrapper {
 
     private List<String> getOptionsToDisplay(StartResourceModel model) {
         List<String> optionsEnabled = new ArrayList<>();
+
+        optionsEnabled.add(PREFIX_NAME_RUN);
 
         if (!model.getRuns().isEmpty()) {
             optionsEnabled.add(IMPORT_DATA_FROM_RUN);
@@ -655,6 +692,12 @@ public class StartWizard extends DialogWrapper {
         model.setParameters(parameters);
         model.setInputResources(inputResources);
         model.setOutputResources(outputResources);
+
+        // options panel
+        String runPrefixName = txtRunPrefixName != null ? txtRunPrefixName.getText() : "";
+        if (!runPrefixName.trim().isEmpty()) {
+            model.setRunPrefixName(runPrefixName);
+        }
     }
 
     private void refreshSteps() {

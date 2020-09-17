@@ -51,6 +51,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCE
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_OUTPUTRESOURCE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PREFIXNAME;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
@@ -363,7 +364,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> resources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces) throws IOException {
+    public String startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> resources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("pipeline", "start", pipeline, "-n", namespace));
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
@@ -372,6 +373,9 @@ public class TknCli implements Tkn {
         args.addAll(workspaceArgsToList(workspaces));
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(resources, FLAG_INPUTRESOURCEPIPELINE));
+        if (!runPrefixName.isEmpty()) {
+            args.add(FLAG_PREFIXNAME + "=" + runPrefixName);
+        }
         String output = ExecHelper.execute(command, envVars, args.toArray(new String[0]));
         return this.getTektonRunName(output);
     }
@@ -382,7 +386,7 @@ public class TknCli implements Tkn {
         return this.getTektonRunName(output);
     }
 
-    public String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces) throws IOException {
+    public String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
@@ -391,6 +395,9 @@ public class TknCli implements Tkn {
         args.addAll(argsToList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCETASK));
         args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
+        if (!runPrefixName.isEmpty()) {
+            args.add(FLAG_PREFIXNAME + "=" + runPrefixName);
+        }
         String output = ExecHelper.execute(command, envVars, args.toArray(new String[0]));
         return getTektonRunName(output);
     }
