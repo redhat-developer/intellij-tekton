@@ -36,6 +36,7 @@ public class TaskCompletionProvider extends CompletionProvider<CompletionParamet
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         String ns = parameters.getOriginalFile().getVirtualFile().getUserData(NAMESPACE);
         result.addAllElements(getTasksLookups(parameters.getEditor().getProject(), ns));
+        result.stopHere();
     }
 
     private List<LookupElementBuilder> getTasksLookups(Project project, String namespace) {

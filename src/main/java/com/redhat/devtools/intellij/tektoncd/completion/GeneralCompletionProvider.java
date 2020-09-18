@@ -52,15 +52,17 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
         try {
-            List<LookupElementBuilder> lookups;
+            List<LookupElementBuilder> lookups = Collections.emptyList();
             // check if there is an opened $( (without a closing parenthesis) before the position we are right now. It matches $( or $(params or $(whatever
             Matcher matcher = Pattern.compile("\\$\\([^\\)]*$").matcher(result.getPrefixMatcher().getPrefix());
             if (matcher.find()) {
                 lookups = getInputsLookups(parameters, matcher.group(), result.getPrefixMatcher().getPrefix(), matcher.start() + 2);
-            } else {
+            } else if (parameters.getEditor().getDocument().getText().trim().isEmpty()) {
+                // if the document is a yaml file and it's empty, let's show generic lookups
                 lookups = getGenericLookups();
             }
             result.addAllElements(lookups);
+            result.stopHere();
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage());
         }

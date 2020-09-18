@@ -36,6 +36,7 @@ public class ConditionCompletionProvider extends CompletionProvider<CompletionPa
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         String ns = parameters.getOriginalFile().getVirtualFile().getUserData(NAMESPACE);
         result.addAllElements(getConditionsLookups(parameters.getEditor().getProject(), ns));
+        result.stopHere();
     }
 
     private List<LookupElementBuilder> getConditionsLookups(Project project, String namespace) {
