@@ -225,7 +225,7 @@ public interface Tkn {
 
     /**
      *
-     * @param namespace the namespace of the task
+     * @param namespace the namespace of the triggerTemplate
      * @param triggerTemplate the triggerTemplate to use
      * @return triggerTemplate configuration
      * @throws IOException if communication errored
@@ -235,7 +235,7 @@ public interface Tkn {
     /**
      * Get triggerBinding configuration in YAML
      *
-     * @param namespace the namespace of the task
+     * @param namespace the namespace of the triggerBinding
      * @param triggerBinding the triggerBinding to use
      * @return triggerBinding configuration
      * @throws IOException if communication errored
@@ -245,7 +245,7 @@ public interface Tkn {
     /**
      * Get clusterTriggerBinding configuration in YAML
      *
-     * @param namespace the namespace of the task
+     * @param namespace the namespace of the clusterTriggerBinding
      * @param ctb the clusterTriggerBinding to use
      * @return clusterTriggerBinding configuration
      * @throws IOException if communication errored
@@ -255,12 +255,22 @@ public interface Tkn {
     /**
      * Get eventListener configuration in YAML
      *
-     * @param namespace the namespace of the task
+     * @param namespace the namespace of the eventListener
      * @param eventListener the eventListener to use
      * @return eventListener configuration
      * @throws IOException if communication errored
      */
     String getEventListenerYAML(String namespace, String eventListener) throws IOException;
+
+    /**
+     * Get the task by its name
+     *
+     * @param namespace the namespace of the task
+     * @param task the task to use
+     * @return the task object
+     * @throws IOException if communication errored
+     */
+    Task getTask(String namespace, String task) throws IOException;
 
     /**
      * Delete a list of pipelines

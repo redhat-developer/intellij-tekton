@@ -10,11 +10,14 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.completion;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.intellij.codeInsight.completion.CompletionParameters;
-import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
@@ -22,6 +25,7 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFacto
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.ConditionConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
+import io.fabric8.tekton.pipeline.v1beta1.Task;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +42,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This provider is called for code completion that does not belong to a specific place in the file.
  */
-public class GeneralCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class GeneralCompletionProvider extends BaseCompletionProvider {
     Logger logger = LoggerFactory.getLogger(GeneralCompletionProvider.class);
 
     private static final String[] workspaceVariables = new String[]{ "path", "claim", "volume" };
@@ -48,6 +52,7 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
     private static final String[] gcsResourcesVariables = new String[]{ "name", "type", "location", "path" };
     private static final String[] clusterResourcesVariables = new String[]{ "name", "type", "url", "username", "password", "namespace", "token", "insecure", "cadata", "clientKeyData", "clientCertificateData", "path" };
     private static final String[] cloudEventResourcesVariables = new String[]{ "name", "type", "target-uri", "path" };
+    private static final String[] taskFields = new String[] { "results" };
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
@@ -56,7 +61,7 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
             // check if there is an opened $( (without a closing parenthesis) before the position we are right now. It matches $( or $(params or $(whatever
             Matcher matcher = Pattern.compile("\\$\\([^\\)]*$").matcher(result.getPrefixMatcher().getPrefix());
             if (matcher.find()) {
-                lookups = getInputsLookups(parameters, matcher.group(), result.getPrefixMatcher().getPrefix(), matcher.start() + 2);
+                lookups = getVariablesLookups(parameters, matcher.group(), result.getPrefixMatcher().getPrefix(), matcher.start() + 2);
             } else if (parameters.getEditor().getDocument().getText().trim().isEmpty()) {
                 // if the document is a yaml file and it's empty, let's show generic lookups
                 lookups = getGenericLookups();
@@ -69,7 +74,7 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
     }
 
     /**
-     * Get lookups for the current parameter
+     * Get lookups for all possible variables matching the prefix
      *
      * @param parameters
      * @param prefix the prefix we are really using. E.g the line we are in is "value: test -f $(params." -> the prefix is "$(params."
@@ -77,27 +82,28 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
      * @param insertOffset the position where the lookup has to be copied on
      * @return
      */
-    private List<LookupElementBuilder> getInputsLookups(CompletionParameters parameters, String prefix, String completionPrefix, int insertOffset) {
+    private List<LookupElementBuilder> getVariablesLookups(CompletionParameters parameters, String prefix, String completionPrefix, int insertOffset) {
         String configuration = parameters.getEditor().getDocument().getText();
         ConfigurationModel model = ConfigurationModelFactory.getModel(configuration);
         if (model == null) return Collections.emptyList();
 
-        return getLookupsByKind(model, prefix, completionPrefix, insertOffset);
+        return getLookupsByKind(parameters, model, prefix, completionPrefix, insertOffset);
     }
 
     /**
      * Get lookups for the current parameter based on the kind
      *
+     * @param parameters
      * @param model the model built by the configuration
      * @param prefix the prefix we are really using. E.g the line we are in is "value: test -f $(params." -> the prefix is "$(params."
      * @param completionPrefix the prefix we need to add to the lookup to make it be shown by IJ. E.g the line we are in is "value: test -f $(params." -> the completionPrefix is "test -f $(params."
      * @param insertOffset the position where the lookup has to be copied on
      * @return
      */
-    private List<LookupElementBuilder> getLookupsByKind(ConfigurationModel model, String prefix, String completionPrefix, int insertOffset) {
+    private List<LookupElementBuilder> getLookupsByKind(CompletionParameters parameters, ConfigurationModel model, String prefix, String completionPrefix, int insertOffset) {
         switch (model.getKind().toLowerCase()) {
             case "pipeline":
-                return getLookupsPipeline(model, prefix, completionPrefix, insertOffset);
+                return getLookupsPipeline(parameters, model, prefix, completionPrefix, insertOffset);
             case  "task":
                 return getLookupsTask(model, prefix, completionPrefix, insertOffset);
             case "condition":
@@ -110,14 +116,26 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
     /**
      * Get lookups for the opened pipeline configuration
      *
+     * @param parameters
      * @param model the model built by the configuration
      * @param prefix the prefix we are really using. E.g the line we are in is "value: test -f $(params." -> the prefix is "$(params."
      * @param completionPrefix the prefix we need to add to the lookup to make it be shown by IJ. E.g the line we are in is "value: test -f $(params." -> the completionPrefix is "test -f $(params."
      * @param insertOffset the position where the lookup has to be copied on
      * @return
      */
-    private List<LookupElementBuilder> getLookupsPipeline(ConfigurationModel model, String prefix, String completionPrefix, int insertOffset) {
-        return getParamLookups(((PipelineConfigurationModel)model).getParams(), prefix, completionPrefix, insertOffset);
+    private List<LookupElementBuilder> getLookupsPipeline(CompletionParameters parameters, ConfigurationModel model, String prefix, String completionPrefix, int insertOffset) {
+        List<LookupElementBuilder> lookups = new ArrayList<>();
+
+        // get lookups for params
+        lookups.addAll(getParamLookups(((PipelineConfigurationModel)model).getParams(), prefix, completionPrefix, insertOffset));
+
+        // get lookups for tasks result
+        String headPrefix_8 = prefix.length() > 8 ? prefix.substring(0, 8) : prefix;
+        if ("$(tasks.".contains(headPrefix_8)) {
+            lookups.addAll(getTasksInPipelineLookups(parameters, model.getNamespace(), prefix, completionPrefix, insertOffset));
+        }
+
+        return lookups;
     }
 
     /**
@@ -257,6 +275,45 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
     }
 
     /**
+     * Get lookups for tasks in pipeline
+     *
+     * @param parameters data related to the current document
+     * @param namespace the namespace the pipeline belongs to
+     * @param prefix the prefix we are really using. E.g the line we are in is "value: test -f $(params." -> the prefix is "$(params."
+     * @param completionPrefix the prefix we need to add to the lookup to make it be shown by IJ. E.g the line we are in is "value: test -f $(params." -> the completionPrefix is "test -f $(params."
+     * @param insertOffset the position where the lookup has to be copied on
+     * @return
+     */
+    private List<LookupElementBuilder> getTasksInPipelineLookups(CompletionParameters parameters, String namespace, String prefix, String completionPrefix, int insertOffset) {
+        List<LookupElementBuilder> lookups = new ArrayList<>();
+        // get lookups for tasks result
+        String headPrefix_8 = prefix.length() > 8 ? prefix.substring(0, 8) : prefix;
+        if ("$(tasks.".contains(headPrefix_8)) {
+            // check if a task has already been picked up and we need to show specific result completion - e.g $(tasks.foo.
+            String task = getResource("tasks", prefix);
+            if (task != null) {
+                String field = getField("tasks", task, prefix);
+                if (field != null) {
+                    String actualTaskName = getActualTaskNameByTaskNameGivenInPipeline(parameters, task);
+                    if (!actualTaskName.isEmpty()) {
+                        lookups.addAll(getLookupsBySelectedTaskAndField(parameters, namespace, actualTaskName, "tasks." + task, field, completionPrefix, insertOffset));
+                    }
+                } else {
+                    lookups.addAll(getLookupsBySelectedTask("tasks." + task, completionPrefix, insertOffset));
+                }
+            } else {
+                PsiElement currentTask = parameters.getPosition().getParent().getParent().getParent().getParent().getParent().getParent().getParent().getContext();
+                // get list of all tasks available in pipeline except the one in which we are typing
+                List<String> tasksInPipeline = getFilteredTasksInPipeline(parameters, currentTask, Collections.emptyList());
+                tasksInPipeline.stream().forEach(taskName -> {
+                    lookups.add(createInnerLookup("tasks." + taskName, completionPrefix, insertOffset));
+                });
+            }
+        }
+        return lookups;
+    }
+
+    /**
      * Get lookups for workspace
      *
      * @param workspaces workspaces found in the configuration
@@ -309,6 +366,22 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
     }
 
     /**
+     * Retrieve the name of a resource
+     *
+     * @param type the resource type (workspaces/resource.input/resource.output....)
+     * @param resource the name of the resource chosen
+     * @param prefix the prefix we are really using. E.g the line we are in is "value: test -f $(params.foo." -> the prefix is "$(params.foo."
+     * @return the name of the field. E.g (type: tasks, prefix: $(tasks.foo.results) -> results
+     */
+    private String getField(String type, String resource, String prefix) {
+        Matcher matcher = Pattern.compile("\\$\\(" + type + "\\." + resource + "\\.([^.]+)\\.").matcher(prefix);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
+    /**
      * It return lookups for a workspace
      *
      * @param workspace workspace name
@@ -351,6 +424,79 @@ public class GeneralCompletionProvider extends CompletionProvider<CompletionPara
         });
 
         return lookups;
+    }
+
+    /**
+     * It return lookups for a task
+     *
+     * @param taskPrefix prefix + task name in pipeline (e.g tasks.foo)
+     * @param completionPrefix the prefix we need to add to the lookup to make it be shown by IJ. E.g the line we are in is "value: test -f $(params." -> the completionPrefix is "test -f $(params."
+     * @param insertOffset the position where the lookup has to be copied on
+     * @return
+     */
+    private List<LookupElementBuilder> getLookupsBySelectedTask(String taskPrefix, String completionPrefix, int insertOffset) {
+        List<LookupElementBuilder> lookups = new ArrayList<>();
+        Arrays.stream(taskFields).forEach(field -> {
+            String lookup = taskPrefix + "." + field;
+            lookups.add(LookupElementBuilder.create(completionPrefix + field)
+                    .withPresentableText(field)
+                    .withLookupString(field)
+                    .withInsertHandler(new VariableCompletionAutoInsertHandler(lookup, insertOffset)));
+        });
+        return lookups;
+    }
+
+    /**
+     * it returns lookups for all values belonging to the task field
+     *
+     * @param parameters
+     * @param namespace the namespace to use to find the task
+     * @param actualTaskName the actual name of the task to get (N.B: it may be different from the name of the task in the pipeline)
+     * @param taskPrefix prefix + task name in pipeline + field (e.g tasks.foo)
+     * @param field field to take the values (e.g results)
+     * @param completionPrefix the prefix we need to add to the lookup to make it be shown by IJ. E.g the line we are in is "value: test -f $(params." -> the completionPrefix is "test -f $(params."
+     * @param insertOffset the position where the lookup has to be copied on
+     * @return
+     */
+    private List<LookupElementBuilder> getLookupsBySelectedTaskAndField(CompletionParameters parameters, String namespace, String actualTaskName, String taskPrefix, String field, String completionPrefix, int insertOffset) {
+        List<LookupElementBuilder> lookups = new ArrayList<>();
+        Tkn client = getClient(parameters);
+        try {
+            Task task = client.getTask(namespace, actualTaskName);
+            task.getSpec().getResults().forEach(item ->  {
+                String lookup = taskPrefix + "." + field + "." + item.getName();
+                lookups.add(LookupElementBuilder.create(completionPrefix +  item.getName())
+                        .withPresentableText(item.getName())
+                        .withLookupString(item.getName())
+                        .withInsertHandler(new VariableCompletionAutoInsertHandler(lookup, insertOffset)));
+            });
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage());
+        }
+        return lookups;
+    }
+
+    private String getActualTaskNameByTaskNameGivenInPipeline(CompletionParameters parameters, String taskName) {
+        String actualName = "";
+        String fullDocumentYaml = parameters.getEditor().getDocument().getText();
+        try {
+            JsonNode tasksNode = YAMLHelper.getValueFromYAML(fullDocumentYaml, new String[]{"spec", "tasks"} );
+            if (tasksNode != null) {
+                for (JsonNode item : tasksNode) {
+                    if (item != null) {
+                        String name = item.has("name") ? item.get("name").asText("") : "";
+                        if (!name.isEmpty() && name.equalsIgnoreCase(taskName)) {
+                            actualName = item.has("taskRef") ? item.get("taskRef").has("name") ? item.get("taskRef").get("name").asText("") : "" : "";
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage());
+        }
+
+        return actualName;
     }
 
     private String[] getVariablesByType(String type) {

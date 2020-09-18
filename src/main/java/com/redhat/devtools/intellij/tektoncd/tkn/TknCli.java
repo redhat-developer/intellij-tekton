@@ -255,6 +255,15 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public Task getTask(String namespace, String task) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1beta1().tasks().inNamespace(namespace).withName(task).get();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
     public void deletePipelines(String namespace, List<String> pipelines, boolean deleteRelatedResources) throws IOException {
         if (deleteRelatedResources) {
             ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "pipeline", pipelines, "--prs=true"));

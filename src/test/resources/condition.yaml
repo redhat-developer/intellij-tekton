@@ -4,6 +4,20 @@ metadata:
   name: foo
   namespace: tekton
 spec:
-  check:
-    image: alpine
-    script: 'test -f'
+  - name: foo
+    taskRef:
+      kind: Task
+      name: echo-hello-world
+    when:
+      - Input: $(params.n2)
+        Operator: in
+        Values:
+          - "2"
+      - Input: 'ciccio'
+        Operator: notin
+        Values:
+          - 'ciccio'
+      - Input: 'ccc'
+        Operator: notin
+        Values:
+          - 'dsa'

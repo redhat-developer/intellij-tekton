@@ -29,6 +29,10 @@ public class DictionaryContributor extends CompletionContributor {
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getMultipleLineScalarKey("runAfter"),
                 new RunAfterCompletionProvider());
+        // operator - when clause
+        extend(CompletionType.BASIC,
+                YamlElementPatternHelper.getAfterParentScalarKeyInSequence("Operator", "when"),
+                new OperatorInWhenClauseCodeCompletion());
         // resource in pipeline
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getAfterParentScalarKeyInSequence("resource", "resources", "inputs", "outputs"),
