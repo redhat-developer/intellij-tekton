@@ -3,7 +3,7 @@
     "tkn": {
       "version": "0.11.0",
       "versionCmd": "version",
-      "versionExtractRegExp": "Client version: (\\d+[\\.\\d+]*)\\s.*",
+      "versionExtractRegExp": "Client version: (\\d+[\\.\\d+]*)",
       "versionMatchRegExpr": "0\\..*",
       "baseDir": "$HOME/.tekton",
       "platforms": {
