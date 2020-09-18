@@ -13,8 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.completion;
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.patterns.PlatformPatterns;
-import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLScalar;
+import org.jetbrains.yaml.psi.YAMLPsiElement;
 
 public class DictionaryContributor extends CompletionContributor {
     public DictionaryContributor() {
@@ -37,10 +36,10 @@ public class DictionaryContributor extends CompletionContributor {
         // code completion not related to a specific place in a file. It doesn't depend on any tag
         extend(CompletionType.BASIC,
                 PlatformPatterns
-                        .psiElement(YAMLTokenTypes.TEXT)
+                        .psiElement()
                         .withParent(
                                 PlatformPatterns
-                                        .psiElement(YAMLScalar.class)),
+                                        .psiElement(YAMLPsiElement.class)),
                 new GeneralCompletionProvider());
     }
 }
