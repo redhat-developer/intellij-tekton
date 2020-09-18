@@ -10,43 +10,13 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.completion;
 
-import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
-import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import java.io.File;
-import java.util.List;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 
 import static com.intellij.testFramework.UsefulTestCase.assertOrderedEquals;
 import static org.junit.Assert.assertTrue;
 
-public class GenericCompletionProviderTest {
-
-    private CodeInsightTestFixture myFixture;
-
-    @Before
-    public void setup() throws Exception {
-        IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
-        TestFixtureBuilder<IdeaProjectTestFixture> fixtureBuilder = factory.createLightFixtureBuilder(null);
-        IdeaProjectTestFixture fixture = fixtureBuilder.getFixture();
-
-        myFixture = IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(fixture, factory.createTempDirTestFixture());
-
-        myFixture.setTestDataPath("src/test/resources/completion");
-        myFixture.setUp();
-        VfsRootAccess.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        myFixture.tearDown();
-    }
+public class GenericCompletionProviderTest extends BaseCompletionProviderTest{
 
     /////////////////////////////////////////////////////////
     ///             PIPELINE - VARIABLES
@@ -206,10 +176,8 @@ public class GenericCompletionProviderTest {
         assertOrderedEquals(getSuggestionsForFile("condition7.yaml"), lookups);
     }
 
-    private List<String> getSuggestionsForFile(String fileName) {
-        myFixture.configureByFile(fileName);
-        myFixture.complete(CompletionType.BASIC);
-        return myFixture.getLookupElementStrings();
+    @Override
+    public String getTestDataPath() {
+        return "src/test/resources/completion/generic";
     }
-
 }

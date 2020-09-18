@@ -30,6 +30,10 @@ public class DictionaryContributor extends CompletionContributor {
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getMultipleLineScalarKey("runAfter"),
                 new RunAfterCompletionProvider());
+        // resource in pipeline
+        extend(CompletionType.BASIC,
+                YamlElementPatternHelper.getAfterParentScalarKeyInSequence("resource", "resources", "inputs", "outputs"),
+                new ResourceInPipelineCompletionProvider());
         // code completion not related to a specific place in a file. It doesn't depend on any tag
         extend(CompletionType.BASIC,
                 PlatformPatterns
