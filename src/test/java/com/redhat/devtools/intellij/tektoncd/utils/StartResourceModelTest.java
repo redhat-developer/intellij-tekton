@@ -98,6 +98,24 @@ public class StartResourceModelTest {
     }
 
     @Test
+    public void checkServiceNameMultipleTasksAndFinallyPipeline() throws IOException {
+        String content = load("pipeline7.yaml");
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Arrays.asList("serviceName1"), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        assertFalse(model.getServiceAccounts().isEmpty());
+        assertEquals(1, model.getServiceAccounts().size());
+        assertFalse(model.getTaskServiceAccounts().isEmpty());
+        assertEquals(3, model.getTaskServiceAccounts().size());
+        assertTrue(model.getTaskServiceAccounts().containsKey("step1"));
+        assertTrue(model.getTaskServiceAccounts().get("step1").isEmpty());
+        assertTrue(model.getTaskServiceAccounts().containsKey("step2"));
+        assertTrue(model.getTaskServiceAccounts().get("step2").isEmpty());
+        assertTrue(model.getTaskServiceAccounts().containsKey("step3"));
+        assertTrue(model.getTaskServiceAccounts().get("step3").isEmpty());
+        assertTrue(model.getInputs().isEmpty());
+        assertTrue(model.getOutputs().isEmpty());
+    }
+
+    @Test
     public void checkSingleInputParameterWithDefault() throws IOException {
         String content = load("task3.yaml");
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
