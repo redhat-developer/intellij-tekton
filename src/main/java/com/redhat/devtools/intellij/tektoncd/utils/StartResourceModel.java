@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -104,7 +105,7 @@ public class StartResourceModel extends ConfigurationModel{
 
     private void initTaskServiceAccounts(String configuration) throws IOException {
         if (isPipeline()) {
-            this.taskServiceAccountNames = new HashMap<>();
+            this.taskServiceAccountNames = new LinkedHashMap<>();
             JsonNode tasksNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "tasks"});
             if (tasksNode != null) {
                 for(JsonNode item : tasksNode) {
