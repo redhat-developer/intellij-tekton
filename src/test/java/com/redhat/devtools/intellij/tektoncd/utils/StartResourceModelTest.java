@@ -38,6 +38,7 @@ public class StartResourceModelTest {
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -49,6 +50,7 @@ public class StartResourceModelTest {
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -63,6 +65,7 @@ public class StartResourceModelTest {
         assertTrue(model.getTaskServiceAccounts().get("step1").isEmpty());
         assertTrue(model.getInputs().isEmpty());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -79,6 +82,7 @@ public class StartResourceModelTest {
         assertFalse(model.getInputs().get(0).defaultValue().isPresent());
         assertFalse(model.getInputs().get(0).description().isPresent());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -95,6 +99,7 @@ public class StartResourceModelTest {
         assertTrue(model.getTaskServiceAccounts().get("step2").isEmpty());
         assertTrue(model.getInputs().isEmpty());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -130,6 +135,7 @@ public class StartResourceModelTest {
         assertEquals("default value", model.getInputs().get(0).defaultValue().get());
         assertFalse(model.getInputs().get(0).description().isPresent());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -147,6 +153,7 @@ public class StartResourceModelTest {
         assertTrue(model.getInputs().get(0).description().isPresent());
         assertEquals("description", model.getInputs().get(0).description().get());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -162,6 +169,7 @@ public class StartResourceModelTest {
         assertEquals("parm2", model.getInputs().get(1).name());
         assertEquals(Input.Kind.PARAMETER, model.getInputs().get(1).kind());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -176,6 +184,7 @@ public class StartResourceModelTest {
         assertFalse(model.getInputs().get(0).defaultValue().isPresent());
         assertFalse(model.getInputs().get(0).description().isPresent());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -191,6 +200,7 @@ public class StartResourceModelTest {
         assertEquals("resource2", model.getInputs().get(1).name());
         assertEquals(Input.Kind.RESOURCE, model.getInputs().get(1).kind());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -205,6 +215,7 @@ public class StartResourceModelTest {
         assertEquals("resource1", model.getOutputs().get(0).name());
         assertEquals("image", model.getOutputs().get(0).type());
         assertNull(model.getOutputs().get(0).value());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -222,6 +233,7 @@ public class StartResourceModelTest {
         assertEquals("resource2", model.getOutputs().get(1).name());
         assertEquals("image", model.getOutputs().get(1).type());
         assertNull(model.getOutputs().get(1).value());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -239,6 +251,7 @@ public class StartResourceModelTest {
         assertEquals("resource2", model.getOutputs().get(1).name());
         assertEquals("image", model.getOutputs().get(1).type());
         assertEquals("resourceDefault1", model.getOutputs().get(1).value());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -250,6 +263,7 @@ public class StartResourceModelTest {
         assertTrue(model.getTaskServiceAccounts().isEmpty());
         assertTrue(model.getInputs().isEmpty());
         assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -271,6 +285,7 @@ public class StartResourceModelTest {
         assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
         assertNull(model.getWorkspaces().get(0));
         assertNull(model.getWorkspaces().get(1));
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -290,6 +305,7 @@ public class StartResourceModelTest {
         assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
         assertNull(model.getWorkspaces().get(0));
         assertNull(model.getWorkspaces().get(1));
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -309,6 +325,7 @@ public class StartResourceModelTest {
         assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
         assertNull(model.getWorkspaces().get(0));
         assertNull(model.getWorkspaces().get(1));
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
     @Test
@@ -341,6 +358,15 @@ public class StartResourceModelTest {
         assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
         assertNull(model.getWorkspaces().get(0));
         assertNull(model.getWorkspaces().get(1));
+        assertTrue(model.getRunPrefixName().isEmpty());
     }
 
+    @Test
+    public void checkPrefixNameIsCorrectlySet() throws IOException {
+        String content = load("task14.yaml");
+        StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        assertTrue(model.getRunPrefixName().isEmpty());
+        model.setRunPrefixName("prefix");
+        assertEquals(model.getRunPrefixName(), "prefix");
+    }
 }

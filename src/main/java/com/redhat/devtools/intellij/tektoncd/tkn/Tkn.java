@@ -403,10 +403,11 @@ public interface Tkn {
      * @param serviceAccount the service account to use when running the pipeline
      * @param taskServiceAccount the service account corresponding to the task
      * @param workspaces the workspaces to start pipeline
+     * @param runPrefixName the name to use as a prefix for the pipelinerun
      * @throws IOException if communication errored
      * @return PipelineRun name
      */
-    String startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces) throws IOException;
+    String startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Re-run the pipeline using last pipelinerun values
@@ -428,10 +429,11 @@ public interface Tkn {
      * @param outputResources the output resources to start task
      * @param serviceAccount the service account to use when running the task
      * @param workspaces the workspaces to start the task
+     * @param runPrefixName the name to use as a prefix for the taskrun
      * @throws IOException if communication errored
      * @return TaskRun name
      */
-    String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces) throws IOException;
+    String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Re-run the task using last taskrun values
