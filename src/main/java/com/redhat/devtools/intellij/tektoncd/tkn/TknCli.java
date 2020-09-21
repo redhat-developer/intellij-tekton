@@ -13,20 +13,25 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodCondition;
 import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.api.model.PodStatus;
+import io.fabric8.kubernetes.api.model.apps.StatefulSet;
+import io.fabric8.kubernetes.api.model.apps.StatefulSetCondition;
+import io.fabric8.kubernetes.api.model.apps.StatefulSetList;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
-import io.fabric8.kubernetes.client.dsl.PodResource;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.tekton.client.TektonClient;
@@ -556,15 +561,36 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void getDiagnosticData(String namespace, String keyLabel, String valueLabel) {
+    public void getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException {
+        String data = "";
         PodList pods = client.pods().inNamespace(namespace).withLabel(keyLabel, valueLabel).list();
-        pods.getItems().forEach(pod -> {
-            PodResource p = client.pods().inNamespace(namespace).withName(pod.getMetadata().getName());
-            Pod p1 = (Pod) p.get();
-            p1.getStatus().getConditions();
-        });
-        //client.pods().inNamespace(namespace).withName("").
-        //ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
+        for (Pod pod: pods.getItems()) {
+            PodStatus podStatus = pod.getStatus();
+            data += getFormattedWarningMessage(podStatus.getReason(), podStatus.getMessage());
+            for (PodCondition podCondition : podStatus.getConditions()) {
+                data += getFormattedWarningMessage(podCondition.getReason(), podCondition.getMessage());
+            }
+        }
+        StatefulSetList states = client.apps().statefulSets().inNamespace(namespace).withLabel(keyLabel, valueLabel).list();
+        for (StatefulSet state: states.getItems()) {
+            for (StatefulSetCondition stateCondition : state.getStatus().getConditions()) {
+                data += getFormattedWarningMessage(stateCondition.getReason(), stateCondition.getMessage());
+            }
+        }
+
+        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, "echo", "-e", data);
+
+    }
+
+    private String getFormattedWarningMessage(String reason, String message) {
+        String data = "";
+        if (!Strings.isNullOrEmpty(reason)) {
+            data = "reason: " + reason;
+        }
+        if (!Strings.isNullOrEmpty(message)) {
+            data = "message:" + message;
+        }
+        return data + "\n";
     }
 
     @Override

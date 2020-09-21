@@ -594,7 +594,7 @@ public interface Tkn {
      */
     Watch watchConditions(String namespace, Watcher<io.fabric8.tekton.pipeline.v1alpha1.Condition> watcher) throws IOException;
 
-    void getDiagnosticData(String namespace, String keyLabel, String valueLabel);
+    void getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException;
 
     public URL getMasterUrl();
 

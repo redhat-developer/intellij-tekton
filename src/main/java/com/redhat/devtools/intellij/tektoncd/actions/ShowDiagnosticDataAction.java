@@ -11,11 +11,14 @@
 package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
+import java.io.IOException;
 import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +33,19 @@ public class ShowDiagnosticDataAction extends TektonAction {
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
-            if (element instanceof PipelineRunNode) {
-                tkncli.getDiagnosticData(namespace, "tekton.dev/pipelineRun", element.getName());
-            } else if (element instanceof TaskRunNode) {
-                tkncli.getDiagnosticData(namespace, "tekton.dev/taskRun", element.getName());
+            try {
+                if (element instanceof PipelineRunNode) {
+                    tkncli.getDiagnosticData(namespace, "tekton.dev/pipelineRun", element.getName());
+                } else if (element instanceof TaskRunNode) {
+                    tkncli.getDiagnosticData(namespace, "tekton.dev/taskRun", element.getName());
+                }
+            } catch (IOException e) {
+                UIHelper.executeInUI(() ->
+                        Messages.showErrorDialog(
+                                "Failed to retrieve data for " + element.getName() + " in namespace " + namespace + ". An error occurred while retrieving them.\n" + e.getLocalizedMessage(),
+                                "Error"));
+                logger.warn("Error: " + e.getLocalizedMessage());
+                return;
             }
         });
     }
