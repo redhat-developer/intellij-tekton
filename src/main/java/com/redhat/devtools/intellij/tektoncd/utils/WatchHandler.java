@@ -134,12 +134,6 @@ public class WatchHandler {
         }
     }
 
-    /*private void createAndAddWatch(Tkn tkn, String namespace, String kind, String watchId, Watcher watcher, TreePath... treePath) {
-
-
-
-    }*/
-
     public void removeWatch(ParentableNode<?> element, TreePath treePath) {
         String watchId = getWatchId(element);
         if (watches.containsKey(watchId)) {
