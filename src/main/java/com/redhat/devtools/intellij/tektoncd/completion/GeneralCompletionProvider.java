@@ -11,20 +11,24 @@
 package com.redhat.devtools.intellij.tektoncd.completion;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Strings;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
-import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.ConditionConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
+import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,6 +42,10 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 
 /**
  * This provider is called for code completion that does not belong to a specific place in the file.
@@ -132,7 +140,12 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
         // get lookups for tasks result
         String headPrefix_8 = prefix.length() > 8 ? prefix.substring(0, 8) : prefix;
         if ("$(tasks.".contains(headPrefix_8)) {
-            lookups.addAll(getTasksInPipelineLookups(parameters, model.getNamespace(), prefix, completionPrefix, insertOffset));
+            String namespace = model.getNamespace();
+            if (Strings.isNullOrEmpty(namespace)) {
+                VirtualFile vf = FileDocumentManager.getInstance().getFile(parameters.getEditor().getDocument());
+                namespace = vf.getUserData(NAMESPACE);
+            }
+            lookups.addAll(getTasksInPipelineLookups(parameters, namespace, prefix, completionPrefix, insertOffset));
         }
 
         return lookups;
@@ -460,9 +473,9 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
      */
     private List<LookupElementBuilder> getLookupsBySelectedTaskAndField(CompletionParameters parameters, String namespace, String actualTaskName, String taskPrefix, String field, String completionPrefix, int insertOffset) {
         List<LookupElementBuilder> lookups = new ArrayList<>();
-        Tkn client = getClient(parameters);
         try {
-            Task task = client.getTask(namespace, actualTaskName);
+            VirtualFile taskVF = TektonVirtualFileManager.getInstance(parameters.getEditor().getProject()).findResource(namespace, KIND_TASK, actualTaskName);
+            Task task = Serialization.unmarshal(taskVF.getInputStream(), Task.class);
             task.getSpec().getResults().forEach(item ->  {
                 String lookup = taskPrefix + "." + field + "." + item.getName();
                 lookups.add(LookupElementBuilder.create(completionPrefix +  item.getName())

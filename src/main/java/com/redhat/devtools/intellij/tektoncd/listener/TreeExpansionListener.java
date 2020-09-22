@@ -22,7 +22,7 @@ public class TreeExpansionListener implements TreeWillExpandListener {
     public void treeWillExpand(TreeExpansionEvent treeExpansionEvent) {
         ParentableNode<? extends ParentableNode<?>> expandingElement = StructureTreeAction.getElement(treeExpansionEvent.getPath().getLastPathComponent());
         if (WatchHandler.get().canBeWatched(expandingElement)) {
-            WatchHandler.get().setWatch(expandingElement, treeExpansionEvent.getPath());
+            WatchHandler.get().setWatchByNode(expandingElement, treeExpansionEvent.getPath());
         }
     }
 

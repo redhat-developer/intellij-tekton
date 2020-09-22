@@ -263,16 +263,6 @@ public interface Tkn {
     String getEventListenerYAML(String namespace, String eventListener) throws IOException;
 
     /**
-     * Get the task by its name
-     *
-     * @param namespace the namespace of the task
-     * @param task the task to use
-     * @return the task object
-     * @throws IOException if communication errored
-     */
-    Task getTask(String namespace, String task) throws IOException;
-
-    /**
      * Delete a list of pipelines
      *
      * @param namespace the namespace to use
@@ -541,6 +531,17 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     Watch watchPipelineRuns(String namespace, Watcher<io.fabric8.tekton.pipeline.v1beta1.PipelineRun> watcher) throws IOException;
+
+    /**
+     * Set a watch on a specific Task resource
+     *
+     * @param namespace the namespace to use
+     * @param task the name of the task
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchTask(String namespace, String task, Watcher<Task> watcher) throws IOException;
 
     /**
      * Set a watch on Task resources
