@@ -115,4 +115,10 @@ public class PipelineSchemasTest {
         myFixture.configureByFile("schemas/pipeline-finally.yaml");
         myFixture.checkHighlighting();
     }
+
+    @Test
+    public void testPipelineWithWhen() {
+        myFixture.configureByFile("schemas/pipeline-when.yaml");
+        myFixture.checkHighlighting();
+    }
 }
