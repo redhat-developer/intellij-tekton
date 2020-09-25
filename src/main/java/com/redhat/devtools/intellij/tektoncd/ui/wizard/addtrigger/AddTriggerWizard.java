@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.ui.wizard;
+package com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger;
 
 import com.intellij.CommonBundle;
 import com.intellij.icons.AllIcons;
@@ -36,6 +36,12 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
+import com.redhat.devtools.intellij.tektoncd.ui.wizard.AuthenticationStep;
+import com.redhat.devtools.intellij.tektoncd.ui.wizard.BaseStep;
+import com.redhat.devtools.intellij.tektoncd.ui.wizard.InputResourcesStep;
+import com.redhat.devtools.intellij.tektoncd.ui.wizard.OutputResourcesStep;
+import com.redhat.devtools.intellij.tektoncd.ui.wizard.ParametersStep;
+import com.redhat.devtools.intellij.tektoncd.ui.wizard.WorkspacesStep;
 import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import java.awt.BorderLayout;
@@ -79,7 +85,7 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
-public class StartWizard extends DialogWrapper {
+public class AddTriggerWizard extends DialogWrapper {
 
     private String myTitle;
     private final List<BaseStep> mySteps;
@@ -100,6 +106,7 @@ public class StartWizard extends DialogWrapper {
     private JTextArea previewTextArea;
     private Color backgroundTheme;
     private JTextField txtRunPrefixName;
+    private List<String> triggerBindings;
 
     // options name
     private static final String PREFIX_NAME_RUN = "prefix_name_for_run";
@@ -107,12 +114,13 @@ public class StartWizard extends DialogWrapper {
 
     private JBCardLayout.SwipeDirection myTransitionDirection = JBCardLayout.SwipeDirection.AUTO;
 
-    public StartWizard(String title, ParentableNode element, @Nullable Project project, StartResourceModel model) {
+    public AddTriggerWizard(String title, ParentableNode element, @Nullable Project project, StartResourceModel model, List<String> triggerBindings) {
         super(project, true);
         this.backgroundTheme = EditorColorsManager.getInstance().getGlobalScheme().getDefaultBackground();
         myTitle = title;
         buildStructure(model, element);
         myCurrentStep = 0;
+        this.triggerBindings = triggerBindings;
         mySteps = getSteps(model);
         fill(model);
         init();
@@ -352,6 +360,9 @@ public class StartWizard extends DialogWrapper {
         boolean hasInputResources = model.getInputs().stream().anyMatch(input -> input.kind() == Input.Kind.RESOURCE);
         boolean hasOutputResources = !model.getOutputs().isEmpty();
         boolean hasWorkspaces = !model.getWorkspaces().isEmpty();
+
+        steps.add(buildStepWithListener(new TriggerStep(model, this.triggerBindings)));
+
         if (hasParams) {
             steps.add(buildStepWithListener(new ParametersStep(model)));
         }
@@ -386,7 +397,7 @@ public class StartWizard extends DialogWrapper {
             @Override
             public void doNextAction() {
                 if (myNextButton.isEnabled()) {
-                    StartWizard.this.doNextAction();
+                    AddTriggerWizard.this.doNextAction();
                 }
             }
         });

@@ -127,11 +127,12 @@ public abstract class BaseStep implements Step, Disposable {
         return title;
     }
 
-    private void adjustContentPanel() {
+    protected void adjustContentPanel() {
         // this code allows content to stick to top left corner even when the window is resized manually
         // add an extra row consuming vertical extra space
         if (contentPanel == null) return;
         int nRows = contentPanel.getComponentCount();
+        if (nRows == 0) return;
         gridBagLayout.rowHeights = new int[nRows + 1];
         gridBagLayout.rowWeights = new double[nRows + 1];
         gridBagLayout.rowWeights[nRows] = 1;
