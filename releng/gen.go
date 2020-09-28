@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/iancoleman/orderedmap"
 	"github.com/redhat-developer/tekton-jsongenerator/jsonschema"
 	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
@@ -35,6 +36,26 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 			Type: "string",
 			Pattern: "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
 		}
+	}
+	if (i == reflect.TypeOf(v1beta1.WhenExpression{})) {
+		properties := orderedmap.New()
+		properties.Set("input", &jsonschema.Type{
+			Type: "string",
+		})
+		properties.Set("operator", &jsonschema.Type{
+			Type: "string",
+		})
+		properties.Set("values", &jsonschema.Type{
+			Type: "array",
+			Items: &jsonschema.Type{
+				Type: "string",
+			},
+		})
+		return &jsonschema.Type{
+			Type: "object",
+			AdditionalProperties: []byte("false"),
+			Required: []string{"input", "operator", "values"},
+			Properties: properties}
 	}
 	return nil
 }

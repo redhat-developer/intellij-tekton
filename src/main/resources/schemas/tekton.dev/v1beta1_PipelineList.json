@@ -1295,8 +1295,27 @@
         },
         "when": {
           "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/WhenExpression"
+            "required": [
+              "input",
+              "operator",
+              "values"
+            ],
+            "properties": {
+              "input": {
+                "type": "string"
+              },
+              "operator": {
+                "type": "string"
+              },
+              "values": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object"
           },
           "type": "array"
         },
@@ -2350,29 +2369,6 @@
         },
         "storagePolicyID": {
           "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "WhenExpression": {
-      "required": [
-        "Input",
-        "Operator",
-        "Values"
-      ],
-      "properties": {
-        "Input": {
-          "type": "string"
-        },
-        "Operator": {
-          "type": "string"
-        },
-        "Values": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
         }
       },
       "additionalProperties": false,
