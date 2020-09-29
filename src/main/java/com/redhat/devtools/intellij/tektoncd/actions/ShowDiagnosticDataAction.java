@@ -33,11 +33,18 @@ public class ShowDiagnosticDataAction extends TektonAction {
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
+            boolean hasDataToShow = false;
             try {
                 if (element instanceof PipelineRunNode) {
-                    tkncli.getDiagnosticData(namespace, "tekton.dev/pipelineRun", element.getName());
+                    hasDataToShow = tkncli.getDiagnosticData(namespace, "tekton.dev/pipelineRun", element.getName());
                 } else if (element instanceof TaskRunNode) {
-                    tkncli.getDiagnosticData(namespace, "tekton.dev/taskRun", element.getName());
+                    hasDataToShow = tkncli.getDiagnosticData(namespace, "tekton.dev/taskRun", element.getName());
+                }
+                if (!hasDataToShow) {
+                    UIHelper.executeInUI(() ->
+                            Messages.showWarningDialog(
+                                    "No data available for " + element.getName() + " in namespace " + namespace + ".",
+                                    "Diagnostic Data"));
                 }
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->

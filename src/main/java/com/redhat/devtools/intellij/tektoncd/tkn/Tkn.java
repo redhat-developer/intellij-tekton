@@ -594,7 +594,16 @@ public interface Tkn {
      */
     Watch watchConditions(String namespace, Watcher<io.fabric8.tekton.pipeline.v1alpha1.Condition> watcher) throws IOException;
 
-    void getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException;
+    /**
+     * Get diagnostic data related to objects with the field=value pair
+     *
+     * @param namespace the namespace to use
+     * @param keyLabel the key to use to retrieve the objects
+     * @param valueLabel the value to use to retrieve the objects
+     * @return if the search succeeded or not
+     * @throws IOException if communication errored
+     */
+    boolean getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException;
 
     public URL getMasterUrl();
 

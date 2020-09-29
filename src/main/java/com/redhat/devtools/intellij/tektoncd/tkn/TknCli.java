@@ -561,7 +561,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException {
+    public boolean getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException {
         String data = "";
         PodList pods = client.pods().inNamespace(namespace).withLabel(keyLabel, valueLabel).list();
         for (Pod pod: pods.getItems()) {
@@ -578,8 +578,16 @@ public class TknCli implements Tkn {
             }
         }
 
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, "echo", "-e", data);
+        if (data.isEmpty()) {
+            return false;
+        }
 
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, "cmd.exe", "/C", "echo", "-e", data);
+        } else {
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, "echo", "-e", data);
+        }
+        return true;
     }
 
     private String getFormattedWarningMessage(String reason, String message) {
