@@ -31,7 +31,7 @@ public class DictionaryContributor extends CompletionContributor {
                 new RunAfterCompletionProvider());
         // operator - when clause
         extend(CompletionType.BASIC,
-                YamlElementPatternHelper.getAfterParentScalarKeyInSequence("Operator", "when"),
+                YamlElementPatternHelper.getAfterParentScalarKeyInSequence("operator", "when"),
                 new OperatorInWhenClauseCodeCompletion());
         // resource in pipeline
         extend(CompletionType.BASIC,

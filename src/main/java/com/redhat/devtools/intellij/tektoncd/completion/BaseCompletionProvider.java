@@ -49,7 +49,7 @@ public abstract class BaseCompletionProvider extends CompletionProvider<Completi
             try {
                 JsonNode tasksNodeUntilSelected = YAMLHelper.getValueFromYAML(yamlUntilTask, new String[]{"spec"} );
                 if (tasksNodeUntilSelected.has("tasks")) {
-                    taskPosition = StreamSupport.stream(tasksNodeUntilSelected.get("tasks").spliterator(),true).count();
+                    taskPosition = StreamSupport.stream(tasksNodeUntilSelected.get("tasks").spliterator(), true).count();
                 }
             } catch (IOException e) {
                 logger.warn("Error: " + e.getLocalizedMessage());
