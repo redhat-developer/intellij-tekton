@@ -12,5 +12,5 @@ spec:
       taskRef:
         name: task1
       when:
-        - Input: 'foo'
-          Operator: <caret>
+        - input: 'foo'
+          operator: <caret>
