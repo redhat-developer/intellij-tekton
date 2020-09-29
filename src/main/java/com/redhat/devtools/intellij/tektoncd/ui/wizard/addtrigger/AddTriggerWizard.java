@@ -11,7 +11,6 @@
 package com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger;
 
 import com.intellij.CommonBundle;
-import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.IdeBundle;
 import com.intellij.ide.wizard.CommitStepException;
@@ -21,7 +20,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Disposer;
@@ -32,7 +30,6 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.mac.TouchbarDataKeys;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.update.UiNotifyConnector;
-import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
@@ -42,16 +39,14 @@ import com.redhat.devtools.intellij.tektoncd.ui.wizard.InputResourcesStep;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.OutputResourcesStep;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.ParametersStep;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.WorkspacesStep;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,25 +59,19 @@ import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import org.jetbrains.annotations.Nullable;
 
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BLUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
 public class AddTriggerWizard extends DialogWrapper {
@@ -106,7 +95,8 @@ public class AddTriggerWizard extends DialogWrapper {
     private JTextArea previewTextArea;
     private Color backgroundTheme;
     private JTextField txtRunPrefixName;
-    private List<String> triggerBindings;
+    private Map<String, String> triggerBindingTemplates;
+    private Map<String, String> triggerBindingResult;
 
     // options name
     private static final String PREFIX_NAME_RUN = "prefix_name_for_run";
@@ -114,13 +104,13 @@ public class AddTriggerWizard extends DialogWrapper {
 
     private JBCardLayout.SwipeDirection myTransitionDirection = JBCardLayout.SwipeDirection.AUTO;
 
-    public AddTriggerWizard(String title, ParentableNode element, @Nullable Project project, StartResourceModel model, List<String> triggerBindings) {
+    public AddTriggerWizard(String title, @Nullable Project project, AddTriggerModel model, Map<String, String> triggerBindingTemplates) {
         super(project, true);
         this.backgroundTheme = EditorColorsManager.getInstance().getGlobalScheme().getDefaultBackground();
         myTitle = title;
-        buildStructure(model, element);
+        buildStructure();
         myCurrentStep = 0;
-        this.triggerBindings = triggerBindings;
+        this.triggerBindingTemplates = triggerBindingTemplates;
         mySteps = getSteps(model);
         fill(model);
         init();
@@ -132,7 +122,7 @@ public class AddTriggerWizard extends DialogWrapper {
         updateStep();
     }
 
-    private void fill(StartResourceModel model) {
+    private void fill(AddTriggerModel model) {
         navigationList = new ArrayList<>();
         Box box = Box.createVerticalBox();
         navigationPanel.add(box);
@@ -182,7 +172,7 @@ public class AddTriggerWizard extends DialogWrapper {
 
     }
 
-    private void buildStructure(StartResourceModel model, ParentableNode element) {
+    private void buildStructure() {
         myPreviousButton = new JButton(IdeBundle.message("button.wizard.previous"));
         myNextButton = new JButton(IdeBundle.message("button.wizard.next"));
         myCancelButton = new JButton(CommonBundle.getCancelButtonText());
@@ -193,46 +183,6 @@ public class AddTriggerWizard extends DialogWrapper {
         myLeftPanel = new JPanel(new JBCardLayout());
         myRightPanel = new JPanel(new BorderLayout());
         myFooterPanel = new JPanel(new BorderLayout());
-
-        // if wizard requires an option panel
-        List<String> optionsToDisplay = getOptionsToDisplay(model);
-        if (!optionsToDisplay.isEmpty()) {
-            JPanel innerOptionsPanel = getOptionsPanel(optionsToDisplay, model, element);
-
-            optionsPanel = new JPanel();
-            optionsPanel.setBackground(backgroundTheme);
-            optionsPanel.add(innerOptionsPanel);
-            optionsPanel.setVisible(false);
-
-            JLabel openOptionsLabel = new JLabel("Advanced Options");
-            openOptionsLabel.setIcon(AllIcons.Actions.MoveDown);
-            openOptionsLabel.addMouseListener(
-                    new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            if (optionsPanel.isVisible()) {
-                                openOptionsLabel.setIcon(AllIcons.Actions.MoveDown);
-                                optionsPanel.setVisible(false);
-                            } else {
-                                openOptionsLabel.setIcon(AllIcons.Actions.MoveUp);
-                                optionsPanel.setVisible(true);
-                            }
-                        }
-                    }
-            );
-
-            JPanel openOptionsPanel = new JPanel(new GridBagLayout());
-            openOptionsPanel.setBackground(backgroundTheme);
-            Border lineSeparatorBelow = new MatteBorder(0, 0, 1, 0, EditorColorsManager.getInstance().getGlobalScheme().getColor(ColorKey.find("SEPARATOR_BELOW_COLOR")));
-            Border margin_5 = new EmptyBorder(5, 0, 5, 0);
-            Border compoundBorderMargin = BorderFactory.createCompoundBorder(lineSeparatorBelow, margin_5);
-            openOptionsPanel.setBorder(compoundBorderMargin);
-            openOptionsPanel.add(openOptionsLabel);
-
-            myHeaderPanel.setBackground(backgroundTheme);
-            myHeaderPanel.add(optionsPanel, BorderLayout.LINE_START);
-            myHeaderPanel.add(openOptionsPanel, BorderLayout.PAGE_END);
-        }
 
         myContentPanel.setBackground(backgroundTheme);
         myContentPanel.setPreferredSize(new Dimension(550, 400));
@@ -257,111 +207,14 @@ public class AddTriggerWizard extends DialogWrapper {
         }
     }
 
-    private JPanel getOptionsPanel(List<String> optionsToDisplay, StartResourceModel model, ParentableNode element) {
-        JPanel innerOptionsPanel = new JPanel(new GridBagLayout());
-        innerOptionsPanel.setBackground(backgroundTheme);
-        innerOptionsPanel.setBorder(MARGIN_10);
-        int row = 0;
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-
-        // set prefix for runs
-        if (optionsToDisplay.contains(PREFIX_NAME_RUN)) {
-            JLabel lblRunPrefixName = new JLabel("Prefix for the *Run name: ");
-            lblRunPrefixName.setFont(TIMES_PLAIN_14);
-            JLabel lblRunPrefixName_Help = new JLabel();
-            lblRunPrefixName_Help.setIcon(AllIcons.General.Information);
-            lblRunPrefixName_Help.setToolTipText("Specify a prefix for the *Run name (must be lowercase alphanumeric characters)");
-            txtRunPrefixName = new JTextField();
-            txtRunPrefixName.setPreferredSize(ROW_DIMENSION);
-
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = row;
-            innerOptionsPanel.add(lblRunPrefixName, gridBagConstraints);
-            gridBagConstraints.gridx = 1;
-            innerOptionsPanel.add(txtRunPrefixName, gridBagConstraints);
-            gridBagConstraints.gridx = 2;
-            innerOptionsPanel.add(lblRunPrefixName_Help, gridBagConstraints);
-            row++;
-        }
-
-        // import data from *run
-        if (optionsToDisplay.contains(IMPORT_DATA_FROM_RUN)) {
-            JCheckBox chkImportRunData = new JCheckBox("Import data from run");
-            chkImportRunData.setBackground(backgroundTheme);
-            JLabel chkImportRunData_Help = new JLabel();
-            chkImportRunData_Help.setIcon(AllIcons.General.Information);
-            chkImportRunData_Help.setToolTipText("Fill all wizard inputs with the values taken from an old *run");
-            JComboBox cmbPickRunToImportData = new ComboBox();
-            cmbPickRunToImportData.setEnabled(false);
-            cmbPickRunToImportData.setPreferredSize(ROW_DIMENSION);
-
-            chkImportRunData.addItemListener(itemEvent -> {
-                if (chkImportRunData.isSelected()) {
-                    cmbPickRunToImportData.setEnabled(true);
-                } else {
-                    cmbPickRunToImportData.setEnabled(false);
-                }
-            });
-            cmbPickRunToImportData.addItem("Please choose");
-            model.getRuns().forEach(run -> cmbPickRunToImportData.addItem(run.getName()));
-
-            cmbPickRunToImportData.addItemListener(itemEvent -> {
-                // when combo box value change
-                if (itemEvent.getStateChange() == 1) {
-                    if (itemEvent.getItem().toString().equals("Please choose")) return;
-                    Tkn tkncli = element.getRoot().getTkn();
-                    String configuration = "";
-                    String kind = model.getKind();
-                    try {
-                        if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
-                            configuration = tkncli.getPipelineRunYAML(element.getNamespace(), itemEvent.getItem().toString());
-                        } else if (kind.equalsIgnoreCase(KIND_TASK) || kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
-                            configuration = tkncli.getTaskRunYAML(element.getNamespace(), itemEvent.getItem().toString());
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    if (!configuration.isEmpty()) {
-                        model.adaptsToRun(configuration);
-                        refreshSteps();
-                        updatePreview(model);
-                    }
-                }
-            });
-
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = row;
-            innerOptionsPanel.add(chkImportRunData, gridBagConstraints);
-            gridBagConstraints.gridx = 1;
-            innerOptionsPanel.add(cmbPickRunToImportData, gridBagConstraints);
-            gridBagConstraints.gridx = 2;
-            innerOptionsPanel.add(chkImportRunData_Help, gridBagConstraints);
-            row++;
-        }
-
-        return innerOptionsPanel;
-    }
-
-    private List<String> getOptionsToDisplay(StartResourceModel model) {
-        List<String> optionsEnabled = new ArrayList<>();
-
-        optionsEnabled.add(PREFIX_NAME_RUN);
-
-        if (!model.getRuns().isEmpty()) {
-            optionsEnabled.add(IMPORT_DATA_FROM_RUN);
-        }
-        return optionsEnabled;
-    }
-
-    private List<BaseStep> getSteps(StartResourceModel model) {
+    private List<BaseStep> getSteps(AddTriggerModel model) {
         List<BaseStep> steps = new ArrayList<>();
-        boolean hasParams = model.getInputs().stream().anyMatch(input -> input.kind() == Input.Kind.PARAMETER);
-        boolean hasInputResources = model.getInputs().stream().anyMatch(input -> input.kind() == Input.Kind.RESOURCE);
-        boolean hasOutputResources = !model.getOutputs().isEmpty();
+        boolean hasParams = !model.getParams().isEmpty();
+        boolean hasInputResources = !model.getInputResources().isEmpty();
+        boolean hasOutputResources = false;
         boolean hasWorkspaces = !model.getWorkspaces().isEmpty();
 
-        steps.add(buildStepWithListener(new TriggerStep(model, this.triggerBindings)));
+        steps.add(buildStepWithListener(new TriggerStep(model, this.triggerBindingTemplates)));
 
         if (hasParams) {
             steps.add(buildStepWithListener(new ParametersStep(model)));
@@ -389,7 +242,7 @@ public class AddTriggerWizard extends DialogWrapper {
 
             @Override
             public void stateChanged() {
-                StartResourceModel model = getModelCurrentStep();
+                AddTriggerModel model = getModelCurrentStep();
                 updatePreview(model);
                 updateButtons();
             }
@@ -568,8 +421,8 @@ public class AddTriggerWizard extends DialogWrapper {
         navigationList.get(newStep).setForeground(BLUE);
     }
 
-    private StartResourceModel getModelCurrentStep() {
-        return mySteps.get(myCurrentStep).getModel();
+    private AddTriggerModel getModelCurrentStep() {
+        return (AddTriggerModel) mySteps.get(myCurrentStep).getModel();
     }
 
     protected void updateStep() {
@@ -620,7 +473,7 @@ public class AddTriggerWizard extends DialogWrapper {
 
     private void updateButtons(boolean lastStep, boolean canGoNext, boolean firstStep) {
         if (lastStep) {
-            myNextButton.setText(UIUtil.removeMnemonic("&Start"));
+            myNextButton.setText(UIUtil.removeMnemonic("&Add Trigger"));
             myNextButton.setMnemonic('F');
         }
         else {
@@ -666,7 +519,7 @@ public class AddTriggerWizard extends DialogWrapper {
         }
     }
 
-    private void updatePreview(StartResourceModel model) {
+    private void updatePreview(AddTriggerModel model) {
         String preview = "";
         try {
             preview = YAMLBuilder.createPreview(model);
@@ -687,29 +540,23 @@ public class AddTriggerWizard extends DialogWrapper {
         Map<String, String> inputResources = new HashMap<>();
         Map<String, String> outputResources = new HashMap<>();
 
-        StartResourceModel model = getModelCurrentStep();
-        for (Input input : model.getInputs()) {
-            if (input.kind() == Input.Kind.PARAMETER) {
-                String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
-                parameters.put(input.name(), value);
-            } else {
-                inputResources.put(input.name(), input.value());
-            }
+        AddTriggerModel model = getModelCurrentStep();
+        for (Input input : model.getParams().values()) {
+            String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
+            parameters.put(input.name(), value);
         }
 
-        for (Output output : model.getOutputs()) {
+        for (Input input: model.getInputResources().values()) {
+            inputResources.put(input.name(), input.value());
+        }
+
+        for (Output output : model.getOutputResources().values()) {
             outputResources.put(output.name(), output.value());
         }
 
-        model.setParameters(parameters);
+        /*model.setParameters(parameters);
         model.setInputResources(inputResources);
-        model.setOutputResources(outputResources);
-
-        // options panel
-        String runPrefixName = txtRunPrefixName != null ? txtRunPrefixName.getText() : "";
-        if (!runPrefixName.trim().isEmpty()) {
-            model.setRunPrefixName(runPrefixName);
-        }
+        model.setOutputResources(outputResources);*/
     }
 
     private void refreshSteps() {

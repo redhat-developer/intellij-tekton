@@ -43,4 +43,22 @@ public class ConfigurationModelFactory {
 
         return null;
     }
+
+    public static ResourceConfigurationModel getResourceModel(String configuration) {
+        try {
+            String kind = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"kind"});
+            if (!Strings.isNullOrEmpty(kind)) {
+                switch (kind.toLowerCase()) {
+                    case "pipeline": return new PipelineConfigurationModel(configuration);
+                    case "task": return new TaskConfigurationModel(configuration);
+                    case "condition": return new ConditionConfigurationModel(configuration);
+                    default: break;
+                }
+            }
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage());
+        }
+
+        return null;
+    }
 }

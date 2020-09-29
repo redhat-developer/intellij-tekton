@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 

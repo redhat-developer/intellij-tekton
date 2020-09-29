@@ -18,6 +18,8 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,7 @@ import java.util.Map;
 public class YAMLBuilder {
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
 
-    public static String createPreview(StartResourceModel model) throws IOException {
+    public static String createPreview(ActionToRunModel model) throws IOException {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
         if (!model.getServiceAccount().isEmpty()) {
@@ -42,10 +44,10 @@ public class YAMLBuilder {
             rootNode.set("workspaces", workspacesNode);
         }
 
-        ObjectNode inputsNode = createInputNode(model.getInputs());
+        ObjectNode inputsNode = createInputNode((List<Input>) model.getInputResources().values());
         rootNode.set("inputs", inputsNode);
 
-        ObjectNode outputsNode = createOutputNode(model.getOutputs());
+        ObjectNode outputsNode = createOutputNode((List<Output>) model.getOutputResources().values());
         rootNode.set("outputs", outputsNode);
 
         return new YAMLMapper().writeValueAsString(rootNode);

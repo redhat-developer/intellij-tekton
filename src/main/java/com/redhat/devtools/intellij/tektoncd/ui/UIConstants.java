@@ -26,6 +26,8 @@ public class UIConstants {
     public static final Dimension ROW_DIMENSION = new Dimension(400, 33);
 
     public static final Font TIMES_PLAIN_10 = new Font(Font.DIALOG, Font.PLAIN, 10);
+    public static final Font TIMES_PLAIN_12 = new Font(Font.DIALOG, Font.PLAIN, 12);
+    public static final Font ROMAN_PLAIN_13 = new Font(Font.DIALOG, Font.PLAIN, 13);
     public static final Font TIMES_PLAIN_14 = new Font(Font.DIALOG, Font.PLAIN, 14);
 
     public static final Border BORDER_COMPONENT_VALUE = new MatteBorder(1, 1, 2, 1, LIGHT_GREY);

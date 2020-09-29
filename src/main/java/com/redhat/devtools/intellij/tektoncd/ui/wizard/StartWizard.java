@@ -36,7 +36,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -348,9 +348,9 @@ public class StartWizard extends DialogWrapper {
 
     private List<BaseStep> getSteps(StartResourceModel model) {
         List<BaseStep> steps = new ArrayList<>();
-        boolean hasParams = model.getInputs().stream().anyMatch(input -> input.kind() == Input.Kind.PARAMETER);
-        boolean hasInputResources = model.getInputs().stream().anyMatch(input -> input.kind() == Input.Kind.RESOURCE);
-        boolean hasOutputResources = !model.getOutputs().isEmpty();
+        boolean hasParams = !model.getParams().isEmpty();
+        boolean hasInputResources = !model.getInputResources().isEmpty();
+        boolean hasOutputResources = !model.getOutputResources().isEmpty();
         boolean hasWorkspaces = !model.getWorkspaces().isEmpty();
         if (hasParams) {
             steps.add(buildStepWithListener(new ParametersStep(model)));
@@ -558,7 +558,7 @@ public class StartWizard extends DialogWrapper {
     }
 
     private StartResourceModel getModelCurrentStep() {
-        return mySteps.get(myCurrentStep).getModel();
+        return (StartResourceModel) mySteps.get(myCurrentStep).getModel();
     }
 
     protected void updateStep() {
@@ -677,22 +677,22 @@ public class StartWizard extends DialogWrapper {
         Map<String, String> outputResources = new HashMap<>();
 
         StartResourceModel model = getModelCurrentStep();
-        for (Input input : model.getInputs()) {
-            if (input.kind() == Input.Kind.PARAMETER) {
-                String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
-                parameters.put(input.name(), value);
-            } else {
-                inputResources.put(input.name(), input.value());
-            }
+        for (Input input : model.getParams().values()) {
+            String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
+            parameters.put(input.name(), value);
         }
 
-        for (Output output : model.getOutputs()) {
+        for (Input input: model.getInputResources().values()) {
+            inputResources.put(input.name(), input.value());
+        }
+
+        for (Output output : model.getOutputResources().values()) {
             outputResources.put(output.name(), output.value());
         }
 
-        model.setParameters(parameters);
+        /*model.setParameters(parameters);
         model.setInputResources(inputResources);
-        model.setOutputResources(outputResources);
+        model.setOutputResources(outputResources);*/
 
         // options panel
         String runPrefixName = txtRunPrefixName != null ? txtRunPrefixName.getText() : "";

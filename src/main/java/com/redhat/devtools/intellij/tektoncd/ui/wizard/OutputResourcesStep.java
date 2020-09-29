@@ -12,7 +12,8 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.GridBagConstraints;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -24,7 +25,7 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_1
 
 public class OutputResourcesStep extends BaseStep {
 
-    public OutputResourcesStep(StartResourceModel model) {
+    public OutputResourcesStep(ActionToRunModel model) {
         super("Output Resources", model);
     }
 
@@ -38,10 +39,10 @@ public class OutputResourcesStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/resources.md";
     }
 
-    public void setContent(StartResourceModel model) {
+    public void setContent(ActionToRunModel model) {
         final int[] row = {0};
 
-        model.getOutputs().stream().forEach(output -> {
+        model.getOutputResources().values().stream().forEach(output -> {
             JLabel lblNameResource = new JLabel("<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">" + output.name() + "</span></html");
             addComponent(lblNameResource, null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             addTooltip(lblNameResource, output.description().orElse(""));
@@ -79,7 +80,7 @@ public class OutputResourcesStep extends BaseStep {
     }
 
     private void setOutputValue(String outputName, String value) {
-        for (Output output : model.getOutputs()) {
+        for (Output output : model.getOutputResources().values()) {
             if (output.name().equals(outputName)) {
                 output.setValue(value);
                 break;

@@ -11,7 +11,8 @@
 package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.event.FocusAdapter;
@@ -36,7 +37,7 @@ public class ParametersStep extends BaseStep {
 
     List<JTextField> textFields;
 
-    public ParametersStep(StartResourceModel model) {
+    public ParametersStep(ActionToRunModel model) {
         super("Parameters", model);
     }
 
@@ -64,11 +65,11 @@ public class ParametersStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#specifying-parameters";
     }
 
-    public void setContent(StartResourceModel model) {
+    public void setContent(ActionToRunModel model) {
         textFields = new ArrayList<>();
         final int[] row = {0};
 
-        model.getInputs().stream().filter(input -> input.kind() == Input.Kind.PARAMETER).forEach(input -> {
+        model.getParams().values().stream().filter(input -> input.kind() == Input.Kind.PARAMETER).forEach(input -> {
             String label = "<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">" + input.name() + "</span>  <span style=\\\"font-family:serif;font-size:10;font-weight:normal;font-style:italic;\\\">(" + input.type() + ")</span></html>";
             String tooltip = input.description().isPresent() ? input.description().get() + "\n" : "";
             if (input.type().equals("string")) {

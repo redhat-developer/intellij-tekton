@@ -11,7 +11,8 @@
 package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class WorkspacesStep extends BaseStep {
 
     List<JComboBox> cmbsWorkspaceTypes;
 
-    public WorkspacesStep(StartResourceModel model) {
+    public WorkspacesStep(ActionToRunModel model) {
         super("Workspaces", model);
     }
 
@@ -68,7 +69,7 @@ public class WorkspacesStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/workspaces.md";
     }
 
-    public void setContent(StartResourceModel model) {
+    public void setContent(ActionToRunModel model) {
         cmbsWorkspaceTypes = new ArrayList<>();
         final int[] row = {0};
 
@@ -78,7 +79,6 @@ public class WorkspacesStep extends BaseStep {
             row[0] += 1;
 
             JComboBox cmbWorkspaceTypes = new JComboBox();
-            Border compoundBorderBottomMargin = BorderFactory.createCompoundBorder(new EmptyBorder(0, 0, 3, 0), BORDER_COMPONENT_VALUE);
             cmbWorkspaceTypes = (JComboBox) addComponent(cmbWorkspaceTypes, TIMES_PLAIN_14, null, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
 
             cmbWorkspaceTypes.addItem("");
@@ -96,7 +96,6 @@ public class WorkspacesStep extends BaseStep {
             row[0] += 1;
 
             JComboBox cmbWorkspaceTypeValues = new JComboBox();
-            Border compoundBorderTopMargin = BorderFactory.createCompoundBorder(new EmptyBorder(3, 0, 0, 0), BORDER_COMPONENT_VALUE);
             cmbWorkspaceTypeValues = (JComboBox) addComponent(cmbWorkspaceTypeValues, TIMES_PLAIN_14, null, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             setCmbWorkspaceTypeValues(workspaceName, typeToBeSelected, cmbWorkspaceTypeValues, row[0] - 1);
             addListeners(workspaceName, cmbWorkspaceTypes, cmbWorkspaceTypeValues, cmbWorkspaceTypeValues.getBorder(), row[0] - 1);

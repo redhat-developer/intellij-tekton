@@ -1,0 +1,70 @@
+{
+  "github-pr-binding": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: github-pr-binding",
+      "spec:",
+      "  params:",
+      "    - name: gitrevision",
+      "      value: $(body.pull_request.head.sha)",
+      "    - name: gitrepositoryurl",
+      "      value: $(body.repository.clone_url)"
+    ]
+  },
+  "gitlab-push-binding": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: gitlab-push-binding",
+      "spec:",
+      "  params:",
+      "    - name: gitrevision",
+      "      value: $(body.checkout_sha)",
+      "    - name: gitrepositoryurl",
+      "      value: $(body.repository.git_http_url)"
+    ]
+  },
+  "message-binding": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: message-binding",
+      "spec:",
+      "  params:",
+      "    - name: message",
+      "      value: Hello from the Triggers EventListener!"
+    ]
+  },
+  "pipeline-binding": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: pipeline-binding",
+      "spec:",
+      "  params:",
+      "    - name: gitrevision",
+      "      value: $(body.head_commit.id)",
+      "    - name: gitrepositoryurl",
+      "      value: $(body.repository.url)",
+      "    - name: contenttype",
+      "      value: $(header.Content-Type)"
+    ]
+  },
+  "empty-binding": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: empty-binding",
+      "spec:",
+      "  params:",
+      "    - name: param_name",
+      "      value: "
+    ]
+  }
+}

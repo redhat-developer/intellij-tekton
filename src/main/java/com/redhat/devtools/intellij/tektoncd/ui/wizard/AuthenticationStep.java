@@ -10,7 +10,8 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -29,7 +30,7 @@ public class AuthenticationStep extends BaseStep {
 
     private static final String GLOBALSA = "Global Service Account";
 
-    public AuthenticationStep(StartResourceModel model) {
+    public AuthenticationStep(ActionToRunModel model) {
         super("Authentication", model);
     }
 
@@ -43,7 +44,7 @@ public class AuthenticationStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/auth.md";
     }
 
-    public void setContent(StartResourceModel model) {
+    public void setContent(ActionToRunModel model) {
         final int[] row = {0};
 
         List<String> serviceAccounts = new ArrayList<>(model.getTaskServiceAccounts().keySet());

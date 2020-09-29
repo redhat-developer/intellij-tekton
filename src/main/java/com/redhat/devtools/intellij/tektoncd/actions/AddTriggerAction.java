@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
-import com.intellij.notification.Notification;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
@@ -22,10 +21,13 @@ import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +44,8 @@ public class AddTriggerAction extends TektonAction {
         ExecHelper.submit(() -> {
             List<Resource> resources;
             List<String> serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings;
-            StartResourceModel model;
+            Map<String, String> triggerBindingTemplates;
+            AddTriggerModel model;
             try {
                 resources = tkncli.getResources(namespace);
                 serviceAccounts = tkncli.getServiceAccounts(namespace);
@@ -50,7 +53,8 @@ public class AddTriggerAction extends TektonAction {
                 configMaps = tkncli.getConfigMaps(namespace);
                 persistentVolumeClaims = tkncli.getPersistentVolumeClaim(namespace);
                 triggerBindings = tkncli.getTriggerBindings(namespace);
-                model = getModel(element, namespace, tkncli, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
+                triggerBindingTemplates = SnippetHelper.getTriggerBindingTemplates();
+                model = getModel(element, namespace, tkncli, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
@@ -65,23 +69,19 @@ public class AddTriggerAction extends TektonAction {
                 return;
             }
 
-            boolean noInputsAndOuputs = model.getInputs().isEmpty() && model.getOutputs().isEmpty() && model.getWorkspaces().isEmpty();
-            AddTriggerWizard addTriggerWizard = null;
+            AddTriggerWizard addTriggerWizard = UIHelper.executeInUI(() -> {
+                String titleDialog;
+                if (element instanceof PipelineNode) {
+                    titleDialog = "Pipeline " + element.getName();
+                } else {
+                    titleDialog = "Task " + element.getName();
+                }
+                AddTriggerWizard wizard = new AddTriggerWizard(titleDialog, getEventProject(anActionEvent), model, triggerBindingTemplates);
+                wizard.show();
+                return wizard;
+            });
 
-            if (!noInputsAndOuputs) {
-                addTriggerWizard = UIHelper.executeInUI(() -> {
-                    String titleDialog;
-                    if (element instanceof PipelineNode) {
-                        titleDialog = "Pipeline " + element.getName();
-                    } else {
-                        titleDialog = "Task " + element.getName();
-                    }
-                    AddTriggerWizard wizard = new AddTriggerWizard(titleDialog, element, getEventProject(anActionEvent), model, triggerBindings);
-                    wizard.show();
-                    return wizard;
-                });
-            }
-            if (noInputsAndOuputs || addTriggerWizard.isOK()) {
+            if (addTriggerWizard.isOK()) {
                /* try {
                     String serviceAccount = model.getServiceAccount();
                     Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
@@ -119,7 +119,7 @@ public class AddTriggerAction extends TektonAction {
         });
     }
 
-    protected StartResourceModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
+    protected AddTriggerModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<String> triggerBindings) throws IOException {
         String configuration = "";
         List<? extends Run> runs = new ArrayList<>();
         if (element instanceof PipelineNode) {
@@ -129,6 +129,6 @@ public class AddTriggerAction extends TektonAction {
             configuration = tkncli.getTaskYAML(namespace, element.getName());
             runs = tkncli.getTaskRuns(namespace, element.getName());
         }
-        return new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
+        return new AddTriggerModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
     }
 }

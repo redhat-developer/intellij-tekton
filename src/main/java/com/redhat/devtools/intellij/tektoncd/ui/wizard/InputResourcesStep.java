@@ -12,7 +12,8 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.GridBagConstraints;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -24,7 +25,7 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_1
 
 public class InputResourcesStep extends BaseStep {
 
-    public InputResourcesStep(StartResourceModel model) {
+    public InputResourcesStep(ActionToRunModel model) {
         super("Input Resources", model);
     }
 
@@ -38,10 +39,10 @@ public class InputResourcesStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/resources.md";
     }
 
-    public void setContent(StartResourceModel model) {
+    public void setContent(ActionToRunModel model) {
         final int[] row = {0};
 
-        model.getInputs().stream().filter(input -> input.kind() == Input.Kind.RESOURCE).forEach(input -> {
+        model.getInputResources().values().stream().filter(input -> input.kind() == Input.Kind.RESOURCE).forEach(input -> {
             JLabel lblNameResource = new JLabel("<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">" + input.name() + "</span></html");
             addComponent(lblNameResource, null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             addTooltip(lblNameResource, input.description().orElse(""));

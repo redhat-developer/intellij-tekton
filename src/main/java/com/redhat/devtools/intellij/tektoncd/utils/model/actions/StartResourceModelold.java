@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.utils;
+package com.redhat.devtools.intellij.tektoncd.utils.model.actions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
@@ -38,7 +38,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCE
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 
-public class StartResourceModel extends ConfigurationModel{
+public class StartResourceModelold extends ConfigurationModel{
 
     private String serviceAccountName;
     private List<Input> inputs;
@@ -52,7 +52,7 @@ public class StartResourceModel extends ConfigurationModel{
     private List<? extends Run> runs;
     private String runPrefixName;
 
-    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
+    public StartResourceModelold(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
         super(configuration);
         this.errorMessage = "Tekton configuration has an invalid format:\n";
         this.inputs = Collections.emptyList();
@@ -73,7 +73,7 @@ public class StartResourceModel extends ConfigurationModel{
         buildModel(configuration);
     }
 
-    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<? extends Run> runs) {
+    public StartResourceModelold(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<? extends Run> runs) {
         this(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
         this.runs = runs;
     }

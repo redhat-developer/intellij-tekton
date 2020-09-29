@@ -18,7 +18,8 @@ import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.EventDispatcher;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -43,7 +44,7 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
 public abstract class BaseStep implements Step, Disposable {
     @Nullable
     private String title;
-    protected StartResourceModel model;
+    protected ActionToRunModel model;
     protected JPanel mainPanel;
     protected JPanel contentPanel;
     protected GridBagLayout gridBagLayout;
@@ -51,7 +52,7 @@ public abstract class BaseStep implements Step, Disposable {
     protected Map<Integer, JLabel> errorFieldsByRow;
     protected Color backgroundTheme;
 
-    public BaseStep(@Nullable String title, StartResourceModel model) {
+    public BaseStep(@Nullable String title, ActionToRunModel model) {
         this.title = title;
         this.model = model;
         this.errorFieldsByRow = new HashMap<>();
@@ -59,7 +60,7 @@ public abstract class BaseStep implements Step, Disposable {
         _init();
     }
 
-    public StartResourceModel getModel() {
+    public ActionToRunModel getModel() {
         return this.model;
     }
 
@@ -141,6 +142,14 @@ public abstract class BaseStep implements Step, Disposable {
         gridBagLayout.columnWeights = new double[]{0, 1};
     }
 
+    protected JComponent addComponent(@NotNull JComponent component, Font font, Border border, Dimension preferredSize, @NotNull GridBagConstraints gridBagConstraints) {
+        if (font != null) component.setFont(font);
+        if (border != null) component.setBorder(border);
+        if (preferredSize != null) component.setPreferredSize(preferredSize);
+        contentPanel.add(component, gridBagConstraints);
+        return component;
+    }
+
     protected JComponent addComponent(@NotNull JComponent component, Font font, Border border, Dimension preferredSize, @NotNull int col, @NotNull int row, @NotNull int anchor) {
         if (font != null) component.setFont(font);
         if (border != null) component.setBorder(border);
@@ -167,7 +176,7 @@ public abstract class BaseStep implements Step, Disposable {
     }
 
     protected void setInputValue(String inputName, String value) {
-        for (Input input: model.getInputs()) {
+        for (Input input: model.getInputResources().values()) {
             if (input.name().equals(inputName)) {
                 input.setValue(value);
                 break;
@@ -183,7 +192,7 @@ public abstract class BaseStep implements Step, Disposable {
         contentPanel.repaint();
     }
 
-    public abstract void setContent(StartResourceModel model);
+    public abstract void setContent(ActionToRunModel model);
     public abstract boolean isComplete();
     public abstract String getHelpId();
 }
