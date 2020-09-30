@@ -37,6 +37,21 @@ public class GenericCompletionProviderTest extends BaseCompletionProviderTest{
         assertOrderedEquals(getSuggestionsForFile("pipeline8.yaml"), "$(parparams.param1", "$(parparams.param2");
     }
 
+    @Test
+    public void testPipelineCompletionWithOneTask() {
+        assertTrue(getSuggestionsForFile("pipeline9.yaml").isEmpty());
+    }
+
+    @Test
+    public void testPipelineCompletionWithMultipleTasks() {
+        assertOrderedEquals(getSuggestionsForFile("pipeline10.yaml"), "$(tasks.step2", "$(tasks.step3");
+    }
+
+    @Test
+    public void testPipelineCompletionWithTasksAndParams() {
+        assertOrderedEquals(getSuggestionsForFile("pipeline13.yaml"), "$(params.param1", "$(params.param2", "$(tasks.step2", "$(tasks.step3");
+    }
+
     /////////////////////////////////////////////////////////
     ///                 TASK - VARIABLES
     /////////////////////////////////////////////////////////

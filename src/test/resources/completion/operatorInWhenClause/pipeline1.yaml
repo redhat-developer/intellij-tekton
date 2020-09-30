@@ -11,6 +11,6 @@ spec:
     - name: step1
       taskRef:
         name: task1
-      params:
-        - name: foo2
-          value: $(<caret>
+      when:
+        - input: 'foo'
+          operator: <caret>

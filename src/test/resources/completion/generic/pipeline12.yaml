@@ -13,4 +13,10 @@ spec:
         name: task1
       params:
         - name: foo2
-          value: $(<caret>
+          value: $(tasks.step2.<caret>
+    - name: step2
+      taskRef:
+        name: task1
+    - name: step3
+      taskRef:
+        name: task1

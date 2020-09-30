@@ -27,15 +27,14 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.tekton.client.TektonClient;
+import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTaskList;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineList;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskList;
-import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -46,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
@@ -493,6 +493,15 @@ public class TknCli implements Tkn {
     public Watch watchPipelineRuns(String namespace, Watcher<io.fabric8.tekton.pipeline.v1beta1.PipelineRun> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1beta1().pipelineRuns().inNamespace(namespace).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public Watch watchTask(String namespace, String task, Watcher<Task> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1beta1().tasks().inNamespace(namespace).withName(task).watch(watcher);
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }

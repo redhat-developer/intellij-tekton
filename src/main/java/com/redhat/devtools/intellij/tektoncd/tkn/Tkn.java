@@ -225,7 +225,7 @@ public interface Tkn {
 
     /**
      *
-     * @param namespace the namespace of the task
+     * @param namespace the namespace of the triggerTemplate
      * @param triggerTemplate the triggerTemplate to use
      * @return triggerTemplate configuration
      * @throws IOException if communication errored
@@ -235,7 +235,7 @@ public interface Tkn {
     /**
      * Get triggerBinding configuration in YAML
      *
-     * @param namespace the namespace of the task
+     * @param namespace the namespace of the triggerBinding
      * @param triggerBinding the triggerBinding to use
      * @return triggerBinding configuration
      * @throws IOException if communication errored
@@ -245,7 +245,7 @@ public interface Tkn {
     /**
      * Get clusterTriggerBinding configuration in YAML
      *
-     * @param namespace the namespace of the task
+     * @param namespace the namespace of the clusterTriggerBinding
      * @param ctb the clusterTriggerBinding to use
      * @return clusterTriggerBinding configuration
      * @throws IOException if communication errored
@@ -255,7 +255,7 @@ public interface Tkn {
     /**
      * Get eventListener configuration in YAML
      *
-     * @param namespace the namespace of the task
+     * @param namespace the namespace of the eventListener
      * @param eventListener the eventListener to use
      * @return eventListener configuration
      * @throws IOException if communication errored
@@ -533,6 +533,17 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     Watch watchPipelineRuns(String namespace, Watcher<io.fabric8.tekton.pipeline.v1beta1.PipelineRun> watcher) throws IOException;
+
+    /**
+     * Set a watch on a specific Task resource
+     *
+     * @param namespace the namespace to use
+     * @param task the name of the task
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchTask(String namespace, String task, Watcher<Task> watcher) throws IOException;
 
     /**
      * Set a watch on Task resources

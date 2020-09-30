@@ -38,6 +38,9 @@ import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+
 public class WatchHandler {
     private static final Logger logger = LoggerFactory.getLogger(WatchHandler.class);
     private Map<String, WatchNodes> watches;
@@ -55,7 +58,31 @@ public class WatchHandler {
         return instance;
     }
 
-    public void setWatch(ParentableNode<?> element, TreePath treePath) {
+    public void setWatchByResourceName(Tkn tkn, String namespace, String kind, String resourceName, Watcher watcher) {
+        String watchId = getWatchId(namespace, kind + "-" + resourceName);
+        Watch watch = null;
+        WatchNodes wn = null;
+
+        if (this.watches.containsKey(watchId)) {
+            return;
+        }
+
+        try {
+            if (kind.equalsIgnoreCase(KIND_TASK)) {
+                watch = tkn.watchTask(namespace, resourceName, watcher);
+            }
+            wn = new WatchNodes(watch);
+        } catch (IOException e) {
+            logger.warn("Error: " + e.getLocalizedMessage());
+        }
+
+        if (wn != null) {
+            watches.put(watchId, wn);
+        }
+
+    }
+
+    public void setWatchByNode(ParentableNode<?> element, TreePath treePath) {
         Tkn tkn = element.getRoot().getTkn();
 
         String namespace = element.getNamespace();

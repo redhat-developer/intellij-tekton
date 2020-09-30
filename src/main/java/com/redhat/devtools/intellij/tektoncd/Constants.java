@@ -28,6 +28,8 @@ public class Constants {
     public static final String KIND_TRIGGERBINDINGS = "triggerbindings";
     public static final String KIND_CLUSTERTRIGGERBINDINGS = "clustertriggerbindings";
     public static final String KIND_EVENTLISTENER = "eventlisteners";
+    public static final String KIND_PIPELINERUNS = "pipelineruns";
+    public static final String KIND_TASKRUNS = "taskruns";
 
     public static final String KIND_PIPELINE = "pipeline";
     public static final String KIND_PIPELINERUN = "pipelinerun";
