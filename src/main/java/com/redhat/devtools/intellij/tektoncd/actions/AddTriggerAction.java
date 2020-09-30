@@ -10,27 +10,47 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
+import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
+import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
+import io.fabric8.tekton.client.TektonClient;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class AddTriggerAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(AddTriggerAction.class);
@@ -82,53 +102,65 @@ public class AddTriggerAction extends TektonAction {
             });
 
             if (addTriggerWizard.isOK()) {
-               /* try {
-                    String serviceAccount = model.getServiceAccount();
-                    Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
-                    Map<String, String> params = model.getParameters();
-                    Map<String, Workspace> workspaces = model.getWorkspaces();
-                    Map<String, String> inputResources = model.getInputResources();
-                    Map<String, String> outputResources = model.getOutputResources();
-                    String runPrefixName = model.getRunPrefixName();
-                    String runName = null;
-                    if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
-                        runName = tkncli.startPipeline(namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
+               try {
+                   List<String> triggerBindingsSelected = new ArrayList<>(model.getBindingsSelectedByUser().keySet());
+                   String newBindingAdded = model.getNewBindingAdded();
+                   if (!newBindingAdded.isEmpty()) {
+                       //TODO create new binding
+                       saveResource(newBindingAdded, namespace, "triggerbindings", tkncli);
+                   }
 
-                    } else if (model.getKind().equalsIgnoreCase(KIND_TASK)) {
-                        runName = tkncli.startTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
-                    }
-                    if(runName != null) {
-                        FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
-                        followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
-                    }
+                   // TODO create new triggerTemplate
+                String triggerTemplateName = element.getName() + "-template";
+                   ObjectNode pipelineRun = YAMLBuilder.createPipelineRun(element.getName(), model);
+                   ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, Collections.emptyList(), Arrays.asList(pipelineRun));
+                saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
 
-                    ParentableNode nodeToRefresh = element;
-                    if (element instanceof PipelineRunNode || element instanceof TaskRunNode) {
-                        nodeToRefresh = (ParentableNode) element.getParent();
-                    }
-                    ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(nodeToRefresh);
+                    // TODO create new eventListener
+                ObjectNode eventListener = YAMLBuilder.createEventListener(element.getName() + "-listener", "", triggerBindingsSelected, triggerTemplateName);
+                   saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
+
                 } catch (IOException e) {
-                    notification = new Notification(NOTIFICATION_ID,
+                    Notification notification = new Notification(NOTIFICATION_ID,
                             "Error",
                             model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
                     logger.warn("Error: " + e.getLocalizedMessage());
-                }*/
+                }
             }
         });
     }
 
     protected AddTriggerModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<String> triggerBindings) throws IOException {
         String configuration = "";
-        List<? extends Run> runs = new ArrayList<>();
         if (element instanceof PipelineNode) {
             configuration = tkncli.getPipelineYAML(namespace, element.getName());
-            runs = tkncli.getPipelineRuns(namespace, element.getName());
-        } else if (element instanceof TaskNode) {
-            configuration = tkncli.getTaskYAML(namespace, element.getName());
-            runs = tkncli.getTaskRuns(namespace, element.getName());
         }
+        /* else if (element instanceof TaskNode) { // uncomment to extend to tasks
+            configuration = tkncli.getTaskYAML(namespace, element.getName());
+        } */
         return new AddTriggerModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
+    }
+
+    protected void saveResource(String resourceBody, String namespace, String kind_plural, Tkn tkncli) throws IOException{
+        String name = YAMLHelper.getStringValueFromYAML(resourceBody, new String[] {"metadata", "name"});
+        String apiVersion = YAMLHelper.getStringValueFromYAML(resourceBody, new String[] {"apiVersion"});
+        JsonNode spec = YAMLHelper.getValueFromYAML(resourceBody, new String[] {"spec"});
+        CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(apiVersion, kind_plural);
+
+        try {
+            String resourceNamespace = CRDHelper.isClusterScopedResource(kind_plural) ? "" : namespace;
+            Map<String, Object> resource = tkncli.getCustomResource(resourceNamespace, name, crdContext);
+            if (resource == null) {
+                tkncli.createCustomResource(resourceNamespace, crdContext, resourceBody);
+            } else {
+                JsonNode customResource = JSONHelper.MapToJSON(resource);
+                ((ObjectNode) customResource).set("spec", spec);
+                tkncli.editCustomResource(resourceNamespace, name, crdContext, customResource.toString());
+            }
+        } catch (KubernetesClientException e) {
+            throw new IOException(e.getLocalizedMessage());
+        }
     }
 }

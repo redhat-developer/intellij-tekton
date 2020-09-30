@@ -78,4 +78,13 @@ public class InputResourcesStep extends BaseStep {
             }
         });
     }
+
+    private void setInputValue(String inputName, String value) {
+        for (Input input: model.getInputResources().values()) {
+            if (input.name().equals(inputName)) {
+                input.setValue(value);
+                break;
+            }
+        }
+    }
 }

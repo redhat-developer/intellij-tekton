@@ -16,9 +16,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.BaseStep;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.GridBagConstraints;
-import java.util.List;
 import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -37,9 +35,10 @@ public class TriggerStep extends BaseStep {
 
     private Map<String, String> triggerBindingTemplates;
     private JCheckBox chkSelectExistingTriggerBinding, chkCreateNewTriggerBinding;
-    private JComboBox cmbExistingTriggerBindings, cmbPreMadeTriggerBindingTemplates;
-    private JTextArea triggerBindingArea;
+    private JComboBox cmbPreMadeTriggerBindingTemplates;
+    private JTextArea textAreaNewTriggerBinding;
     private JScrollPane scrolltriggerBindingAreaPane;
+    private JList listBindingsAvailableOnCluster;
 
     public TriggerStep(AddTriggerModel model, Map<String, String> triggerBindingTemplates) {
         super("Trigger", model);
@@ -49,6 +48,10 @@ public class TriggerStep extends BaseStep {
 
     @Override
     public void setContent(ActionToRunModel model) {
+
+    }
+
+    public void setContent() {
         final int[] row = {0};
 
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -68,32 +71,27 @@ public class TriggerStep extends BaseStep {
 
         addComponent(chkSelectExistingTriggerBinding, ROMAN_PLAIN_13, null, null, 0, row[0], GridBagConstraints.NORTHWEST);
 
-        JList existingTriggerBindingsList = new JBList();
-        existingTriggerBindingsList.setEnabled(false);
-        existingTriggerBindingsList.setListData(((AddTriggerModel)model).getTriggerBindings().keySet().toArray());
-        existingTriggerBindingsList.setLayoutOrientation(JList.VERTICAL);
+        listBindingsAvailableOnCluster = new JBList();
+        listBindingsAvailableOnCluster.setEnabled(false);
+        listBindingsAvailableOnCluster.setListData(((AddTriggerModel)model).getBindingsAvailableOnCluster().toArray());
+        listBindingsAvailableOnCluster.setLayoutOrientation(JList.VERTICAL);
+
+
 
         JScrollPane scrollPane = new JBScrollPane();
-        scrollPane.setViewportView(existingTriggerBindingsList);
+        scrollPane.setViewportView(listBindingsAvailableOnCluster);
 
 
         addComponent(scrollPane, TIMES_PLAIN_14, BORDER_COMPONENT_VALUE, null, 1, row[0], GridBagConstraints.NORTHWEST);
-        /*cmbExistingTriggerBindings = new ComboBox();
-        cmbExistingTriggerBindings.setEnabled(false);
-        if (this.triggerBindings != null) {
-            for (String el : this.triggerBindings) {
 
-            }
-        }*/
         chkSelectExistingTriggerBinding.addItemListener(itemEvent -> {
             if (chkSelectExistingTriggerBinding.isSelected()) {
-                existingTriggerBindingsList.setEnabled(true);
+                listBindingsAvailableOnCluster.setEnabled(true);
             } else {
-                existingTriggerBindingsList.setEnabled(false);
+                listBindingsAvailableOnCluster.setEnabled(false);
             }
         });
 
-        //addComponent(cmbExistingTriggerBindings, TIMES_PLAIN_14, null, ROW_DIMENSION, 1, row[0], GridBagConstraints.NORTHWEST);
         row[0] += 1;
 
         chkCreateNewTriggerBinding = new JCheckBox("Create a new TriggerBinding");
@@ -118,7 +116,7 @@ public class TriggerStep extends BaseStep {
                 String templateSelected = (String) itemEvent.getItem();
                 if (!templateSelected.isEmpty()) {
                     String content = this.triggerBindingTemplates.get(templateSelected);
-                    triggerBindingArea.setText(content);
+                    textAreaNewTriggerBinding.setText(content);
                 }
                 fireStateChanged();
             }
@@ -134,14 +132,15 @@ public class TriggerStep extends BaseStep {
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         gridBagConstraints.gridwidth = 2;
 
-        triggerBindingArea = new JTextArea(15, 50);
-        scrolltriggerBindingAreaPane = new JBScrollPane(triggerBindingArea);
+        textAreaNewTriggerBinding = new JTextArea(15, 50);
+        scrolltriggerBindingAreaPane = new JBScrollPane(textAreaNewTriggerBinding);
         scrolltriggerBindingAreaPane.setEnabled(false);
-        triggerBindingArea.setEnabled(false);
-        triggerBindingArea.setEditable(false);
-        triggerBindingArea.setText(this.triggerBindingTemplates.get("empty-binding"));
-        triggerBindingArea.setFont(ROMAN_PLAIN_13);
+        textAreaNewTriggerBinding.setEnabled(false);
+        textAreaNewTriggerBinding.setEditable(false);
+        textAreaNewTriggerBinding.setText(this.triggerBindingTemplates.get("empty-binding"));
+        textAreaNewTriggerBinding.setFont(ROMAN_PLAIN_13);
 
+        //TODO add comment "N.B make sure to use a unique name. If a trigger binding with the same name already exists its content will be overwritten
         addComponent(scrolltriggerBindingAreaPane, ROMAN_PLAIN_13, BORDER_COMPONENT_VALUE, null, gridBagConstraints);
         row[0] += 1;
 
@@ -149,27 +148,34 @@ public class TriggerStep extends BaseStep {
             if (chkCreateNewTriggerBinding.isSelected()) {
                 scrolltriggerBindingAreaPane.setEnabled(true);
                 cmbPreMadeTriggerBindingTemplates.setEnabled(true);
-                triggerBindingArea.setEditable(true);
-                triggerBindingArea.setEnabled(true);
+                textAreaNewTriggerBinding.setEditable(true);
+                textAreaNewTriggerBinding.setEnabled(true);
             } else {
                 scrolltriggerBindingAreaPane.setEnabled(false);
                 cmbPreMadeTriggerBindingTemplates.setEnabled(false);
-                triggerBindingArea.setEditable(false);
-                triggerBindingArea.setEnabled(false);
+                textAreaNewTriggerBinding.setEditable(false);
+                textAreaNewTriggerBinding.setEnabled(false);
             }
         });
 
         adjustContentPanel();
     }
 
-    public void setContent() {
-
-    }
-
     @Override
     public boolean isComplete() {
+        // TODO verify if i can create an el without any binding
         if (!chkCreateNewTriggerBinding.isSelected() && !chkSelectExistingTriggerBinding.isSelected()) {
             return false;
+        }
+
+        ((AddTriggerModel) model).getBindingsSelectedByUser().clear();
+        if (chkSelectExistingTriggerBinding.isSelected()) {
+            listBindingsAvailableOnCluster.getSelectedValuesList().forEach(binding -> ((AddTriggerModel) model).getBindingsSelectedByUser().put(binding.toString(), null));
+        }
+        if (chkCreateNewTriggerBinding.isSelected()) {
+            String t = textAreaNewTriggerBinding.getText();
+            //TODO verify if configuration is valid and extract namespace
+            ((AddTriggerModel) model).getBindingsSelectedByUser().put("test", t);
         }
 
         return true;

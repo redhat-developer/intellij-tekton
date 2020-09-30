@@ -175,15 +175,6 @@ public abstract class BaseStep implements Step, Disposable {
         }
     }
 
-    protected void setInputValue(String inputName, String value) {
-        for (Input input: model.getInputResources().values()) {
-            if (input.name().equals(inputName)) {
-                input.setValue(value);
-                break;
-            }
-        }
-    }
-
     public void refresh() {
         contentPanel.removeAll();
         setContent(model);

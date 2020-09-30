@@ -23,6 +23,7 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.ResourceConfigurationMo
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,17 +45,14 @@ public abstract class ActionToRunModel extends ConfigurationModel {
     public ActionToRunModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
         super(configuration);
         this.errorMessage = "Tekton configuration has an invalid format:\n";
-        this.resources = resources;
-        this.globalServiceAccount = "";
-        //this.params = Collections.emptyMap();
-        //this.inputResources = Collections.emptyMap();
-        //this.outputResources = Collections.emptyMap();
         this.serviceAccounts = serviceAccounts;
-        this.workspaces = resource.getWorkspaces().stream().collect(Collectors.toMap(ws -> ws, ws -> null));
-        this.taskServiceAccountNames = Collections.emptyMap();
+        this.resources = resources;
         this.secrets = secrets;
         this.configMaps = configMaps;
         this.persistentVolumeClaims = persistentVolumeClaims;
+        //this.params = Collections.emptyMap();
+        //this.inputResources = Collections.emptyMap();
+        //this.outputResources = Collections.emptyMap();
         init(configuration);
     }
 
@@ -79,6 +77,12 @@ public abstract class ActionToRunModel extends ConfigurationModel {
                 isValid = false;
                 return;
             }
+
+            this.globalServiceAccount = "";
+            this.workspaces = new HashMap<>();
+            resource.getWorkspaces().stream().forEach(ws -> this.workspaces.put(ws, null));
+            this.taskServiceAccountNames = Collections.emptyMap();
+
             if (resource instanceof PipelineConfigurationModel) {
                 initTaskServiceAccounts(configuration);
             }

@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,9 +19,13 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 
+import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -44,11 +49,20 @@ public class YAMLBuilder {
             rootNode.set("workspaces", workspacesNode);
         }
 
-        ObjectNode inputsNode = createInputNode((List<Input>) model.getInputResources().values());
-        rootNode.set("inputs", inputsNode);
+        ArrayNode paramsNode = createParamsNodeFromInput(new ArrayList<>(model.getParams().values()));
+        if (paramsNode.size() > 0) {
+            rootNode.set("params", paramsNode);
+        }
 
-        ObjectNode outputsNode = createOutputNode((List<Output>) model.getOutputResources().values());
-        rootNode.set("outputs", outputsNode);
+        ArrayNode inputResourcesNode = createInputResourcesNode(new ArrayList<>(model.getInputResources().values()));
+        if (inputResourcesNode.size() > 0) {
+            rootNode.set("resources", inputResourcesNode);
+        }
+
+        ArrayNode outputResourcesNode = createOutputResourcesNode(new ArrayList<>(model.getOutputResources().values()));
+        if (outputResourcesNode.size() > 0) {
+            rootNode.set("outputs", outputResourcesNode);
+        }
 
         return new YAMLMapper().writeValueAsString(rootNode);
     }
@@ -110,39 +124,53 @@ public class YAMLBuilder {
         return serviceAccountNamesNode;
     }
 
-    private static ObjectNode createInputNode(List<Input> inputs) {
-        ObjectNode inputsNode = YAML_MAPPER.createObjectNode();
+    private static ArrayNode createParamsNodeFromInput(List<Input> params) {
         ArrayNode paramsNode = YAML_MAPPER.createArrayNode();
-        ArrayNode resourcesNode = YAML_MAPPER.createArrayNode();
         ObjectNode inputNode;
-        for (Input input: inputs) {
+        for (Input param: params) {
             inputNode = YAML_MAPPER.createObjectNode();
-            inputNode.put("name", input.name());
-            if (input.kind() == Input.Kind.PARAMETER) {
-                String value = input.value() == null ? input.defaultValue().orElse("") : input.value();
-                if (input.type().equals("array")) {
-                    ArrayNode paramValuesNode = YAML_MAPPER.valueToTree(value.split(","));
-                    inputNode.set("value", paramValuesNode);
-                } else {
-                    inputNode.put("value", value);
-                }
-                paramsNode.add(inputNode);
+            inputNode.put("name", param.name());
+            String value = param.value() == null ? param.defaultValue().orElse("") : param.value();
+            if (param.type().equals("array")) {
+                ArrayNode paramValuesNode = YAML_MAPPER.valueToTree(value.split(","));
+                inputNode.set("value", paramValuesNode);
             } else {
-                // resourceRef node
-                ObjectNode resourceRefNode = YAML_MAPPER.createObjectNode();
-                resourceRefNode.put("name", input.value() == null ? "Resource has not yet been inserted" : input.value());
-                inputNode.set("resourceRef", resourceRefNode);
-                resourcesNode.add(inputNode);
+                inputNode.put("value", value);
             }
+            paramsNode.add(inputNode);
         }
 
-        if (paramsNode.size() > 0) inputsNode.set("params", paramsNode);
-        if (resourcesNode.size() > 0) inputsNode.set("resources", resourcesNode);
-        return inputsNode;
+        return paramsNode;
     }
 
-    private static ObjectNode createOutputNode(List<Output> outputs) {
-        ObjectNode outputsNode = YAML_MAPPER.createObjectNode();
+    private static ArrayNode createParamsNodeFromNames(List<String> params) {
+        ArrayNode paramsNode = YAML_MAPPER.createArrayNode();
+        ObjectNode inputNode;
+        for (String param: params) {
+            inputNode = YAML_MAPPER.createObjectNode();
+            inputNode.put("name", param);
+            paramsNode.add(inputNode);
+        }
+        return paramsNode;
+    }
+
+    private static ArrayNode createInputResourcesNode(List<Input> inputResources) {
+        ArrayNode resourcesNode = YAML_MAPPER.createArrayNode();
+        ObjectNode inputNode;
+        for (Input input: inputResources) {
+            inputNode = YAML_MAPPER.createObjectNode();
+            inputNode.put("name", input.name());
+            // resourceRef node
+            ObjectNode resourceRefNode = YAML_MAPPER.createObjectNode();
+            resourceRefNode.put("name", input.value() == null ? "Resource has not yet been inserted" : input.value());
+            inputNode.set("resourceRef", resourceRefNode);
+            resourcesNode.add(inputNode);
+        }
+
+        return resourcesNode;
+    }
+
+    private static ArrayNode createOutputResourcesNode(List<Output> outputs) {
         ArrayNode resourcesNode = YAML_MAPPER.createArrayNode();
         ObjectNode outputNode;
         for (Output output: outputs) {
@@ -156,7 +184,141 @@ public class YAMLBuilder {
             resourcesNode.add(outputNode);
         }
 
-        if (resourcesNode.size() > 0) outputsNode.set("resources", resourcesNode);
-        return outputsNode;
+        return resourcesNode;
+    }
+
+    private static ArrayNode createRunsNode(List<ObjectNode> runs) {
+        ArrayNode runsNode = YAML_MAPPER.createArrayNode();
+        runs.forEach(run -> runsNode.add(run));
+
+        return runsNode;
+    }
+
+    private static ArrayNode createTriggersNode(String name, List<String> triggerBindings, String triggerTemplate) {
+        ArrayNode triggersNode = YAML_MAPPER.createArrayNode();
+        ObjectNode triggerNode = YAML_MAPPER.createObjectNode();
+
+        ArrayNode bindingsNode = YAML_MAPPER.createArrayNode();
+        triggerBindings.forEach(binding -> {
+            ObjectNode bindingNode = YAML_MAPPER.createObjectNode();
+            bindingNode.put("ref", binding);
+            bindingsNode.add(bindingNode);
+        });
+
+        ObjectNode templateNode = YAML_MAPPER.createObjectNode();
+        templateNode.put("name", triggerTemplate);
+
+        triggerNode.put("name", name);
+        triggerNode.set("bindings", bindingsNode);
+        triggerNode.set("template", templateNode);
+
+        triggersNode.add(triggerNode);
+
+        return triggersNode;
+    }
+
+    public static ObjectNode createPipelineRun(String pipeline, AddTriggerModel model) {
+        ObjectNode rootNode = YAML_MAPPER.createObjectNode();
+
+        rootNode.put("apiVersion", "tekton.dev/v1beta1");
+        rootNode.put("kind", "PipelineRun");
+
+        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
+        metadataNode.put("name", pipeline);
+
+        rootNode.set("metadata", metadataNode);
+
+        ObjectNode specNode = YAML_MAPPER.createObjectNode();
+
+        ObjectNode pipelineRefNode = YAML_MAPPER.createObjectNode();
+        pipelineRefNode.put("name", pipeline);
+
+        specNode.set("pipelineRef", pipelineRefNode);
+
+        if (!model.getServiceAccount().isEmpty()) {
+            specNode.put("serviceAccountName", model.getServiceAccount());
+        }
+
+        ArrayNode tsaNode = createTaskServiceAccountNode(model.getTaskServiceAccounts());
+        if (tsaNode.size() > 0) {
+            specNode.set("serviceAccountNames", tsaNode);
+        }
+
+        ArrayNode paramsNode = createParamsNodeFromInput(new ArrayList<>(model.getParams().values()));
+        if (paramsNode.size() > 0) {
+            specNode.set("params", paramsNode);
+        }
+
+        ArrayNode inputResourcesNode = createInputResourcesNode(new ArrayList<>(model.getInputResources().values()));
+        if (inputResourcesNode.size() > 0) {
+            specNode.set("resources", inputResourcesNode);
+        }
+
+        ArrayNode workspacesNode = createWorkspaceNode(model.getWorkspaces());
+        if (workspacesNode.size() > 0) {
+            specNode.set("workspaces", workspacesNode);
+        }
+
+        rootNode.set("spec", specNode);
+
+        return rootNode;
+    }
+
+    public static ObjectNode createTriggerTemplate(String name, List<String> params, List<ObjectNode> runs) {
+        ObjectNode rootNode = YAML_MAPPER.createObjectNode();
+
+        rootNode.put("apiVersion", "triggers.tekton.dev/v1alpha1");
+        rootNode.put("kind", "TriggerTemplate");
+
+        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
+        metadataNode.put("name", name);
+
+        rootNode.set("metadata", metadataNode);
+
+        ObjectNode specNode = YAML_MAPPER.createObjectNode();
+
+        ArrayNode paramsNode = createParamsNodeFromNames(params);
+        if (paramsNode.size() > 0) {
+            specNode.set("params", paramsNode);
+        }
+
+        ArrayNode runsNode = createRunsNode(runs);
+        specNode.set("resourcetemplates", runsNode);
+
+        rootNode.set("spec", specNode);
+
+        return rootNode;
+    }
+
+    public static ObjectNode createEventListener(String name, String serviceAccount, List<String> triggerBindings, String triggerTemplate) {
+        ObjectNode rootNode = YAML_MAPPER.createObjectNode();
+
+        rootNode.put("apiVersion", "triggers.tekton.dev/v1alpha1");
+        rootNode.put("kind", "EventListener");
+
+        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
+        metadataNode.put("name", name);
+
+        rootNode.set("metadata", metadataNode);
+
+        ObjectNode specNode = YAML_MAPPER.createObjectNode();
+
+        //TODO add serviceAccountName node
+        //specNode.put("serviceAccountName", serviceAccount);
+
+        ArrayNode triggersNode = createTriggersNode("trig", triggerBindings, triggerTemplate);
+        specNode.set("triggers", triggersNode);
+
+        rootNode.set("spec", specNode);
+
+        return rootNode;
+    }
+
+    public static String writeValueAsString(ObjectNode rootNode) throws IOException {
+        try {
+            return new YAMLMapper().writeValueAsString(rootNode);
+        } catch (JsonProcessingException e) {
+            throw new IOException(e);
+        }
     }
 }

@@ -18,7 +18,10 @@ import java.awt.GridBagConstraints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -35,7 +38,7 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_1
 
 public class ParametersStep extends BaseStep {
 
-    List<JTextField> textFields;
+    Map<String, JTextField> textFields;
 
     public ParametersStep(ActionToRunModel model) {
         super("Parameters", model);
@@ -46,7 +49,8 @@ public class ParametersStep extends BaseStep {
         if (textFields == null) return false;
         AtomicBoolean isComplete = new AtomicBoolean(true);
         final int[] row = {1};
-        textFields.stream().forEach(field -> {
+        textFields.keySet().stream().forEach(param -> {
+            JTextField field = textFields.get(param);
             if (!isValid(field)) {
                 field.setBorder(RED_BORDER_SHOW_ERROR);
                 JLabel lblErrorText = new JLabel("Please enter a value.");
@@ -54,6 +58,8 @@ public class ParametersStep extends BaseStep {
                 addComponent(lblErrorText, TIMES_PLAIN_10, MARGIN_TOP_35, ROW_DIMENSION_ERROR, 0, row[0], GridBagConstraints.PAGE_END);
                 errorFieldsByRow.put(row[0], lblErrorText);
                 isComplete.set(false);
+            } else {
+                setParamValue(param, field.getText());
             }
             row[0] += 2;
         });
@@ -66,7 +72,7 @@ public class ParametersStep extends BaseStep {
     }
 
     public void setContent(ActionToRunModel model) {
-        textFields = new ArrayList<>();
+        textFields = new LinkedHashMap<>();
         final int[] row = {0};
 
         model.getParams().values().stream().filter(input -> input.kind() == Input.Kind.PARAMETER).forEach(input -> {
@@ -83,7 +89,7 @@ public class ParametersStep extends BaseStep {
             row[0] += 1;
 
             JTextField txtValueParam = new JTextField(input.defaultValue().orElse(""));
-            textFields.add(txtValueParam);
+            textFields.put(input.name(), txtValueParam);
             txtValueParam = (JTextField) addComponent(txtValueParam, TIMES_PLAIN_14, null, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             addListener(input.name(), txtValueParam, txtValueParam.getBorder(), row[0]);
             row[0] += 1;
@@ -96,7 +102,7 @@ public class ParametersStep extends BaseStep {
             @Override
             public void focusLost(FocusEvent e) {
                 super.focusLost(e);
-                setInputValue(idParam, txtValueParam.getText());
+                setParamValue(idParam, txtValueParam.getText());
                 // reset error graphics if an error occurred earlier
                 if (isValid(txtValueParam)) {
                     txtValueParam.setBorder(defaultBorder);
@@ -108,6 +114,15 @@ public class ParametersStep extends BaseStep {
                 fireStateChanged();
             }
         });
+    }
+
+    protected void setParamValue(String paramName, String value) {
+        for (Input param: model.getParams().values()) {
+            if (param.name().equals(paramName)) {
+                param.setValue(value);
+                break;
+            }
+        }
     }
 
     private boolean isValid(JTextField component) {

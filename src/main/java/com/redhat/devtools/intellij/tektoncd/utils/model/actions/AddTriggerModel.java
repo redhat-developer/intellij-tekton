@@ -17,25 +17,35 @@ import java.util.Map;
 
 public class AddTriggerModel extends ActionToRunModel {
 
-    private Map<String, String> triggerBindings;
-    private List<String> inputTriggerBindings;
+    private Map<String, String> bindingsSelectedByUser;
+    private String newBindingAdded;
+    private List<String> bindingsAvailableOnCluster;
 
-    public AddTriggerModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<String> inputTriggerBindings) {
+    public AddTriggerModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<String> bindingsAvailableOnCluster) {
         super(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
-        this.inputTriggerBindings = inputTriggerBindings;
-        this.triggerBindings = new HashMap<>();
+        this.bindingsAvailableOnCluster = bindingsAvailableOnCluster;
+        this.bindingsSelectedByUser = new HashMap<>();
+        this.newBindingAdded = "";
     }
 
-    public Map<String, String> getTriggerBindings() {
+    public List<String> getBindingsAvailableOnCluster() {
+        return this.bindingsAvailableOnCluster;
+    }
+
+    public String getNewBindingAdded() {
+        return newBindingAdded;
+    }
+
+    public Map<String, String> getBindingsSelectedByUser() {
         new Thread(() -> {
             //Do whatever
-            triggerBindings.keySet().forEach(binding -> {
-                if (triggerBindings.get(binding).isEmpty()) {
+            bindingsSelectedByUser.keySet().forEach(binding -> {
+                if (bindingsSelectedByUser.get(binding).isEmpty()) {
                     // TODO call virtualfilesystem to request binding without body
 
                 }
             });
         }).start();
-        return triggerBindings;
+        return bindingsSelectedByUser;
     }
 }
