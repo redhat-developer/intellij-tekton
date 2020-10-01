@@ -50,6 +50,8 @@ public class TektonFileEditorProvider implements FileEditorProvider {
         GraphUpdater updater = null;
         if (typeInfo.getApiGroup().startsWith("tekton.dev") && "Pipeline".equals(typeInfo.getKind())) {
             return new PipelineGraphUpdater();
+        } else if (typeInfo.getApiGroup().startsWith("tekton.dev") && "PipelineRun".equals(typeInfo.getKind())) {
+            return new PipelineRunGraphUpdater();
         }
         return updater;
     }
