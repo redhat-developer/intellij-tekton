@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils.model;
 
+import com.google.common.base.Strings;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -18,11 +19,13 @@ import org.slf4j.LoggerFactory;
 public abstract class ConfigurationModel {
     Logger logger = LoggerFactory.getLogger(ConfigurationModel.class);
     protected String namespace, name, kind;
+    protected boolean isValid;
 
     public ConfigurationModel() {
         this.name = "";
         this.kind = "";
         this.namespace = "";
+        this.isValid = true;
     }
 
     public ConfigurationModel(String configuration) {
@@ -47,5 +50,13 @@ public abstract class ConfigurationModel {
 
     public String getNamespace() {
         return namespace;
+    }
+
+    public boolean isValid() {
+        if (isValid) {
+            return !Strings.isNullOrEmpty(this.name) && !Strings.isNullOrEmpty(this.kind);
+        }
+
+        return false;
     }
 }

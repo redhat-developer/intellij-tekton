@@ -36,6 +36,10 @@ public class AddTriggerModel extends ActionToRunModel {
         return newBindingAdded;
     }
 
+    public void setNewBindingAdded(String newBinding) {
+        this.newBindingAdded = newBinding;
+    }
+
     public Map<String, String> getBindingsSelectedByUser() {
         new Thread(() -> {
             //Do whatever

@@ -46,10 +46,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class AddTriggerAction extends TektonAction {
@@ -103,31 +105,34 @@ public class AddTriggerAction extends TektonAction {
 
             if (addTriggerWizard.isOK()) {
                try {
+
                    List<String> triggerBindingsSelected = new ArrayList<>(model.getBindingsSelectedByUser().keySet());
                    String newBindingAdded = model.getNewBindingAdded();
                    if (!newBindingAdded.isEmpty()) {
-                       //TODO create new binding
                        saveResource(newBindingAdded, namespace, "triggerbindings", tkncli);
+                       String nameBinding = YAMLHelper.getStringValueFromYAML(newBindingAdded, new String[] {"metadata", "name"});
+                       notifySuccessOperation("TriggerBinding " + nameBinding);
                    }
 
-                   // TODO create new triggerTemplate
-                String triggerTemplateName = element.getName() + "-template";
+                   String triggerTemplateName = element.getName() + "-template";
                    ObjectNode pipelineRun = YAMLBuilder.createPipelineRun(element.getName(), model);
                    ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, Collections.emptyList(), Arrays.asList(pipelineRun));
-                saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
+                   saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
+                   notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
 
-                    // TODO create new eventListener
-                ObjectNode eventListener = YAMLBuilder.createEventListener(element.getName() + "-listener", "", triggerBindingsSelected, triggerTemplateName);
+                   String eventListenerName = element.getName() + "-listener";
+                   ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "", triggerBindingsSelected, triggerTemplateName);
                    saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
+                   notifySuccessOperation("EventListener " + eventListenerName);
 
-                } catch (IOException e) {
-                    Notification notification = new Notification(NOTIFICATION_ID,
-                            "Error",
-                            model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
-                            NotificationType.ERROR);
-                    Notifications.Bus.notify(notification);
-                    logger.warn("Error: " + e.getLocalizedMessage());
-                }
+               } catch (IOException e) {
+                   Notification notification = new Notification(NOTIFICATION_ID,
+                           "Error",
+                           model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
+                           NotificationType.ERROR);
+                   Notifications.Bus.notify(notification);
+                   logger.warn("Error: " + e.getLocalizedMessage());
+               }
             }
         });
     }
@@ -162,5 +167,10 @@ public class AddTriggerAction extends TektonAction {
         } catch (KubernetesClientException e) {
             throw new IOException(e.getLocalizedMessage());
         }
+    }
+
+    private void notifySuccessOperation(String nameResourceCreated) {
+        Notification notification = new Notification(NOTIFICATION_ID, "Save Successful", nameResourceCreated + " has been successfully created!", NotificationType.INFORMATION);
+        Notifications.Bus.notify(notification);
     }
 }

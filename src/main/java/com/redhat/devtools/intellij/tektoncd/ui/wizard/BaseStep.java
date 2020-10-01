@@ -26,6 +26,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,6 +87,21 @@ public abstract class BaseStep implements Step, Disposable {
 
         setContent(model);
         adjustContentPanel();
+    }
+
+    protected void fitFullContentContainer(JComponent component) {
+        double width = contentPanel.getPreferredSize().getWidth();
+        double height = contentPanel.getPreferredSize().getHeight() > component.getPreferredSize().getHeight() ? component.getPreferredSize().getHeight() : contentPanel.getPreferredSize().getHeight();
+        component.setPreferredSize(new Dimension((int)width, (int)height));
+        /*contentPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                //recalculate variable
+                int width = e.getComponent().getWidth();
+                int height = e.getComponent().getHeight() > component.getHeight() ? component.getHeight() : e.getComponent().getHeight();
+                component.setPreferredSize(new Dimension(width, height));
+            }
+        });*/
     }
 
     public interface Listener extends StepListener {

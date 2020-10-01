@@ -185,7 +185,7 @@ public class AddTriggerWizard extends DialogWrapper {
         myFooterPanel = new JPanel(new BorderLayout());
 
         myContentPanel.setBackground(backgroundTheme);
-        myContentPanel.setPreferredSize(new Dimension(550, 400));
+        myContentPanel.setPreferredSize(new Dimension(600, 400));
         myLeftPanel.setBackground(backgroundTheme);
         myLeftPanel.setBorder(new MatteBorder(0, 0, 0, 1, EditorColorsManager.getInstance().getGlobalScheme().getColor(ColorKey.find("SEPARATOR_BELOW_COLOR"))));
         myRightPanel.setBackground(backgroundTheme);
