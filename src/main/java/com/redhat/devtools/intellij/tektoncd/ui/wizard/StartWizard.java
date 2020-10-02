@@ -227,6 +227,9 @@ public class StartWizard extends BaseWizard {
         return steps;
     }
 
+    @Override
+    public void doBeforeNextStep(int currentStep) { }
+
     public String getLastStepButtonText() {
         return "&Start";
     }

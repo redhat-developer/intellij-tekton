@@ -340,10 +340,13 @@ public abstract class BaseWizard extends DialogWrapper {
         }
 
         int oldStep = myCurrentStep;
+        doBeforeNextStep(oldStep);
         myCurrentStep = getNextStep(myCurrentStep);
         setSelectItemNavigationList(oldStep, myCurrentStep);
         updateStep(JBCardLayout.SwipeDirection.FORWARD);
     }
+
+    public abstract void doBeforeNextStep(int currentStep);
 
     private int getNextStep(int step) {
         final int stepCount = mySteps.size();

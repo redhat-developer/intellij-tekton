@@ -316,4 +316,12 @@ public class YAMLBuilder {
             throw new IOException(e);
         }
     }
+
+    public static String writeValueAsString(Map<String, Object> value) throws IOException {
+        try {
+            return new YAMLMapper().writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new IOException(e);
+        }
+    }
 }

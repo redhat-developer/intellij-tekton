@@ -18,6 +18,7 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TriggerBindingConfigurationModel;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.util.Map;
 import javax.swing.JCheckBox;
@@ -69,7 +70,7 @@ public class TriggerStep extends BaseStep {
 
         listBindingsAvailableOnCluster = new JBList();
         listBindingsAvailableOnCluster.setEnabled(false);
-        listBindingsAvailableOnCluster.setListData(((AddTriggerModel)model).getBindingsAvailableOnCluster().toArray());
+        listBindingsAvailableOnCluster.setListData(((AddTriggerModel)model).getBindingsAvailableOnCluster().keySet().toArray());
         listBindingsAvailableOnCluster.setLayoutOrientation(JList.VERTICAL);
 
         JScrollPane scrollPane = new JBScrollPane();
@@ -176,8 +177,10 @@ public class TriggerStep extends BaseStep {
         lblErrorNewBinding.setVisible(false);
         ((AddTriggerModel) model).getBindingsSelectedByUser().clear();
         if (chkSelectExistingTriggerBinding.isSelected()) {
-            listBindingsAvailableOnCluster.getSelectedValuesList().forEach(binding -> ((AddTriggerModel) model).getBindingsSelectedByUser().put(binding.toString(), null));
-            ((AddTriggerModel) model).loadBindingsSelectedByUser();
+            listBindingsAvailableOnCluster.getSelectedValuesList().forEach(binding -> {
+                String bindingAsYAML = ((AddTriggerModel) model).getBindingsAvailableOnCluster().get(binding.toString());
+                ((AddTriggerModel) model).getBindingsSelectedByUser().put((String) binding, bindingAsYAML);
+            });
         }
         if (chkCreateNewTriggerBinding.isSelected()) {
             String configuration = textAreaNewTriggerBinding.getText();

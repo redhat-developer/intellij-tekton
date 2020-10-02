@@ -29,6 +29,7 @@ import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWiza
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
+import com.redhat.devtools.intellij.tektoncd.utils.Utils;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TriggerBindingConfigurationModel;
@@ -40,11 +41,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class AddTriggerAction extends TektonAction {
@@ -58,8 +61,8 @@ public class AddTriggerAction extends TektonAction {
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
             List<Resource> resources;
-            List<String> serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings;
-            Map<String, String> triggerBindingTemplates;
+            List<String> serviceAccounts, secrets, configMaps, persistentVolumeClaims;
+            Map<String, String> triggerBindings, triggerBindingTemplates;
             AddTriggerModel model;
             try {
                 resources = tkncli.getResources(namespace);
@@ -67,7 +70,7 @@ public class AddTriggerAction extends TektonAction {
                 secrets = tkncli.getSecrets(namespace);
                 configMaps = tkncli.getConfigMaps(namespace);
                 persistentVolumeClaims = tkncli.getPersistentVolumeClaim(namespace);
-                triggerBindings = tkncli.getTriggerBindings(namespace);
+                triggerBindings = getTriggerBindings(namespace, tkncli);
                 triggerBindingTemplates = SnippetHelper.getTriggerBindingTemplates();
                 model = getModel(element, namespace, tkncli, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
             } catch (IOException e) {
@@ -110,30 +113,18 @@ public class AddTriggerAction extends TektonAction {
                    }
 
                    // get all params from bindings
-                   Map<String, String> paramsFromBindings = new HashMap<>();
-                   for (String binding: triggerBindingsSelected.keySet()) {
-                       // retrieve the configuration of the current binding in the map, if not present take it from the vfm
-                       String configurationBinding = triggerBindingsSelected.get(binding);
-                       if (configurationBinding == null) {
-                           TektonVirtualFileManager.getInstance(getEventProject(anActionEvent)).findResource(namespace, "TriggerBinding", binding);
-                       }
-                       // create a model from the binding configuration
-                       TriggerBindingConfigurationModel bindingConfiguration = new TriggerBindingConfigurationModel(triggerBindingsSelected.get(binding));
-                       if (bindingConfiguration.isValid()) {
-                           // TODO it may happen two bindings to have the same name for a param, we should warn the user
-                           paramsFromBindings.putAll(bindingConfiguration.getParams());
-                       }
-                   }
+                   Set<String> paramsFromBindings = model.extractVariablesFromSelectedBindings();
 
+                   String randomString = Utils.getRandomString(6);
                    // create the triggerTemplate
-                   String triggerTemplateName = element.getName() + "-template";
+                   String triggerTemplateName = element.getName() + "-template-" + randomString;
                    ObjectNode pipelineRun = YAMLBuilder.createPipelineRun(element.getName(), model); //TODO need to support taskrun as well
-                   ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings.keySet()), Arrays.asList(pipelineRun));
+                   ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings), Arrays.asList(pipelineRun));
                    saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
                    notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
 
                    // create the eventListener
-                   String eventListenerName = element.getName() + "-listener";
+                   String eventListenerName = element.getName() + "-listener-" + randomString;
                    // TODO we are using the default pipeline serviceAccount but we should allow users to select the one they prefer
                    ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "pipeline", new ArrayList<>(triggerBindingsSelected.keySet()), triggerTemplateName);
                    saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
@@ -151,7 +142,7 @@ public class AddTriggerAction extends TektonAction {
         });
     }
 
-    protected AddTriggerModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<String> triggerBindings) throws IOException {
+    protected AddTriggerModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, Map<String, String> triggerBindings) throws IOException {
         String configuration = "";
         if (element instanceof PipelineNode) {
             configuration = tkncli.getPipelineYAML(namespace, element.getName());
@@ -159,7 +150,7 @@ public class AddTriggerAction extends TektonAction {
         /* else if (element instanceof TaskNode) { // TODO uncomment to extend to tasks
             configuration = tkncli.getTaskYAML(namespace, element.getName());
         } */
-        return new AddTriggerModel(element.getRoot().getProject(), configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
+        return new AddTriggerModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
     }
 
     protected void saveResource(String resourceBody, String namespace, String kind_plural, Tkn tkncli) throws IOException{
@@ -181,6 +172,25 @@ public class AddTriggerAction extends TektonAction {
         } catch (KubernetesClientException e) {
             throw new IOException(e.getLocalizedMessage());
         }
+    }
+
+    private Map<String, String> getTriggerBindings(String namespace, Tkn tkncli) {
+        Map<String, String> triggerBindingsOnCluster = new HashMap<>();
+        Map<String, Object> allTriggerBindings = tkncli.getCustomResources(namespace, CRDHelper.getCRDContext("triggers.tekton.dev/v1alpha1", "triggerbindings"));
+        if (allTriggerBindings == null) {
+            return triggerBindingsOnCluster;
+        }
+        List<Map<String, Object>> triggerBindingsItems = (List<Map<String, Object>>) allTriggerBindings.get("items");
+        triggerBindingsItems.forEach(binding -> {
+            try {
+                String bindingAsYAML = YAMLBuilder.writeValueAsString(binding);
+                triggerBindingsOnCluster.put(((Map<String, Object>)binding.get("metadata")).get("name").toString(), bindingAsYAML);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        return triggerBindingsOnCluster;
     }
 
     private void notifySuccessOperation(String nameResourceCreated) {

@@ -65,6 +65,13 @@ public class AddTriggerWizard extends BaseWizard {
     }
 
     @Override
+    public void doBeforeNextStep(int currentStep) {
+        if (mySteps.get(currentStep).getTitle().equals("Trigger")) {
+            mySteps.stream().filter(step -> step.getTitle().equals("Parameters")).findFirst().get().refresh();
+        }
+    }
+
+    @Override
     public String getLastStepButtonText() {
         return "&Add Trigger";
     }
