@@ -25,6 +25,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
@@ -50,7 +51,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 public class AddTriggerAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(AddTriggerAction.class);
 
-    public AddTriggerAction() { super(PipelineNode.class); }
+    public AddTriggerAction() { super(PipelineNode.class, TaskNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -115,8 +116,13 @@ public class AddTriggerAction extends TektonAction {
                    String randomString = Utils.getRandomString(6);
                    // create the triggerTemplate
                    String triggerTemplateName = element.getName() + "-template-" + randomString;
-                   ObjectNode pipelineRun = YAMLBuilder.createPipelineRun(element.getName(), model); //TODO need to support taskrun as well
-                   ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings), Arrays.asList(pipelineRun));
+                   ObjectNode run;
+                   if (element instanceof PipelineNode) {
+                       run = YAMLBuilder.createPipelineRun(element.getName(), model);
+                   } else {
+                       run = YAMLBuilder.createTaskRun(element.getName(), model);
+                   }
+                   ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings), Arrays.asList(run));
                    saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
                    notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
 
@@ -143,10 +149,9 @@ public class AddTriggerAction extends TektonAction {
         String configuration = "";
         if (element instanceof PipelineNode) {
             configuration = tkncli.getPipelineYAML(namespace, element.getName());
-        }
-        /* else if (element instanceof TaskNode) { // TODO uncomment to extend to tasks
+        } else if (element instanceof TaskNode) {
             configuration = tkncli.getTaskYAML(namespace, element.getName());
-        } */
+        }
         return new AddTriggerModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
     }
 

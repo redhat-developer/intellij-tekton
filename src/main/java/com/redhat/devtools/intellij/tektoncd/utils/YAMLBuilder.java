@@ -260,6 +260,57 @@ public class YAMLBuilder {
         return rootNode;
     }
 
+    public static ObjectNode createTaskRun(String task, AddTriggerModel model) {
+        ObjectNode rootNode = YAML_MAPPER.createObjectNode();
+
+        rootNode.put("apiVersion", "tekton.dev/v1beta1");
+        rootNode.put("kind", "TaskRun");
+
+        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
+        metadataNode.put("name", task);
+
+        rootNode.set("metadata", metadataNode);
+
+        ObjectNode specNode = YAML_MAPPER.createObjectNode();
+
+        ObjectNode pipelineRefNode = YAML_MAPPER.createObjectNode();
+        pipelineRefNode.put("name", task);
+
+        specNode.set("taskRef", pipelineRefNode);
+
+        if (!model.getServiceAccount().isEmpty()) {
+            specNode.put("serviceAccountName", model.getServiceAccount());
+        }
+
+        ArrayNode paramsNode = createParamsNodeFromInput(model.getParams());
+        if (paramsNode.size() > 0) {
+            specNode.set("params", paramsNode);
+        }
+
+        ObjectNode resourcesNode = YAML_MAPPER.createObjectNode();
+
+        ArrayNode inputResourcesNode = createInputResourcesNode(model.getInputResources());
+        if (inputResourcesNode.size() > 0) {
+            resourcesNode.set("inputs", inputResourcesNode);
+        }
+
+        ArrayNode outputResourcesNode = createOutputResourcesNode(model.getOutputResources());
+        if (outputResourcesNode.size() > 0) {
+            resourcesNode.set("outputs", outputResourcesNode);
+        }
+
+        specNode.set("resources", resourcesNode);
+
+        ArrayNode workspacesNode = createWorkspaceNode(model.getWorkspaces());
+        if (workspacesNode.size() > 0) {
+            specNode.set("workspaces", workspacesNode);
+        }
+
+        rootNode.set("spec", specNode);
+
+        return rootNode;
+    }
+
     public static ObjectNode createTriggerTemplate(String name, List<String> params, List<ObjectNode> runs) {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
