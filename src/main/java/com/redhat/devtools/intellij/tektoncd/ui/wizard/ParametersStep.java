@@ -18,9 +18,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,11 +31,9 @@ import javax.swing.border.Border;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_TOP_35;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROMAN_PLAIN_13;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION_ERROR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_10;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_12;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
 public class ParametersStep extends BaseStep {

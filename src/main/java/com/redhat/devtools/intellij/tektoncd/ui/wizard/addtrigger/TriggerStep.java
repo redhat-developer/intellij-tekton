@@ -18,7 +18,6 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TriggerBindingConfigurationModel;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.util.Map;
 import javax.swing.JCheckBox;

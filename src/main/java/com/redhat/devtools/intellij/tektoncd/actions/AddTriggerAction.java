@@ -28,11 +28,9 @@ import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
-import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
 import com.redhat.devtools.intellij.tektoncd.utils.Utils;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TriggerBindingConfigurationModel;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import java.io.IOException;
@@ -47,7 +45,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class AddTriggerAction extends TektonAction {

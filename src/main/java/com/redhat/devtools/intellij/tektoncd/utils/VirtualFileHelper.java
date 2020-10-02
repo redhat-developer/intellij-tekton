@@ -8,16 +8,15 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
-import java.util.UUID;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
