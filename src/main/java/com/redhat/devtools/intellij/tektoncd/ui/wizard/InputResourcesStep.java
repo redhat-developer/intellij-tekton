@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.GridBagConstraints;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -39,10 +38,10 @@ public class InputResourcesStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/resources.md";
     }
 
-    public void setContent(ActionToRunModel model) {
+    public void setContent() {
         final int[] row = {0};
 
-        model.getInputResources().values().stream().filter(input -> input.kind() == Input.Kind.RESOURCE).forEach(input -> {
+        model.getInputResources().stream().filter(input -> input.kind() == Input.Kind.RESOURCE).forEach(input -> {
             JLabel lblNameResource = new JLabel("<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">" + input.name() + "</span></html");
             addComponent(lblNameResource, null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
             addTooltip(lblNameResource, input.description().orElse(""));
@@ -73,18 +72,9 @@ public class InputResourcesStep extends BaseStep {
             if (itemEvent.getStateChange() == 1) {
                 // when inputResourceValuesCB combo box value changes, the new value is saved and preview is updated
                 String resourceSelected = (String) itemEvent.getItem();
-                setInputValue(idParam, resourceSelected);
+                setInputValue(model.getInputResources(), idParam, resourceSelected);
                 fireStateChanged();
             }
         });
-    }
-
-    private void setInputValue(String inputName, String value) {
-        for (Input input: model.getInputResources().values()) {
-            if (input.name().equals(inputName)) {
-                input.setValue(value);
-                break;
-            }
-        }
     }
 }

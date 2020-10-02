@@ -40,9 +40,12 @@ public class AddTriggerModel extends ActionToRunModel {
         this.newBindingAdded = newBinding;
     }
 
-    public Map<String, String> getBindingsSelectedByUser() {
+    public void loadBindingsSelectedByUser() {
+        if (bindingsSelectedByUser.isEmpty()) {
+            return;
+        }
+
         new Thread(() -> {
-            //Do whatever
             bindingsSelectedByUser.keySet().forEach(binding -> {
                 if (bindingsSelectedByUser.get(binding).isEmpty()) {
                     // TODO call virtualfilesystem to request binding without body
@@ -50,6 +53,9 @@ public class AddTriggerModel extends ActionToRunModel {
                 }
             });
         }).start();
+    }
+
+    public Map<String, String> getBindingsSelectedByUser() {
         return bindingsSelectedByUser;
     }
 }

@@ -12,22 +12,19 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
+
 
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.EMPTYDIR;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.PVC;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.SECRET;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_COMPONENT_VALUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_TOP_35;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
@@ -69,7 +66,7 @@ public class WorkspacesStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/workspaces.md";
     }
 
-    public void setContent(ActionToRunModel model) {
+    public void setContent() {
         cmbsWorkspaceTypes = new ArrayList<>();
         final int[] row = {0};
 

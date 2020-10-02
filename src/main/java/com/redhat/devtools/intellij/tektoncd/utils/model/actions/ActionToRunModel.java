@@ -34,8 +34,6 @@ public abstract class ActionToRunModel extends ConfigurationModel {
     protected ResourceConfigurationModel resource;
     protected boolean isValid = true;
     protected String errorMessage;
-    //protected Map<String, Input> params, inputResources;
-    //protected Map<String, Output> outputResources;
     protected Map<String, Workspace> workspaces;
     protected Map<String, String> taskServiceAccountNames;
     protected String globalServiceAccount;
@@ -50,9 +48,6 @@ public abstract class ActionToRunModel extends ConfigurationModel {
         this.secrets = secrets;
         this.configMaps = configMaps;
         this.persistentVolumeClaims = persistentVolumeClaims;
-        //this.params = Collections.emptyMap();
-        //this.inputResources = Collections.emptyMap();
-        //this.outputResources = Collections.emptyMap();
         init(configuration);
     }
 
@@ -71,7 +66,7 @@ public abstract class ActionToRunModel extends ConfigurationModel {
         }
 
         if (isValid) {
-            resource = ConfigurationModelFactory.getResourceModel(configuration);
+            resource = (ResourceConfigurationModel) ConfigurationModelFactory.getModel(configuration);
             if (resource == null) {
                 errorMessage += "Unable to create a model for the following resource kind - " + kind;
                 isValid = false;
@@ -119,16 +114,16 @@ public abstract class ActionToRunModel extends ConfigurationModel {
         return this.persistentVolumeClaims;
     }
 
-    public Map<String, Input> getParams() {
-        return resource.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param));
+    public List<Input> getParams() {
+        return resource.getParams();
     }
 
-    public Map<String, Input> getInputResources() {
-        return resource.getInputResources().stream().collect(Collectors.toMap(ir -> ir.name(), ir -> ir));
+    public List<Input> getInputResources() {
+        return resource.getInputResources();
     }
 
-    public Map<String, Output> getOutputResources() {
-        return resource.getOutputResources().stream().collect(Collectors.toMap(or -> or.name(), or -> or));
+    public List<Output> getOutputResources() {
+        return resource.getOutputResources();
     }
 
     public Map<String, Workspace> getWorkspaces() {

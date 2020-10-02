@@ -12,15 +12,11 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
@@ -59,7 +55,7 @@ public class ParametersStep extends BaseStep {
                 errorFieldsByRow.put(row[0], lblErrorText);
                 isComplete.set(false);
             } else {
-                setParamValue(param, field.getText());
+                setInputValue(model.getParams(), param, field.getText());
             }
             row[0] += 2;
         });
@@ -71,11 +67,11 @@ public class ParametersStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#specifying-parameters";
     }
 
-    public void setContent(ActionToRunModel model) {
+    public void setContent() {
         textFields = new LinkedHashMap<>();
         final int[] row = {0};
 
-        model.getParams().values().stream().filter(input -> input.kind() == Input.Kind.PARAMETER).forEach(input -> {
+        model.getParams().stream().filter(input -> input.kind() == Input.Kind.PARAMETER).forEach(input -> {
             String label = "<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">" + input.name() + "</span>  <span style=\\\"font-family:serif;font-size:10;font-weight:normal;font-style:italic;\\\">(" + input.type() + ")</span></html>";
             String tooltip = input.description().isPresent() ? input.description().get() + "\n" : "";
             if (input.type().equals("string")) {
@@ -102,7 +98,7 @@ public class ParametersStep extends BaseStep {
             @Override
             public void focusLost(FocusEvent e) {
                 super.focusLost(e);
-                setParamValue(idParam, txtValueParam.getText());
+                setInputValue(model.getParams(), idParam, txtValueParam.getText());
                 // reset error graphics if an error occurred earlier
                 if (isValid(txtValueParam)) {
                     txtValueParam.setBorder(defaultBorder);
@@ -114,15 +110,6 @@ public class ParametersStep extends BaseStep {
                 fireStateChanged();
             }
         });
-    }
-
-    protected void setParamValue(String paramName, String value) {
-        for (Input param: model.getParams().values()) {
-            if (param.name().equals(paramName)) {
-                param.setValue(value);
-                break;
-            }
-        }
     }
 
     private boolean isValid(JTextField component) {

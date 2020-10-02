@@ -19,17 +19,15 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.EventDispatcher;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -85,23 +83,8 @@ public abstract class BaseStep implements Step, Disposable {
 
         mainPanel.add(scroll);
 
-        setContent(model);
+        setContent();
         adjustContentPanel();
-    }
-
-    protected void fitFullContentContainer(JComponent component) {
-        double width = contentPanel.getPreferredSize().getWidth();
-        double height = contentPanel.getPreferredSize().getHeight() > component.getPreferredSize().getHeight() ? component.getPreferredSize().getHeight() : contentPanel.getPreferredSize().getHeight();
-        component.setPreferredSize(new Dimension((int)width, (int)height));
-        /*contentPanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                //recalculate variable
-                int width = e.getComponent().getWidth();
-                int height = e.getComponent().getHeight() > component.getHeight() ? component.getHeight() : e.getComponent().getHeight();
-                component.setPreferredSize(new Dimension(width, height));
-            }
-        });*/
     }
 
     public interface Listener extends StepListener {
@@ -168,14 +151,10 @@ public abstract class BaseStep implements Step, Disposable {
     }
 
     protected JComponent addComponent(@NotNull JComponent component, Font font, Border border, Dimension preferredSize, @NotNull int col, @NotNull int row, @NotNull int anchor) {
-        if (font != null) component.setFont(font);
-        if (border != null) component.setBorder(border);
-        if (preferredSize != null) component.setPreferredSize(preferredSize);
         gridBagConstraints.gridx = col;
         gridBagConstraints.gridy = row;
         gridBagConstraints.anchor = anchor;
-        contentPanel.add(component, gridBagConstraints);
-        return component;
+        return addComponent(component, font, border, preferredSize, gridBagConstraints);
     }
 
     protected void deleteComponent(@NotNull JComponent component) {
@@ -192,15 +171,24 @@ public abstract class BaseStep implements Step, Disposable {
         }
     }
 
+    protected void setInputValue(List<Input> inputs, String inputName, String value) {
+        for (Input input: inputs) {
+            if (input.name().equals(inputName)) {
+                input.setValue(value);
+                break;
+            }
+        }
+    }
+
     public void refresh() {
         contentPanel.removeAll();
-        setContent(model);
+        setContent();
         adjustContentPanel();
         contentPanel.revalidate();
         contentPanel.repaint();
     }
 
-    public abstract void setContent(ActionToRunModel model);
+    public abstract void setContent();
     public abstract boolean isComplete();
     public abstract String getHelpId();
 }

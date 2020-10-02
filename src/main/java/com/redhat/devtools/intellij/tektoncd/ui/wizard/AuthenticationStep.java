@@ -11,7 +11,6 @@
 package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -44,7 +43,7 @@ public class AuthenticationStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/auth.md";
     }
 
-    public void setContent(ActionToRunModel model) {
+    public void setContent() {
         final int[] row = {0};
 
         List<String> serviceAccounts = new ArrayList<>(model.getTaskServiceAccounts().keySet());

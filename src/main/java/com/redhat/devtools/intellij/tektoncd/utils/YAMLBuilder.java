@@ -18,14 +18,10 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
-
-import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -49,17 +45,17 @@ public class YAMLBuilder {
             rootNode.set("workspaces", workspacesNode);
         }
 
-        ArrayNode paramsNode = createParamsNodeFromInput(new ArrayList<>(model.getParams().values()));
+        ArrayNode paramsNode = createParamsNodeFromInput(model.getParams());
         if (paramsNode.size() > 0) {
             rootNode.set("params", paramsNode);
         }
 
-        ArrayNode inputResourcesNode = createInputResourcesNode(new ArrayList<>(model.getInputResources().values()));
+        ArrayNode inputResourcesNode = createInputResourcesNode(model.getInputResources());
         if (inputResourcesNode.size() > 0) {
             rootNode.set("resources", inputResourcesNode);
         }
 
-        ArrayNode outputResourcesNode = createOutputResourcesNode(new ArrayList<>(model.getOutputResources().values()));
+        ArrayNode outputResourcesNode = createOutputResourcesNode(model.getOutputResources());
         if (outputResourcesNode.size() > 0) {
             rootNode.set("outputs", outputResourcesNode);
         }
@@ -244,12 +240,12 @@ public class YAMLBuilder {
             specNode.set("serviceAccountNames", tsaNode);
         }
 
-        ArrayNode paramsNode = createParamsNodeFromInput(new ArrayList<>(model.getParams().values()));
+        ArrayNode paramsNode = createParamsNodeFromInput(model.getParams());
         if (paramsNode.size() > 0) {
             specNode.set("params", paramsNode);
         }
 
-        ArrayNode inputResourcesNode = createInputResourcesNode(new ArrayList<>(model.getInputResources().values()));
+        ArrayNode inputResourcesNode = createInputResourcesNode(model.getInputResources());
         if (inputResourcesNode.size() > 0) {
             specNode.set("resources", inputResourcesNode);
         }

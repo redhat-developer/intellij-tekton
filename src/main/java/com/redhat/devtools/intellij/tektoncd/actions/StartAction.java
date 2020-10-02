@@ -23,8 +23,6 @@ import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
@@ -101,10 +99,10 @@ public class StartAction extends TektonAction {
                 try {
                     String serviceAccount = model.getServiceAccount();
                     Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
-                    Map<String, String> params = model.getParams().values().stream().collect(Collectors.toMap(param -> param.name(), param -> param.value()));
+                    Map<String, String> params = model.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param.value()));
                     Map<String, Workspace> workspaces = model.getWorkspaces();
-                    Map<String, String> inputResources = model.getInputResources().values().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
-                    Map<String, String> outputResources = model.getOutputResources().values().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
+                    Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
+                    Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
                     String runPrefixName = model.getRunPrefixName();
                     String runName = null;
                     if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {

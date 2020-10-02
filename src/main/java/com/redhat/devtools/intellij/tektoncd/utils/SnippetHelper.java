@@ -1,23 +1,28 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.completion.TknDictionary;
 
+import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 
 public class SnippetHelper {
     private static final URL SNIPPETS_URL = TknDictionary.class.getResource("/tknsnippets.json");
     private static final URL TRIGGER_BINDING_SNIPPETS_URL = TknDictionary.class.getResource("/triggerBindingSnippets.json");
-    private static final String[] TRIGGER_BINDING_TEMPLATES = new String[] { "github-pr-binding", "gitlab-push-binding", "message-binding", "pipeline-binding", "empty-binding" };
 
     public static JsonNode getSnippetJSON() throws IOException {
-        return JSONHelper.getJSONFromURL(SNIPPETS_URL);
+        return getSnippetJSON(SNIPPETS_URL);
     }
 
     public static JsonNode getSnippetJSON(URL snippets) throws IOException {
@@ -25,25 +30,24 @@ public class SnippetHelper {
     }
 
     public static String getBody(String snippet) throws IOException {
-        String yaml = YAMLHelper.JSONToYAML(SnippetHelper.getSnippetJSON(SNIPPETS_URL).get(snippet).get("body"));
+        return convertJSONBodyToYAML(SnippetHelper.getSnippetJSON(SNIPPETS_URL).get(snippet).get("body"));
+    }
+
+    private static String convertJSONBodyToYAML(JsonNode snippetBody) throws JsonProcessingException {
+        String yaml = YAMLHelper.JSONToYAML(snippetBody);
         return yaml.replaceAll("\"\n", "\n").replaceAll("- \"", "");
     }
 
-    private static String getBodyTriggerBindings(String snippet) throws IOException {
-        String yaml = YAMLHelper.JSONToYAML(SnippetHelper.getSnippetJSON(TRIGGER_BINDING_SNIPPETS_URL).get(snippet).get("body"));
-        return yaml.replaceAll("\"\n", "\n").replaceAll("- \"", "");
-    }
-
-    public static Map<String, String> getTriggerBindingTemplates() {
+    public static Map<String, String> getTriggerBindingTemplates() throws IOException {
         Map<String, String> triggerBindingTemplates = new HashMap<>();
-        Arrays.stream(TRIGGER_BINDING_TEMPLATES).forEach(triggerBinding -> {
-            try {
-                String body = getBodyTriggerBindings(triggerBinding);
-                triggerBindingTemplates.put(triggerBinding, body);
-            } catch (IOException e) {
-                e.printStackTrace();
+        JsonNode bindingTemplatesNode = getSnippetJSON(TRIGGER_BINDING_SNIPPETS_URL);
+        if (bindingTemplatesNode != null) {
+            for (Iterator<Map.Entry<String, JsonNode>> it = bindingTemplatesNode.fields(); it.hasNext(); ) {
+                Map.Entry<String, JsonNode> entry = it.next();
+                String value = convertJSONBodyToYAML(entry.getValue().get("body"));
+                triggerBindingTemplates.put(entry.getKey(), value);
             }
-        });
+        }
         return triggerBindingTemplates;
     }
 }

@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -23,35 +22,27 @@ import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
-import io.fabric8.tekton.client.TektonClient;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class AddTriggerAction extends TektonAction {
@@ -80,7 +71,7 @@ public class AddTriggerAction extends TektonAction {
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
-                                element.getName() + " in namespace " + namespace + " failed to start. An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
+                                "Failed to add a trigger to " + element.getName() + " in namespace " + namespace + ". An error occurred while retrieving informations.\n" + e.getLocalizedMessage(),
                                 "Error"));
                 logger.warn("Error: " + e.getLocalizedMessage());
                 return;
@@ -94,9 +85,9 @@ public class AddTriggerAction extends TektonAction {
             AddTriggerWizard addTriggerWizard = UIHelper.executeInUI(() -> {
                 String titleDialog;
                 if (element instanceof PipelineNode) {
-                    titleDialog = "Pipeline " + element.getName();
+                    titleDialog = "Add Trigger to Pipeline " + element.getName();
                 } else {
-                    titleDialog = "Task " + element.getName();
+                    titleDialog = "Add Trigger to Task " + element.getName();
                 }
                 AddTriggerWizard wizard = new AddTriggerWizard(titleDialog, getEventProject(anActionEvent), model, triggerBindingTemplates);
                 wizard.show();
@@ -105,22 +96,30 @@ public class AddTriggerAction extends TektonAction {
 
             if (addTriggerWizard.isOK()) {
                try {
-
+                   // take/create all triggerBindings
                    List<String> triggerBindingsSelected = new ArrayList<>(model.getBindingsSelectedByUser().keySet());
                    String newBindingAdded = model.getNewBindingAdded();
                    if (!newBindingAdded.isEmpty()) {
                        saveResource(newBindingAdded, namespace, "triggerbindings", tkncli);
                        String nameBinding = YAMLHelper.getStringValueFromYAML(newBindingAdded, new String[] {"metadata", "name"});
                        notifySuccessOperation("TriggerBinding " + nameBinding);
+                       // add the new binding to the list of bindings
+                       triggerBindingsSelected.add(nameBinding);
                    }
 
+//                   Map<String, String>
+
+                   // create the triggerTemplate
                    String triggerTemplateName = element.getName() + "-template";
-                   ObjectNode pipelineRun = YAMLBuilder.createPipelineRun(element.getName(), model);
+                   ObjectNode pipelineRun = YAMLBuilder.createPipelineRun(element.getName(), model); //TODO need to support taskrun as well
+                   //TODO need to get all params from bindings
                    ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, Collections.emptyList(), Arrays.asList(pipelineRun));
                    saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
                    notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
 
+                   // create the eventListener
                    String eventListenerName = element.getName() + "-listener";
+                   //TODO create a serviceAccount for the el
                    ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "", triggerBindingsSelected, triggerTemplateName);
                    saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
                    notifySuccessOperation("EventListener " + eventListenerName);
@@ -128,7 +127,7 @@ public class AddTriggerAction extends TektonAction {
                } catch (IOException e) {
                    Notification notification = new Notification(NOTIFICATION_ID,
                            "Error",
-                           model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
+                           "Failed to add a trigger to " + element.getName() + " in namespace " + namespace + "\n" + e.getLocalizedMessage(),
                            NotificationType.ERROR);
                    Notifications.Bus.notify(notification);
                    logger.warn("Error: " + e.getLocalizedMessage());
@@ -142,7 +141,7 @@ public class AddTriggerAction extends TektonAction {
         if (element instanceof PipelineNode) {
             configuration = tkncli.getPipelineYAML(namespace, element.getName());
         }
-        /* else if (element instanceof TaskNode) { // uncomment to extend to tasks
+        /* else if (element instanceof TaskNode) { // TODO uncomment to extend to tasks
             configuration = tkncli.getTaskYAML(namespace, element.getName());
         } */
         return new AddTriggerModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
