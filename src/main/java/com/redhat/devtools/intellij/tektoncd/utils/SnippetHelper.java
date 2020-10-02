@@ -5,17 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.completion.TknDictionary;
-
-import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 
 public class SnippetHelper {
     private static final URL SNIPPETS_URL = TknDictionary.class.getResource("/tknsnippets.json");

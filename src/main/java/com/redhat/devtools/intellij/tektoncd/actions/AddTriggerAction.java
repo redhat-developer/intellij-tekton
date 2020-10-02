@@ -37,7 +37,6 @@ import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,10 +112,12 @@ public class AddTriggerAction extends TektonAction {
                    // get all params from bindings
                    Map<String, String> paramsFromBindings = new HashMap<>();
                    for (String binding: triggerBindingsSelected.keySet()) {
+                       // retrieve the configuration of the current binding in the map, if not present take it from the vfm
                        String configurationBinding = triggerBindingsSelected.get(binding);
                        if (configurationBinding == null) {
                            TektonVirtualFileManager.getInstance(getEventProject(anActionEvent)).findResource(namespace, "TriggerBinding", binding);
                        }
+                       // create a model from the binding configuration
                        TriggerBindingConfigurationModel bindingConfiguration = new TriggerBindingConfigurationModel(triggerBindingsSelected.get(binding));
                        if (bindingConfiguration.isValid()) {
                            // TODO it may happen two bindings to have the same name for a param, we should warn the user
