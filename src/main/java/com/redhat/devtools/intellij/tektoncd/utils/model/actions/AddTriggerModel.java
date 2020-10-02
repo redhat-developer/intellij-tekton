@@ -10,19 +10,30 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils.model.actions;
 
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.redhat.devtools.intellij.tektoncd.actions.AddTriggerAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
+import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AddTriggerModel extends ActionToRunModel {
+    Logger logger = LoggerFactory.getLogger(AddTriggerModel.class);
 
+    private Project project;
     private Map<String, String> bindingsSelectedByUser;
     private String newBindingAdded;
     private List<String> bindingsAvailableOnCluster;
 
-    public AddTriggerModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<String> bindingsAvailableOnCluster) {
+    public AddTriggerModel(Project project, String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<String> bindingsAvailableOnCluster) {
         super(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
+        this.project = project;
         this.bindingsAvailableOnCluster = bindingsAvailableOnCluster;
         this.bindingsSelectedByUser = new HashMap<>();
         this.newBindingAdded = "";
@@ -45,11 +56,16 @@ public class AddTriggerModel extends ActionToRunModel {
             return;
         }
 
+        FileDocumentManager docManager = FileDocumentManager.getInstance();
         new Thread(() -> {
             bindingsSelectedByUser.keySet().forEach(binding -> {
                 if (bindingsSelectedByUser.get(binding).isEmpty()) {
-                    // TODO call virtualfilesystem to request binding without body
-
+                    try {
+                        VirtualFile vfBinding = TektonVirtualFileManager.getInstance(project).findResource(namespace, "TriggerBinding", binding);
+                        bindingsSelectedByUser.put(binding, docManager.getDocument(vfBinding).getText());
+                    } catch (IOException e) {
+                        logger.warn(e.getLocalizedMessage());
+                    }
                 }
             });
         }).start();

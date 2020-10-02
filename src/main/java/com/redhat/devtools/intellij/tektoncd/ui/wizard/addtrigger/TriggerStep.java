@@ -177,6 +177,7 @@ public class TriggerStep extends BaseStep {
         ((AddTriggerModel) model).getBindingsSelectedByUser().clear();
         if (chkSelectExistingTriggerBinding.isSelected()) {
             listBindingsAvailableOnCluster.getSelectedValuesList().forEach(binding -> ((AddTriggerModel) model).getBindingsSelectedByUser().put(binding.toString(), null));
+            ((AddTriggerModel) model).loadBindingsSelectedByUser();
         }
         if (chkCreateNewTriggerBinding.isSelected()) {
             String configuration = textAreaNewTriggerBinding.getText();

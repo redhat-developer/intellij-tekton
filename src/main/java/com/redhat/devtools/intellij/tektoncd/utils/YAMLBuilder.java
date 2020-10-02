@@ -299,8 +299,7 @@ public class YAMLBuilder {
 
         ObjectNode specNode = YAML_MAPPER.createObjectNode();
 
-        //TODO add serviceAccountName node
-        //specNode.put("serviceAccountName", serviceAccount);
+        specNode.put("serviceAccountName", serviceAccount);
 
         ArrayNode triggersNode = createTriggersNode("trig", triggerBindings, triggerTemplate);
         specNode.set("triggers", triggersNode);

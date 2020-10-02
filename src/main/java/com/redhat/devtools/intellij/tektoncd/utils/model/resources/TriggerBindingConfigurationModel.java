@@ -10,12 +10,41 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils.model.resources;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TriggerBindingConfigurationModel extends ConfigurationModel {
+    private Logger logger = LoggerFactory.getLogger(TriggerBindingConfigurationModel.class);
+    private Map<String, String> params;
+
     public TriggerBindingConfigurationModel(String configuration) {
         super(configuration);
+        findParams(configuration);
+    }
+
+    public Map<String, String> getParams() {
+        return this.params;
+    }
+
+    private void findParams(String configuration) {
+        this.params = new HashMap<>();
+        try {
+            JsonNode paramsNode = YAMLHelper.getValueFromYAML(configuration, new String[]{"spec", "params"});
+            if (paramsNode != null) {
+                for (JsonNode item: paramsNode) {
+                    this.params.put(item.get("name").asText(), item.get("value").asText());
+                }
+            }
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage());
+        }
     }
 
     public String getErrorMessage() {
@@ -24,7 +53,10 @@ public class TriggerBindingConfigurationModel extends ConfigurationModel {
             errorMessage += " * Kind field is missing or its value is not valid.<br>";
         }
         if (Strings.isNullOrEmpty(name)) {
-            errorMessage += " * Name field is missing or its value is not valid.";
+            errorMessage += " * Name field is missing or its value is not valid.<br>";
+        }
+        if (this.params.isEmpty()) {
+            errorMessage += " * Params field is missing or its value is not valid.<br>";
         }
 
         errorMessage = errorMessage.equals("<html>") ? "" : errorMessage + "</html>";
