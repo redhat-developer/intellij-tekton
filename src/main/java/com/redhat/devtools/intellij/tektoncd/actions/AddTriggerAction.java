@@ -54,6 +54,15 @@ public class AddTriggerAction extends TektonAction {
     public AddTriggerAction() { super(PipelineNode.class, TaskNode.class); }
 
     @Override
+    public boolean isVisible(Object selected) {
+        // if triggers are not installed, don't show this action
+        if (!((ParentableNode)selected).getRoot().getTkn().isTektonTriggersAware()) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
@@ -114,6 +123,8 @@ public class AddTriggerAction extends TektonAction {
                    Set<String> paramsFromBindings = model.extractVariablesFromSelectedBindings();
 
                    String randomString = Utils.getRandomString(6);
+                   // interpolate the variables correctly $variable to $(tt.params.variable)
+                   normalizeVariablesInterpolation(model, paramsFromBindings);
                    // create the triggerTemplate
                    String triggerTemplateName = element.getName() + "-template-" + randomString;
                    ObjectNode run;
@@ -193,6 +204,16 @@ public class AddTriggerAction extends TektonAction {
         });
 
         return triggerBindingsOnCluster;
+    }
+
+    private void normalizeVariablesInterpolation(AddTriggerModel model, Set<String> variables) {
+        model.getParams().forEach(param -> {
+            if (param.value().startsWith("$")) {
+                if (variables.contains(param.value().substring(1))) {
+                    param.setValue("$(tt.params." + param.value().substring(1) + ")");
+                }
+            }
+        });
     }
 
     private void notifySuccessOperation(String nameResourceCreated) {

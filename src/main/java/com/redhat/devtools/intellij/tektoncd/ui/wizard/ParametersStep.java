@@ -79,7 +79,7 @@ public class ParametersStep extends BaseStep {
         if (model instanceof AddTriggerModel) {
             Set<String> variablesToSuggest = ((AddTriggerModel) model).extractVariablesFromSelectedBindings();
             if (!variablesToSuggest.isEmpty()) {
-                String suggestVariablesText = "<html><body style=\"font-family: " + Font.DIALOG + ";font-size:10px;\">The following variables can be used as Parameter values in the form $(params.variable):<br><br>";
+                String suggestVariablesText = "<html><body style=\"font-family: " + Font.DIALOG + ";font-size:10px;\">The following variables can be used as Parameter values in the form $variable:<br><br>";
                 int cont = 0;
                 for (String variable: variablesToSuggest) {
                     suggestVariablesText += "<span style=\"font-size:10px;font-weight:bold;\">" + variable + "</span>   ";

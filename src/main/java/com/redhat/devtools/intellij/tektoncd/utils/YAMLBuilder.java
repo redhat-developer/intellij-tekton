@@ -21,7 +21,6 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -214,13 +213,16 @@ public class YAMLBuilder {
     }
 
     public static ObjectNode createPipelineRun(String pipeline, AddTriggerModel model) {
+        //TODO use fabric8 client to create pipelinerun and taskrun
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
         rootNode.put("apiVersion", "tekton.dev/v1beta1");
         rootNode.put("kind", "PipelineRun");
 
         ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
-        metadataNode.put("name", pipeline);
+        metadataNode.put("generateName", pipeline + "-");
+
+        //TODO add labels
 
         rootNode.set("metadata", metadataNode);
 
@@ -267,7 +269,7 @@ public class YAMLBuilder {
         rootNode.put("kind", "TaskRun");
 
         ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
-        metadataNode.put("name", task);
+        metadataNode.put("generateName", task + "-");
 
         rootNode.set("metadata", metadataNode);
 
