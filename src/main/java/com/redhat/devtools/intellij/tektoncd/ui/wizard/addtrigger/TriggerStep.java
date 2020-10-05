@@ -20,7 +20,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.util.Map;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -31,12 +30,12 @@ import javax.swing.border.EmptyBorder;
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_COMPONENT_VALUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_BOTTOM_10;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROMAN_PLAIN_13;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
 public class TriggerStep extends BaseStep {
 
-    private JCheckBox chkSelectExistingTriggerBinding, chkCreateNewTriggerBinding;
     private JComboBox cmbPreMadeTriggerBindingTemplates;
     private JTextArea textAreaNewTriggerBinding;
     private JScrollPane scrollTriggerBindingAreaPane;
@@ -55,52 +54,41 @@ public class TriggerStep extends BaseStep {
         final int[] row = {0};
 
         String infoText = "<html>The following options allow you to associate one or more bindings to the event-listener<br>";
-               infoText += "which will be created automatically. You are allowed to use either or both of the options<br>";
-               infoText += "to associate a newly-created binding and/or existing ones.</html>";
+               infoText += "which will be created automatically. You are allowed to skip this step by clicking<br>";
+               infoText += "directly on Next or to select one or more existing bindings and/or create a new one.</html>";
         JLabel lblInfoText = new JLabel(infoText);
-        addComponent(lblInfoText, ROMAN_PLAIN_13, new EmptyBorder(10, 0, 30, 0), new Dimension(594, 91), buildGridBagConstraints(0, row[0], 2, GridBagConstraints.NORTHWEST));
+        addComponent(lblInfoText, ROMAN_PLAIN_13, new EmptyBorder(10, 0, 10, 0), new Dimension(594, 91), buildGridBagConstraints(0, row[0], 2, GridBagConstraints.NORTHWEST));
         row[0] += 1;
 
-        chkSelectExistingTriggerBinding = new JCheckBox("Select a TriggerBinding");
-        chkSelectExistingTriggerBinding.setBounds(100,100, 50,50);
-        chkSelectExistingTriggerBinding.setBackground(backgroundTheme);
+        boolean hasBindings = !((AddTriggerModel)model).getBindingsAvailableOnCluster().isEmpty();
 
-        addComponent(chkSelectExistingTriggerBinding, ROMAN_PLAIN_13, null, null, 0, row[0], GridBagConstraints.NORTHWEST);
+        if (hasBindings) {
+            JLabel lblExistingBindings = new JLabel("<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">Select one or more TriggerBindings</span></html>");
+            addComponent(lblExistingBindings, null, MARGIN_BOTTOM_10, null, 0, row[0], GridBagConstraints.NORTHWEST);
+            row[0] += 1;
 
-        listBindingsAvailableOnCluster = new JBList();
-        listBindingsAvailableOnCluster.setEnabled(false);
-        listBindingsAvailableOnCluster.setListData(((AddTriggerModel)model).getBindingsAvailableOnCluster().keySet().toArray());
-        listBindingsAvailableOnCluster.setLayoutOrientation(JList.VERTICAL);
+            listBindingsAvailableOnCluster = new JBList();
+            listBindingsAvailableOnCluster.setListData(((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().toArray());
+            listBindingsAvailableOnCluster.setLayoutOrientation(JList.VERTICAL);
 
-        JScrollPane scrollPane = new JBScrollPane();
-        scrollPane.setViewportView(listBindingsAvailableOnCluster);
-        int width = (int) listBindingsAvailableOnCluster.getPreferredSize().getWidth();
-        scrollPane.setPreferredSize(new Dimension(width < 250 ? 250 : width, 150));
+            JScrollPane scrollPane = new JBScrollPane();
+            scrollPane.setViewportView(listBindingsAvailableOnCluster);
+            int width = (int) listBindingsAvailableOnCluster.getPreferredSize().getWidth();
+            scrollPane.setPreferredSize(new Dimension(width < 250 ? 250 : width, 150));
 
-        addComponent(scrollPane, TIMES_PLAIN_14, BORDER_COMPONENT_VALUE, null, 1, row[0], GridBagConstraints.NORTHWEST);
+            addComponent(scrollPane, TIMES_PLAIN_14, BORDER_COMPONENT_VALUE, null, 0, row[0], GridBagConstraints.NORTHWEST);
 
-        chkSelectExistingTriggerBinding.addItemListener(itemEvent -> {
-            if (chkSelectExistingTriggerBinding.isSelected()) {
-                listBindingsAvailableOnCluster.setEnabled(true);
-            } else {
-                listBindingsAvailableOnCluster.setEnabled(false);
-            }
-        });
+            row[0] += 1;
+        }
 
-        row[0] += 1;
+        JLabel lblCreateNewTriggerBinding = new JLabel("<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">Create a new TriggerBinding (leave empty to skip it)</span></html>");
 
-        chkCreateNewTriggerBinding = new JCheckBox("Create a new TriggerBinding");
-        chkCreateNewTriggerBinding.setBounds(100,100, 50,50);
-        chkCreateNewTriggerBinding.setBackground(backgroundTheme);
-
-        addComponent(chkCreateNewTriggerBinding, ROMAN_PLAIN_13, new EmptyBorder(20, 0, 0, 0), null, 0, row[0], GridBagConstraints.WEST);
+        addComponent(lblCreateNewTriggerBinding, null, new EmptyBorder(20, 0, 10, 0), null, buildGridBagConstraints(0, row[0], 2, GridBagConstraints.WEST));
         row[0] += 1;
 
         JLabel lblSelectTemplate = new JLabel("Select a template");
-        lblSelectTemplate.setEnabled(false);
 
         cmbPreMadeTriggerBindingTemplates = new ComboBox();
-        cmbPreMadeTriggerBindingTemplates.setEnabled(false);
         cmbPreMadeTriggerBindingTemplates.addItem("");
 
         triggerBindingTemplates.keySet().stream().forEach(template -> cmbPreMadeTriggerBindingTemplates.addItem(template));
@@ -112,13 +100,15 @@ public class TriggerStep extends BaseStep {
                 if (!templateSelected.isEmpty()) {
                     String content = triggerBindingTemplates.get(templateSelected);
                     textAreaNewTriggerBinding.setText(content);
+                } else {
+                    textAreaNewTriggerBinding.setText("");
                 }
                 fireStateChanged();
             }
         });
 
         addComponent(lblSelectTemplate, ROMAN_PLAIN_13, BORDER_LABEL_NAME, null, 0, row[0], GridBagConstraints.WEST);
-        addComponent(cmbPreMadeTriggerBindingTemplates, TIMES_PLAIN_14, BORDER_LABEL_NAME, null, 1, row[0], GridBagConstraints.NORTHWEST);
+        addComponent(cmbPreMadeTriggerBindingTemplates, TIMES_PLAIN_14, null, null, 1, row[0], GridBagConstraints.NORTHWEST);
         row[0] += 1;
 
         JLabel lblWarningUniqueName = new JLabel("* If a trigger binding with the same name already exists, it will be overwritten");
@@ -133,30 +123,12 @@ public class TriggerStep extends BaseStep {
 
         textAreaNewTriggerBinding = new JTextArea(15, 35);
         scrollTriggerBindingAreaPane = new JBScrollPane(textAreaNewTriggerBinding);
-        scrollTriggerBindingAreaPane.setEnabled(false);
-        textAreaNewTriggerBinding.setEnabled(false);
-        textAreaNewTriggerBinding.setEditable(false);
-        textAreaNewTriggerBinding.setText(triggerBindingTemplates.get("empty-binding"));
+        textAreaNewTriggerBinding.setEditable(true);
+        textAreaNewTriggerBinding.setText("");
         textAreaNewTriggerBinding.setFont(ROMAN_PLAIN_13);
 
         addComponent(scrollTriggerBindingAreaPane, ROMAN_PLAIN_13, BORDER_COMPONENT_VALUE, null, buildGridBagConstraints(0, row[0], 2, GridBagConstraints.NORTHWEST));
         row[0] += 1;
-
-        chkCreateNewTriggerBinding.addItemListener(itemEvent -> {
-            if (chkCreateNewTriggerBinding.isSelected()) {
-                lblSelectTemplate.setEnabled(true);
-                scrollTriggerBindingAreaPane.setEnabled(true);
-                cmbPreMadeTriggerBindingTemplates.setEnabled(true);
-                textAreaNewTriggerBinding.setEditable(true);
-                textAreaNewTriggerBinding.setEnabled(true);
-            } else {
-                lblSelectTemplate.setEnabled(false);
-                scrollTriggerBindingAreaPane.setEnabled(false);
-                cmbPreMadeTriggerBindingTemplates.setEnabled(false);
-                textAreaNewTriggerBinding.setEditable(false);
-                textAreaNewTriggerBinding.setEnabled(false);
-            }
-        });
 
         adjustContentPanel();
     }
@@ -175,14 +147,14 @@ public class TriggerStep extends BaseStep {
         // trigger bindings are optional in an event listener so users can select none or everything - the result is always valid
         lblErrorNewBinding.setVisible(false);
         ((AddTriggerModel) model).getBindingsSelectedByUser().clear();
-        if (chkSelectExistingTriggerBinding.isSelected()) {
-            listBindingsAvailableOnCluster.getSelectedValuesList().forEach(binding -> {
-                String bindingAsYAML = ((AddTriggerModel) model).getBindingsAvailableOnCluster().get(binding.toString());
-                ((AddTriggerModel) model).getBindingsSelectedByUser().put((String) binding, bindingAsYAML);
-            });
-        }
-        if (chkCreateNewTriggerBinding.isSelected()) {
-            String configuration = textAreaNewTriggerBinding.getText();
+        // get selected bindings
+        listBindingsAvailableOnCluster.getSelectedValuesList().forEach(binding -> {
+            String bindingAsYAML = ((AddTriggerModel) model).getBindingsAvailableOnCluster().get(binding.toString());
+            ((AddTriggerModel) model).getBindingsSelectedByUser().put((String) binding, bindingAsYAML);
+        });
+        // get newly-created binding
+        String configuration = textAreaNewTriggerBinding.getText();
+        if (!configuration.isEmpty()) {
             TriggerBindingConfigurationModel bindingModel = new TriggerBindingConfigurationModel(configuration);
             if (!bindingModel.isValid()) {
                 // if the new binding written by the user is not valid, we should show an error message with some info

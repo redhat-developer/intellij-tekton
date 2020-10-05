@@ -22,6 +22,7 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
 public class AddTriggerWizard extends BaseWizard {
@@ -67,7 +68,10 @@ public class AddTriggerWizard extends BaseWizard {
     @Override
     public void doBeforeNextStep(int currentStep) {
         if (mySteps.get(currentStep).getTitle().equals("Trigger")) {
-            mySteps.stream().filter(step -> step.getTitle().equals("Parameters")).findFirst().get().refresh();
+            Optional<BaseStep> parameterStep = mySteps.stream().filter(step -> step.getTitle().equals("Parameters")).findFirst();
+            if (parameterStep.isPresent()) {
+                parameterStep.get().refresh();
+            }
         }
     }
 

@@ -26,7 +26,6 @@ public class UIConstants {
     public static final Dimension ROW_DIMENSION = new Dimension(400, 33);
 
     public static final Font TIMES_PLAIN_10 = new Font(Font.DIALOG, Font.PLAIN, 10);
-    public static final Font TIMES_PLAIN_12 = new Font(Font.DIALOG, Font.PLAIN, 12);
     public static final Font ROMAN_PLAIN_13 = new Font(Font.DIALOG, Font.PLAIN, 13);
     public static final Font TIMES_PLAIN_14 = new Font(Font.DIALOG, Font.PLAIN, 14);
 
@@ -35,6 +34,7 @@ public class UIConstants {
     public static final Border BORDER_LABEL_NAME = new EmptyBorder(10, 0, 0, 0);
     public static final Border NO_BORDER = new EmptyBorder(0, 0, 0, 0);
     public static final Border MARGIN_10 = new EmptyBorder(10, 10, 10, 10);
+    public static final Border MARGIN_BOTTOM_10 = new EmptyBorder(0, 0, 10, 0);
     public static final Border MARGIN_TOP_35 = new EmptyBorder(35, 0,0,0);
 
 }
