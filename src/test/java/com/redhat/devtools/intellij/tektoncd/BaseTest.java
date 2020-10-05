@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd;
 
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModelTest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;

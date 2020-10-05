@@ -204,7 +204,9 @@ public class YAMLBuilder {
         templateNode.put("name", triggerTemplate);
 
         triggerNode.put("name", name);
-        triggerNode.set("bindings", bindingsNode);
+        if (bindingsNode.size() > 0) {
+            triggerNode.set("bindings", bindingsNode);
+        }
         triggerNode.set("template", templateNode);
 
         triggersNode.add(triggerNode);
@@ -301,7 +303,9 @@ public class YAMLBuilder {
             resourcesNode.set("outputs", outputResourcesNode);
         }
 
-        specNode.set("resources", resourcesNode);
+        if (resourcesNode.size() > 0) {
+            specNode.set("resources", resourcesNode);
+        }
 
         ArrayNode workspacesNode = createWorkspaceNode(model.getWorkspaces());
         if (workspacesNode.size() > 0) {

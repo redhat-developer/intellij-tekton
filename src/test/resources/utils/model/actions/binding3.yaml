@@ -1,0 +1,8 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: empty-binding
+spec:
+  params:
+    - name: foo
+      value: hello
