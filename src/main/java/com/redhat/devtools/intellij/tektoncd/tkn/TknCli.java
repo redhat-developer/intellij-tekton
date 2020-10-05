@@ -19,6 +19,7 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.twelvemonkeys.lang.Platform;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
 import io.fabric8.kubernetes.api.model.PodList;
@@ -43,12 +44,17 @@ import io.fabric8.tekton.pipeline.v1beta1.PipelineList;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskList;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -582,12 +588,21 @@ public class TknCli implements Tkn {
             return false;
         }
 
-        if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, "cmd.exe", "/C", "echo", "-e", data);
+        if (Platform.os() == Platform.OperatingSystem.Windows) {
+            //Windows echo does not support line feeds, save the file and use more to dump the file instead
+            String tempFile = getTempFile(data);
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, "more.com", tempFile);
         } else {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, "echo", "-e", data);
         }
         return true;
+    }
+
+    private String getTempFile(String data) throws IOException {
+        File f = File.createTempFile("log", "txt");
+        f.deleteOnExit();
+        FileUtils.write(f, data, StandardCharsets.UTF_8);
+        return f.getAbsolutePath();
     }
 
     private String getFormattedWarningMessage(String reason, String message) {
