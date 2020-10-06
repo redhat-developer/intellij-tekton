@@ -360,16 +360,23 @@ public class TriggerStep extends BaseStep {
                         if (!configuration.isEmpty()) {
                             TriggerBindingConfigurationModel bindingModel = new TriggerBindingConfigurationModel(configuration);
                             if (bindingModel.isValid()) {
-                                ((AddTriggerModel) model).getBindingsAvailableOnCluster().put(bindingModel.getName() + " NEW", textAreaNewTriggerBinding.getText());
-                                fillAvailableBindingsList();
+                                if (((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().stream().map(binding -> binding.replace(" NEW", "")).anyMatch(binding -> binding.equalsIgnoreCase(bindingModel.getName()))) {
+                                    error = "<html>The name has already been used for another TriggerBinding. <br> Please change it and save again!!</html>";
+                                } else {
+                                    ((AddTriggerModel) model).getBindingsAvailableOnCluster().put(bindingModel.getName() + " NEW", textAreaNewTriggerBinding.getText());
+                                    fillAvailableBindingsList();
+                                }
+                            } else {
+                                error = bindingModel.getErrorMessage();
                             }
-                            error = bindingModel.getErrorMessage();
                         } else {
                             error = "You cannot save an empty TriggerBinding.";
                         }
 
                         if (error.isEmpty()) {
                             editRightPanel.setVisible(false);
+                            btnAdd.setEnabled(true);
+                            return;
                         }
 
                         // if the new binding written by the user is not valid, we should show an error message with some info
@@ -403,14 +410,6 @@ public class TriggerStep extends BaseStep {
 
     private void fillAvailableBindingsList() {
         listBindingsAvailableOnCluster.removeAll();
-        JLabel[] availableBindings = ((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().stream().map(binding -> {
-            if (binding.endsWith(" NEW")) {
-                JLabel lblBinding = new JLabel(binding.replace(" NEW", ""));
-                lblBinding.setIcon(AllIcons.Actions.New);
-                return lblBinding;
-            }
-            return new JLabel(binding);
-        }).toArray(JLabel[]::new);
         listBindingsAvailableOnCluster.setListData(((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().toArray());
     }
 
@@ -466,19 +465,6 @@ public class TriggerStep extends BaseStep {
             String bindingAsYAML = ((AddTriggerModel) model).getBindingsAvailableOnCluster().get(binding.toString());
             ((AddTriggerModel) model).getBindingsSelectedByUser().put((String) binding, bindingAsYAML);
         });
-        // get newly-created binding
-        String configuration = textAreaNewTriggerBinding.getText();
-        if (!configuration.isEmpty()) {
-            TriggerBindingConfigurationModel bindingModel = new TriggerBindingConfigurationModel(configuration);
-            if (!bindingModel.isValid()) {
-                // if the new binding written by the user is not valid, we should show an error message with some info
-                lblErrorNewBinding.setText(bindingModel.getErrorMessage());
-                lblErrorNewBinding.setVisible(true);
-                return false;
-            }
-            ((AddTriggerModel) model).setNewBindingAdded(configuration);
-        }
-
         return true;
     }
 

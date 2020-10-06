@@ -37,7 +37,6 @@ public class AddTriggerModelTest extends BaseTest {
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), bindingsAvailableOnCluster);
         Set<String> variables = model.extractVariablesFromSelectedBindings();
 
-        assertTrue(model.getNewBindingAdded().isEmpty());
         assertTrue(model.getBindingsSelectedByUser().isEmpty());
         assertTrue(variables.isEmpty());
     }
@@ -52,7 +51,6 @@ public class AddTriggerModelTest extends BaseTest {
         model.getBindingsSelectedByUser().put("binding1", binding1);
         Set<String> variables = model.extractVariablesFromSelectedBindings();
 
-        assertTrue(model.getNewBindingAdded().isEmpty());
         assertEquals(model.getBindingsSelectedByUser().size(), 1);
         assertFalse(variables.isEmpty());
         assertEquals(variables.size(), 2);
@@ -72,7 +70,6 @@ public class AddTriggerModelTest extends BaseTest {
         model.getBindingsSelectedByUser().put("binding2", binding2);
         Set<String> variables = model.extractVariablesFromSelectedBindings();
 
-        assertTrue(model.getNewBindingAdded().isEmpty());
         assertEquals(model.getBindingsSelectedByUser().size(), 2);
         assertFalse(variables.isEmpty());
         assertEquals(variables.size(), 3);
@@ -92,11 +89,10 @@ public class AddTriggerModelTest extends BaseTest {
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), bindingsAvailableOnCluster);
         model.getBindingsSelectedByUser().put("binding1", binding1);
         model.getBindingsSelectedByUser().put("binding2", binding2);
-        model.setNewBindingAdded(binding3);
+        model.getBindingsSelectedByUser().put("binding3 NEW", binding3);
         Set<String> variables = model.extractVariablesFromSelectedBindings();
 
-        assertFalse(model.getNewBindingAdded().isEmpty());
-        assertEquals(model.getBindingsSelectedByUser().size(), 2);
+        assertEquals(model.getBindingsSelectedByUser().size(), 3);
         assertFalse(variables.isEmpty());
         assertEquals(variables.size(), 4);
         assertTrue(variables.contains("gitrevision"));

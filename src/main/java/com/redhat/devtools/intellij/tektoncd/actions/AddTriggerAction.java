@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,14 +111,17 @@ public class AddTriggerAction extends TektonAction {
                try {
                    // take/create all triggerBindings
                    Map<String, String> triggerBindingsSelected = model.getBindingsSelectedByUser();
-                   String newBindingAdded = model.getNewBindingAdded();
-                   if (!newBindingAdded.isEmpty()) {
-                       saveResource(newBindingAdded, namespace, "triggerbindings", tkncli);
-                       String nameBinding = YAMLHelper.getStringValueFromYAML(newBindingAdded, new String[] {"metadata", "name"});
-                       notifySuccessOperation("TriggerBinding " + nameBinding);
-                       // add the new binding to the list of bindings
-                       triggerBindingsSelected.put(nameBinding, newBindingAdded);
-                   }
+
+                   triggerBindingsSelected.keySet().stream().filter(binding -> binding.endsWith(" NEW")).forEach(binding -> {
+                       try {
+                           String bindingBody = triggerBindingsSelected.get(binding);
+                           saveResource(bindingBody, namespace, "triggerbindings", tkncli);
+                           String nameBinding = YAMLHelper.getStringValueFromYAML(bindingBody, new String[] {"metadata", "name"});
+                           notifySuccessOperation("TriggerBinding " + nameBinding);
+                       } catch (IOException e) {
+                           logger.warn(e.getLocalizedMessage());
+                       }
+                   });
 
                    // get all params from bindings
                    Set<String> paramsFromBindings = model.extractVariablesFromSelectedBindings();
@@ -140,7 +144,7 @@ public class AddTriggerAction extends TektonAction {
                    // create the eventListener
                    String eventListenerName = element.getName() + "-listener-" + randomString;
                    // TODO we are using the default pipeline serviceAccount but we should allow users to select the one they prefer
-                   ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "pipeline", new ArrayList<>(triggerBindingsSelected.keySet()), triggerTemplateName);
+                   ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "pipeline", triggerBindingsSelected.keySet().stream().map(binding -> binding.replace(" NEW", "")).collect(Collectors.toList()), triggerTemplateName);
                    saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
                    notifySuccessOperation("EventListener " + eventListenerName);
 

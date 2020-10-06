@@ -21,26 +21,16 @@ import java.util.Set;
 public class AddTriggerModel extends ActionToRunModel {
 
     private Map<String, String> bindingsSelectedByUser;
-    private String newBindingAdded;
     private Map<String, String> bindingsAvailableOnCluster;
 
     public AddTriggerModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, Map<String, String> bindingsAvailableOnCluster) {
         super(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
         this.bindingsAvailableOnCluster = bindingsAvailableOnCluster;
         this.bindingsSelectedByUser = new HashMap<>();
-        this.newBindingAdded = "";
     }
 
     public Map<String, String> getBindingsAvailableOnCluster() {
         return this.bindingsAvailableOnCluster;
-    }
-
-    public String getNewBindingAdded() {
-        return newBindingAdded;
-    }
-
-    public void setNewBindingAdded(String newBinding) {
-        this.newBindingAdded = newBinding;
     }
 
     public Map<String, String> getBindingsSelectedByUser() {
@@ -49,12 +39,6 @@ public class AddTriggerModel extends ActionToRunModel {
 
     public Set<String> extractVariablesFromSelectedBindings() {
         Set<String> variablesInBindings = new HashSet<>();
-        if (!this.newBindingAdded.isEmpty()) {
-            TriggerBindingConfigurationModel tbModel = new TriggerBindingConfigurationModel(this.newBindingAdded);
-            if (tbModel.isValid()) {
-                variablesInBindings.addAll(tbModel.getParams().keySet());
-            }
-        }
 
         if (!this.bindingsSelectedByUser.isEmpty()) {
             this.bindingsSelectedByUser.keySet().forEach(binding -> {
