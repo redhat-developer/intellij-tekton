@@ -19,6 +19,7 @@ import com.redhat.devtools.intellij.tektoncd.ui.wizard.OutputResourcesStep;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.ParametersStep;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.WorkspacesStep;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,8 @@ public class AddTriggerWizard extends BaseWizard {
         super(title, project, model);
         this.triggerBindingTemplates = triggerBindingTemplates;
         init();
+        // update size for trigger step
+        myContentPanel.setPreferredSize(new Dimension(750, 500));
     }
 
     public List<BaseStep> getSteps() {

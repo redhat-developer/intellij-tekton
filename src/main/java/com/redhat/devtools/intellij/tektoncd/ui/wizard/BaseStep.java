@@ -51,12 +51,14 @@ public abstract class BaseStep implements Step, Disposable {
     protected GridBagConstraints gridBagConstraints;
     protected Map<Integer, JLabel> errorFieldsByRow;
     protected Color backgroundTheme;
+    protected Font editorFont;
 
     public BaseStep(@Nullable String title, ActionToRunModel model) {
         this.title = title;
         this.model = model;
         this.errorFieldsByRow = new HashMap<>();
         this.backgroundTheme = EditorColorsManager.getInstance().getGlobalScheme().getDefaultBackground();
+        this.editorFont = new Font(EditorColorsManager.getInstance().getSchemeForCurrentUITheme().getEditorFontName(), Font.PLAIN, EditorColorsManager.getInstance().getSchemeForCurrentUITheme().getEditorFontSize());
         _init();
     }
 
