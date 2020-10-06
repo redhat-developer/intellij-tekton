@@ -71,7 +71,7 @@ public class PipelineRunGraphUpdater extends AbstractPipelineGraphUpdater<Pipeli
     private boolean isTaskSucceeded(PipelineRun content, String name) {
         boolean succeeded = false;
         Optional<PipelineRunTaskRunStatus> taskStatus = getTaskStatus(content, name);
-        if (taskStatus.isPresent()) {
+        if (taskStatus.isPresent() && taskStatus.get().getStatus() != null && taskStatus.get().getStatus().getConditions() != null) {
             succeeded = taskStatus.get().getStatus().getConditions().stream().filter(condition -> "True".equals(condition.getStatus())).findFirst().isPresent();
         }
         return succeeded;
@@ -79,6 +79,6 @@ public class PipelineRunGraphUpdater extends AbstractPipelineGraphUpdater<Pipeli
 
     @NotNull
     private Optional<PipelineRunTaskRunStatus> getTaskStatus(PipelineRun content, String name) {
-        return content.getStatus().getTaskRuns().values().stream().filter(prs -> name.equals(prs.getPipelineTaskName())).findFirst();
+        return content.getStatus() != null && content.getStatus().getTaskRuns() != null ? content.getStatus().getTaskRuns().values().stream().filter(prs -> name.equals(prs.getPipelineTaskName())).findFirst() : Optional.empty();
     }
 }
