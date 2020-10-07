@@ -84,6 +84,7 @@
       <action class="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" text="Start Last Run"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction" text="Follow Logs"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.logs.ShowLogsAction" text="Show Logs"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.ShowDiagnosticDataAction" text="Show Diagnostic Data"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.CancelAction" text="Cancel"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.DeleteAction" text="Delete"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.RefreshAction" text="Refresh"/>

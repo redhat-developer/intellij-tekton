@@ -13,11 +13,20 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.twelvemonkeys.lang.Platform;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodCondition;
+import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.api.model.PodStatus;
+import io.fabric8.kubernetes.api.model.apps.StatefulSet;
+import io.fabric8.kubernetes.api.model.apps.StatefulSetCondition;
+import io.fabric8.kubernetes.api.model.apps.StatefulSetList;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -35,12 +44,17 @@ import io.fabric8.tekton.pipeline.v1beta1.PipelineList;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskList;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -550,6 +564,56 @@ public class TknCli implements Tkn {
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }
+    }
+
+    @Override
+    public boolean getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException {
+        String data = "";
+        PodList pods = client.pods().inNamespace(namespace).withLabel(keyLabel, valueLabel).list();
+        for (Pod pod: pods.getItems()) {
+            PodStatus podStatus = pod.getStatus();
+            data += getFormattedWarningMessage(podStatus.getReason(), podStatus.getMessage());
+            for (PodCondition podCondition : podStatus.getConditions()) {
+                data += getFormattedWarningMessage(podCondition.getReason(), podCondition.getMessage());
+            }
+        }
+        StatefulSetList states = client.apps().statefulSets().inNamespace(namespace).withLabel(keyLabel, valueLabel).list();
+        for (StatefulSet state: states.getItems()) {
+            for (StatefulSetCondition stateCondition : state.getStatus().getConditions()) {
+                data += getFormattedWarningMessage(stateCondition.getReason(), stateCondition.getMessage());
+            }
+        }
+
+        if (data.isEmpty()) {
+            return false;
+        }
+
+        if (Platform.os() == Platform.OperatingSystem.Windows) {
+            //Windows echo does not support line feeds, save the file and use more to dump the file instead
+            String tempFile = getTempFile(data);
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, "more.com", tempFile);
+        } else {
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, "echo", "-e", data);
+        }
+        return true;
+    }
+
+    private String getTempFile(String data) throws IOException {
+        File f = File.createTempFile("log", "txt");
+        f.deleteOnExit();
+        FileUtils.write(f, data, StandardCharsets.UTF_8);
+        return f.getAbsolutePath();
+    }
+
+    private String getFormattedWarningMessage(String reason, String message) {
+        String data = "";
+        if (!Strings.isNullOrEmpty(reason)) {
+            data = "reason: " + reason;
+        }
+        if (!Strings.isNullOrEmpty(message)) {
+            data = "message:" + message;
+        }
+        return data + "\n";
     }
 
     @Override
