@@ -53,7 +53,7 @@ public class AuthenticationStep extends BaseStep {
             if (row[0] == 2) {
                 String infoText = "<html>The following fields allow you to map a Service Account to<br>a specific Task in the Pipeline. This overrides the global<br> Service Account set above.</html>";
                 JLabel lblInfoText = new JLabel(infoText);
-                addComponent(lblInfoText, new Font("TimesRoman", Font.PLAIN, 13), new EmptyBorder(30, 0, 10, 0), new Dimension(400, 80), 0, row[0], GridBagConstraints.NORTH);
+                addComponent(lblInfoText, defaultLabelFont, new EmptyBorder(30, 0, 10, 0), new Dimension(400, 80), 0, row[0], GridBagConstraints.NORTH);
                 row[0] += 1;
             }
 

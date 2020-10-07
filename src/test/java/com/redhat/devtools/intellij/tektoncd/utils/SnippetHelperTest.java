@@ -68,12 +68,16 @@ public class SnippetHelperTest {
 
         Map<String, String> bindingTemplates = SnippetHelper.getTriggerBindingTemplates();
 
-        assertTrue(bindingTemplates.containsKey("github-pr-binding"));
-        assertTrue(bindingTemplates.containsKey("gitlab-push-binding"));
+        assertTrue(bindingTemplates.containsKey("github-pullreq"));
+        assertTrue(bindingTemplates.containsKey("github-push"));
+        assertTrue(bindingTemplates.containsKey("github-pullreq-review-comment"));
+        assertTrue(bindingTemplates.containsKey("gitlab-pullreq"));
+        assertTrue(bindingTemplates.containsKey("gitlab-push"));
+        assertTrue(bindingTemplates.containsKey("gitlab-pullreq-review-comment"));
         assertTrue(bindingTemplates.containsKey("message-binding"));
         assertTrue(bindingTemplates.containsKey("pipeline-binding"));
         assertTrue(bindingTemplates.containsKey("empty-binding"));
-        assertEquals(bindingTemplates.size(), 5);
+        assertEquals(bindingTemplates.size(), 9);
         jsonHelper.verify(() -> JSONHelper.getJSONFromURL(eq(triggerBindingSnippetsUrl)));
         jsonHelper.close();
     }

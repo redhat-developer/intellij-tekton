@@ -52,6 +52,7 @@ public abstract class BaseStep implements Step, Disposable {
     protected Map<Integer, JLabel> errorFieldsByRow;
     protected Color backgroundTheme;
     protected Font editorFont;
+    protected Font defaultLabelFont;
 
     public BaseStep(@Nullable String title, ActionToRunModel model) {
         this.title = title;
@@ -59,6 +60,7 @@ public abstract class BaseStep implements Step, Disposable {
         this.errorFieldsByRow = new HashMap<>();
         this.backgroundTheme = EditorColorsManager.getInstance().getGlobalScheme().getDefaultBackground();
         this.editorFont = new Font(EditorColorsManager.getInstance().getSchemeForCurrentUITheme().getEditorFontName(), Font.PLAIN, EditorColorsManager.getInstance().getSchemeForCurrentUITheme().getEditorFontSize());
+        this.defaultLabelFont = new JLabel().getFont();
         _init();
     }
 

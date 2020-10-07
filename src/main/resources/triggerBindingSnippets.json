@@ -94,7 +94,7 @@
       "apiVersion: triggers.tekton.dev/v1alpha1",
       "kind: TriggerBinding",
       "metadata:",
-      "  name: github-push",
+      "  name: gitlab-push",
       "spec:",
       "  params:",
       "    - name: git-revision",
@@ -111,12 +111,12 @@
       "      value: $(body.pusher.name)"
     ]
   },
-  "github-pullreq-review-comment": {
+  "gitlab-pullreq-review-comment": {
     "body": [
       "apiVersion: triggers.tekton.dev/v1alpha1",
       "kind: TriggerBinding",
       "metadata:",
-      "  name: github-pullreq-review-comment",
+      "  name: gitlab-pullreq-review-comment",
       "spec:",
       "  params:",
       "    - name: comment",
@@ -125,20 +125,6 @@
       "      value: $(body.user.name)",
       "    - name: merge-commit",
       "      value: $(body.merge_request.last_commit.id)"
-    ]
-  },
-  "gitlab-push-binding": {
-    "body": [
-      "apiVersion: triggers.tekton.dev/v1alpha1",
-      "kind: TriggerBinding",
-      "metadata:",
-      "  name: gitlab-push-binding",
-      "spec:",
-      "  params:",
-      "    - name: gitrevision",
-      "      value: $(body.checkout_sha)",
-      "    - name: gitrepositoryurl",
-      "      value: $(body.repository.git_http_url)"
     ]
   },
   "message-binding": {

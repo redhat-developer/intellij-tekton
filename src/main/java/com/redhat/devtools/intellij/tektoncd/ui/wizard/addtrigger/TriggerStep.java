@@ -90,11 +90,9 @@ public class TriggerStep extends BaseStep {
     private JScrollPane scrollTriggerBindingAreaPane;
     private JList listBindingsAvailableOnCluster;
     private JLabel lblErrorNewBinding;
-    private Font defaultFont;
 
     public TriggerStep(AddTriggerModel model, Map<String, String> triggerBindingTemplates) {
         super("Trigger", model);
-        this.defaultFont = new JLabel().getFont();
         setContent(triggerBindingTemplates);
     }
 
@@ -108,7 +106,7 @@ public class TriggerStep extends BaseStep {
                infoText += "which will be created eventually. You are allowed to select none, one or many bindings. ";
                infoText += "Only newly-created bindings that are selected will be actually pushed on cluster.</html>";
         JLabel lblInfoText = new JLabel(infoText);
-        addComponent(lblInfoText, ROMAN_PLAIN_13, new EmptyBorder(10, 0, 10, 0), new Dimension(594, 91), buildGridBagConstraints(0, row[0], 2, GridBagConstraints.NORTHWEST, null));
+        addComponent(lblInfoText, defaultLabelFont, new EmptyBorder(10, 0, 10, 0), new Dimension(594, 91), buildGridBagConstraints(0, row[0], 2, GridBagConstraints.NORTHWEST, null));
         row[0] += 1;
 
         JLabel lblExistingBindings = new JLabel("<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">Select one or more TriggerBindings</span></html>");
@@ -240,7 +238,7 @@ public class TriggerStep extends BaseStep {
         textAreaNewTriggerBinding = new JTextArea(15, 35);
         textAreaNewTriggerBinding.setEditable(true);
         textAreaNewTriggerBinding.setText("");
-        textAreaNewTriggerBinding.setFont(defaultFont);
+        textAreaNewTriggerBinding.setFont(defaultLabelFont);
 
         scrollTriggerBindingAreaPane = new JBScrollPane(textAreaNewTriggerBinding);
         scrollTriggerBindingAreaPane.setBorder(BORDER_LABEL_NAME);
