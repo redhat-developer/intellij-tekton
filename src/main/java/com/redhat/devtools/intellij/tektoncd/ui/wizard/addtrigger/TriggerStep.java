@@ -210,7 +210,7 @@ public class TriggerStep extends BaseStep {
 
         cmbPreMadeTriggerBindingTemplates = new ComboBox();
         cmbPreMadeTriggerBindingTemplates.addItem("");
-        triggerBindingTemplates.keySet().stream().forEach(template -> cmbPreMadeTriggerBindingTemplates.addItem(template));
+        triggerBindingTemplates.keySet().stream().sorted().forEach(template -> cmbPreMadeTriggerBindingTemplates.addItem(template));
         cmbPreMadeTriggerBindingTemplates.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
                 // when cmbPreMadeTriggerBindingTemplates combo box value changes, the new value is saved and preview is updated
@@ -408,7 +408,7 @@ public class TriggerStep extends BaseStep {
 
     private void fillAvailableBindingsList() {
         listBindingsAvailableOnCluster.removeAll();
-        listBindingsAvailableOnCluster.setListData(((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().toArray());
+        listBindingsAvailableOnCluster.setListData(((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().stream().sorted().toArray());
     }
 
     private JLabel createDescriptionLabel(String text, Icon icon, int horizontalPosition, Border border) {
