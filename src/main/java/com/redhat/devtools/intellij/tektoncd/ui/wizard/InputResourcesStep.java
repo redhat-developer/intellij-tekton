@@ -56,7 +56,7 @@ public class InputResourcesStep extends BaseStep {
     }
 
     private void fillComboBox(JComboBox comboBox, Input input) {
-        for (Resource resource: model.getResources()) {
+        for (Resource resource: model.getPipelineResources()) {
             if (resource.type().equals(input.type())) {
                 comboBox.addItem(resource.name());
             }

@@ -1,16 +1,130 @@
 {
-  "github-pr-binding": {
+  "github-pullreq": {
     "body": [
       "apiVersion: triggers.tekton.dev/v1alpha1",
       "kind: TriggerBinding",
       "metadata:",
-      "  name: github-pr-binding",
+      "  name: github-pullreq",
       "spec:",
       "  params:",
-      "    - name: gitrevision",
+      "    - name: git-repo-url,",
+      "      value: $(body.repository.html_url)",
+      "    - name: pullreq-sha",
       "      value: $(body.pull_request.head.sha)",
-      "    - name: gitrepositoryurl",
-      "      value: $(body.repository.clone_url)"
+      "    - name: pullreq-action",
+      "      value: $(body.action)",
+      "    - name: pullreq-number",
+      "      value: $(body.number)",
+      "    - name: pullreq-repo-full_name",
+      "      value: $(body.repository.full_name)",
+      "    - name: pullreq-html-url",
+      "      value: $(body.pull_request.html_url)",
+      "    - name: pullreq-title",
+      "      value: $(body.pull_request.title)",
+      "    - name: pullreq-issue-url",
+      "      value: $(body.pull_request.issue_url)",
+      "    - name: organisations-url",
+      "      value: $(body.pull_request.user.organizations_url)",
+      "    - name: user-type",
+      "      value: $(body.pull_request.user.type)"
+    ]
+  },
+  "github-push": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: github-push",
+      "spec:",
+      "  params:",
+      "    - name: git-revision",
+      "      value: $(body.head_commit.id)",
+      "    - name: git-commit-message",
+      "      value: $(body.head_commit.message)",
+      "    - name: git-repo-url",
+      "      value: $(body.repository.url)",
+      "    - name: git-repo-name",
+      "      value: $(body.repository.name)",
+      "    - name: content-type",
+      "      value: $(header.Content-Type)",
+      "    - name: pusher-name",
+      "      value: $(body.pusher.name)"
+    ]
+  },
+  "github-pullreq-review-comment": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: github-pullreq-review-comment",
+      "spec:",
+      "  params:",
+      "    - name: comment",
+      "      value: $(body.comment.body)",
+      "    - name: comment-user-login",
+      "      value: $(body.comment.user.login)",
+      "    - name: merge-commit-sha",
+      "      value: $(body.pull_request.merge_commit_sha)"
+    ]
+  },
+  "gitlab-pullreq": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: gitlab-pullreq",
+      "spec:",
+      "  params:",
+      "    - name: git-repo-url,",
+      "      value: $(body.repository.url)",
+      "    - name: pullreq-repo-full_name",
+      "      value: $(body.repository.name)",
+      "    - name: pullreq-html-url",
+      "      value: $(body.project.url)",
+      "    - name: pullreq-title",
+      "      value: $(body.project.name)",
+      "    - name: pullreq-last-commit",
+      "      value: $(body.object_attributes.last_commit.message)",
+      "    - name: pullreq-last-author",
+      "      value: $(body.object_attributes.last_commit.author.name)"
+    ]
+  },
+  "gitlab-push": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: github-push",
+      "spec:",
+      "  params:",
+      "    - name: git-revision",
+      "      value: $(body.checkout_sha)",
+      "    - name: git-commit-message",
+      "      value: $(body.commits[0].message)",
+      "    - name: git-repo-url",
+      "      value: $(body.repository.url)",
+      "    - name: git-repo-name",
+      "      value: $(body.repository.name)",
+      "    - name: content-type",
+      "      value: $(header.Content-Type)",
+      "    - name: pusher-name",
+      "      value: $(body.pusher.name)"
+    ]
+  },
+  "github-pullreq-review-comment": {
+    "body": [
+      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "kind: TriggerBinding",
+      "metadata:",
+      "  name: github-pullreq-review-comment",
+      "spec:",
+      "  params:",
+      "    - name: comment",
+      "      value: $(body.object_attributes.note)",
+      "    - name: comment-user-login",
+      "      value: $(body.user.name)",
+      "    - name: merge-commit",
+      "      value: $(body.merge_request.last_commit.id)"
     ]
   },
   "gitlab-push-binding": {

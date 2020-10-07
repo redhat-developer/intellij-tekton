@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.utils.model.actions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
-import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
@@ -38,14 +37,14 @@ public abstract class ActionToRunModel extends ConfigurationModel {
     protected Map<String, Workspace> workspaces;
     protected Map<String, String> taskServiceAccountNames;
     protected String globalServiceAccount;
-    protected List<Resource> resources;
+    protected List<Resource> pipelineResources;
     protected List<String> serviceAccounts, secrets, configMaps, persistentVolumeClaims;
 
     public ActionToRunModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
         super(configuration);
         this.errorMessage = "Tekton configuration has an invalid format:\n";
         this.serviceAccounts = serviceAccounts;
-        this.resources = resources;
+        this.pipelineResources = resources;
         this.secrets = secrets;
         this.configMaps = configMaps;
         this.persistentVolumeClaims = persistentVolumeClaims;
@@ -95,8 +94,8 @@ public abstract class ActionToRunModel extends ConfigurationModel {
         return this.errorMessage;
     }
 
-    public List<Resource> getResources() {
-        return this.resources;
+    public List<Resource> getPipelineResources() {
+        return this.pipelineResources;
     }
 
     public List<String> getServiceAccounts() {
@@ -171,13 +170,15 @@ public abstract class ActionToRunModel extends ConfigurationModel {
     }
 
     private void setDefaultValueResources() {
-        if (this.resources == null || this.resources.isEmpty()) {
-            errorMessage += " * The " + this.kind + " requires resources to be started but no resources were found in the cluster.\n";
-            isValid = false;
+        if (this.pipelineResources == null || this.pipelineResources.isEmpty()) {
+            if (!this.getInputResources().isEmpty() || !this.getOutputResources().isEmpty()) {
+                errorMessage += " * The " + this.kind + " requires resources to be started but no resources were found in the cluster.\n";
+                isValid = false;
+            }
         }
 
         // set the first resource for a specific type (git, image, ...) as the default value for input/output
-        Map<String, List<Resource>> resourceGroupedByType = resources.stream().collect(Collectors.groupingBy(Resource::type));
+        Map<String, List<Resource>> resourceGroupedByType = pipelineResources.stream().collect(Collectors.groupingBy(Resource::type));
 
         if (!this.resource.getInputResources().isEmpty()) {
             for (Input input: this.resource.getInputResources()) {
