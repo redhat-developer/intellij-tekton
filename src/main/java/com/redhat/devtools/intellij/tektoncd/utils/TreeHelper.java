@@ -98,12 +98,16 @@ public class TreeHelper {
             for (ParentableNode child: children) {
                 if (kind.equals(KIND_EVENTLISTENER) && child instanceof EventListenersNode) {
                     nodeToRefresh = child;
+                    break;
                 } else if (kind.equals(KIND_CLUSTERTRIGGERBINDINGS) && child instanceof ClusterTriggerBindingsNode) {
                     nodeToRefresh = child;
+                    break;
                 } else if (kind.equals(KIND_TRIGGERBINDINGS) && child instanceof TriggerBindingsNode) {
                     nodeToRefresh = child;
+                    break;
                 } else if (kind.equals(KIND_TRIGGERTEMPLATES) && child instanceof TriggerTemplatesNode) {
                     nodeToRefresh = child;
+                    break;
                 }
             }
             if (nodeToRefresh != null) {
