@@ -44,14 +44,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
-import org.bouncycastle.pqc.crypto.gmss.Treehash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class AddTriggerAction extends TektonAction {

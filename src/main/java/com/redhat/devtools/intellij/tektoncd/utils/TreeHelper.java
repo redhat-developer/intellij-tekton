@@ -24,12 +24,9 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
-import com.redhat.devtools.intellij.tektoncd.tree.EventListenersNode;
-import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
@@ -44,17 +41,15 @@ import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
-
-import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
-import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.tree.TreePath;
+
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
