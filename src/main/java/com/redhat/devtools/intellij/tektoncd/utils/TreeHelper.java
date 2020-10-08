@@ -24,9 +24,12 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
+import com.redhat.devtools.intellij.tektoncd.tree.EventListenersNode;
+import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
@@ -41,8 +44,10 @@ import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,6 +87,28 @@ public class TreeHelper {
             return root.getTkn();
         } catch(Exception ex) {
             return null;
+        }
+    }
+
+    public static void refreshNode(Project project, ParentableNode selected, String kind) {
+        TektonTreeStructure structure = (TektonTreeStructure) getTree(project).getClientProperty(Constants.STRUCTURE_PROPERTY);
+        if (selected.getParent() instanceof NamespaceNode) {
+            ParentableNode[] children = (ParentableNode[]) structure.getChildElements(selected.getParent());
+            ParentableNode nodeToRefresh = null;
+            for (ParentableNode child: children) {
+                if (kind.equals(KIND_EVENTLISTENER) && child instanceof EventListenersNode) {
+                    nodeToRefresh = child;
+                } else if (kind.equals(KIND_CLUSTERTRIGGERBINDINGS) && child instanceof ClusterTriggerBindingsNode) {
+                    nodeToRefresh = child;
+                } else if (kind.equals(KIND_TRIGGERBINDINGS) && child instanceof TriggerBindingsNode) {
+                    nodeToRefresh = child;
+                } else if (kind.equals(KIND_TRIGGERTEMPLATES) && child instanceof TriggerTemplatesNode) {
+                    nodeToRefresh = child;
+                }
+            }
+            if (nodeToRefresh != null) {
+                structure.fireModified(nodeToRefresh);
+            }
         }
     }
 
