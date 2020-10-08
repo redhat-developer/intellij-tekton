@@ -2094,6 +2094,9 @@
         },
         "readOnly": {
           "type": "boolean"
+        },
+        "optional": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false,

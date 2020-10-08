@@ -2094,6 +2094,9 @@
         },
         "description": {
           "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false,
@@ -3643,6 +3646,9 @@
           "type": "string"
         },
         "readOnly": {
+          "type": "boolean"
+        },
+        "optional": {
           "type": "boolean"
         }
       },
