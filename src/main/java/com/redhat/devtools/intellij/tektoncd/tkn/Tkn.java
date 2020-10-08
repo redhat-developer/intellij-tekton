@@ -604,6 +604,46 @@ public interface Tkn {
     Watch watchConditions(String namespace, Watcher<io.fabric8.tekton.pipeline.v1alpha1.Condition> watcher) throws IOException;
 
     /**
+     * Set a watch on TriggerTemplate resources
+     *
+     * @param namespace the namespace to use
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchTriggerTemplates(String namespace, Watcher<io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate> watcher) throws IOException;
+
+    /**
+     * Set a watch on TriggerBinding resources
+     *
+     * @param namespace the namespace to use
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchTriggerBindings(String namespace, Watcher<io.fabric8.tekton.triggers.v1alpha1.TriggerBinding> watcher) throws IOException;
+
+    /**
+     * Set a watch on ClusterTriggerBinding resources
+     *
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchClusterTriggerBindings(Watcher<io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding> watcher) throws IOException;
+
+
+    /**
+     * Set a watch on EventListener resources
+     *
+     * @param namespace the namespace to use
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchEventListeners(String namespace, Watcher<io.fabric8.tekton.triggers.v1alpha1.EventListener> watcher) throws IOException;
+
+    /**
      * Get diagnostic data related to objects with the field=value pair
      *
      * @param namespace the namespace to use

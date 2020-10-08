@@ -10,10 +10,13 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.intellij.ide.util.treeView.PresentableNodeDescriptor;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
+import com.redhat.devtools.intellij.tektoncd.tree.EventListenersNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
@@ -23,6 +26,8 @@ import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
@@ -123,6 +128,14 @@ public class WatchHandler {
                 watch = tkn.watchClusterTasks(watcher);
             } else if (element instanceof ConditionsNode) {
                 watch = tkn.watchConditions(namespace, watcher);
+            } else if (element instanceof TriggerTemplatesNode) {
+                watch = tkn.watchTriggerTemplates(namespace, watcher);
+            } else if (element instanceof TriggerBindingsNode) {
+                watch = tkn.watchTriggerBindings(namespace, watcher);
+            } else if (element instanceof ClusterTriggerBindingsNode) {
+                watch = tkn.watchClusterTriggerBindings(watcher);
+            } else if (element instanceof EventListenersNode) {
+                watch = tkn.watchEventListeners(namespace, watcher);
             }
             wn = new WatchNodes(watch, treePath);
         } catch (IOException e) {
@@ -184,7 +197,11 @@ public class WatchHandler {
                element instanceof TaskNode ||
                element instanceof TaskRunsNode ||
                element instanceof ClusterTasksNode ||
-               element instanceof ConditionsNode;
+               element instanceof ConditionsNode ||
+               element instanceof TriggerTemplatesNode ||
+               element instanceof TriggerBindingsNode ||
+               element instanceof ClusterTriggerBindingsNode ||
+               element instanceof EventListenersNode;
     }
 }
 
