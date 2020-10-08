@@ -90,30 +90,9 @@ public class TreeHelper {
         }
     }
 
-    public static void refreshNode(Project project, ParentableNode selected, String kind) {
+    public static void refresh(Project project, ParentableNode node) {
         TektonTreeStructure structure = (TektonTreeStructure) getTree(project).getClientProperty(Constants.STRUCTURE_PROPERTY);
-        if (selected.getParent() instanceof NamespaceNode) {
-            ParentableNode[] children = (ParentableNode[]) structure.getChildElements(selected.getParent());
-            ParentableNode nodeToRefresh = null;
-            for (ParentableNode child: children) {
-                if (kind.equals(KIND_EVENTLISTENER) && child instanceof EventListenersNode) {
-                    nodeToRefresh = child;
-                    break;
-                } else if (kind.equals(KIND_CLUSTERTRIGGERBINDINGS) && child instanceof ClusterTriggerBindingsNode) {
-                    nodeToRefresh = child;
-                    break;
-                } else if (kind.equals(KIND_TRIGGERBINDINGS) && child instanceof TriggerBindingsNode) {
-                    nodeToRefresh = child;
-                    break;
-                } else if (kind.equals(KIND_TRIGGERTEMPLATES) && child instanceof TriggerTemplatesNode) {
-                    nodeToRefresh = child;
-                    break;
-                }
-            }
-            if (nodeToRefresh != null) {
-                structure.fireModified(nodeToRefresh);
-            }
-        }
+        structure.fireModified(node);
     }
 
     /**

@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
+import org.bouncycastle.pqc.crypto.gmss.Treehash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +127,6 @@ public class AddTriggerAction extends TektonAction {
                            logger.warn(e.getLocalizedMessage());
                        }
                    });
-                   TreeHelper.refreshNode(getEventProject(anActionEvent), element, KIND_TRIGGERBINDINGS);
 
                    // get all params from bindings
                    Set<String> paramsFromBindings = model.extractVariablesFromSelectedBindings();
@@ -145,7 +145,6 @@ public class AddTriggerAction extends TektonAction {
                    ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings), Arrays.asList(run));
                    saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
                    notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
-                   TreeHelper.refreshNode(getEventProject(anActionEvent), element, KIND_TRIGGERTEMPLATES);
 
                    // create the eventListener
                    String eventListenerName = element.getName() + "-listener-" + randomString;
@@ -153,7 +152,8 @@ public class AddTriggerAction extends TektonAction {
                    ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "pipeline", triggerBindingsSelected.keySet().stream().map(binding -> binding.replace(" NEW", "")).collect(Collectors.toList()), triggerTemplateName);
                    saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
                    notifySuccessOperation("EventListener " + eventListenerName);
-                   TreeHelper.refreshNode(getEventProject(anActionEvent), element, KIND_EVENTLISTENER);
+
+                   TreeHelper.refresh(getEventProject(anActionEvent), (ParentableNode) ((ParentableNode)element.getParent()).getParent());
 
                } catch (IOException e) {
                    Notification notification = new Notification(NOTIFICATION_ID,
