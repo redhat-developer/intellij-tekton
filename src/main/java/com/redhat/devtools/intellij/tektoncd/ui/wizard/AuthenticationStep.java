@@ -10,7 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -29,7 +29,7 @@ public class AuthenticationStep extends BaseStep {
 
     private static final String GLOBALSA = "Global Service Account";
 
-    public AuthenticationStep(StartResourceModel model) {
+    public AuthenticationStep(ActionToRunModel model) {
         super("Authentication", model);
     }
 
@@ -43,7 +43,7 @@ public class AuthenticationStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/auth.md";
     }
 
-    public void setContent(StartResourceModel model) {
+    public void setContent() {
         final int[] row = {0};
 
         List<String> serviceAccounts = new ArrayList<>(model.getTaskServiceAccounts().keySet());
@@ -53,7 +53,7 @@ public class AuthenticationStep extends BaseStep {
             if (row[0] == 2) {
                 String infoText = "<html>The following fields allow you to map a Service Account to<br>a specific Task in the Pipeline. This overrides the global<br> Service Account set above.</html>";
                 JLabel lblInfoText = new JLabel(infoText);
-                addComponent(lblInfoText, new Font("TimesRoman", Font.PLAIN, 13), new EmptyBorder(30, 0, 10, 0), new Dimension(400, 80), 0, row[0], GridBagConstraints.NORTH);
+                addComponent(lblInfoText, defaultLabelFont, new EmptyBorder(30, 0, 10, 0), new Dimension(400, 80), 0, row[0], GridBagConstraints.NORTH);
                 row[0] += 1;
             }
 

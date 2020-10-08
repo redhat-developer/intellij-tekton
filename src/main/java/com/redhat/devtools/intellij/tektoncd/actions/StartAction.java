@@ -31,11 +31,12 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,30 +83,26 @@ public class StartAction extends TektonAction {
                 return;
             }
 
-            boolean noInputsAndOuputs = model.getInputs().isEmpty() && model.getOutputs().isEmpty() && model.getWorkspaces().isEmpty();
-            StartWizard startWizard = null;
+            StartWizard startWizard = UIHelper.executeInUI(() -> {
+                String titleDialog;
+                if (element instanceof PipelineNode) {
+                    titleDialog = "Pipeline " + element.getName();
+                } else {
+                    titleDialog = "Task " + element.getName();
+                }
+                StartWizard wizard = new StartWizard(titleDialog, element, getEventProject(anActionEvent), model);
+                wizard.show();
+                return wizard;
+            });
 
-            if (!noInputsAndOuputs) {
-                startWizard = UIHelper.executeInUI(() -> {
-                    String titleDialog;
-                    if (element instanceof PipelineNode) {
-                        titleDialog = "Pipeline " + element.getName();
-                    } else {
-                        titleDialog = "Task " + element.getName();
-                    }
-                    StartWizard wizard = new StartWizard(titleDialog, element, getEventProject(anActionEvent), model);
-                    wizard.show();
-                    return wizard;
-                });
-            }
-            if (noInputsAndOuputs || startWizard.isOK()) {
+            if (startWizard.isOK()) {
                 try {
                     String serviceAccount = model.getServiceAccount();
                     Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
-                    Map<String, String> params = model.getParameters();
+                    Map<String, String> params = model.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param.value()));
                     Map<String, Workspace> workspaces = model.getWorkspaces();
-                    Map<String, String> inputResources = model.getInputResources();
-                    Map<String, String> outputResources = model.getOutputResources();
+                    Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
+                    Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
                     String runPrefixName = model.getRunPrefixName();
                     String runName = null;
                     if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {

@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.utils;
+package com.redhat.devtools.intellij.tektoncd.utils.model.actions;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
@@ -36,8 +36,8 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -48,8 +48,8 @@ public class StartResourceModelTest {
         assertFalse(model.getServiceAccounts().isEmpty());
         assertEquals(1, model.getServiceAccounts().size());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -63,8 +63,8 @@ public class StartResourceModelTest {
         assertEquals(1, model.getTaskServiceAccounts().size());
         assertTrue(model.getTaskServiceAccounts().containsKey("step1"));
         assertTrue(model.getTaskServiceAccounts().get("step1").isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -74,14 +74,15 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertFalse(model.getInputs().isEmpty());
-        assertEquals(1, model.getInputs().size());
-        assertEquals("parm1", model.getInputs().get(0).name());
-        assertEquals("string", model.getInputs().get(0).type());
-        assertEquals(Input.Kind.PARAMETER, model.getInputs().get(0).kind());
-        assertFalse(model.getInputs().get(0).defaultValue().isPresent());
-        assertFalse(model.getInputs().get(0).description().isPresent());
-        assertTrue(model.getOutputs().isEmpty());
+        assertFalse(model.getParams().isEmpty());
+        assertEquals(1, model.getParams().size());
+        assertEquals("parm1", model.getParams().get(0).name());
+        assertEquals("string", model.getParams().get(0).type());
+        assertEquals(Input.Kind.PARAMETER, model.getParams().get(0).kind());
+        assertFalse(model.getParams().get(0).defaultValue().isPresent());
+        assertFalse(model.getParams().get(0).description().isPresent());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -97,8 +98,8 @@ public class StartResourceModelTest {
         assertTrue(model.getTaskServiceAccounts().get("step1").isEmpty());
         assertTrue(model.getTaskServiceAccounts().containsKey("step2"));
         assertTrue(model.getTaskServiceAccounts().get("step2").isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -116,8 +117,8 @@ public class StartResourceModelTest {
         assertTrue(model.getTaskServiceAccounts().get("step2").isEmpty());
         assertTrue(model.getTaskServiceAccounts().containsKey("step3"));
         assertTrue(model.getTaskServiceAccounts().get("step3").isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
     }
 
     @Test
@@ -126,15 +127,16 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertFalse(model.getInputs().isEmpty());
-        assertEquals(1, model.getInputs().size());
-        assertEquals("parm1", model.getInputs().get(0).name());
-        assertEquals("string", model.getInputs().get(0).type());
-        assertEquals(Input.Kind.PARAMETER, model.getInputs().get(0).kind());
-        assertTrue(model.getInputs().get(0).defaultValue().isPresent());
-        assertEquals("default value", model.getInputs().get(0).defaultValue().get());
-        assertFalse(model.getInputs().get(0).description().isPresent());
-        assertTrue(model.getOutputs().isEmpty());
+        assertFalse(model.getParams().isEmpty());
+        assertEquals(1, model.getParams().size());
+        assertEquals("parm1", model.getParams().get(0).name());
+        assertEquals("string", model.getParams().get(0).type());
+        assertEquals(Input.Kind.PARAMETER, model.getParams().get(0).kind());
+        assertTrue(model.getParams().get(0).defaultValue().isPresent());
+        assertEquals("default value", model.getParams().get(0).defaultValue().get());
+        assertFalse(model.getParams().get(0).description().isPresent());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -144,15 +146,16 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertFalse(model.getInputs().isEmpty());
-        assertEquals(1, model.getInputs().size());
-        assertEquals("parm1", model.getInputs().get(0).name());
-        assertEquals("string", model.getInputs().get(0).type());
-        assertEquals(Input.Kind.PARAMETER, model.getInputs().get(0).kind());
-        assertFalse(model.getInputs().get(0).defaultValue().isPresent());
-        assertTrue(model.getInputs().get(0).description().isPresent());
-        assertEquals("description", model.getInputs().get(0).description().get());
-        assertTrue(model.getOutputs().isEmpty());
+        assertFalse(model.getParams().isEmpty());
+        assertEquals(1, model.getParams().size());
+        assertEquals("parm1", model.getParams().get(0).name());
+        assertEquals("string", model.getParams().get(0).type());
+        assertEquals(Input.Kind.PARAMETER, model.getParams().get(0).kind());
+        assertFalse(model.getParams().get(0).defaultValue().isPresent());
+        assertTrue(model.getParams().get(0).description().isPresent());
+        assertEquals("description", model.getParams().get(0).description().get());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -162,13 +165,13 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertFalse(model.getInputs().isEmpty());
-        assertEquals(2, model.getInputs().size());
-        assertEquals("parm1", model.getInputs().get(0).name());
-        assertEquals(Input.Kind.PARAMETER, model.getInputs().get(0).kind());
-        assertEquals("parm2", model.getInputs().get(1).name());
-        assertEquals(Input.Kind.PARAMETER, model.getInputs().get(1).kind());
-        assertTrue(model.getOutputs().isEmpty());
+        assertFalse(model.getParams().isEmpty());
+        assertEquals(2, model.getParams().size());
+        assertEquals("parm1", model.getParams().get(0).name());
+        assertEquals(Input.Kind.PARAMETER, model.getParams().get(0).kind());
+        assertEquals("parm2", model.getParams().get(1).name());
+        assertEquals(Input.Kind.PARAMETER, model.getParams().get(1).kind());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -176,14 +179,14 @@ public class StartResourceModelTest {
     public void checkSingleInputResource() throws IOException {
         String content = load("task6.yaml");
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
-        assertFalse(model.getInputs().isEmpty());
-        assertEquals(1, model.getInputs().size());
-        assertEquals("resource1", model.getInputs().get(0).name());
-        assertEquals("git", model.getInputs().get(0).type());
-        assertEquals(Input.Kind.RESOURCE, model.getInputs().get(0).kind());
-        assertFalse(model.getInputs().get(0).defaultValue().isPresent());
-        assertFalse(model.getInputs().get(0).description().isPresent());
-        assertTrue(model.getOutputs().isEmpty());
+        assertFalse(model.getInputResources().isEmpty());
+        assertEquals(1, model.getInputResources().size());
+        assertEquals("resource1", model.getInputResources().get(0).name());
+        assertEquals("git", model.getInputResources().get(0).type());
+        assertEquals(Input.Kind.RESOURCE, model.getInputResources().get(0).kind());
+        assertFalse(model.getInputResources().get(0).defaultValue().isPresent());
+        assertFalse(model.getInputResources().get(0).description().isPresent());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -193,13 +196,13 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertFalse(model.getInputs().isEmpty());
-        assertEquals(2, model.getInputs().size());
-        assertEquals("resource1", model.getInputs().get(0).name());
-        assertEquals(Input.Kind.RESOURCE, model.getInputs().get(0).kind());
-        assertEquals("resource2", model.getInputs().get(1).name());
-        assertEquals(Input.Kind.RESOURCE, model.getInputs().get(1).kind());
-        assertTrue(model.getOutputs().isEmpty());
+        assertFalse(model.getInputResources().isEmpty());
+        assertEquals(2, model.getInputResources().size());
+        assertEquals("resource1", model.getInputResources().get(0).name());
+        assertEquals(Input.Kind.RESOURCE, model.getInputResources().get(0).kind());
+        assertEquals("resource2", model.getInputResources().get(1).name());
+        assertEquals(Input.Kind.RESOURCE, model.getInputResources().get(1).kind());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -209,12 +212,12 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertFalse(model.getOutputs().isEmpty());
-        assertEquals(1, model.getOutputs().size());
-        assertEquals("resource1", model.getOutputs().get(0).name());
-        assertEquals("image", model.getOutputs().get(0).type());
-        assertNull(model.getOutputs().get(0).value());
+        assertTrue(model.getInputResources().isEmpty());
+        assertFalse(model.getOutputResources().isEmpty());
+        assertEquals(1, model.getOutputResources().size());
+        assertEquals("resource1", model.getOutputResources().get(0).name());
+        assertEquals("image", model.getOutputResources().get(0).type());
+        assertNull(model.getOutputResources().get(0).value());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -224,15 +227,15 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertFalse(model.getOutputs().isEmpty());
-        assertEquals(2, model.getOutputs().size());
-        assertEquals("resource1", model.getOutputs().get(0).name());
-        assertEquals("image", model.getOutputs().get(0).type());
-        assertNull(model.getOutputs().get(0).value());
-        assertEquals("resource2", model.getOutputs().get(1).name());
-        assertEquals("image", model.getOutputs().get(1).type());
-        assertNull(model.getOutputs().get(1).value());
+        assertTrue(model.getInputResources().isEmpty());
+        assertFalse(model.getOutputResources().isEmpty());
+        assertEquals(2, model.getOutputResources().size());
+        assertEquals("resource1", model.getOutputResources().get(0).name());
+        assertEquals("image", model.getOutputResources().get(0).type());
+        assertNull(model.getOutputResources().get(0).value());
+        assertEquals("resource2", model.getOutputResources().get(1).name());
+        assertEquals("image", model.getOutputResources().get(1).type());
+        assertNull(model.getOutputResources().get(1).value());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -242,15 +245,15 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Arrays.asList(new Resource("resourceDefault1", "image")), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertFalse(model.getOutputs().isEmpty());
-        assertEquals(2, model.getOutputs().size());
-        assertEquals("resource1", model.getOutputs().get(0).name());
-        assertEquals("image", model.getOutputs().get(0).type());
-        assertEquals("resourceDefault1", model.getOutputs().get(0).value());
-        assertEquals("resource2", model.getOutputs().get(1).name());
-        assertEquals("image", model.getOutputs().get(1).type());
-        assertEquals("resourceDefault1", model.getOutputs().get(1).value());
+        assertTrue(model.getInputResources().isEmpty());
+        assertFalse(model.getOutputResources().isEmpty());
+        assertEquals(2, model.getOutputResources().size());
+        assertEquals("resource1", model.getOutputResources().get(0).name());
+        assertEquals("image", model.getOutputResources().get(0).type());
+        assertEquals("resourceDefault1", model.getOutputResources().get(0).value());
+        assertEquals("resource2", model.getOutputResources().get(1).name());
+        assertEquals("image", model.getOutputResources().get(1).type());
+        assertEquals("resourceDefault1", model.getOutputResources().get(1).value());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -261,8 +264,8 @@ public class StartResourceModelTest {
         assertEquals(2, model.getWorkspaces().size());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertTrue(model.getOutputs().isEmpty());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getRunPrefixName().isEmpty());
     }
 
@@ -272,14 +275,15 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertFalse(model.getInputs().isEmpty());
-        assertEquals(1, model.getInputs().size());
-        assertEquals("parm1", model.getInputs().get(0).name());
-        assertEquals("string", model.getInputs().get(0).type());
-        assertEquals(Input.Kind.PARAMETER, model.getInputs().get(0).kind());
-        assertFalse(model.getInputs().get(0).defaultValue().isPresent());
-        assertFalse(model.getInputs().get(0).description().isPresent());
-        assertTrue(model.getOutputs().isEmpty());
+        assertFalse(model.getParams().isEmpty());
+        assertEquals(1, model.getParams().size());
+        assertEquals("parm1", model.getParams().get(0).name());
+        assertEquals("string", model.getParams().get(0).type());
+        assertEquals(Input.Kind.PARAMETER, model.getParams().get(0).kind());
+        assertFalse(model.getParams().get(0).defaultValue().isPresent());
+        assertFalse(model.getParams().get(0).description().isPresent());
+        assertTrue(model.getInputResources().isEmpty());
+        assertTrue(model.getOutputResources().isEmpty());
         assertEquals(2, model.getWorkspaces().size());
         assertTrue(model.getWorkspaces().containsKey("write-allowed"));
         assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
@@ -292,14 +296,14 @@ public class StartResourceModelTest {
     public void checkTaskWithWorkspaceAndInputResourceParameter() throws IOException {
         String content = load("task12.yaml");
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
-        assertFalse(model.getInputs().isEmpty());
-        assertEquals(1, model.getInputs().size());
-        assertEquals("resource1", model.getInputs().get(0).name());
-        assertEquals("git", model.getInputs().get(0).type());
-        assertEquals(Input.Kind.RESOURCE, model.getInputs().get(0).kind());
-        assertFalse(model.getInputs().get(0).defaultValue().isPresent());
-        assertFalse(model.getInputs().get(0).description().isPresent());
-        assertTrue(model.getOutputs().isEmpty());
+        assertFalse(model.getInputResources().isEmpty());
+        assertEquals(1, model.getInputResources().size());
+        assertEquals("resource1", model.getInputResources().get(0).name());
+        assertEquals("git", model.getInputResources().get(0).type());
+        assertEquals(Input.Kind.RESOURCE, model.getInputResources().get(0).kind());
+        assertFalse(model.getInputResources().get(0).defaultValue().isPresent());
+        assertFalse(model.getInputResources().get(0).description().isPresent());
+        assertTrue(model.getOutputResources().isEmpty());
         assertEquals(2, model.getWorkspaces().size());
         assertTrue(model.getWorkspaces().containsKey("write-allowed"));
         assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
@@ -314,12 +318,12 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertTrue(model.getInputs().isEmpty());
-        assertFalse(model.getOutputs().isEmpty());
-        assertEquals(2, model.getOutputs().size());
-        assertEquals("resource1", model.getOutputs().get(0).name());
-        assertEquals("image", model.getOutputs().get(0).type());
-        assertNull(model.getOutputs().get(0).value());
+        assertTrue(model.getInputResources().isEmpty());
+        assertFalse(model.getOutputResources().isEmpty());
+        assertEquals(2, model.getOutputResources().size());
+        assertEquals("resource1", model.getOutputResources().get(0).name());
+        assertEquals("image", model.getOutputResources().get(0).type());
+        assertNull(model.getOutputResources().get(0).value());
         assertEquals(2, model.getWorkspaces().size());
         assertTrue(model.getWorkspaces().containsKey("write-allowed"));
         assertTrue(model.getWorkspaces().containsKey("write-disallowed"));
@@ -334,24 +338,26 @@ public class StartResourceModelTest {
         StartResourceModel model = new StartResourceModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         assertTrue(model.getServiceAccounts().isEmpty());
         assertTrue(model.getTaskServiceAccounts().isEmpty());
-        assertFalse(model.getInputs().isEmpty());
-        assertEquals(2, model.getInputs().size());
-        assertEquals("parm1", model.getInputs().get(0).name());
-        assertEquals("string", model.getInputs().get(0).type());
-        assertEquals(Input.Kind.PARAMETER, model.getInputs().get(0).kind());
-        assertFalse(model.getInputs().get(0).defaultValue().isPresent());
-        assertFalse(model.getInputs().get(0).description().isPresent());
-        assertEquals("resource1", model.getInputs().get(1).name());
-        assertEquals("git", model.getInputs().get(1).type());
-        assertEquals(Input.Kind.RESOURCE, model.getInputs().get(1).kind());
-        assertFalse(model.getInputs().get(1).defaultValue().isPresent());
-        assertFalse(model.getInputs().get(1).description().isPresent());
-        assertFalse(model.getOutputs().isEmpty());
-        assertEquals(2, model.getOutputs().size());
-        assertEquals("resource1", model.getOutputs().get(0).name());
-        assertEquals("image", model.getOutputs().get(0).type());
-        assertEquals("resource2", model.getOutputs().get(1).name());
-        assertEquals("image", model.getOutputs().get(1).type());
+        assertFalse(model.getParams().isEmpty());
+        assertEquals(1, model.getParams().size());
+        assertEquals("parm1", model.getParams().get(0).name());
+        assertEquals("string", model.getParams().get(0).type());
+        assertEquals(Input.Kind.PARAMETER, model.getParams().get(0).kind());
+        assertFalse(model.getParams().get(0).defaultValue().isPresent());
+        assertFalse(model.getParams().get(0).description().isPresent());
+        assertFalse(model.getInputResources().isEmpty());
+        assertEquals(1, model.getInputResources().size());
+        assertEquals("resource1", model.getInputResources().get(0).name());
+        assertEquals("git", model.getInputResources().get(0).type());
+        assertEquals(Input.Kind.RESOURCE, model.getInputResources().get(0).kind());
+        assertFalse(model.getInputResources().get(0).defaultValue().isPresent());
+        assertFalse(model.getInputResources().get(0).description().isPresent());
+        assertFalse(model.getOutputResources().isEmpty());
+        assertEquals(2, model.getOutputResources().size());
+        assertEquals("resource1", model.getOutputResources().get(0).name());
+        assertEquals("image", model.getOutputResources().get(0).type());
+        assertEquals("resource2", model.getOutputResources().get(1).name());
+        assertEquals("image", model.getOutputResources().get(1).type());
         assertFalse(model.getWorkspaces().isEmpty());
         assertEquals(2, model.getWorkspaces().size());
         assertTrue(model.getWorkspaces().containsKey("write-allowed"));

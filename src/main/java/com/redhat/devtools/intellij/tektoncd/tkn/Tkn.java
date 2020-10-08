@@ -363,6 +363,15 @@ public interface Tkn {
     void deleteEventListeners(String namespace, List<String> eventListeners) throws IOException;
 
     /**
+     * Get all custom resources from the cluster which is namespaced.
+     *
+     * @param namespace the namespace to use
+     * @param crdContext the custom resource definition context of the resource kind
+     * @return Object as HashMap, null if no resource was found
+     */
+    Map<String, Object> getCustomResources(String namespace, CustomResourceDefinitionContext crdContext);
+
+    /**
      * Get a custom resource from the cluster which is namespaced.
      *
      * @param namespace the namespace to use

@@ -8,15 +8,17 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd;
+package com.redhat.devtools.intellij.tektoncd.utils;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import org.apache.commons.io.IOUtils;
+import java.util.UUID;
 
-public class BaseTest {
+public class Utils {
 
-    protected String load(String name) throws IOException {
-        return IOUtils.toString(BaseTest.class.getResource("/" + name), StandardCharsets.UTF_8);
+    public static String getRandomString(int length) {
+        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+        if (uuid.length() > length) {
+            return uuid.substring(0, length);
+        }
+        return uuid;
     }
 }

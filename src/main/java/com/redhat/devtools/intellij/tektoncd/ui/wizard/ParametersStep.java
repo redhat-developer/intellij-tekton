@@ -11,16 +11,20 @@
 package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.border.Border;
 
 
@@ -34,9 +38,9 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_1
 
 public class ParametersStep extends BaseStep {
 
-    List<JTextField> textFields;
+    Map<String, JTextField> textFields;
 
-    public ParametersStep(StartResourceModel model) {
+    public ParametersStep(ActionToRunModel model) {
         super("Parameters", model);
     }
 
@@ -45,7 +49,8 @@ public class ParametersStep extends BaseStep {
         if (textFields == null) return false;
         AtomicBoolean isComplete = new AtomicBoolean(true);
         final int[] row = {1};
-        textFields.stream().forEach(field -> {
+        textFields.keySet().stream().forEach(param -> {
+            JTextField field = textFields.get(param);
             if (!isValid(field)) {
                 field.setBorder(RED_BORDER_SHOW_ERROR);
                 JLabel lblErrorText = new JLabel("Please enter a value.");
@@ -53,6 +58,8 @@ public class ParametersStep extends BaseStep {
                 addComponent(lblErrorText, TIMES_PLAIN_10, MARGIN_TOP_35, ROW_DIMENSION_ERROR, 0, row[0], GridBagConstraints.PAGE_END);
                 errorFieldsByRow.put(row[0], lblErrorText);
                 isComplete.set(false);
+            } else {
+                setInputValue(model.getParams(), param, field.getText());
             }
             row[0] += 2;
         });
@@ -64,11 +71,34 @@ public class ParametersStep extends BaseStep {
         return "https://github.com/tektoncd/pipeline/blob/master/docs/pipelines.md#specifying-parameters";
     }
 
-    public void setContent(StartResourceModel model) {
-        textFields = new ArrayList<>();
+    public void setContent() {
+        textFields = new LinkedHashMap<>();
         final int[] row = {0};
 
-        model.getInputs().stream().filter(input -> input.kind() == Input.Kind.PARAMETER).forEach(input -> {
+        // if we are inside the AddTriggerWizard we suggest users which are the params they can use (extracted by the bindings chosen in the previous step)
+        if (model instanceof AddTriggerModel) {
+            Set<String> variablesToSuggest = ((AddTriggerModel) model).extractVariablesFromSelectedBindings();
+            if (!variablesToSuggest.isEmpty()) {
+                String suggestVariablesText = "<html><body style=\"font-family: " + Font.DIALOG + ";font-size:10px;\">The following variables can be used as Parameter values in the form $variable:<br><br>";
+                int cont = 0;
+                for (String variable: variablesToSuggest) {
+                    suggestVariablesText += "<span style=\"font-size:10px;font-weight:bold;\">" + variable + "</span>   ";
+                    if (++cont % 4 == 0) suggestVariablesText+= "<br>";
+                }
+                suggestVariablesText += "<br><br>The variables are taken from the bindings chosen in the previous step and they will be<br>" +
+                                        "filled by the EventListener when evaluating TriggerBindings for an event.</html>";
+                JTextPane lblVariableText = new JTextPane();
+                lblVariableText.setContentType("text/html");
+                lblVariableText.setText(suggestVariablesText);
+                lblVariableText.setEditable(false);
+                lblVariableText.setBackground(null);
+                lblVariableText.setBorder(null);
+                addComponent(lblVariableText, null, BORDER_LABEL_NAME, null, 0, row[0], GridBagConstraints.NORTHWEST);
+                row[0] += 1;
+            }
+        }
+
+        model.getParams().stream().filter(input -> input.kind() == Input.Kind.PARAMETER).forEach(input -> {
             String label = "<html><span style=\\\"font-family:serif;font-size:10px;font-weight:bold;\\\">" + input.name() + "</span>  <span style=\\\"font-family:serif;font-size:10;font-weight:normal;font-style:italic;\\\">(" + input.type() + ")</span></html>";
             String tooltip = input.description().isPresent() ? input.description().get() + "\n" : "";
             if (input.type().equals("string")) {
@@ -77,13 +107,13 @@ public class ParametersStep extends BaseStep {
                 tooltip += "The parameter " + input.name() + " expects an array value (e.g. val1,val2,val3 ...).";
             }
             JLabel lblNameParam = new JLabel(label);
-            addComponent(lblNameParam, null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
+            addComponent(lblNameParam, null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTHWEST);
             addTooltip(lblNameParam, tooltip);
             row[0] += 1;
 
             JTextField txtValueParam = new JTextField(input.defaultValue().orElse(""));
-            textFields.add(txtValueParam);
-            txtValueParam = (JTextField) addComponent(txtValueParam, TIMES_PLAIN_14, null, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTH);
+            textFields.put(input.name(), txtValueParam);
+            txtValueParam = (JTextField) addComponent(txtValueParam, TIMES_PLAIN_14, null, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTHWEST);
             addListener(input.name(), txtValueParam, txtValueParam.getBorder(), row[0]);
             row[0] += 1;
         });
@@ -95,7 +125,7 @@ public class ParametersStep extends BaseStep {
             @Override
             public void focusLost(FocusEvent e) {
                 super.focusLost(e);
-                setInputValue(idParam, txtValueParam.getText());
+                setInputValue(model.getParams(), idParam, txtValueParam.getText());
                 // reset error graphics if an error occurred earlier
                 if (isValid(txtValueParam)) {
                     txtValueParam.setBorder(defaultBorder);

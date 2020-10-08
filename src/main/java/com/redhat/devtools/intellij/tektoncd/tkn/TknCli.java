@@ -208,6 +208,7 @@ public class TknCli implements Tkn {
 
     @Override
     public List<String> getTriggerBindings(String namespace) throws IOException {
+
         String output = ExecHelper.execute(command, envVars, "triggerbindings", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
@@ -344,6 +345,18 @@ public class TknCli implements Tkn {
             args.addAll(Arrays.asList("-n", namespace));
         }
         return args.toArray(new String[0]);
+    }
+
+    public Map<String, Object> getCustomResources(String namespace, CustomResourceDefinitionContext crdContext) {
+        try {
+            if (namespace.isEmpty()) {
+                return client.customResource(crdContext).list();
+            }
+            return client.customResource(crdContext).list(namespace);
+        } catch(KubernetesClientException e) {
+            // call failed bc resource doesn't exist - 404
+            return null;
+        }
     }
 
     @Override

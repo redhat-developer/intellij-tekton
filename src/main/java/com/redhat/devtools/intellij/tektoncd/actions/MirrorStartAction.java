@@ -17,7 +17,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import com.redhat.devtools.intellij.tektoncd.utils.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
