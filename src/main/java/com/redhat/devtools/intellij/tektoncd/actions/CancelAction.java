@@ -43,8 +43,8 @@ public class CancelAction extends TektonAction {
 
     @Override
     public boolean isVisible(Object selected) {
-        if (selected instanceof ParentableNode) {
-            ParentableNode element = getElement(selected);
+        Object element = getElement(selected);
+        if (element instanceof ParentableNode) {
             return element instanceof RunNode && ((RunNode) element).getRun().getCompletionTime() == null;
         }
         return false;
