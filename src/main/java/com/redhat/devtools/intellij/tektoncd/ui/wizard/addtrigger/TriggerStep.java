@@ -10,21 +10,15 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger;
 
+import com.google.common.primitives.Ints;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.ex.QuickList;
-import com.intellij.openapi.actionSystem.ex.QuickListsManager;
-import com.intellij.openapi.editor.colors.EditorColorsManager;
-import com.intellij.openapi.keymap.impl.ui.QuickListsPanel;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.util.Icons;
-import com.intellij.util.ui.ColorIcon;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.BaseStep;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TriggerBindingConfigurationModel;
-import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -32,33 +26,20 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
-import java.awt.Image;
 import java.awt.Insets;
-import java.awt.RenderingHints;
-import java.awt.Transparency;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.font.TextAttribute;
-import java.awt.geom.Ellipse2D;
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.GrayFilter;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -66,22 +47,15 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.ListModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 
 
-import static com.intellij.util.PlatformIcons.ADD_ICON;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BLUE;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_COMPONENT_VALUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_BOTTOM_10;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROMAN_PLAIN_13;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
 public class TriggerStep extends BaseStep {
 
@@ -139,7 +113,7 @@ public class TriggerStep extends BaseStep {
                 return label;
             }
         });
-        fillAvailableBindingsList();
+        fillAvailableBindingsList(null);
 
         JScrollPane outerListScrollPane = new JBScrollPane();
         outerListScrollPane.setViewportView(listBindingsAvailableOnCluster);
@@ -342,7 +316,7 @@ public class TriggerStep extends BaseStep {
                 String bindingSelected = listBindingsAvailableOnCluster.getSelectedValuesList().get(0).toString();
                 if (bindingSelected.endsWith(" NEW")) {
                     ((AddTriggerModel) model).getBindingsAvailableOnCluster().remove(bindingSelected);
-                    fillAvailableBindingsList();
+                    fillAvailableBindingsList(null);
                 }
             }
         });
@@ -361,8 +335,9 @@ public class TriggerStep extends BaseStep {
                                 if (((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().stream().map(binding -> binding.replace(" NEW", "")).anyMatch(binding -> binding.equalsIgnoreCase(bindingModel.getName()))) {
                                     error = "<html>The name has already been used for another TriggerBinding. <br> Please change it and save again!!</html>";
                                 } else {
-                                    ((AddTriggerModel) model).getBindingsAvailableOnCluster().put(bindingModel.getName() + " NEW", textAreaNewTriggerBinding.getText());
-                                    fillAvailableBindingsList();
+                                    String bindingNameWithNewSuffix = bindingModel.getName() + " NEW";
+                                    ((AddTriggerModel) model).getBindingsAvailableOnCluster().put(bindingNameWithNewSuffix, textAreaNewTriggerBinding.getText());
+                                    fillAvailableBindingsList(bindingNameWithNewSuffix);
                                 }
                             } else {
                                 error = bindingModel.getErrorMessage();
@@ -374,6 +349,7 @@ public class TriggerStep extends BaseStep {
                         if (error.isEmpty()) {
                             editRightPanel.setVisible(false);
                             btnAdd.setEnabled(true);
+
                             return;
                         }
 
@@ -406,9 +382,22 @@ public class TriggerStep extends BaseStep {
         adjustContentPanel();
     }
 
-    private void fillAvailableBindingsList() {
+    private void fillAvailableBindingsList(String newItemToSelect) {
+        List selectedItems = listBindingsAvailableOnCluster.getSelectedValuesList();
         listBindingsAvailableOnCluster.removeAll();
         listBindingsAvailableOnCluster.setListData(((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().stream().sorted().toArray());
+        if (selectedItems.size() > 0 || newItemToSelect != null) {
+            List<Integer> indeces = new ArrayList<>();
+            for (int i = 0; i < listBindingsAvailableOnCluster.getModel().getSize(); i++) {
+                Object valueInList = listBindingsAvailableOnCluster.getModel().getElementAt(i);
+                if (selectedItems.contains(valueInList) ||
+                    (newItemToSelect != null && listBindingsAvailableOnCluster.getModel().getElementAt(i).equals(newItemToSelect))) {
+                    indeces.add(i);
+                }
+            }
+            listBindingsAvailableOnCluster.setSelectedIndices(Ints.toArray(indeces));
+        }
+
     }
 
     private JLabel createDescriptionLabel(String text, Icon icon, int horizontalPosition, Border border) {
