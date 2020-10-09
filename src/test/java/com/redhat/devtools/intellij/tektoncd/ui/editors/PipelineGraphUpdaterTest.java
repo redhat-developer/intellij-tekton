@@ -54,4 +54,58 @@ public class PipelineGraphUpdaterTest {
         assertNotNull(node.childs);
         assertTrue(node.childs.isEmpty());
     }
+
+    @Test
+    public void checkTwoTasksRunAfterPipeline() throws IOException {
+        Pipeline pipeline = load("/schemas/pipeline-runafter.yaml");
+        Map<String, PipelineGraphUpdater.Node> tree = PipelineGraphUpdater.generateTree(pipeline.getSpec().getTasks(), "");
+        assertNotNull(tree);
+        assertEquals(1, tree.size());
+        PipelineGraphUpdater.Node node = tree.values().iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("first", node.name);
+        assertNotNull(node.childs);
+        assertEquals(1, node.childs.size());
+        node = node.childs.iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("second", node.name);
+        assertNotNull(node.childs);
+        assertTrue(node.childs.isEmpty());
+    }
+
+    @Test
+    public void checkTwoTasksFromPipeline() throws IOException {
+        Pipeline pipeline = load("/schemas/pipeline-from.yaml");
+        Map<String, PipelineGraphUpdater.Node> tree = PipelineGraphUpdater.generateTree(pipeline.getSpec().getTasks(), "");
+        assertNotNull(tree);
+        assertEquals(1, tree.size());
+        PipelineGraphUpdater.Node node = tree.values().iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("first", node.name);
+        assertNotNull(node.childs);
+        assertEquals(1, node.childs.size());
+        node = node.childs.iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("second", node.name);
+        assertNotNull(node.childs);
+        assertTrue(node.childs.isEmpty());
+    }
+
+    @Test
+    public void checkTwoTasksWhenPipeline() throws IOException {
+        Pipeline pipeline = load("/schemas/pipeline-when-2tasks.yaml");
+        Map<String, PipelineGraphUpdater.Node> tree = PipelineGraphUpdater.generateTree(pipeline.getSpec().getTasks(), "");
+        assertNotNull(tree);
+        assertEquals(1, tree.size());
+        PipelineGraphUpdater.Node node = tree.values().iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("first", node.name);
+        assertNotNull(node.childs);
+        assertEquals(1, node.childs.size());
+        node = node.childs.iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("second", node.name);
+        assertNotNull(node.childs);
+        assertTrue(node.childs.isEmpty());
+    }
 }
