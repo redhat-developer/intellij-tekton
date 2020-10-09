@@ -63,7 +63,9 @@ public class TriggerStep extends BaseStep {
     private JTextArea textAreaNewTriggerBinding;
     private JScrollPane scrollTriggerBindingAreaPane;
     private JList listBindingsAvailableOnCluster;
-    private JLabel lblErrorNewBinding;
+    private JLabel lblErrorNewBinding, btnSave, lblSelectTemplate;
+    private JPanel editRightPanel;
+    private JButton btnAdd;
 
     public TriggerStep(AddTriggerModel model, Map<String, String> triggerBindingTemplates) {
         super("Trigger", model);
@@ -120,10 +122,10 @@ public class TriggerStep extends BaseStep {
         outerListScrollPane.setPreferredSize(new Dimension(200, 350));
 
         // actions column
-        JButton btnAdd = createActionButton(AllIcons.General.Add, AllIcons.General.InlineAdd);
-        JButton btnRemove = createActionButton(AllIcons.General.Remove, IconLoader.getDisabledIcon(AllIcons.General.Remove));
+        btnAdd = createActionButton(AllIcons.General.Add, AllIcons.General.InlineAdd, "Add new binding");
+        JButton btnRemove = createActionButton(AllIcons.General.Remove, IconLoader.getDisabledIcon(AllIcons.General.Remove), "Remove a newly-created selected binding");
         btnRemove.setEnabled(false);
-        JButton btnFind = createActionButton(AllIcons.Actions.Find, IconLoader.getDisabledIcon(AllIcons.Actions.Find));
+        JButton btnFind = createActionButton(AllIcons.Actions.Find, IconLoader.getDisabledIcon(AllIcons.Actions.Find), "Show selected binding");
         btnFind.setEnabled(false);
 
         Box box = Box.createVerticalBox();
@@ -137,6 +139,7 @@ public class TriggerStep extends BaseStep {
 
         // description panel
         JLabel lblDescriptionNewBinding = createDescriptionLabel("Add a new binding", AllIcons.General.Add, SwingConstants.LEFT, BORDER_LABEL_NAME);
+        lblDescriptionNewBinding.setCursor(new Cursor(Cursor.HAND_CURSOR));
         JLabel lblDescriptionRemoveBinding = createDescriptionLabel("Remove a newly-created selected binding", AllIcons.General.Remove, SwingConstants.LEFT, BORDER_LABEL_NAME);
         JLabel lblDescriptionFindBinding = createDescriptionLabel("Show the content of the selected binding", AllIcons.Actions.Find, SwingConstants.LEFT, BORDER_LABEL_NAME);
         JLabel lblDescriptionGeneral1 = createDescriptionLabel("Select none or one or many bindings", null, -1, BORDER_LABEL_NAME);
@@ -153,12 +156,12 @@ public class TriggerStep extends BaseStep {
         descriptionRightPanel.add(lblDescriptionGeneral2, buildGridBagConstraints(0, 4, 1, GridBagConstraints.WEST, null));
 
         // edit panel
-        JPanel editRightPanel = new JPanel(gridBagLayout);
+        editRightPanel = new JPanel(gridBagLayout);
         editRightPanel.setBackground(backgroundTheme);
         editRightPanel.setBorder(new EmptyBorder(0, 15, 0, 0));
         editRightPanel.setVisible(false);
 
-        JLabel btnSave = new JLabel("Save");
+        btnSave = new JLabel("Save");
         Font font = btnSave.getFont();
         btnSave.setFont(font.deriveFont(font.getStyle() | Font.BOLD));
         btnSave.setForeground(BLUE);
@@ -180,7 +183,7 @@ public class TriggerStep extends BaseStep {
         editRightPanel.add(topButtonsPanel, buildGridBagConstraints(1, internalRow, -1, GridBagConstraints.EAST, null));
         internalRow++;
 
-        JLabel lblSelectTemplate = new JLabel("Select a template");
+        lblSelectTemplate = new JLabel("Select a template");
 
         cmbPreMadeTriggerBindingTemplates = new ComboBox();
         cmbPreMadeTriggerBindingTemplates.addItem("");
@@ -237,14 +240,32 @@ public class TriggerStep extends BaseStep {
             }
         });
 
+        lblDescriptionNewBinding.addMouseListener(
+                new MouseAdapter() {
+                    Font original;
+
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        openEditRightPanel();
+                    }
+
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        original = e.getComponent().getFont();
+                        Map attributes = original.getAttributes();
+                        attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+                        e.getComponent().setFont(original.deriveFont(attributes));
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        e.getComponent().setFont(original);
+                    }
+                }
+        );
+
         btnAdd.addActionListener(e -> {
-            if (!editRightPanel.isVisible()) {
-                btnAdd.setEnabled(false);
-                editRightPanel.setVisible(true);
-            }
-            lblSelectTemplate.setVisible(true);
-            cmbPreMadeTriggerBindingTemplates.setVisible(true);
-            btnSave.setVisible(true);
+            openEditRightPanel();
         });
 
         btnClose.addMouseListener(new MouseAdapter() {
@@ -264,7 +285,6 @@ public class TriggerStep extends BaseStep {
 
                 @Override
                 public void mouseEntered(MouseEvent e) {
-
                     original = e.getComponent().getFont();
                     Map attributes = original.getAttributes();
                     attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
@@ -400,6 +420,16 @@ public class TriggerStep extends BaseStep {
 
     }
 
+    private void openEditRightPanel() {
+        if (!editRightPanel.isVisible()) {
+            btnAdd.setEnabled(false);
+            editRightPanel.setVisible(true);
+        }
+        lblSelectTemplate.setVisible(true);
+        cmbPreMadeTriggerBindingTemplates.setVisible(true);
+        btnSave.setVisible(true);
+    }
+
     private JLabel createDescriptionLabel(String text, Icon icon, int horizontalPosition, Border border) {
         JLabel lblDescription = new JLabel(text);
         if (icon != null) {
@@ -414,7 +444,7 @@ public class TriggerStep extends BaseStep {
         return lblDescription;
     }
 
-    private JButton createActionButton(Icon activeIcon, Icon disabledIcon) {
+    private JButton createActionButton(Icon activeIcon, Icon disabledIcon, String tooltip) {
         JButton actionButton = new JButton();
         actionButton.setIcon(activeIcon);
         actionButton.setDisabledIcon(disabledIcon);
@@ -423,6 +453,7 @@ public class TriggerStep extends BaseStep {
         actionButton.setPreferredSize(new Dimension(AllIcons.General.Add.getIconWidth() + 10, AllIcons.General.Add.getIconHeight() + 10));
         actionButton.setBackground(backgroundTheme);
         actionButton.setBorder(NO_BORDER);
+        actionButton.setToolTipText(tooltip);
         return actionButton;
     }
 
