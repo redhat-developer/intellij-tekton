@@ -29,6 +29,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.Utils;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
@@ -147,6 +148,8 @@ public class AddTriggerAction extends TektonAction {
                    ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "pipeline", triggerBindingsSelected.keySet().stream().map(binding -> binding.replace(" NEW", "")).collect(Collectors.toList()), triggerTemplateName);
                    saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
                    notifySuccessOperation("EventListener " + eventListenerName);
+
+                   TreeHelper.refresh(getEventProject(anActionEvent), (ParentableNode) ((ParentableNode)element.getParent()).getParent());
 
                } catch (IOException e) {
                    Notification notification = new Notification(NOTIFICATION_ID,

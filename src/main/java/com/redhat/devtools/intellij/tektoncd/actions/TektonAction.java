@@ -47,6 +47,9 @@ public class TektonAction extends StructureTreeAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected) {
+        if (selected.length == 0) {
+            return;
+        }
         try {
             this.actionPerformed(anActionEvent, path, selected, getTkn(anActionEvent));
         } catch (IOException e) {

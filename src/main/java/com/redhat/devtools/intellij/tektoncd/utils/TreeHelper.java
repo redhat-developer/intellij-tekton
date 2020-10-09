@@ -42,14 +42,14 @@ import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
-
-import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.tree.TreePath;
+
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
@@ -83,6 +83,11 @@ public class TreeHelper {
         } catch(Exception ex) {
             return null;
         }
+    }
+
+    public static void refresh(Project project, ParentableNode node) {
+        TektonTreeStructure structure = (TektonTreeStructure) getTree(project).getClientProperty(Constants.STRUCTURE_PROPERTY);
+        structure.fireModified(node);
     }
 
     /**

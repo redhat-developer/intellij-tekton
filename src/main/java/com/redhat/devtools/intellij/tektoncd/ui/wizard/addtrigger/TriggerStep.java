@@ -10,21 +10,15 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger;
 
+import com.google.common.primitives.Ints;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.ex.QuickList;
-import com.intellij.openapi.actionSystem.ex.QuickListsManager;
-import com.intellij.openapi.editor.colors.EditorColorsManager;
-import com.intellij.openapi.keymap.impl.ui.QuickListsPanel;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.util.Icons;
-import com.intellij.util.ui.ColorIcon;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.BaseStep;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TriggerBindingConfigurationModel;
-import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -32,33 +26,20 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
-import java.awt.Image;
 import java.awt.Insets;
-import java.awt.RenderingHints;
-import java.awt.Transparency;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.font.TextAttribute;
-import java.awt.geom.Ellipse2D;
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Box;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.GrayFilter;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -66,22 +47,15 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.ListModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 
 
-import static com.intellij.util.PlatformIcons.ADD_ICON;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BLUE;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_COMPONENT_VALUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_BOTTOM_10;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROMAN_PLAIN_13;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
 public class TriggerStep extends BaseStep {
 
@@ -89,7 +63,9 @@ public class TriggerStep extends BaseStep {
     private JTextArea textAreaNewTriggerBinding;
     private JScrollPane scrollTriggerBindingAreaPane;
     private JList listBindingsAvailableOnCluster;
-    private JLabel lblErrorNewBinding;
+    private JLabel lblErrorNewBinding, btnSave, lblSelectTemplate;
+    private JPanel editRightPanel;
+    private JButton btnAdd;
 
     public TriggerStep(AddTriggerModel model, Map<String, String> triggerBindingTemplates) {
         super("Trigger", model);
@@ -139,17 +115,17 @@ public class TriggerStep extends BaseStep {
                 return label;
             }
         });
-        fillAvailableBindingsList();
+        fillAvailableBindingsList(null);
 
         JScrollPane outerListScrollPane = new JBScrollPane();
         outerListScrollPane.setViewportView(listBindingsAvailableOnCluster);
         outerListScrollPane.setPreferredSize(new Dimension(200, 350));
 
         // actions column
-        JButton btnAdd = createActionButton(AllIcons.General.Add, AllIcons.General.InlineAdd);
-        JButton btnRemove = createActionButton(AllIcons.General.Remove, IconLoader.getDisabledIcon(AllIcons.General.Remove));
+        btnAdd = createActionButton(AllIcons.General.Add, AllIcons.General.InlineAdd, "Add new binding");
+        JButton btnRemove = createActionButton(AllIcons.General.Remove, IconLoader.getDisabledIcon(AllIcons.General.Remove), "Remove a newly-created selected binding");
         btnRemove.setEnabled(false);
-        JButton btnFind = createActionButton(AllIcons.Actions.Find, IconLoader.getDisabledIcon(AllIcons.Actions.Find));
+        JButton btnFind = createActionButton(AllIcons.Actions.Find, IconLoader.getDisabledIcon(AllIcons.Actions.Find), "Show selected binding");
         btnFind.setEnabled(false);
 
         Box box = Box.createVerticalBox();
@@ -163,6 +139,7 @@ public class TriggerStep extends BaseStep {
 
         // description panel
         JLabel lblDescriptionNewBinding = createDescriptionLabel("Add a new binding", AllIcons.General.Add, SwingConstants.LEFT, BORDER_LABEL_NAME);
+        lblDescriptionNewBinding.setCursor(new Cursor(Cursor.HAND_CURSOR));
         JLabel lblDescriptionRemoveBinding = createDescriptionLabel("Remove a newly-created selected binding", AllIcons.General.Remove, SwingConstants.LEFT, BORDER_LABEL_NAME);
         JLabel lblDescriptionFindBinding = createDescriptionLabel("Show the content of the selected binding", AllIcons.Actions.Find, SwingConstants.LEFT, BORDER_LABEL_NAME);
         JLabel lblDescriptionGeneral1 = createDescriptionLabel("Select none or one or many bindings", null, -1, BORDER_LABEL_NAME);
@@ -179,12 +156,12 @@ public class TriggerStep extends BaseStep {
         descriptionRightPanel.add(lblDescriptionGeneral2, buildGridBagConstraints(0, 4, 1, GridBagConstraints.WEST, null));
 
         // edit panel
-        JPanel editRightPanel = new JPanel(gridBagLayout);
+        editRightPanel = new JPanel(gridBagLayout);
         editRightPanel.setBackground(backgroundTheme);
         editRightPanel.setBorder(new EmptyBorder(0, 15, 0, 0));
         editRightPanel.setVisible(false);
 
-        JLabel btnSave = new JLabel("Save");
+        btnSave = new JLabel("Save");
         Font font = btnSave.getFont();
         btnSave.setFont(font.deriveFont(font.getStyle() | Font.BOLD));
         btnSave.setForeground(BLUE);
@@ -206,7 +183,7 @@ public class TriggerStep extends BaseStep {
         editRightPanel.add(topButtonsPanel, buildGridBagConstraints(1, internalRow, -1, GridBagConstraints.EAST, null));
         internalRow++;
 
-        JLabel lblSelectTemplate = new JLabel("Select a template");
+        lblSelectTemplate = new JLabel("Select a template");
 
         cmbPreMadeTriggerBindingTemplates = new ComboBox();
         cmbPreMadeTriggerBindingTemplates.addItem("");
@@ -263,14 +240,32 @@ public class TriggerStep extends BaseStep {
             }
         });
 
+        lblDescriptionNewBinding.addMouseListener(
+                new MouseAdapter() {
+                    Font original;
+
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        openEditRightPanel();
+                    }
+
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        original = e.getComponent().getFont();
+                        Map attributes = original.getAttributes();
+                        attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+                        e.getComponent().setFont(original.deriveFont(attributes));
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        e.getComponent().setFont(original);
+                    }
+                }
+        );
+
         btnAdd.addActionListener(e -> {
-            if (!editRightPanel.isVisible()) {
-                btnAdd.setEnabled(false);
-                editRightPanel.setVisible(true);
-            }
-            lblSelectTemplate.setVisible(true);
-            cmbPreMadeTriggerBindingTemplates.setVisible(true);
-            btnSave.setVisible(true);
+            openEditRightPanel();
         });
 
         btnClose.addMouseListener(new MouseAdapter() {
@@ -290,7 +285,6 @@ public class TriggerStep extends BaseStep {
 
                 @Override
                 public void mouseEntered(MouseEvent e) {
-
                     original = e.getComponent().getFont();
                     Map attributes = original.getAttributes();
                     attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
@@ -342,7 +336,7 @@ public class TriggerStep extends BaseStep {
                 String bindingSelected = listBindingsAvailableOnCluster.getSelectedValuesList().get(0).toString();
                 if (bindingSelected.endsWith(" NEW")) {
                     ((AddTriggerModel) model).getBindingsAvailableOnCluster().remove(bindingSelected);
-                    fillAvailableBindingsList();
+                    fillAvailableBindingsList(null);
                 }
             }
         });
@@ -361,8 +355,9 @@ public class TriggerStep extends BaseStep {
                                 if (((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().stream().map(binding -> binding.replace(" NEW", "")).anyMatch(binding -> binding.equalsIgnoreCase(bindingModel.getName()))) {
                                     error = "<html>The name has already been used for another TriggerBinding. <br> Please change it and save again!!</html>";
                                 } else {
-                                    ((AddTriggerModel) model).getBindingsAvailableOnCluster().put(bindingModel.getName() + " NEW", textAreaNewTriggerBinding.getText());
-                                    fillAvailableBindingsList();
+                                    String bindingNameWithNewSuffix = bindingModel.getName() + " NEW";
+                                    ((AddTriggerModel) model).getBindingsAvailableOnCluster().put(bindingNameWithNewSuffix, textAreaNewTriggerBinding.getText());
+                                    fillAvailableBindingsList(bindingNameWithNewSuffix);
                                 }
                             } else {
                                 error = bindingModel.getErrorMessage();
@@ -374,6 +369,7 @@ public class TriggerStep extends BaseStep {
                         if (error.isEmpty()) {
                             editRightPanel.setVisible(false);
                             btnAdd.setEnabled(true);
+
                             return;
                         }
 
@@ -406,9 +402,32 @@ public class TriggerStep extends BaseStep {
         adjustContentPanel();
     }
 
-    private void fillAvailableBindingsList() {
+    private void fillAvailableBindingsList(String newItemToSelect) {
+        List selectedItems = listBindingsAvailableOnCluster.getSelectedValuesList();
         listBindingsAvailableOnCluster.removeAll();
         listBindingsAvailableOnCluster.setListData(((AddTriggerModel) model).getBindingsAvailableOnCluster().keySet().stream().sorted().toArray());
+        if (selectedItems.size() > 0 || newItemToSelect != null) {
+            List<Integer> indeces = new ArrayList<>();
+            for (int i = 0; i < listBindingsAvailableOnCluster.getModel().getSize(); i++) {
+                Object valueInList = listBindingsAvailableOnCluster.getModel().getElementAt(i);
+                if (selectedItems.contains(valueInList) ||
+                    (newItemToSelect != null && listBindingsAvailableOnCluster.getModel().getElementAt(i).equals(newItemToSelect))) {
+                    indeces.add(i);
+                }
+            }
+            listBindingsAvailableOnCluster.setSelectedIndices(Ints.toArray(indeces));
+        }
+
+    }
+
+    private void openEditRightPanel() {
+        if (!editRightPanel.isVisible()) {
+            btnAdd.setEnabled(false);
+            editRightPanel.setVisible(true);
+        }
+        lblSelectTemplate.setVisible(true);
+        cmbPreMadeTriggerBindingTemplates.setVisible(true);
+        btnSave.setVisible(true);
     }
 
     private JLabel createDescriptionLabel(String text, Icon icon, int horizontalPosition, Border border) {
@@ -425,7 +444,7 @@ public class TriggerStep extends BaseStep {
         return lblDescription;
     }
 
-    private JButton createActionButton(Icon activeIcon, Icon disabledIcon) {
+    private JButton createActionButton(Icon activeIcon, Icon disabledIcon, String tooltip) {
         JButton actionButton = new JButton();
         actionButton.setIcon(activeIcon);
         actionButton.setDisabledIcon(disabledIcon);
@@ -434,6 +453,7 @@ public class TriggerStep extends BaseStep {
         actionButton.setPreferredSize(new Dimension(AllIcons.General.Add.getIconWidth() + 10, AllIcons.General.Add.getIconHeight() + 10));
         actionButton.setBackground(backgroundTheme);
         actionButton.setBorder(NO_BORDER);
+        actionButton.setToolTipText(tooltip);
         return actionButton;
     }
 
