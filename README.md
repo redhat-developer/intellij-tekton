@@ -18,6 +18,49 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
 
+
+
+### Troubleshooting
+
+Sometimes, it may be hard to understand why a pipeline failed or why it is stuck. We added a new troubleshooting tool that will inspect low level Kubernetes resources related to your task or pipeline execution and extract information that may be helpful.
+
+![](images/0.3.0/tekton5.gif)
+
+### Add trigger wizard
+
+It is now much simple to add a trigger to an existing pipeline. We added a new wizard that allows you to associate one or more trigger bindings to a pipeline (and if you don't have bindings already, you can create it while adding the trigger).
+
+![](images/0.3.0/tekton6.gif)
+
+### Pipelinerun preview editor
+
+Like the pipeline editor, the pipelinerun editor has been enhanced to include a visual representation of the pipeline
+workflow and status. Conditions and finally clauses are also supported.
+
+![](images/0.3.0/tekton1.png)
+
+### Run prefix when starting a task or pipeline
+
+It is now possible to specify a run prefix when starting a task or pipeline. This allows to better identify the execution in the set of runs
+
+![](images/0.3.0/tekton2.gif)
+
+### Improved code completion
+#### When expressions
+
+The dynamic input of a when expression can be easily specified as code completion can now retrieve the results from other tasks of the pipeline.
+
+![](images/0.3.0/tekton3.gif)
+
+### Resource reference
+
+Any task using input or output resources can be specified in the pipeline workflow and values for the resource field will be managed through code completion
+
+![](images/0.3.0/tekton4.gif)
+
+
+## Previous releases
+
 The Tekton CLI in use has been upgrated to 0.11.0 (as 0.12.0 has some performance issues).
 
 ### Pipeline preview editor
@@ -95,8 +138,6 @@ Task runs and pipeline runs are now opened as read only in the editor
 ### Proxy support
 
 Communication with the cluster is now supported automatically. The plugin will honor proxy settings from IntelliJ so proxy is configured by default or if proxy is associated with the cluster API server hostname, then communication from this plugin to the cluster will go through the configured proxy.
-
-## Previous releases
 
 ### Tekton Triggers support
 
