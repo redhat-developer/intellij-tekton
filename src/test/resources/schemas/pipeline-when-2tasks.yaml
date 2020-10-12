@@ -1,0 +1,19 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: when-pipeline
+spec:
+  tasks:
+    - name: first
+      taskRef:
+        kind: Task
+        name: build-app
+    - name: second
+      taskRef:
+        kind: Task
+        name: build-app
+      when:
+        - input: $(tasks.first.results.dummy)
+          operator: in
+          values:
+            - OK

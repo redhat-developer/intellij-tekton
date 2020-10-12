@@ -24,12 +24,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
 public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T> {
+
+    private static final String WHEN_PROPERTY = "when";
+    private static final String INPUT_PROPERTY = "input";
+    private static final String TASKS_REFERENCE_PREFIX = "$(tasks.";
+
     protected enum Type {
         TASK,
         CONDITION;
@@ -116,7 +122,7 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
     }
 
     static Map<String,Node> generateTree(List<PipelineTask> tasks, String idPrefix) {
-        Map<String,Node> tree = new HashMap<>();
+        Map<String,Node> tree = new LinkedHashMap<>();
         Map<String, List<String>> relations = new HashMap<>();
         for (PipelineTask task : tasks) {
             if (task != null && StringUtils.isNotBlank(task.getName())) {
@@ -126,11 +132,20 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
                 tree.put(taskId, taskNode);
                 if (task.getRunAfter() != null) {
                     for (String parentName : task.getRunAfter()) {
-                        String parentTaskId = idPrefix + TASK_PREFIX + parentName;
-                        relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
-                        relations.get(parentTaskId).add(taskId);
+                        addRelation(idPrefix, relations, taskId, parentName);
                     }
                 }
+                if (task.getResources() != null && task.getResources().getInputs() != null) {
+                    task.getResources().getInputs().forEach(input -> {
+                        if (input != null && input.getFrom() != null) {
+                            for(String parentName : input.getFrom()) {
+                                addRelation(idPrefix, relations, taskId, parentName);
+                            }
+                        }
+                    });
+                }
+                List<String> whenTasks = processWhen(task);
+                whenTasks.forEach(parentName -> addRelation(idPrefix, relations, taskId, parentName));
                 if (task.getConditions() != null) {
                     for(PipelineTaskCondition condition : task.getConditions()) {
                         if (condition != null && StringUtils.isNotBlank(condition.getConditionRef())) {
@@ -164,5 +179,44 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
         }
         toRemove.forEach(id -> tree.remove(id));
         return tree;
+    }
+
+    private static List<String> processWhen(PipelineTask task) {
+        List<String> tasks = new ArrayList<>();
+        if (task.getAdditionalProperties() != null && task.getAdditionalProperties().containsKey(WHEN_PROPERTY)) {
+            Object whens = task.getAdditionalProperties().get(WHEN_PROPERTY);
+            if (whens instanceof Collection) {
+                ((Collection)whens).forEach(when -> {
+                    if (when instanceof Map) {
+                        Object input = ((Map)when).get(INPUT_PROPERTY);
+                        if (input instanceof String) {
+                            String taskName = extractTaskName((String) input);
+                            if (taskName != null) {
+                                tasks.add(taskName);
+                            }
+                        }
+                    }
+
+                });
+            }
+        }
+        return tasks;
+    }
+
+    private static String extractTaskName(String input) {
+        if (input.startsWith(TASKS_REFERENCE_PREFIX)) {
+            input = input.substring(TASKS_REFERENCE_PREFIX.length());
+            int index = input.indexOf(".");
+            if (index != -1) {
+                return input.substring(0, index);
+            }
+        }
+        return null;
+    }
+
+    private static void addRelation(String prefix, Map<String, List<String>> relations, String taskId, String parentName) {
+        String parentTaskId = prefix + TASK_PREFIX + parentName;
+        relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
+        relations.get(parentTaskId).add(taskId);
     }
 }
