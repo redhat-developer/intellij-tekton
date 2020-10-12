@@ -41,13 +41,6 @@ public interface Tkn {
     boolean isTektonTriggersAware();
 
     /**
-     * Returns the names of ClusterTask for a namespace
-     * @return the list of ClusterTasks names
-     * @throws IOException if communication errored
-     */
-    List<String> getClusterTasks() throws IOException;
-
-    /**
      * Return the names of the namespace (projects for OpenShift).
      *
      * @return the list of namespaces names
@@ -119,10 +112,18 @@ public interface Tkn {
      * Return the names of Tekton tasks for a namespace.
      *
      * @param namespace the namespace to use
-     * @return the list of tasks names
+     * @return the list of tasks
      * @throws IOException if communication errored
      */
     List<Task> getTasks(String namespace) throws IOException;
+
+    /**
+     * Return the names of Tekton clusterTasks
+     *
+     * @return the list of clustertasks
+     * @throws IOException if communication errored
+     */
+    List<ClusterTask> getClusterTasks() throws IOException;
 
     /**
      * Return the list of task runs for a task.

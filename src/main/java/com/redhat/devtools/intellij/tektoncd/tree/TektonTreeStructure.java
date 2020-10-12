@@ -290,7 +290,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> tasks = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getClusterTasks().forEach(name -> tasks.add(new ClusterTaskNode(element.getRoot(), element, name)));
+            tkn.getClusterTasks().forEach(clusterTask -> tasks.add(new ClusterTaskNode(element.getRoot(), element, clusterTask.getMetadata().getName())));
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load cluster tasks"));
         }
