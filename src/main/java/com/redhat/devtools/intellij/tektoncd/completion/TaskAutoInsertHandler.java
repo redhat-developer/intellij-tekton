@@ -17,6 +17,8 @@ import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskResource;
 import io.fabric8.tekton.pipeline.v1beta1.TaskResources;
 import java.util.stream.Collectors;
+import io.fabric8.tekton.pipeline.v1beta1.WorkspaceDeclaration;
+import java.util.List;
 
 public class TaskAutoInsertHandler extends BaseAutoInsertHandler {
 
@@ -65,8 +67,18 @@ public class TaskAutoInsertHandler extends BaseAutoInsertHandler {
                     completionText += getIndentationAsText(indentationParent, indentationSize, 2) + "resource: \n";
                 }
             }
-
         }
+
+        //workspaces
+        List<WorkspaceDeclaration> workspaces = task.getSpec().getWorkspaces();
+        if (!workspaces.isEmpty()) {
+            completionText += getIndentationAsText(indentationParent, indentationSize, 0) + "workspaces:\n";
+            for (WorkspaceDeclaration workspace: workspaces) {
+                completionText += getIndentationAsText(indentationParent, indentationSize, 0) + "- name: " + workspace.getName() + "\n";
+                completionText += getIndentationAsText(indentationParent, indentationSize, 1) + "workspace: \n";
+            }
+        }
+
         return completionText;
     }
 }
