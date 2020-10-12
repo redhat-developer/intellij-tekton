@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.editors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.mxgraph.view.mxGraph;
+import io.fabric8.tekton.pipeline.v1beta1.ArrayOrString;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineSpec;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTask;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTaskCondition;
@@ -134,6 +135,22 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
                     for (String parentName : task.getRunAfter()) {
                         addRelation(idPrefix, relations, taskId, parentName);
                     }
+                }
+                if (task.getParams() != null) {
+                    task.getParams().forEach(param -> {
+                        if (param != null && param.getValue() != null) {
+                            List<String> values = param.getValue().getArrayVal();
+                            if (param.getValue().getType().equals("string")) {
+                                values = Collections.singletonList(param.getValue().getStringVal());
+                            }
+                            values.forEach(val -> {
+                                String parentName = extractTaskName(val);
+                                if (parentName != null) {
+                                    addRelation(idPrefix, relations, taskId, parentName);
+                                }
+                            });
+                        }
+                    });
                 }
                 if (task.getResources() != null && task.getResources().getInputs() != null) {
                     task.getResources().getInputs().forEach(input -> {

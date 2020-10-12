@@ -108,4 +108,40 @@ public class PipelineGraphUpdaterTest {
         assertNotNull(node.childs);
         assertTrue(node.childs.isEmpty());
     }
+
+    @Test
+    public void checkTwoTasksParameterStringValuePipeline() throws IOException {
+        Pipeline pipeline = load("/schemas/pipeline-tasks-linked-by-parameter-string-value.yaml");
+        Map<String, PipelineGraphUpdater.Node> tree = PipelineGraphUpdater.generateTree(pipeline.getSpec().getTasks(), "");
+        assertNotNull(tree);
+        assertEquals(1, tree.size());
+        PipelineGraphUpdater.Node node = tree.values().iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("first", node.name);
+        assertNotNull(node.childs);
+        assertEquals(1, node.childs.size());
+        node = node.childs.iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("second", node.name);
+        assertNotNull(node.childs);
+        assertTrue(node.childs.isEmpty());
+    }
+
+    @Test
+    public void checkTwoTasksParameterArrayValuePipeline() throws IOException {
+        Pipeline pipeline = load("/schemas/pipeline-tasks-linked-by-parameter-array-value.yaml");
+        Map<String, PipelineGraphUpdater.Node> tree = PipelineGraphUpdater.generateTree(pipeline.getSpec().getTasks(), "");
+        assertNotNull(tree);
+        assertEquals(1, tree.size());
+        PipelineGraphUpdater.Node node = tree.values().iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("first", node.name);
+        assertNotNull(node.childs);
+        assertEquals(1, node.childs.size());
+        node = node.childs.iterator().next();
+        assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
+        assertEquals("second", node.name);
+        assertNotNull(node.childs);
+        assertTrue(node.childs.isEmpty());
+    }
 }

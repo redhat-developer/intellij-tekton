@@ -1,0 +1,17 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: app-deploy
+spec:
+  tasks:
+    - name: first
+      taskRef:
+        name: build-app
+    - name: second
+      taskRef:
+        name: build-app
+      params:
+        - name: first
+          value:
+            - ok
+            - $(tasks.first.results.ecjo)
