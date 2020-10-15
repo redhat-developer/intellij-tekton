@@ -12,6 +12,8 @@ package com.redhat.devtools.intellij.tektoncd.ui.editors;
 
 import com.mxgraph.view.mxGraph;
 import com.redhat.devtools.intellij.common.utils.DateHelper;
+import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
+import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRunTaskRunStatus;
 import org.apache.commons.lang.StringUtils;
@@ -35,7 +37,17 @@ public class PipelineRunGraphUpdater extends AbstractPipelineGraphUpdater<Pipeli
     @Override
     public void update(PipelineRun content, mxGraph graph) {
         if (content.getStatus() != null) {
-            update(content, content.getStatus().getPipelineSpec(), graph);
+            if (content.getSpec().getPipelineSpec() != null) {
+                update(content, content.getStatus().getPipelineSpec(), graph);
+            } else if (content.getSpec().getPipelineRef() != null && StringUtils.isNotBlank(content.getSpec().getPipelineRef().getName())) {
+                TknCliFactory.getInstance().getTkn(null).thenAcceptAsync(tkn -> {
+                    try {
+                        String pipelineYAML = tkn.getPipelineYAML(content.getMetadata().getNamespace(), content.getSpec().getPipelineRef().getName());
+                        Pipeline pipeline = MAPPER.readValue(pipelineYAML, Pipeline.class);
+                        update(content, pipeline.getSpec(), graph);
+                    } catch (IOException e) {}
+                });
+            }
         }
     }
 
