@@ -80,6 +80,7 @@
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
   <idea-version since-build="192"/>
 
+  <depends>org.jboss.tools.intellij.kubernetes</depends>
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
   <depends>com.intellij.modules.lang</depends>
@@ -97,6 +98,7 @@
     <localInspection language="yaml" bundle="messages.YAMLBundle" displayName="Tekton Unused Variable inspector"
                      level="WARNING" groupKey="inspections.group.name" enabledByDefault="true"
                      implementationClass="com.redhat.devtools.intellij.tektoncd.utils.VariableReferencesInspector"/>
+    <applicationInitializedListener implementation="com.redhat.devtools.intellij.tektoncd.TektonApplicationListener" />
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
@@ -122,5 +124,17 @@
       <action class="com.redhat.devtools.intellij.tektoncd.actions.RefreshAction" text="Refresh"/>
     </group>
   </actions>
+
+  <extensions defaultExtensionNs="org.jboss.tools.intellij.kubernetes">
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.PipelinesProvider$Factory" />
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.TasksProvider$Factory" />
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jboss.tools.intellij.kubernetes">
+    <structureContribution
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.tree.TektonStructure$Factory" />
+  </extensions>
 
 </idea-plugin>

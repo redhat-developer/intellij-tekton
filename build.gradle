@@ -8,7 +8,6 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
     mavenLocal()
     maven { url 'https://repository.jboss.org' }
     maven { url 'https://jitpack.io' }
@@ -22,7 +21,7 @@ def versionsMap = ['IU-2019.2':'192.5728.98','IU-2019.3':'193.5233.144','IU-2020
 intellij {
     version ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName 'com.redhat.devtools.intellij.tekton'
-    plugins 'terminal', 'yaml', 'com.intellij.kubernetes:' + versionsMap[ideaVersion]
+    plugins 'terminal', 'yaml', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], '/Users/andredietisheim/Documents/jboss-workspaces/intellij-kubernetes/build/idea-sandbox/plugins/org.jboss.tools.intellij.kubernetes'
     updateSinceUntilBuild false
 }
 
@@ -48,6 +47,16 @@ dependencies {
 configurations {
     compile {
         exclude group: 'org.slf4j', module: 'slf4j-api'
+
+        exclude group: 'io.fabric8', module: 'kubernetes-client'
+        exclude group: 'io.fabric8', module: 'kubernetes-model'
+        exclude group: 'io.fabric8', module: 'kubernetes-model-common'
+        exclude group: 'io.fabric8', module: 'kubernetes-model-core'
+
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-annotations'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+        exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-jaxb-annotations'
     }
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
@@ -63,6 +72,13 @@ sourceSets {
     main {
         java.srcDirs += file("$buildDir/hubapi-java/src/main/java")
     }
+}
+
+patchPluginXml {
+    sinceBuild sinceIdeaBuild
+    group 'com.redhat.devtools.intellij'
+    version projectVersion
+    pluginDescription description
 }
 
 task integrationTest(type: Test) {
