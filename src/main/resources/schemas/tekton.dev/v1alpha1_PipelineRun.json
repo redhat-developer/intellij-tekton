@@ -2190,6 +2190,9 @@
             "$ref": "#/definitions/Sysctl"
           },
           "type": "array"
+        },
+        "fsGroupChangePolicy": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
