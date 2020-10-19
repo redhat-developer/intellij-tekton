@@ -36,18 +36,17 @@ public class PipelineRunGraphUpdater extends AbstractPipelineGraphUpdater<Pipeli
 
     @Override
     public void update(PipelineRun content, mxGraph graph) {
-        if (content.getStatus() != null) {
-            if (content.getSpec().getPipelineSpec() != null) {
-                update(content, content.getStatus().getPipelineSpec(), graph);
-            } else if (content.getSpec().getPipelineRef() != null && StringUtils.isNotBlank(content.getSpec().getPipelineRef().getName())) {
-                TknCliFactory.getInstance().getTkn(null).thenAcceptAsync(tkn -> {
-                    try {
-                        String pipelineYAML = tkn.getPipelineYAML(content.getMetadata().getNamespace(), content.getSpec().getPipelineRef().getName());
-                        Pipeline pipeline = MAPPER.readValue(pipelineYAML, Pipeline.class);
-                        update(content, pipeline.getSpec(), graph);
-                    } catch (IOException e) {}
-                });
-            }
+        if (content.getStatus() != null && content.getStatus().getPipelineSpec() != null) {
+            update(content, content.getStatus().getPipelineSpec(), graph);
+        } else if (content.getSpec() != null && content.getSpec().getPipelineRef() != null && StringUtils.isNotBlank(content.getSpec().getPipelineRef().getName())) {
+            TknCliFactory.getInstance().getTkn(null).thenAcceptAsync(tkn -> {
+                try {
+                    String pipelineYAML = tkn.getPipelineYAML(content.getMetadata().getNamespace(), content.getSpec().getPipelineRef().getName());
+                    Pipeline pipeline = MAPPER.readValue(pipelineYAML, Pipeline.class);
+                    update(content, pipeline.getSpec(), graph);
+                } catch (IOException e) {
+                }
+            });
         }
     }
 
