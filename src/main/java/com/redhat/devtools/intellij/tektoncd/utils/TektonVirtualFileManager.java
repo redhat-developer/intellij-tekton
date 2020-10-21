@@ -10,16 +10,28 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Strings;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileSystem;
+import com.redhat.devtools.intellij.common.utils.JSONHelper;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import gnu.trove.THashMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,10 +50,13 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERESOURCE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 
 public class TektonVirtualFileManager extends VirtualFileSystem {
     private static final Logger logger = LoggerFactory.getLogger(TektonVirtualFileManager.class);
@@ -178,13 +193,58 @@ public class TektonVirtualFileManager extends VirtualFileSystem {
 
     }
 
+    /**
+     * Save a resource on the cluster
+     * Url is in form namespace/kind/name for non cluster-scoped resources, kind/name otherwise
+     */
+    public void saveResource(String namespace, Document document) throws IOException {
+        Tkn tkncli = getTkn();
+        if (tkncli == null) {
+            throw new IOException("Unable to contact the cluster");
+        }
+
+        String name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "name"});
+        if (Strings.isNullOrEmpty(name)) {
+            throw new IOException("Tekton file has not a valid format. Name field is not valid or found.");
+        }
+        String kind = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"kind"});
+        if (Strings.isNullOrEmpty(kind)) {
+            throw new IOException("Tekton file has not a valid format. Kind field is not found.");
+        }
+        String apiVersion = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"apiVersion"});
+        if (Strings.isNullOrEmpty(apiVersion)) {
+            throw new IOException("Tekton file has not a valid format. ApiVersion field is not found.");
+        }
+        CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(apiVersion, FileDocumentManager.getInstance().getFile(document).getUserData(KIND_PLURAL));
+        if (crdContext == null) {
+            throw new IOException("Tekton file has not a valid format. ApiVersion field contains an invalid value.");
+        }
+        JsonNode spec = YAMLHelper.getValueFromYAML(document.getText(), new String[] {"spec"});
+        if (spec == null) {
+            throw new IOException("Tekton file has not a valid format. Spec field is not found.");
+        }
+
+        Map<String, Object> resource = tkncli.getCustomResource(namespace, name, crdContext);
+        if (resource == null) {
+            tkncli.createCustomResource(namespace, crdContext, document.getText());
+        } else {
+            JsonNode customResource = JSONHelper.MapToJSON(resource);
+            ((ObjectNode) customResource).set("spec", spec);
+            tkncli.editCustomResource(namespace, name, crdContext, customResource.toString());
+        }
+
+        String fileUrl = TreeHelper.getTektonResourceUrl(namespace, kind.toLowerCase(), name, false);
+        TektonVirtualFile file = new TektonVirtualFile(fileUrl, document.getCharsSequence());
+        tektonFiles.put(fileUrl, file);
+    }
+
     @Override
     protected void deleteFile(Object requestor, @NotNull VirtualFile vFile) throws IOException {
 
     }
 
-    public void deleteResources(List<String> resourcesPaths, boolean deleteRelatedResources) throws IOException {
-        if (resourcesPaths.isEmpty()) {
+    public void deleteResources(List<String> resourcesUrl, boolean deleteRelatedResources) throws IOException {
+        if (resourcesUrl.isEmpty()) {
             return;
         }
 
@@ -193,9 +253,9 @@ public class TektonVirtualFileManager extends VirtualFileSystem {
             throw new IOException("Unable to contact the cluster");
         }
 
-        String namespace = TreeHelper.getNamespaceFromResourcePath(resourcesPaths.get(0));
+        String namespace = TreeHelper.getNamespaceFromResourcePath(resourcesUrl.get(0));
         Map<String, List<String>> resourcesByClass = new HashMap<>();
-        for (String path: resourcesPaths) {
+        for (String path: resourcesUrl) {
             String tempNamespace = TreeHelper.getNamespaceFromResourcePath(path);
             // delete action is only enable on resources belonging to the same namespace or cluster-scoped resources.
             if (!tempNamespace.isEmpty() && !tempNamespace.equalsIgnoreCase(namespace)) {

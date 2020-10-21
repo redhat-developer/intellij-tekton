@@ -35,6 +35,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -73,26 +74,12 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         }
         vf.putUserData(LAST_MODIFICATION_STAMP, currentModificationStamp);
 
-        String name, apiVersion;
-        JsonNode spec;
-        CustomResourceDefinitionContext crdContext;
+        String name;
         Notification notification;
         try {
             name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "name"});
             if (Strings.isNullOrEmpty(name)) {
                 throw new IOException("Tekton file has not a valid format. Name field is not valid or found.");
-            }
-            apiVersion = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"apiVersion"});
-            if (Strings.isNullOrEmpty(apiVersion)) {
-                throw new IOException("Tekton file has not a valid format. ApiVersion field is not found.");
-            }
-            crdContext = CRDHelper.getCRDContext(apiVersion, vf.getUserData(KIND_PLURAL));
-            if (crdContext == null) {
-                throw new IOException("Tekton file has not a valid format. ApiVersion field contains an invalid value.");
-            }
-            spec = YAMLHelper.getValueFromYAML(document.getText(), new String[] {"spec"});
-            if (spec == null) {
-                throw new IOException("Tekton file has not a valid format. Spec field is not found.");
             }
         } catch (IOException e) {
             notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
@@ -114,12 +101,9 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         Tree tree;
         TektonTreeStructure treeStructure;
-        Tkn tknCli;
         try {
             tree = TreeHelper.getTree(project);
             treeStructure = (TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
-            TektonRootNode root = (TektonRootNode) treeStructure.getRootElement();
-            tknCli = root.getTkn();
         } catch (Exception e) {
             notification = new Notification(NOTIFICATION_ID, "Error", errorMsg + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
@@ -129,17 +113,10 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(vf.getUserData(KIND_PLURAL)) ? "" : namespace;
-            Map<String, Object> resource = tknCli.getCustomResource(resourceNamespace, name, crdContext);
-            if (resource == null) {
-                tknCli.createCustomResource(resourceNamespace, crdContext, document.getText());
-                ParentableNode selected = vf.getUserData(TARGET_NODE);
-                if (selected != null) {
-                    treeStructure.fireModified(selected);
-                }
-            } else {
-                JsonNode customResource = JSONHelper.MapToJSON(resource);
-                ((ObjectNode) customResource).set("spec", spec);
-                tknCli.editCustomResource(resourceNamespace, name, crdContext, customResource.toString());
+            TektonVirtualFileManager.getInstance().saveResource(resourceNamespace, document);
+            ParentableNode selected = vf.getUserData(TARGET_NODE);
+            if (selected != null) {
+                treeStructure.fireModified(selected);
             }
         } catch (KubernetesClientException e) {
             Status errorStatus = e.getStatus();

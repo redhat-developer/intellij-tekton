@@ -39,16 +39,27 @@ import java.util.Map;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITION;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERESOURCE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
 
 public class TreeHelper {
 
@@ -98,6 +109,35 @@ public class TreeHelper {
             kind = KIND_CLUSTERTRIGGERBINDING;
         } else if (node instanceof EventListenerNode) {
             kind = KIND_EVENTLISTENER;
+        }
+        return kind;
+    }
+
+    public static String getPluralKindByNode(ParentableNode<?> node) {
+        String kind = "";
+
+        if (node instanceof PipelineNode) {
+            kind = KIND_PIPELINES;
+        } else if (node instanceof PipelineRunNode) {
+            kind = KIND_PIPELINERUNS;
+        } else if (node instanceof ResourceNode) {
+            kind = KIND_RESOURCES;
+        } else if (node instanceof TaskNode) {
+            kind = KIND_TASKS;
+        } else if (node instanceof TaskRunNode) {
+            kind = KIND_TASKRUNS;
+        } else if (node instanceof ClusterTaskNode) {
+            kind = KIND_CLUSTERTASKS;
+        } else if (node instanceof ConditionNode) {
+            kind = KIND_CONDITIONS;
+        } else if (node instanceof TriggerBindingNode) {
+            kind = KIND_TRIGGERBINDINGS;
+        } else if (node instanceof TriggerTemplateNode) {
+            kind = KIND_TRIGGERTEMPLATES;
+        } else if (node instanceof ClusterTriggerBindingNode) {
+            kind = KIND_CLUSTERTRIGGERBINDINGS;
+        } else if (node instanceof EventListenerNode) {
+            kind = KIND_EVENTLISTENERS;
         }
         return kind;
     }

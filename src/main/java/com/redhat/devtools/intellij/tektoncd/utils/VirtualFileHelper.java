@@ -1,6 +1,8 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -14,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Optional;
 import javax.swing.tree.TreePath;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -36,10 +39,18 @@ public class VirtualFileHelper {
         String url = TreeHelper.getTektonResourceUrl(node, true);
         TektonVirtualFile file = (TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(url);
 
-        if (node instanceof PipelineRunNode || node instanceof TaskRunNode) {
-            file.setWritable(false);
+        if (file == null) {
+            return;
         }
-        FileEditorManager.getInstance(node.getRoot().getProject()).openFile(file, true);
+
+        Project project = node.getRoot().getProject();
+        Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
+                filter(fileEditor -> fileEditor.getFile().getName().startsWith(file.getPresentableName())).findFirst();
+        if (!editor.isPresent()) {
+            createAndOpenVirtualFile(project, node.getNamespace(), file.getPresentableName(), file.getContent().toString(), TreeHelper.getPluralKindByNode(node), (ParentableNode<?>) node.getParent());
+        } else {
+            FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
+        }
     }
 
     public static void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode) {

@@ -20,6 +20,10 @@ import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
 
+import io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding;
+import io.fabric8.tekton.triggers.v1alpha1.EventListener;
+import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
+import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -524,6 +528,17 @@ public interface Tkn {
     void cancelTaskRun(String namespace, String taskRun) throws IOException;
 
     /**
+     * Set a watch on Pipeline resource
+     *
+     * @param namespace the namespace to use
+     * @param pipeline the name of pipeline to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchPipeline(String namespace, String pipeline, Watcher<Pipeline> watcher) throws IOException;
+
+    /**
      * Set a watch on Pipeline resources
      *
      * @param namespace the namespace to use
@@ -532,6 +547,17 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     Watch watchPipelines(String namespace, Watcher<Pipeline> watcher) throws IOException;
+
+    /**
+     * Set a watch on PipelineRun resource
+     *
+     * @param namespace the namespace to use
+     * @param pipelineRun the pipelineRun to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchPipelineRun(String namespace, String pipelineRun, Watcher<io.fabric8.tekton.pipeline.v1beta1.PipelineRun> watcher) throws IOException;
 
     /**
      * Set a watch on PipelineRun resources
@@ -565,6 +591,17 @@ public interface Tkn {
     Watch watchTasks(String namespace, Watcher<Task> watcher) throws IOException;
 
     /**
+     * Set a watch on TaskRun resource
+     *
+     * @param namespace the namespace to use
+     * @param taskRun the name of taskRun to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchTaskRun(String namespace, String taskRun, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException;
+
+    /**
      * Set a watch on TaskRun resources
      *
      * @param namespace the namespace to use
@@ -573,6 +610,17 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     Watch watchTaskRuns(String namespace, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException;
+
+    /**
+     * Set a watch on PipelineResource resource
+     *
+     * @param namespace the namespace to use
+     * @param pipelineResource the name of pipelineResource to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchPipelineResource(String namespace, String pipelineResource, Watcher<PipelineResource> watcher) throws IOException;
 
     /**
      * Set a watch on PipelineResource resources
@@ -587,11 +635,32 @@ public interface Tkn {
     /**
      * Set a watch on ClusterTask resources
      *
+     * @param clusterTask the name of clusterTask to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchClusterTask(String clusterTask, Watcher<ClusterTask> watcher) throws IOException;
+
+    /**
+     * Set a watch on ClusterTask resources
+     *
      * @param watcher the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
     Watch watchClusterTasks(Watcher<ClusterTask> watcher) throws IOException;
+
+    /**
+     * Set a watch on Condition resource
+     *
+     * @param namespace the namespace to use
+     * @param condition the name of condition to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchCondition(String namespace, String condition, Watcher<io.fabric8.tekton.pipeline.v1alpha1.Condition> watcher) throws IOException;
 
     /**
      * Set a watch on Condition resources
@@ -602,6 +671,17 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     Watch watchConditions(String namespace, Watcher<io.fabric8.tekton.pipeline.v1alpha1.Condition> watcher) throws IOException;
+
+    /**
+     * Set a watch on TriggerTemplate resource
+     *
+     * @param namespace the namespace to use
+     * @param triggerTemplate the name of triggerTemplate to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchTriggerTemplate(String namespace, String triggerTemplate, Watcher<TriggerTemplate> watcher) throws IOException;
 
     /**
      * Set a watch on TriggerTemplate resources
@@ -617,11 +697,32 @@ public interface Tkn {
      * Set a watch on TriggerBinding resources
      *
      * @param namespace the namespace to use
+     * @param triggerBinding name of the triggerBinding to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchTriggerBinding(String namespace, String triggerBinding, Watcher<TriggerBinding> watcher) throws IOException;
+
+    /**
+     * Set a watch on TriggerBinding resources
+     *
+     * @param namespace the namespace to use
      * @param watcher the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
     Watch watchTriggerBindings(String namespace, Watcher<io.fabric8.tekton.triggers.v1alpha1.TriggerBinding> watcher) throws IOException;
+
+    /**
+     * Set a watch on ClusterTriggerBinding resources
+     *
+     * @param clusterTriggerBinding the name of the clusterTriggerBinding to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchClusterTriggerBinding(String clusterTriggerBinding, Watcher<ClusterTriggerBinding> watcher) throws IOException;
 
     /**
      * Set a watch on ClusterTriggerBinding resources
@@ -632,6 +733,16 @@ public interface Tkn {
      */
     Watch watchClusterTriggerBindings(Watcher<io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding> watcher) throws IOException;
 
+    /**
+     * Set a watch on EventListener resource
+     *
+     * @param namespace the namespace to use
+     * @param eventListener name of the eventListener to watch
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchEventListener(String namespace, String eventListener, Watcher<EventListener> watcher) throws IOException;
 
     /**
      * Set a watch on EventListener resources

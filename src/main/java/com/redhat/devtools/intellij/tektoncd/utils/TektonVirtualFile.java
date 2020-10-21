@@ -19,11 +19,11 @@ import org.jetbrains.yaml.YAMLFileType;
 
 public class TektonVirtualFile extends LightVirtualFile {
 
-    private String name;
+    private String path;
 
-    public TektonVirtualFile(@NotNull String name, @NotNull CharSequence content) {
-        super(name, null, content, LocalTimeCounter.currentTime());
-        this.name = name;
+    public TektonVirtualFile(@NotNull String path, @NotNull CharSequence content) {
+        super(path, null, content, LocalTimeCounter.currentTime());
+        this.path = path;
     }
 
     @NotNull
@@ -40,7 +40,8 @@ public class TektonVirtualFile extends LightVirtualFile {
 
     @Override
     public String getPresentableName() {
-        String resourceName = TreeHelper.getNameFromResourcePath(name);
-        return "tekton-" + resourceName + ".yaml";
+        String resourceName = TreeHelper.getNameFromResourcePath(path);
+        String namespace = TreeHelper.getNamespaceFromResourcePath(path);
+        return namespace + "-" + resourceName + ".yaml";
     }
 }

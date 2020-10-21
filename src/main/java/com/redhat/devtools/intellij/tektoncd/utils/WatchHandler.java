@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
-import com.intellij.ide.util.treeView.PresentableNodeDescriptor;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
@@ -44,7 +43,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITION;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERESOURCE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 
 public class WatchHandler {
     private static final Logger logger = LoggerFactory.getLogger(WatchHandler.class);
@@ -79,8 +88,28 @@ public class WatchHandler {
         String kind = TreeHelper.getKindFromResourcePath(path);
         String name = TreeHelper.getNameFromResourcePath(path);
         try {
-            if (kind.equalsIgnoreCase(KIND_TASK)) {
+            if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
+                watch = tkn.watchPipeline(namespace, name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_PIPELINERUN)) {
+                watch = tkn.watchPipelineRun(namespace, name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_TASK)) {
                 watch = tkn.watchTask(namespace, name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+                watch = tkn.watchClusterTask(name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
+                watch = tkn.watchTaskRun(namespace, name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_PIPELINERESOURCE)) {
+                watch = tkn.watchPipelineResource(namespace, name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_CONDITION)) {
+                watch = tkn.watchCondition(namespace, name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_TRIGGERTEMPLATE)) {
+                watch = tkn.watchTriggerTemplate(namespace, name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_TRIGGERBINDING)) {
+                watch = tkn.watchTriggerBinding(namespace, name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDING)) {
+                watch = tkn.watchClusterTriggerBinding(name, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_EVENTLISTENER)) {
+                watch = tkn.watchEventListener(namespace, name, watcher);
             }
             wn = new WatchNodes(watch);
         } catch (IOException e) {
