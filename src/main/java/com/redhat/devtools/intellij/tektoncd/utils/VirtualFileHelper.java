@@ -1,19 +1,18 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.OpenFileDescriptor;
-import com.intellij.openapi.fileTypes.impl.FileTypeManagerImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.testFramework.LightVirtualFile;
+import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Optional;
+import javax.swing.tree.TreePath;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,14 +28,17 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 public class VirtualFileHelper {
     static Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
 
-    public static void openVirtualFileInEditor(Project project, String namespace, String name, String content, String kind) {
-        Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
-                filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + name + ".yaml")).findFirst();
-        if (!editor.isPresent()) {
-            VirtualFileHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + name + ".yaml", content, kind, null);
-        } else {
-            FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
+    public static void openTektonVirtualFileInEditor(TreePath path) {
+        Object component = path.getLastPathComponent();
+        ParentableNode node = StructureTreeAction.getElement(component);
+        String url = TreeHelper.getTektonResourcePath(node, true);
+        TektonVirtualFile file = (TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(url);
+
+        String kind = TreeHelper.getKindByNode(node);
+        if (KIND_PIPELINERUN.equals(kind) || KIND_TASKRUN.equals(kind)) {
+            file.setWritable(false);
         }
+        FileEditorManager.getInstance(node.getRoot().getProject()).openFile(file, true);
     }
 
     public static void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode) {

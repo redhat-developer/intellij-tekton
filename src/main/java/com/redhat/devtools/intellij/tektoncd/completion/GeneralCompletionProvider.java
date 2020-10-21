@@ -17,12 +17,12 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
-import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.ConditionConfigurationModel;
@@ -474,7 +474,7 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
     private List<LookupElementBuilder> getLookupsBySelectedTaskAndField(CompletionParameters parameters, String namespace, String actualTaskName, String taskPrefix, String field, String completionPrefix, int insertOffset) {
         List<LookupElementBuilder> lookups = new ArrayList<>();
         try {
-            VirtualFile taskVF = TektonVirtualFileManager.getInstance(parameters.getEditor().getProject()).findResource(namespace, KIND_TASK, actualTaskName);
+            VirtualFile taskVF = VirtualFileManager.getInstance().findFileByUrl("tekton://" + namespace + "/" + KIND_TASK + "/" + actualTaskName);
             Task task = Serialization.unmarshal(taskVF.getInputStream(), Task.class);
             task.getSpec().getResults().forEach(item ->  {
                 String lookup = taskPrefix + "." + field + "." + item.getName();

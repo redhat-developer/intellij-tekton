@@ -63,18 +63,24 @@ public class WatchHandler {
         return instance;
     }
 
-    public void setWatchByResourceName(Tkn tkn, String namespace, String kind, String resourceName, Watcher watcher) {
-        String watchId = getWatchId(namespace, kind + "-" + resourceName);
+    public void setWatchByResourceName(Tkn tkn, String path, Watcher watcher) {
         Watch watch = null;
         WatchNodes wn = null;
 
-        if (this.watches.containsKey(watchId)) {
+        if (this.watches.containsKey(path)) {
             return;
         }
 
+        if (tkn == null) {
+            return;
+        }
+
+        String namespace = TreeHelper.getNamespaceFromResourcePath(path);
+        String kind = TreeHelper.getKindFromResourcePath(path);
+        String name = TreeHelper.getNameFromResourcePath(path);
         try {
             if (kind.equalsIgnoreCase(KIND_TASK)) {
-                watch = tkn.watchTask(namespace, resourceName, watcher);
+                watch = tkn.watchTask(namespace, name, watcher);
             }
             wn = new WatchNodes(watch);
         } catch (IOException e) {
@@ -82,7 +88,7 @@ public class WatchHandler {
         }
 
         if (wn != null) {
-            watches.put(watchId, wn);
+            watches.put(path, wn);
         }
 
     }

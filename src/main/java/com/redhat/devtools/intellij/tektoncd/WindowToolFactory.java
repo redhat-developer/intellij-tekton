@@ -30,6 +30,7 @@ import com.redhat.devtools.intellij.tektoncd.listener.TreeDoubleClickListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TreeExpansionListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TreePopupMenuListener;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
+import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
@@ -48,6 +49,7 @@ public class WindowToolFactory implements ToolWindowFactory {
             tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
             tree.setCellRenderer(new NodeRenderer());
             tree.addTreeWillExpandListener(new TreeExpansionListener());
+            new TektonVirtualFileManager(project);
             ActionManager actionManager = ActionManager.getInstance();
             ActionGroup group = (ActionGroup)actionManager.getAction("com.redhat.devtools.intellij.tektoncd.tree");
             PopupHandler.installPopupHandler(tree, group, ActionPlaces.UNKNOWN, actionManager, new TreePopupMenuListener());

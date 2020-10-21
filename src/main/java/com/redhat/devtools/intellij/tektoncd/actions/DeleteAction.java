@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -29,6 +30,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.tektoncd.ui.DeleteDialog;
+import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import java.io.IOException;
 import java.util.Arrays;
@@ -109,41 +111,20 @@ public class DeleteAction extends TektonAction {
 
         CompletableFuture.runAsync(() -> {
             if (resultDialog != CANCEL_CODE) {
-                String namespace = elements[0].getNamespace();
                 boolean deleteRelatedResources = resultDialog == OK_DELETE_RESOURCES_CODE;
                 Map<Class, List<ParentableNode>> resourcesByClass = TreeHelper.getResourcesByClass(elements);
-                for(Class type: resourcesByClass.keySet()) {
-                    try {
-                        List<String> resources = resourcesByClass.get(type).stream().map(x -> x.getName()).collect(Collectors.toList());
-                        if (type.equals(PipelineNode.class)) {
-                            tkncli.deletePipelines(namespace, resources, deleteRelatedResources);
-                        } else if (type.equals(PipelineRunNode.class)) {
-                            tkncli.deletePipelineRuns(namespace, resources);
-                        } else if (type.equals(ResourceNode.class)) {
-                            tkncli.deleteResources(namespace, resources);
-                        } else if (type.equals(TaskNode.class)) {
-                            tkncli.deleteTasks(namespace, resources, deleteRelatedResources);
-                        } else if (type.equals(ClusterTaskNode.class)) {
-                            tkncli.deleteClusterTasks(resources, deleteRelatedResources);
-                        } else if (type.equals(TaskRunNode.class)) {
-                            tkncli.deleteTaskRuns(namespace, resources);
-                        } else if (type.equals(ConditionNode.class)) {
-                            tkncli.deleteConditions(namespace, resources);
-                        } else if (type.equals(TriggerTemplateNode.class)) {
-                            tkncli.deleteTriggerTemplates(namespace, resources);
-                        } else if (type.equals(TriggerBindingNode.class)) {
-                            tkncli.deleteTriggerBindings(namespace, resources);
-                        } else if (type.equals(ClusterTriggerBindingNode.class)) {
-                            tkncli.deleteClusterTriggerBindings(resources);
-                        } else if (type.equals(EventListenerNode.class)) {
-                            tkncli.deleteEventListeners(namespace, resources);
-                        }
+
+                try {
+                    for(Class type: resourcesByClass.keySet()) {
+                        List<String> resources = resourcesByClass.get(type).stream().map(node -> TreeHelper.getTektonResourcePath(node, false)).collect(Collectors.toList());
+                        ((TektonVirtualFileManager) VirtualFileManager.getInstance().getFileSystem("tekton")).deleteResources(resources, deleteRelatedResources);
                         ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(resourcesByClass.get(type).get(0).getParent());
-                    } catch (IOException e) {
-                        UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
                     }
+                } catch (IOException e) {
+                    UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
                 }
             }
+
         });
 
     }

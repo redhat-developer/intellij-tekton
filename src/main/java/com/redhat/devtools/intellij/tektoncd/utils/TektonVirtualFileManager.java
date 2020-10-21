@@ -10,80 +10,134 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
-import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.openapi.vfs.VirtualFileListener;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.VirtualFileSystem;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import gnu.trove.THashMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watcher;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERESOURCE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 
-public class TektonVirtualFileManager {
-    static Logger logger = LoggerFactory.getLogger(TektonVirtualFileManager.class);
+public class TektonVirtualFileManager extends VirtualFileSystem {
+    private static final Logger logger = LoggerFactory.getLogger(TektonVirtualFileManager.class);
 
-    private static TektonVirtualFileManager INSTANCE;
-    private final Map<String, VirtualFile> tektonFiles = new THashMap<>();
-    private Tkn tkncli;
+    private static final Map<String, TektonVirtualFile> tektonFiles = new THashMap<>();
+    private static final String myProtocol = "tekton";
+    private static Project project;
+    private static Tkn tkncli;
 
-    private TektonVirtualFileManager(Project project) {
-        tkncli = TreeHelper.getTkn(project);
+    public TektonVirtualFileManager() {}
+
+    public TektonVirtualFileManager(Project pproject) {
+        project = pproject;
     }
 
-    public static TektonVirtualFileManager getInstance(@NotNull Project project) {
-        if (INSTANCE == null) {
-            INSTANCE = new TektonVirtualFileManager(project);
-        }
-        return INSTANCE;
+    public static TektonVirtualFileManager getInstance() {
+        return (TektonVirtualFileManager) VirtualFileManager.getInstance().getFileSystem(myProtocol);
     }
 
-    public VirtualFile findResource(String namespace, String kind, String resourceName) throws IOException {
-        String id = getId(namespace, kind, resourceName);
-        VirtualFile file = tektonFiles.get(id);
+    @NotNull
+    @Override
+    public String getProtocol() {
+        return myProtocol;
+    }
+
+    @Nullable
+    @Override
+    public VirtualFile findFileByPath(@NotNull String path) {
+        path = getSanitizedPath(path);
+        TektonVirtualFile file = tektonFiles.get(path);
         if (file == null) {
-            file = getResourceRemotely(namespace, kind, resourceName);
-            WatchHandler.get().setWatchByResourceName(tkncli, namespace, kind, resourceName, getWatcher(namespace, kind, resourceName));
-            tektonFiles.put(id, file);
+            try {
+                file = getResourceRemotely(getTkn(), path);
+                if (file != null) {
+                    addFile(path, file);
+                    WatchHandler.get().setWatchByResourceName(getTkn(), path, getWatcher(path));
+                }
+            } catch (IOException e) {
+                logger.warn(e.getLocalizedMessage());
+            }
         }
         return file;
     }
 
-    private <T extends HasMetadata> Watcher<T> getWatcher(String namespace, String kind, String resourceName) {
-        String id = getId(namespace, kind, resourceName);
-        TektonVirtualFileManager tvfm = this;
+    private TektonVirtualFile getResourceRemotely(Tkn tkncli, String path) throws IOException {
+        if (tkncli == null) {
+            return null;
+        }
+        String namespace = TreeHelper.getNamespaceFromResourcePath(path);
+        String kind = TreeHelper.getKindFromResourcePath(path);
+        String resourceName = TreeHelper.getNameFromResourcePath(path);
+        String content = "";
+        if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
+            content = tkncli.getPipelineYAML(namespace, resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_PIPELINERESOURCE)) {
+            content = tkncli.getResourceYAML(namespace, resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_TASK)) {
+            content = tkncli.getTaskYAML(namespace, resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+            content = tkncli.getClusterTaskYAML(resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_CONDITION)) {
+            content = tkncli.getConditionYAML(namespace, resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_TRIGGERTEMPLATE)) {
+            content = tkncli.getTriggerTemplateYAML(namespace, resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_TRIGGERBINDING)) {
+            content = tkncli.getTriggerBindingYAML(namespace, resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDING)) {
+            content = tkncli.getClusterTriggerBindingYAML(namespace, resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_EVENTLISTENER)) {
+            content = tkncli.getEventListenerYAML(namespace, resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
+            content = tkncli.getTaskRunYAML(namespace, resourceName);
+        } else if (kind.equalsIgnoreCase(KIND_PIPELINERUN)){
+            content = tkncli.getPipelineRunYAML(namespace, resourceName);
+        }
+        return new TektonVirtualFile(path, content);
+    }
+
+    private <T extends HasMetadata> Watcher<T> getWatcher(String path) {
+        TektonVirtualFileManager tvfs = this;
         return new Watcher<T>() {
             @Override
             public void eventReceived(Action action, T resource) {
                 switch (action) {
                     case MODIFIED: {
                         try {
-                            VirtualFile file = tvfm.getResourceRemotely(namespace, kind, resourceName);
-                            tektonFiles.put(id, file);
+                            TektonVirtualFile file = tvfs.getResourceRemotely(tvfs.getTkn(), path);
+                            tvfs.addFile(path, file);
                         } catch (IOException e) {
                             logger.warn(e.getLocalizedMessage());
                         }
                     }
                     case DELETED: {
-                        tektonFiles.remove(id);
+                        if (tektonFiles.containsKey(path)) {
+                            tektonFiles.remove(path);
+                        }
                     }
                 }
             }
@@ -93,40 +147,143 @@ public class TektonVirtualFileManager {
         };
     }
 
-    private VirtualFile getResourceRemotely(String namespace, String kind, String resourceName) throws IOException {
-        String content = "";
-        if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
-            content = tkncli.getPipelineYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_RESOURCES)) {
-            content = tkncli.getResourceYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_TASK)) {
-            content = tkncli.getTaskYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_CLUSTERTASKS)) {
-            content = tkncli.getClusterTaskYAML(resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_CONDITIONS)) {
-            content = tkncli.getConditionYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_TRIGGERTEMPLATES)) {
-            content = tkncli.getTriggerTemplateYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_TRIGGERBINDINGS)) {
-            content = tkncli.getTriggerBindingYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDINGS)) {
-            content = tkncli.getClusterTriggerBindingYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_EVENTLISTENER)) {
-            content = tkncli.getEventListenerYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
-            content = tkncli.getTaskRunYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_PIPELINERUN)){
-            content = tkncli.getPipelineRunYAML(namespace, resourceName);
+    private String getSanitizedPath(String path) {
+        if (path.startsWith("/")) {
+            return path.substring(1);
         }
-        return new LightVirtualFile(resourceName, content);
+        return path;
     }
 
-    private String getId(String namespace, String kind, String resourceName) {
-        String id = "";
-        if (!Strings.isNullOrEmpty(namespace)) {
-            id += namespace + "-";
-        }
-        id += kind + "-" + resourceName;
-        return id;
+    @Override
+    public void refresh(boolean asynchronous) {
+
     }
+
+    @Nullable
+    @Override
+    public VirtualFile refreshAndFindFileByPath(@NotNull String path) {
+        return null;
+    }
+
+    @Override
+    public void addVirtualFileListener(@NotNull VirtualFileListener listener) {
+
+    }
+
+    @Override
+    public void removeVirtualFileListener(@NotNull VirtualFileListener listener) {
+
+    }
+
+    @Override
+    protected void deleteFile(Object requestor, @NotNull VirtualFile vFile) throws IOException {
+
+    }
+
+    public void deleteResources(List<String> resourcesPaths, boolean deleteRelatedResources) throws IOException {
+        if (resourcesPaths.isEmpty()) {
+            return;
+        }
+
+        Tkn tkncli = getTkn();
+        if (tkncli == null) {
+            throw new IOException("Unable to contact the cluster");
+        }
+
+        String namespace = TreeHelper.getNamespaceFromResourcePath(resourcesPaths.get(0));
+        Map<String, List<String>> resourcesByClass = new HashMap<>();
+        for (String path: resourcesPaths) {
+            String tempNamespace = TreeHelper.getNamespaceFromResourcePath(path);
+            // delete action is only enable on resources belonging to the same namespace or cluster-scoped resources.
+            if (!tempNamespace.isEmpty() && !tempNamespace.equalsIgnoreCase(namespace)) {
+                throw new IOException("Delete action is only enable on resources of the same namespace");
+            }
+            resourcesByClass.computeIfAbsent(TreeHelper.getKindFromResourcePath(path), value -> new ArrayList<>())
+                    .add(TreeHelper.getNameFromResourcePath(path));
+            if (tektonFiles.containsKey(path)) {
+                tektonFiles.remove(path);
+            }
+        }
+
+        for (String kind: resourcesByClass.keySet()) {
+            List<String> resources = resourcesByClass.get(kind);
+            if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
+                tkncli.deletePipelines(namespace, resources, deleteRelatedResources);
+            } else if (kind.equalsIgnoreCase(KIND_PIPELINERESOURCE)) {
+                tkncli.deleteResources(namespace, resources);
+            } else if (kind.equalsIgnoreCase(KIND_TASK)) {
+                tkncli.deleteTasks(namespace, resources, deleteRelatedResources);
+            } else if (kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+                tkncli.deleteClusterTasks(resources, deleteRelatedResources);
+            } else if (kind.equalsIgnoreCase(KIND_CONDITION)) {
+                tkncli.deleteConditions(namespace, resources);
+            } else if (kind.equalsIgnoreCase(KIND_TRIGGERTEMPLATE)) {
+                tkncli.deleteTriggerTemplates(namespace, resources);
+            } else if (kind.equalsIgnoreCase(KIND_TRIGGERBINDING)) {
+                tkncli.deleteTriggerBindings(namespace, resources);
+            } else if (kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDING)) {
+                tkncli.deleteClusterTriggerBindings(resources);
+            } else if (kind.equalsIgnoreCase(KIND_EVENTLISTENER)) {
+                tkncli.deleteEventListeners(namespace, resources);
+            } else if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
+                tkncli.deleteTaskRuns(namespace, resources);
+            } else if (kind.equalsIgnoreCase(KIND_PIPELINERUN)){
+                tkncli.deletePipelineRuns(namespace, resources);
+            }
+        }
+    }
+
+    @Override
+    protected void moveFile(Object requestor, @NotNull VirtualFile vFile, @NotNull VirtualFile newParent) throws IOException {
+
+    }
+
+    @Override
+    protected void renameFile(Object requestor, @NotNull VirtualFile vFile, @NotNull String newName) throws IOException {
+
+    }
+
+    @NotNull
+    @Override
+    protected VirtualFile createChildFile(Object requestor, @NotNull VirtualFile vDir, @NotNull String fileName) throws IOException {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    protected VirtualFile createChildDirectory(Object requestor, @NotNull VirtualFile vDir, @NotNull String dirName) throws IOException {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    protected VirtualFile copyFile(Object requestor, @NotNull VirtualFile virtualFile, @NotNull VirtualFile newParent, @NotNull String copyName) throws IOException {
+        return null;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
+
+    public VirtualFile createChild(@NotNull VirtualFile parent, @NotNull String name, boolean isDirectory) {
+        String parentPath = parent.getPath();
+        boolean hasEndSlash = parentPath.charAt(parentPath.length() - 1) == '/';
+        return null;
+        //return getRemoteFileManager().getOrCreateFile((HttpVirtualFileImpl)parent, Urls.newFromIdea(parent.getUrl() + (hasEndSlash ? "" : '/') + name), parentPath + (hasEndSlash ? "" : '/') + name, isDirectory);
+    }
+
+    private void addFile(String path, TektonVirtualFile file) {
+        if (!path.isEmpty() && file != null) {
+            tektonFiles.put(path, file);
+        }
+    }
+
+    private Tkn getTkn() {
+        if (tkncli == null) {
+            tkncli = TreeHelper.getTkn(project);
+        }
+        return tkncli;
+    }
+
 }
