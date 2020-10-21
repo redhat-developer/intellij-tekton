@@ -16,15 +16,11 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DoubleClickListener;
 import com.intellij.util.ui.tree.WideSelectionTreeUI;
-import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
-import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
-import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
-import org.jetbrains.annotations.NotNull;
-
+import java.awt.event.MouseEvent;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
-import java.awt.event.MouseEvent;
+import org.jetbrains.annotations.NotNull;
 
 
 public class TreeDoubleClickListener extends DoubleClickListener {

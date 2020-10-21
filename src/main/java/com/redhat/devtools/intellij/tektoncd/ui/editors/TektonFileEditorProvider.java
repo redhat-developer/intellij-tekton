@@ -44,7 +44,6 @@ public class TektonFileEditorProvider implements FileEditorProvider {
             }
         }
         return valid;
-        //return true;
     }
 
     private GraphUpdater getGraphUpdater(KubernetesTypeInfo typeInfo) {

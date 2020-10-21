@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -116,8 +115,8 @@ public class DeleteAction extends TektonAction {
 
                 try {
                     for(Class type: resourcesByClass.keySet()) {
-                        List<String> resources = resourcesByClass.get(type).stream().map(node -> TreeHelper.getTektonResourcePath(node, false)).collect(Collectors.toList());
-                        ((TektonVirtualFileManager) VirtualFileManager.getInstance().getFileSystem("tekton")).deleteResources(resources, deleteRelatedResources);
+                        List<String> resources = resourcesByClass.get(type).stream().map(node -> TreeHelper.getTektonResourceUrl(node, false)).collect(Collectors.toList());
+                        TektonVirtualFileManager.getInstance().deleteResources(resources, deleteRelatedResources);
                         ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(resourcesByClass.get(type).get(0).getParent());
                     }
                 } catch (IOException e) {

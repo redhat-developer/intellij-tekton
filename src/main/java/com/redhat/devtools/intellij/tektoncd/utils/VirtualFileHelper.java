@@ -8,6 +8,8 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,11 +33,10 @@ public class VirtualFileHelper {
     public static void openTektonVirtualFileInEditor(TreePath path) {
         Object component = path.getLastPathComponent();
         ParentableNode node = StructureTreeAction.getElement(component);
-        String url = TreeHelper.getTektonResourcePath(node, true);
+        String url = TreeHelper.getTektonResourceUrl(node, true);
         TektonVirtualFile file = (TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(url);
 
-        String kind = TreeHelper.getKindByNode(node);
-        if (KIND_PIPELINERUN.equals(kind) || KIND_TASKRUN.equals(kind)) {
+        if (node instanceof PipelineRunNode || node instanceof TaskRunNode) {
             file.setWritable(false);
         }
         FileEditorManager.getInstance(node.getRoot().getProject()).openFile(file, true);

@@ -25,6 +25,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+
 public class MirrorStartAction extends StartAction {
 
     public MirrorStartAction() { super(PipelineRunNode.class, TaskRunNode.class); }
@@ -33,15 +37,15 @@ public class MirrorStartAction extends StartAction {
     protected StartResourceModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "", runConfiguration = "";
         List<? extends Run> runs = new ArrayList<>();
-        String urlRun = TreeHelper.getTektonResourcePath(element, true);
+        String urlRun = TreeHelper.getTektonResourceUrl(element, true);
         runConfiguration = ((TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(urlRun)).getContent().toString();
         if (element instanceof PipelineRunNode) {
             String pipeline = YAMLHelper.getStringValueFromYAML(runConfiguration, new String[] {"metadata", "labels", "tekton.dev/pipeline"});
-            configuration = ((TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl("tekton://" + element.getNamespace() + "/pipeline/" + pipeline)).getContent().toString();
+            configuration = ((TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(TreeHelper.getTektonResourceUrl(element.getNamespace(), KIND_PIPELINE, pipeline, true))).getContent().toString();
             runs = tkncli.getPipelineRuns(namespace, pipeline);
         } else if (element instanceof TaskRunNode) {
             String task = YAMLHelper.getStringValueFromYAML(runConfiguration, new String[] {"metadata", "labels", "tekton.dev/task"});
-            configuration = ((TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl("tekton://" + element.getNamespace() + "/task/" + task)).getContent().toString();
+            configuration = ((TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(TreeHelper.getTektonResourceUrl(element.getNamespace(), KIND_TASK, task, true))).getContent().toString();
             runs = tkncli.getTaskRuns(namespace, task);
         }
 

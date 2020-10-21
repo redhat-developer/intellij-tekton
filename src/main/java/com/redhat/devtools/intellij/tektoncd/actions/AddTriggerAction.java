@@ -166,7 +166,7 @@ public class AddTriggerAction extends TektonAction {
     }
 
     protected AddTriggerModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, Map<String, String> triggerBindings) throws IOException {
-        String urlRun = TreeHelper.getTektonResourcePath(element, true);
+        String urlRun = TreeHelper.getTektonResourceUrl(element, true);
         String configuration = ((TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(urlRun)).getContent().toString();
         return new AddTriggerModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
     }

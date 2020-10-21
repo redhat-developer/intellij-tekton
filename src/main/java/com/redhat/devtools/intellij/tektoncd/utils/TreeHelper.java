@@ -112,20 +112,18 @@ public class TreeHelper {
 
     public static String getNamespaceFromResourcePath(String path) {
         String[] attributes = path.split("/");
-        String namespace = "";
         if (attributes.length == 3) {
-            namespace = attributes[0];
+            return attributes[0];
         }
-        return namespace;
+        return "";
     }
 
     public static String getKindFromResourcePath(String path) {
         String[] attributes = path.split("/");
-        String kind = attributes[1];
         if (attributes.length < 3) {
-            kind = attributes[0];
+            return attributes[0];
         }
-        return kind;
+        return attributes[1];
     }
 
     public static String getNameFromResourcePath(String path) {
@@ -140,11 +138,15 @@ public class TreeHelper {
      * @param node node to calculate the path
      * @return
      */
-    public static String getTektonResourcePath(ParentableNode node, boolean hasProtocol) {
+    public static String getTektonResourceUrl(ParentableNode node, boolean hasProtocol) {
         String kind = TreeHelper.getKindByNode(node);
-        String path = kind + "/" + node.getName();
-        if (!(node instanceof ClusterTaskNode) && !(node instanceof ClusterTriggerBindingNode)) {
-            path = node.getNamespace() + "/" + path;
+        return getTektonResourceUrl(node.getNamespace(), kind, node.getName(), hasProtocol);
+    }
+
+    public static String getTektonResourceUrl(String namespace, String kind, String name, boolean hasProtocol) {
+        String path = kind + "/" + name;
+        if (!(kind.equalsIgnoreCase(KIND_CLUSTERTASK)) && !(kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDING))) {
+            path = namespace + "/" + path;
         }
 
         if (!hasProtocol) {

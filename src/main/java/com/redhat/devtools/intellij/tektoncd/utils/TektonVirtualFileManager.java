@@ -53,12 +53,12 @@ public class TektonVirtualFileManager extends VirtualFileSystem {
 
     public TektonVirtualFileManager() {}
 
-    public TektonVirtualFileManager(Project pproject) {
-        project = pproject;
-    }
-
     public static TektonVirtualFileManager getInstance() {
         return (TektonVirtualFileManager) VirtualFileManager.getInstance().getFileSystem(myProtocol);
+    }
+
+    public void init(Project pproject) {
+        project = pproject;
     }
 
     @NotNull
@@ -116,6 +116,9 @@ public class TektonVirtualFileManager extends VirtualFileSystem {
             content = tkncli.getTaskRunYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_PIPELINERUN)){
             content = tkncli.getPipelineRunYAML(namespace, resourceName);
+        }
+        if (content.isEmpty()) {
+            return null;
         }
         return new TektonVirtualFile(path, content);
     }
@@ -264,13 +267,6 @@ public class TektonVirtualFileManager extends VirtualFileSystem {
     @Override
     public boolean isReadOnly() {
         return false;
-    }
-
-    public VirtualFile createChild(@NotNull VirtualFile parent, @NotNull String name, boolean isDirectory) {
-        String parentPath = parent.getPath();
-        boolean hasEndSlash = parentPath.charAt(parentPath.length() - 1) == '/';
-        return null;
-        //return getRemoteFileManager().getOrCreateFile((HttpVirtualFileImpl)parent, Urls.newFromIdea(parent.getUrl() + (hasEndSlash ? "" : '/') + name), parentPath + (hasEndSlash ? "" : '/') + name, isDirectory);
     }
 
     private void addFile(String path, TektonVirtualFile file) {

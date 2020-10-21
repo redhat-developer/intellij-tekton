@@ -141,7 +141,7 @@ public class StartAction extends TektonAction {
     protected StartResourceModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "";
         List<? extends Run> runs = new ArrayList<>();
-        String urlRun = TreeHelper.getTektonResourcePath(element, true);
+        String urlRun = TreeHelper.getTektonResourceUrl(element, true);
         configuration = ((TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(urlRun)).getContent().toString();
         if (element instanceof PipelineNode) {
             runs = tkncli.getPipelineRuns(namespace, element.getName());
