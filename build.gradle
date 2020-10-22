@@ -120,3 +120,9 @@ compileJava.dependsOn tasks.openApiGenerate
 
 group 'com.redhat.devtools.intellij'
 version projectVersion // Plugin version
+
+// workaround for
+// https://youtrack.jetbrains.com/issue/KT-32401
+// https://youtrack.jetbrains.com/issue/KT-42837
+// https://youtrack.jetbrains.com/issue/IDEA-219599
+buildSearchableOptions.enabled = false
