@@ -13,13 +13,8 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 import com.intellij.mock.MockDocument;
 import com.intellij.mock.MockFileDocumentManagerImpl;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.DocumentFragment;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.util.Key;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.LightVirtualFile;
-import com.intellij.util.Function;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import java.io.IOException;
 import java.util.Arrays;
@@ -50,13 +45,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class TektonVirtualFileManagerTest {
     private Tkn tkn;
+
 
     @Before
     public void setup() throws IOException {
@@ -106,25 +101,23 @@ public class TektonVirtualFileManagerTest {
 
         doNothing().when(tkn).createCustomResource(anyString(), any(), anyString());
         doNothing().when(tkn).editCustomResource(anyString(), anyString(), any(), anyString());
+
+        
     }
 
     @Test
-    public void checkReturnsNullIfTknCliNotInitialized() throws NoSuchFieldException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = mockStatic(TektonVirtualFileManager.class);
-        tvfm.when(() -> TektonVirtualFileManager.getInstance()).thenReturn(new TektonVirtualFileManager());
+    public void checkReturnsNullIfTknCliNotInitialized() {
         MockedStatic<TreeHelper> treeHelper = mockStatic(TreeHelper.class);
         treeHelper.when(() -> TreeHelper.getTkn(any())).thenReturn(null);
 
         TektonVirtualFileManager tvf = TektonVirtualFileManager.getInstance();
         tvf.setTkn(null);
         assertEquals(tvf.findFileByPath("namespace/kind/resource"), null);
-        tvfm.close();
         treeHelper.close();
     }
 
     @Test
     public void checkFindPipelineResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -137,13 +130,12 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getPipelineYAML("namespace", "resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList("namespace/pipeline/resource"), false);
-        tvfm.close();
         treeHelper.close();
     }
 
     @Test
     public void checkFindPipelineRunResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -157,13 +149,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getPipelineRunYAML("namespace", "resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkFindTaskResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+       
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -177,13 +169,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getTaskYAML("namespace", "resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkFindPipelineResourceResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -197,13 +189,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getResourceYAML("namespace", "resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+       // 
         treeHelper.close();
     }
 
     @Test
     public void checkFindClusterTaskResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -217,13 +209,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getClusterTaskYAML("resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkFindConditionResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -237,13 +229,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getConditionYAML("namespace", "resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkFindTriggerTemplateResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -257,13 +249,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getTriggerTemplateYAML("namespace", "resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkFindTriggerBindingResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -277,13 +269,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getTriggerBindingYAML("namespace", "resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkFindClusterTriggerBindingResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -297,13 +289,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getClusterTriggerBindingYAML("resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkFindEventListenerResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -317,13 +309,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getEventListenerYAML("namespace", "resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkFindTaskRunResourceInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -337,13 +329,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(1)).getTaskRunYAML("namespace", "resource");
 
         TektonVirtualFileManager.getInstance().deleteResources(Arrays.asList(path), false);
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkErrorIfTknIsNullWhenDeletingInVFS() {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = mockStatic(TreeHelper.class);
         treeHelper.when(() -> TreeHelper.getTkn(any())).thenReturn(null);
 
@@ -355,13 +347,13 @@ public class TektonVirtualFileManagerTest {
             assertEquals(ex.getMessage(), "Unable to contact the cluster");
         }
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkErrorIfTwoResourcesHaveDifferentNamespacesWhenDeletingInVFS() {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -371,13 +363,13 @@ public class TektonVirtualFileManagerTest {
             assertEquals(ex.getMessage(), "Delete action is only enable on resources of the same namespace");
         }
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOnePipelineDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -387,13 +379,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deletePipelines("namespace", Arrays.asList("resource"), false);
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultiplePipelinesDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -405,13 +397,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deletePipelines("namespace", Arrays.asList("resource", "resource1", "resource2"), false);
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOneTaskDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -421,13 +413,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteTasks("namespace", Arrays.asList("resource"), false);
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultipleTasksDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -439,13 +431,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteTasks("namespace", Arrays.asList("resource", "resource1", "resource2"), false);
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOneClusterTaskDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -455,13 +447,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteClusterTasks(Arrays.asList("resource"), false);
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultipleClusterTasksDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -473,13 +465,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteClusterTasks(Arrays.asList("resource", "resource1", "resource2"), false);
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOnePipelineResourceDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -489,13 +481,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteResources("namespace", Arrays.asList("resource"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultiplePipelineResourcesDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -507,13 +499,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteResources("namespace", Arrays.asList("resource", "resource1", "resource2"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOnePipelineRunDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -523,13 +515,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deletePipelineRuns("namespace", Arrays.asList("resource"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultiplePipelineRunDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -541,13 +533,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deletePipelineRuns("namespace", Arrays.asList("resource", "resource1", "resource2"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOneTaskRunDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -557,13 +549,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteTaskRuns("namespace", Arrays.asList("resource"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultipleTaskRunsDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -575,13 +567,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteTaskRuns("namespace", Arrays.asList("resource", "resource1", "resource2"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOneConditionDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -591,13 +583,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteConditions("namespace", Arrays.asList("resource"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultipleConditionsDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -609,13 +601,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteConditions("namespace", Arrays.asList("resource", "resource1", "resource2"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOneTriggerTemplateDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -625,13 +617,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteTriggerTemplates("namespace", Arrays.asList("resource"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultipleTriggerTemplatesDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -643,13 +635,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteTriggerTemplates("namespace", Arrays.asList("resource", "resource1", "resource2"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOneTriggerBindingDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -659,13 +651,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteTriggerBindings("namespace", Arrays.asList("resource"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultipleTriggerBindingsDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -677,13 +669,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteTriggerBindings("namespace", Arrays.asList("resource", "resource1", "resource2"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOneClusterTriggerBindingsDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -693,13 +685,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteClusterTriggerBindings(Arrays.asList("resource"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultipleClusterTriggerBindingsDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -711,13 +703,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteClusterTriggerBindings(Arrays.asList("resource", "resource1", "resource2"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkOneEventListenerDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -727,13 +719,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteEventListeners("namespace", Arrays.asList("resource"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkMultipleEventListenersDeleteInVFS() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -745,13 +737,13 @@ public class TektonVirtualFileManagerTest {
 
         verify(tkn, times(1)).deleteEventListeners("namespace", Arrays.asList("resource", "resource1", "resource2"));
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkErrorIfTknIsNullWhenSavingFileInVFS() {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = mockStatic(TreeHelper.class);
         treeHelper.when(() -> TreeHelper.getTkn(any())).thenReturn(null);
 
@@ -763,13 +755,13 @@ public class TektonVirtualFileManagerTest {
             assertEquals(ex.getMessage(), "Unable to contact the cluster");
         }
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkCorrectErrorIfDocumentHasNoName() {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -782,13 +774,13 @@ public class TektonVirtualFileManagerTest {
             assertEquals(e.getMessage(),"Tekton file has not a valid format. Name field is not valid or found.");
         }
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkCorrectErrorIfDocumentHasNoKind() {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -803,13 +795,13 @@ public class TektonVirtualFileManagerTest {
             assertEquals(e.getMessage(),"Tekton file has not a valid format. Kind field is not found.");
         }
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkCorrectErrorIfDocumentHasNoApiVersion() {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -824,13 +816,13 @@ public class TektonVirtualFileManagerTest {
             assertEquals(e.getMessage(),"Tekton file has not a valid format. ApiVersion field is not found.");
         }
 
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkCorrectErrorIfDocumentHasNoSpec() {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
         TektonVirtualFileManager.getInstance().setTkn(tkn);
 
@@ -853,13 +845,13 @@ public class TektonVirtualFileManagerTest {
         }
 
         fdm.close();
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkIfNewResourceIsCreatedIfNotFoundRemotely() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
 
         TektonVirtualFileManager.getInstance().setTkn(tkn);
@@ -885,13 +877,13 @@ public class TektonVirtualFileManagerTest {
         verify(tkn, times(0)).editCustomResource(anyString(), anyString(), any(), anyString());
 
         fdm.close();
-        tvfm.close();
+        
         treeHelper.close();
     }
 
     @Test
     public void checkResourceIsUpdatedIfFoundRemotely() throws IOException {
-        MockedStatic<TektonVirtualFileManager> tvfm  = getTektonFileManagerStaticMock();
+        
         MockedStatic<TreeHelper> treeHelper = getTreeHelperStaticMock();
 
         TektonVirtualFileManager.getInstance().setTkn(tkn);
@@ -916,7 +908,7 @@ public class TektonVirtualFileManagerTest {
         verify(tkn).editCustomResource(anyString(), anyString(), any(), anyString());
 
         fdm.close();
-        tvfm.close();
+        
         treeHelper.close();
     }
 
