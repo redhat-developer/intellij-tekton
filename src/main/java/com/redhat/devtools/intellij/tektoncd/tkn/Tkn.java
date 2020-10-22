@@ -249,12 +249,11 @@ public interface Tkn {
     /**
      * Get clusterTriggerBinding configuration in YAML
      *
-     * @param namespace the namespace of the clusterTriggerBinding
      * @param ctb the clusterTriggerBinding to use
      * @return clusterTriggerBinding configuration
      * @throws IOException if communication errored
      */
-    String getClusterTriggerBindingYAML(String namespace, String ctb) throws IOException;
+    String getClusterTriggerBindingYAML(String ctb) throws IOException;
 
     /**
      * Get eventListener configuration in YAML

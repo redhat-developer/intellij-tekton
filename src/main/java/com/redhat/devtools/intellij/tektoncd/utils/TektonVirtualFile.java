@@ -44,4 +44,8 @@ public class TektonVirtualFile extends LightVirtualFile {
         String namespace = TreeHelper.getNamespaceFromResourcePath(path);
         return namespace + "-" + resourceName + ".yaml";
     }
+
+    public String getText() {
+        return getContent().toString();
+    }
 }

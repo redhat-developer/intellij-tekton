@@ -13,9 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
@@ -26,7 +23,6 @@ import com.intellij.openapi.vfs.VirtualFileSystem;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import gnu.trove.THashMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -55,8 +51,6 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 
 public class TektonVirtualFileManager extends VirtualFileSystem {
     private static final Logger logger = LoggerFactory.getLogger(TektonVirtualFileManager.class);
@@ -124,7 +118,7 @@ public class TektonVirtualFileManager extends VirtualFileSystem {
         } else if (kind.equalsIgnoreCase(KIND_TRIGGERBINDING)) {
             content = tkncli.getTriggerBindingYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDING)) {
-            content = tkncli.getClusterTriggerBindingYAML(namespace, resourceName);
+            content = tkncli.getClusterTriggerBindingYAML(resourceName);
         } else if (kind.equalsIgnoreCase(KIND_EVENTLISTENER)) {
             content = tkncli.getEventListenerYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
@@ -203,15 +197,15 @@ public class TektonVirtualFileManager extends VirtualFileSystem {
             throw new IOException("Unable to contact the cluster");
         }
 
-        String name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"metadata", "name"});
+        String name = YAMLHelper.getStringValueFromYAML(document.getCharsSequence().toString(), new String[] {"metadata", "name"});
         if (Strings.isNullOrEmpty(name)) {
             throw new IOException("Tekton file has not a valid format. Name field is not valid or found.");
         }
-        String kind = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"kind"});
+        String kind = YAMLHelper.getStringValueFromYAML(document.getCharsSequence().toString(), new String[] {"kind"});
         if (Strings.isNullOrEmpty(kind)) {
             throw new IOException("Tekton file has not a valid format. Kind field is not found.");
         }
-        String apiVersion = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] {"apiVersion"});
+        String apiVersion = YAMLHelper.getStringValueFromYAML(document.getCharsSequence().toString(), new String[] {"apiVersion"});
         if (Strings.isNullOrEmpty(apiVersion)) {
             throw new IOException("Tekton file has not a valid format. ApiVersion field is not found.");
         }
@@ -219,14 +213,14 @@ public class TektonVirtualFileManager extends VirtualFileSystem {
         if (crdContext == null) {
             throw new IOException("Tekton file has not a valid format. ApiVersion field contains an invalid value.");
         }
-        JsonNode spec = YAMLHelper.getValueFromYAML(document.getText(), new String[] {"spec"});
+        JsonNode spec = YAMLHelper.getValueFromYAML(document.getCharsSequence().toString(), new String[] {"spec"});
         if (spec == null) {
             throw new IOException("Tekton file has not a valid format. Spec field is not found.");
         }
 
         Map<String, Object> resource = tkncli.getCustomResource(namespace, name, crdContext);
         if (resource == null) {
-            tkncli.createCustomResource(namespace, crdContext, document.getText());
+            tkncli.createCustomResource(namespace, crdContext, document.getCharsSequence().toString());
         } else {
             JsonNode customResource = JSONHelper.MapToJSON(resource);
             ((ObjectNode) customResource).set("spec", spec);
@@ -340,6 +334,10 @@ public class TektonVirtualFileManager extends VirtualFileSystem {
             tkncli = TreeHelper.getTkn(project);
         }
         return tkncli;
+    }
+
+    public void setTkn(Tkn tkn) {
+        tkncli = tkn;
     }
 
 }

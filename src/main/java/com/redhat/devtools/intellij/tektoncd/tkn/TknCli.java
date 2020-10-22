@@ -265,8 +265,8 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getClusterTriggerBindingYAML(String namespace, String ctb) throws IOException {
-        return ExecHelper.execute(command, envVars, "ctb", "describe", ctb, "-n", namespace, "-o", "yaml");
+    public String getClusterTriggerBindingYAML(String ctb) throws IOException {
+        return ExecHelper.execute(command, envVars, "ctb", "describe", ctb, "-o", "yaml");
     }
 
     @Override
