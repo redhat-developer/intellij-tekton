@@ -11,10 +11,12 @@
 package com.redhat.devtools.intellij.tektoncd.completion;
 
 import com.intellij.codeInsight.lookup.LookupElement;
+import io.fabric8.tekton.pipeline.v1beta1.ArrayOrString;
 import io.fabric8.tekton.pipeline.v1beta1.ParamSpec;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskResource;
 import io.fabric8.tekton.pipeline.v1beta1.TaskResources;
+import java.util.stream.Collectors;
 
 public class TaskAutoInsertHandler extends BaseAutoInsertHandler {
 
@@ -32,7 +34,16 @@ public class TaskAutoInsertHandler extends BaseAutoInsertHandler {
             completionText += getIndentationAsText(indentationParent, indentationSize, 0) + "params:\n";
             for (ParamSpec param: task.getSpec().getParams()) {
                 completionText += getIndentationAsText(indentationParent, indentationSize, 0) + "- name: " + param.getName() + "\n";
-                completionText += getIndentationAsText(indentationParent, indentationSize, 1) + "value: \n";
+                String defaultText = "";
+                ArrayOrString defaultValue = param.getDefault();
+                if (defaultValue != null) {
+                    if (defaultValue.getType().equalsIgnoreCase("string")) {
+                        defaultText = defaultValue.getStringVal();
+                    } else {
+                        defaultText = defaultValue.getArrayVal().stream().collect(Collectors.joining(","));
+                    }
+                }
+                completionText += getIndentationAsText(indentationParent, indentationSize, 1) + "value: " + defaultText + "\n";
             }
         }
         TaskResources resources = task.getSpec().getResources();
