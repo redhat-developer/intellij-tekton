@@ -98,7 +98,7 @@
     <localInspection language="yaml" bundle="messages.YAMLBundle" displayName="Tekton Unused Variable inspector"
                      level="WARNING" groupKey="inspections.group.name" enabledByDefault="true"
                      implementationClass="com.redhat.devtools.intellij.tektoncd.utils.VariableReferencesInspector"/>
-    <applicationInitializedListener implementation="com.redhat.devtools.intellij.tektoncd.TektonApplicationListener" />
+    <applicationInitializedListener implementation="com.redhat.devtools.intellij.tektoncd.TektonApplicationInitializer" />
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">

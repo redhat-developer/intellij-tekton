@@ -11,8 +11,8 @@
 package com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watch;
-import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.WatchListDeletable;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
@@ -26,11 +26,11 @@ import java.util.function.Supplier;
 
 public class TasksProvider extends NamespacedResourcesProvider<Task, TektonClient> {
 
-    static class Factory implements IResourcesProviderFactory<Task, TektonClient, TasksProvider> {
+    static class Factory implements IResourcesProviderFactory<Task, KubernetesClient, TasksProvider> {
 
         @NotNull
         @Override
-        public TasksProvider create(@NotNull final Clients<TektonClient> clients) {
+        public TasksProvider create(@NotNull Clients<KubernetesClient> clients) {
             return new TasksProvider(clients.get(TektonClient.class));
         }
     }
@@ -47,7 +47,7 @@ public class TasksProvider extends NamespacedResourcesProvider<Task, TektonClien
 
     @NotNull
     @Override
-    protected Supplier<WatchListDeletable<Task, ? extends KubernetesResourceList<Task>, Boolean, Watch, Watcher<Task>>> getOperation(@NotNull String namespace) {
+    protected Supplier<WatchListDeletable<Task, ? extends KubernetesResourceList<Task>, Boolean, Watch>> getOperation(@NotNull String namespace) {
         return () -> getClient().v1beta1().tasks().inNamespace(namespace);
     }
 }

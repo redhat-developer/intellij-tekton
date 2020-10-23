@@ -11,8 +11,8 @@
 package com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watch;
-import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.WatchListDeletable;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
@@ -26,11 +26,11 @@ import java.util.function.Supplier;
 
 public class PipelinesProvider extends NamespacedResourcesProvider<Pipeline, TektonClient> {
 
-    static class Factory implements IResourcesProviderFactory<Pipeline, TektonClient, PipelinesProvider> {
+    static class Factory implements IResourcesProviderFactory<Pipeline, KubernetesClient, PipelinesProvider> {
 
         @NotNull
         @Override
-        public PipelinesProvider create(@NotNull final Clients<TektonClient> clients) {
+        public PipelinesProvider create(@NotNull final Clients<KubernetesClient> clients) {
             return new PipelinesProvider(clients.get(TektonClient.class));
         }
     }
@@ -47,7 +47,7 @@ public class PipelinesProvider extends NamespacedResourcesProvider<Pipeline, Tek
 
     @NotNull
     @Override
-    protected Supplier<WatchListDeletable<Pipeline, ? extends KubernetesResourceList<Pipeline>, Boolean, Watch, Watcher<Pipeline>>> getOperation(@NotNull String namespace) {
+    protected Supplier<WatchListDeletable<Pipeline, ? extends KubernetesResourceList<Pipeline>, Boolean, Watch>> getOperation(@NotNull String namespace) {
         return () -> getClient().v1beta1().pipelines().inNamespace(namespace);
     }
 
