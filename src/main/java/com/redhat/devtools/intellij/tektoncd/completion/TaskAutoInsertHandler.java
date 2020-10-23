@@ -40,7 +40,7 @@ public class TaskAutoInsertHandler extends BaseAutoInsertHandler {
                     if (defaultValue.getType().equalsIgnoreCase("string")) {
                         defaultText = defaultValue.getStringVal();
                     } else {
-                        defaultText = defaultValue.getArrayVal().stream().collect(Collectors.joining(","));
+                        defaultText = "[" + defaultValue.getArrayVal().stream().map(val -> "\"" + val + "\"").collect(Collectors.joining(",")) + "]";
                     }
                 }
                 completionText += getIndentationAsText(indentationParent, indentationSize, 1) + "value: " + defaultText + "\n";
