@@ -114,16 +114,6 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getClusterTasks() throws IOException {
-        try {
-            ClusterTaskList clusterTasks = client.adapt(TektonClient.class).v1beta1().clusterTasks().list();
-            return clusterTasks.getItems().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
-        } catch (KubernetesClientException e) {
-            throw new IOException(e);
-        }
-    }
-
-    @Override
     public List<String> getNamespaces() throws IOException {
         if (client.isAdaptable(OpenShiftClient.class)) {
             return client.adapt(OpenShiftClient.class).projects().list().getItems().stream().map(project -> project.getMetadata().getName()).collect(Collectors.toList());
@@ -178,6 +168,16 @@ public class TknCli implements Tkn {
     public List<Task> getTasks(String namespace) throws IOException {
         try {
             TaskList tasks = client.adapt(TektonClient.class).v1beta1().tasks().inNamespace(namespace).list();
+            return tasks.getItems();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public List<ClusterTask> getClusterTasks() throws IOException {
+        try {
+            ClusterTaskList tasks = client.adapt(TektonClient.class).v1beta1().clusterTasks().list();
             return tasks.getItems();
         } catch (KubernetesClientException e) {
             throw new IOException(e);
