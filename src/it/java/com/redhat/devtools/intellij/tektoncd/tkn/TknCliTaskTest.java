@@ -38,7 +38,7 @@ public class TknCliTaskTest extends TknCliTest {
     }
 
     @Test
-    public void verifyPipelineYAMLIsReturnedCorrectly() throws IOException {
+    public void verifyTaskYAMLIsReturnedCorrectly() throws IOException {
         final String TASK_NAME = "second";
         String resourceBody = load("task1.yaml").replace("taskfoo", TASK_NAME);
         saveResource(resourceBody, NAMESPACE, "tasks");

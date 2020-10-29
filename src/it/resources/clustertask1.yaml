@@ -1,0 +1,14 @@
+apiVersion: tekton.dev/v1beta1
+kind: ClusterTask
+metadata:
+  name: ctfoo
+spec:
+  steps:
+    - args:
+        - -c
+        - sleep 60
+      command:
+        - /bin/bash
+      image: fedora
+      name: build-sources
+      resources: {}
