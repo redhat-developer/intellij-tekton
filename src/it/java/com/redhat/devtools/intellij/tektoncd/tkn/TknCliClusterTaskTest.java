@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -29,11 +30,11 @@ public class TknCliClusterTaskTest extends TknCliTest {
         String resourceBody = load("clustertask1.yaml").replace("ctfoo", TASK_NAME);
         saveResource(resourceBody, "", "clustertasks");
         // verify task has been created
-        List<String> tasks = tkn.getClusterTasks();
+        List<String> tasks = tkn.getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // clean up and verify cleaning succeed
         tkn.deleteClusterTasks(tasks, false);
-        tasks = tkn.getClusterTasks();
+        tasks = tkn.getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertFalse(tasks.contains(TASK_NAME));
     }
 
@@ -43,14 +44,14 @@ public class TknCliClusterTaskTest extends TknCliTest {
         String resourceBody = load("clustertask1.yaml").replace("ctfoo", TASK_NAME);
         saveResource(resourceBody, "", "clustertasks");
         // verify pipeline has been created
-        List<String> tasks = tkn.getClusterTasks();
+        List<String> tasks = tkn.getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());;
         assertTrue(tasks.contains(TASK_NAME));
         // get YAML from cluster and verify is the same uploaded
         String resourceBodyFromCluster = tkn.getClusterTaskYAML(TASK_NAME);
         assertEquals(getSpecFromResource(resourceBody), getSpecFromResource(resourceBodyFromCluster));
         // clean up and verify cleaning succeed
         tkn.deleteClusterTasks(tasks, false);
-        tasks = tkn.getClusterTasks();
+        tasks = tkn.getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());;
         assertFalse(tasks.contains(TASK_NAME));
     }
 }
