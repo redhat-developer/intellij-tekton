@@ -47,7 +47,11 @@ public class Output {
     }
 
     public Output fromJson(JsonNode outputNode) {
-        String name = outputNode.get("name").asText();
+        if (!outputNode.has("name") ||
+                outputNode.get("name").isNull()) {
+            return null;
+        }
+        String name = outputNode.get("name").asText("");
         String type = "string"; // which is default value for a resource ??
         Optional<String> description = Optional.empty();
         Optional<Boolean> optional = Optional.empty();

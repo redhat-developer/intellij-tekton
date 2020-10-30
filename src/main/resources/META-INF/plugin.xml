@@ -79,14 +79,9 @@
     <completion.contributor language="any" implementationClass="com.redhat.devtools.intellij.tektoncd.completion.DictionaryContributor"/>
     <toolWindow id="Tekton" anchor="left" factoryClass="com.redhat.devtools.intellij.tektoncd.WindowToolFactory" icon="/images/cluster.png"/>
     <fileEditorProvider implementation="com.redhat.devtools.intellij.tektoncd.ui.editors.TektonFileEditorProvider"/>
-    <localInspection language="yaml"
-                     displayName="SDK: '==' or '!=' used instead of 'equals()'"
-                     groupPath="Java"
-                     groupBundle="messages.InspectionsBundle"
-                     groupKey="group.names.probable.bugs"
-                     enabledByDefault="true"
-                     level="WARNING"
-                     implementationClass="com.redhat.devtools.intellij.tektoncd.utils.TektonReferencesInspection"/>
+    <localInspection language="yaml" bundle="messages.YAMLBundle" displayName="Tekton Unused Variable inspector"
+                     level="WARNING" groupKey="inspections.group.name" enabledByDefault="true"
+                     implementationClass="com.redhat.devtools.intellij.tektoncd.utils.VariableReferencesInspector"/>
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
