@@ -10,9 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.LocalQuickFix;
@@ -20,20 +17,14 @@ import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.FileASTNode;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiRecursiveElementWalkingVisitor;
-import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,11 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.yaml.parser.YAMLParser;
-import org.jetbrains.yaml.psi.YamlPsiElementVisitor;
-
-
-import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
 
 public class VariableReferencesInspector extends LocalInspectionTool {
 
@@ -56,11 +42,6 @@ public class VariableReferencesInspector extends LocalInspectionTool {
             return ProblemDescriptor.EMPTY_ARRAY;
         }
 
-        final VirtualFile virtualFile = file.getVirtualFile();
-        final Project project = virtualFile.getUserData(PROJECT);
-        if (project == null) {
-            return ProblemDescriptor.EMPTY_ARRAY;
-        }
         ConfigurationModel model = ConfigurationModelFactory.getModel(file.getText());
         if (model == null) {
             return ProblemDescriptor.EMPTY_ARRAY;
