@@ -419,6 +419,15 @@ public class TknCli implements Tkn {
 
     public String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
+        return startTaskInternal(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+    }
+
+    public String startClusterTask(String namespace, String clusterTask, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+        List<String> args = new ArrayList<>(Arrays.asList("clustertask", "start", clusterTask, "-n", namespace)); // -n is used to retreive input/output resources
+        return startTaskInternal(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+    }
+
+    private String startTaskInternal(List<String> args, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
         }

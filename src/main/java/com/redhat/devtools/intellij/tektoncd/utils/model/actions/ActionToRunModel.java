@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+
 public abstract class ActionToRunModel extends ConfigurationModel {
 
     protected ResourceConfigurationModel resource;
@@ -52,16 +55,16 @@ public abstract class ActionToRunModel extends ConfigurationModel {
     }
 
     public void init(String configuration) {
-        if (Strings.isNullOrEmpty(namespace)) {
-            errorMessage += " * Namespace field is missing or its value is not valid.\n";
-            isValid = false;
-        }
         if (Strings.isNullOrEmpty(name)) {
             errorMessage += " * Name field is missing or its value is not valid.\n";
             isValid = false;
         }
         if (Strings.isNullOrEmpty(kind)) {
             errorMessage += " * Kind field is missing or its value is not valid.\n";
+            isValid = false;
+        }
+        if (Strings.isNullOrEmpty(namespace) && !kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+            errorMessage += " * Namespace field is missing or its value is not valid.\n";
             isValid = false;
         }
 

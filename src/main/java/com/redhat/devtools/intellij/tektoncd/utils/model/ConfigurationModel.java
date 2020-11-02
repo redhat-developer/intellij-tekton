@@ -16,6 +16,9 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+
 public abstract class ConfigurationModel {
     Logger logger = LoggerFactory.getLogger(ConfigurationModel.class);
     protected String namespace, name, kind;
@@ -34,7 +37,9 @@ public abstract class ConfigurationModel {
         try {
             this.name = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "name"});
             this.kind = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"kind"});
-            this.namespace = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "namespace"});
+            if (!this.kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+                this.namespace = YAMLHelper.getStringValueFromYAML(configuration, new String[]{"metadata", "namespace"});
+            }
         } catch (IOException e) {
             logger.warn(e.getLocalizedMessage());
         }

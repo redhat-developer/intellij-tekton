@@ -24,6 +24,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
@@ -42,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
@@ -51,7 +53,7 @@ public class StartAction extends TektonAction {
 
     public StartAction(Class... filters) { super(filters); }
 
-    public StartAction() { super(PipelineNode.class, TaskNode.class); }
+    public StartAction() { super(PipelineNode.class, TaskNode.class, ClusterTaskNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -107,9 +109,10 @@ public class StartAction extends TektonAction {
                     String runName = null;
                     if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
                         runName = tkncli.startPipeline(namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
-
                     } else if (model.getKind().equalsIgnoreCase(KIND_TASK)) {
                         runName = tkncli.startTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+                    } else if (model.getKind().equalsIgnoreCase(KIND_CLUSTERTASK)) {
+                        runName = tkncli.startClusterTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
                     }
                     if(runName != null) {
                         FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
@@ -144,6 +147,8 @@ public class StartAction extends TektonAction {
         } else if (element instanceof TaskNode) {
             configuration = tkncli.getTaskYAML(namespace, element.getName());
             runs = tkncli.getTaskRuns(namespace, element.getName());
+        } else if (element instanceof ClusterTaskNode) {
+            configuration = tkncli.getClusterTaskYAML(element.getName());
         }
         return new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
     }

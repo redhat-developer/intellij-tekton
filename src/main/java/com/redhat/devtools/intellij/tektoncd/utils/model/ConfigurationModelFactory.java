@@ -30,7 +30,8 @@ public class ConfigurationModelFactory {
             if (!Strings.isNullOrEmpty(kind)) {
                 switch (kind.toLowerCase()) {
                     case "pipeline": return new PipelineConfigurationModel(configuration);
-                    case "task": return new TaskConfigurationModel(configuration);
+                    case "task":
+                    case "clustertask": return new TaskConfigurationModel(configuration);
                     case "condition": return new ConditionConfigurationModel(configuration);
                     case "pipelinerun": return new PipelineRunConfigurationModel(configuration);
                     case "taskrun": return new TaskRunConfigurationModel(configuration);

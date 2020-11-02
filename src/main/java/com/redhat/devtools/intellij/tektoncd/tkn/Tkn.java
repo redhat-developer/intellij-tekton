@@ -446,6 +446,22 @@ public interface Tkn {
     String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
+     * Start the execution of a task
+     *
+     * @param namespace the namespace where to run the clusterTask, useful to retrieve the input/output resources
+     * @param clusterTask the task that has to be run
+     * @param parameters the parameters to start task
+     * @param inputResources the input resources to start task
+     * @param outputResources the output resources to start task
+     * @param serviceAccount the service account to use when running the task
+     * @param workspaces the workspaces to start the task
+     * @param runPrefixName the name to use as a prefix for the taskrun
+     * @throws IOException if communication errored
+     * @return TaskRun name
+     */
+    String startClusterTask(String namespace, String clusterTask, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
+
+    /**
      * Re-run the task using last taskrun values
      *
      * @param namespace the namespace of the task
