@@ -13,6 +13,20 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.3.0</b></p>
+  <p>Enhanced code completion</p>
+  <p><ul>
+  <li>cluster tasks are also proposed for task references</li>
+  <li>Workspaces are generated in task completion</li>
+  <li>Parameters are generated with their default value in task completion</li>
+  </ul></p>
+  <p>UI enhancements</p>
+  <p><ul>
+  <li>The pipeline/pipelinerun diagram preview has been enhanced to better support task ordering (when, results chaining)</li>
+  </ul></p>
+  <p>Fixed incompatibility with JetBrains Kubernetes plugin for Ultimate users</p>
+  <p>Switch to tkn 0.13.1</p>
+  <p>Validation and code assist aligned with Tekton Pipeline 0.13.1 and Tekton Triggers 0.9.0</p>
   <p><b>0.2.0</b></p>
   <p>New troubleshooting tool to debug pipeline/task executions</p>
   <p>Visual editor for pipeline runs next to the source one</p>
