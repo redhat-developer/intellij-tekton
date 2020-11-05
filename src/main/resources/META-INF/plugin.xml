@@ -72,6 +72,7 @@
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>org.jetbrains.plugins.yaml</depends>
   <depends optional="true" config-file="plugin-json.xml">com.intellij.modules.json</depends>
+  <depends optional="true" config-file="plugin-kubernetes.xml">com.intellij.kubernetes</depends>
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
