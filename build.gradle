@@ -16,11 +16,12 @@ repositories {
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
+def versionsMap = ['IU-2019.2':'192.5728.98','IU-2019.3':'193.5233.144','IU-2020.1':'201.6668.99', 'IU-2020.2':'202.6397.93']
 
 intellij {
     version ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName 'com.redhat.devtools.intellij.tekton'
-    plugins 'terminal', 'yaml'
+    plugins 'terminal', 'yaml', 'com.intellij.kubernetes:' + versionsMap[ideaVersion]
     updateSinceUntilBuild false
 }
 
