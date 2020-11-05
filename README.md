@@ -18,48 +18,62 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
 
+### Improved code completion
+#### Cluster task references
 
+When a name of a task is to be specified in a pipeline definition, then the list of the normal tasks was provided. The list of existing cluster tasks is now available, with the **(clusterTask)** suffix to distinguish from normal tasks.
+
+![](images/0.3.0/tekton1.gif)
+
+#### Parameter values and workspaces
+
+When a task is selected inside a pipeline definition during code completion, the list of parameters to be passed to this task is inserted into the pipeline definition. If the definition of a parameter contains a default value, then this value is also inserted into the pipeline definiton.
+On the same topic, if the task definition contains a list of workspaces, then a list of workspaces will be inserted into the pipeline definition as well.
+
+## Previous releases
+
+## 0.2.0
 
 ### Troubleshooting
 
 Sometimes, it may be hard to understand why a pipeline failed or why it is stuck. We added a new troubleshooting tool that will inspect low level Kubernetes resources related to your task or pipeline execution and extract information that may be helpful.
 
-![](images/0.3.0/tekton5.gif)
+![](images/0.2.0/tekton5.gif)
 
 ### Add trigger wizard
 
 It is now much simple to add a trigger to an existing pipeline. We added a new wizard that allows you to associate one or more trigger bindings to a pipeline (and if you don't have bindings already, you can create it while adding the trigger).
 
-![](images/0.3.0/tekton6.gif)
+![](images/0.2.0/tekton6.gif)
 
 ### Pipelinerun preview editor
 
 Like the pipeline editor, the pipelinerun editor has been enhanced to include a visual representation of the pipeline
 workflow and status. Conditions and finally clauses are also supported.
 
-![](images/0.3.0/tekton1.png)
+![](images/0.2.0/tekton1.png)
 
 ### Run prefix when starting a task or pipeline
 
 It is now possible to specify a run prefix when starting a task or pipeline. This allows to better identify the execution in the set of runs
 
-![](images/0.3.0/tekton2.gif)
+![](images/0.2.0/tekton2.gif)
 
 ### Improved code completion
 #### When expressions
 
 The dynamic input of a when expression can be easily specified as code completion can now retrieve the results from other tasks of the pipeline.
 
-![](images/0.3.0/tekton3.gif)
+![](images/0.2.0/tekton3.gif)
 
 ### Resource reference
 
 Any task using input or output resources can be specified in the pipeline workflow and values for the resource field will be managed through code completion
 
-![](images/0.3.0/tekton4.gif)
+![](images/0.2.0/tekton4.gif)
 
 
-## Previous releases
+## 0.1.0
 
 The Tekton CLI in use has been upgrated to 0.11.0 (as 0.12.0 has some performance issues).
 
@@ -68,19 +82,19 @@ The Tekton CLI in use has been upgrated to 0.11.0 (as 0.12.0 has some performanc
 The pipeline editor has been enhanced to include a visual representation of the pipeline
 workflow. Conditions and finally clauses are also supported.
 
-![](images/0.2.0/tekton1.gif)
+![](images/0.1.0/tekton1.gif)
 
 ### Reviewed start wizard (for pipelines and tasks)
 
 The start wizard has been completely reviewed to better represent the current state:
 
-![](images/0.2.0/tekton2.gif)
+![](images/0.1.0/tekton2.gif)
 
 #### Initialize start wizard with settings from a previous  run
 
 As starting a task or pipeline may require a lot of inputs, it is also possible to start a task or pipeline using the settings from a previous run. The start wizard will have these input values initialized from the values used in the previous run instead of getting the default value.
 
-![](images/0.2.0/tekton9.gif)
+![](images/0.1.0/tekton9.gif)
 
 
 ### Improved code assist
@@ -89,19 +103,19 @@ As starting a task or pipeline may require a lot of inputs, it is also possible 
 
 When a parameter/workspace/resource is to be set on a task, code assist will present the candidate values.
 
-![](images/0.2.0/tekton3.gif)
+![](images/0.1.0/tekton3.gif)
 
 #### Task graph
 
 Tasks inside a pipeline can be sequence through the *runAfter* field. When code completion is activate on such a field, the list of available tasks in the pipeline is proposed:
 
-![](images/0.2.0/tekton4.gif)
+![](images/0.1.0/tekton4.gif)
 
 #### Conditions
 
 When a task is to be conditionnaly executed through conditions (using the *conditionRef* field), the list of available conditions is proposed:
 
-![](images/0.2.0/tekton5.gif)
+![](images/0.1.0/tekton5.gif)
 
 ### UI enhancements
 
@@ -109,19 +123,19 @@ When a task is to be conditionnaly executed through conditions (using the *condi
 
 When a task or pipeline resource is to be deleted, you now have the choice to delete associated resources (task runs / pipeline runs) through an option:
 
-![](images/0.2.0/tekton6.png)
+![](images/0.1.0/tekton6.png)
 
 #### Runs ordering
 
 The taskruns/pipelineruns are now displayed ordered by the starting time (most recent started run is displayed first), allowing users to keep focusing on recent work
 
-![](images/0.2.0/tekton7.png)
+![](images/0.1.0/tekton7.png)
 
 #### Cancel run
 
 A task or pipeline run still active (in the running state) can be canceled through a new Cancel action:
 
-![](images/0.2.0/tekton8.gif)
+![](images/0.1.0/tekton8.gif)
 
 #### Automatically show logs
 
