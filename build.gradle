@@ -4,6 +4,7 @@ plugins {
     id "idea"
     id "java"
     id "jacoco"
+    id "org.openapi.generator" version "4.3.1"
 }
 
 repositories {
@@ -34,6 +35,8 @@ dependencies {
     compile 'com.github.graphstream:gs-ui-swing:dev-SNAPSHOT'
     compile 'com.github.graphstream:gs-algo:dev-SNAPSHOT'
     compile 'com.github.vlsi.mxgraph:jgraphx:4.1.0'
+    compile 'io.swagger:swagger-annotations:1.5.24'
+    compile 'io.gsonfire:gson-fire:1.8.4'
 }
 
 configurations {
@@ -51,6 +54,9 @@ sourceSets {
         compileClasspath += sourceSets.main.output + configurations.testRuntime
         runtimeClasspath += output + compileClasspath
     }
+    main {
+        java.srcDirs += file("$buildDir/hubapi-java/src/main/java")
+    }
 }
 
 task integrationTest(type: Test) {
@@ -67,6 +73,27 @@ publishPlugin {
     token    jetBrainsToken
     channels jetBrainsChannel
 }
+
+openApiGenerate {
+    generatorName = "java"
+    inputSpec = "https://raw.githubusercontent.com/tektoncd/hub/v0.3.0/api/gen/http/openapi3.yaml".toString()
+    outputDir = "$buildDir/hubapi-java".toString()
+    apiPackage = "com.redhat.devtools.intellij.tektoncd.hub.api"
+    invokerPackage = "com.redhat.devtools.intellij.tektoncd.hub.invoker"
+    modelPackage = "com.redhat.devtools.intellij.tektoncd.hub.model"
+    configOptions = [
+            dateLibrary: "java8"
+    ]
+    skipValidateSpec = true
+    logToStderr = true
+    generateAliasAsModel = false
+    // set to true and set environment variable {LANG}_POST_PROCESS_FILE
+    // (e.g. SCALA_POST_PROCESS_FILE) to the linter/formatter to be processed.
+    // This command will be passed one file at a time for most supported post processors.
+    enablePostProcessFile = false
+}
+
+compileJava.dependsOn tasks.openApiGenerate
 
 group 'com.redhat.devtools.intellij'
 version projectVersion // Plugin version
