@@ -37,6 +37,7 @@ dependencies {
     compile 'com.github.vlsi.mxgraph:jgraphx:4.1.0'
     compile 'io.swagger:swagger-annotations:1.5.24'
     compile 'io.gsonfire:gson-fire:1.8.4'
+    compile 'com.google.code.findbugs:jsr305:3.0.2'
 }
 
 configurations {
