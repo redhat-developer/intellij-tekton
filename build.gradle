@@ -35,8 +35,14 @@ dependencies {
     compile 'com.github.graphstream:gs-ui-swing:dev-SNAPSHOT'
     compile 'com.github.graphstream:gs-algo:dev-SNAPSHOT'
     compile 'com.github.vlsi.mxgraph:jgraphx:4.1.0'
+    //Tekton Hub client dependencies
     compile 'io.swagger:swagger-annotations:1.5.24'
     compile 'io.gsonfire:gson-fire:1.8.4'
+    compile 'com.google.code.findbugs:jsr305:3.0.2'
+    //IntelliJ Kubernetes plugin brings old okio so we need
+    //to explicitely declare it here. If the Tekton F8 is
+    //updated check the version
+    compile 'com.squareup.okio:okio:1.15.0'
 }
 
 configurations {
