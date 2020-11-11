@@ -1552,6 +1552,9 @@
         },
         "apiVersion": {
           "type": "string"
+        },
+        "bundle": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -1884,6 +1887,32 @@
             }
           },
           "type": "object"
+        },
+        "whenExpressions": {
+          "items": {
+            "required": [
+              "input",
+              "operator",
+              "values"
+            ],
+            "properties": {
+              "input": {
+                "type": "string"
+              },
+              "operator": {
+                "type": "string"
+              },
+              "values": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -2788,6 +2817,32 @@
       "properties": {
         "name": {
           "type": "string"
+        },
+        "whenExpressions": {
+          "items": {
+            "required": [
+              "input",
+              "operator",
+              "values"
+            ],
+            "properties": {
+              "input": {
+                "type": "string"
+              },
+              "operator": {
+                "type": "string"
+              },
+              "values": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -2896,6 +2951,10 @@
         },
         "script": {
           "type": "string"
+        },
+        "timeout": {
+          "pattern": "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -2989,6 +3048,9 @@
           "type": "string"
         },
         "apiVersion": {
+          "type": "string"
+        },
+        "bundle": {
           "type": "string"
         }
       },
