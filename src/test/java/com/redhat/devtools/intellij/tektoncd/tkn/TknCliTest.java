@@ -399,4 +399,141 @@ public class TknCliTest {
         exec.close();
         assertNull(output);
     }
+
+    @Test
+    public void checkRightArgsWhenStartingClusterTaskWithParameters() throws IOException {
+        Map<String, String> params = new HashMap<>();
+        params.put("param1", "value1");
+        params.put("param2", "value2");
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
+
+        tkn.startClusterTask("ns", "name", params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        exec.verify(() ->
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
+                        eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2")));
+        exec.close();
+    }
+
+    @Test
+    public void checkRightArgsWhenStartingClusterTaskWithInputResources() throws IOException {
+        Map<String, String> resources = new HashMap<>();
+        resources.put("res1", "value1");
+        resources.put("res2", "value2");
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
+
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), resources, Collections.emptyMap(), "", Collections.emptyMap(), "");
+        exec.verify(() ->
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
+                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2")));
+        exec.close();
+    }
+
+    @Test
+    public void checkRightArgsWhenStartingClusterTaskWithOutputResources() throws IOException {
+        Map<String, String> resources = new HashMap<>();
+        resources.put("res1", "value1");
+        resources.put("res2", "value2");
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
+
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), resources, "", Collections.emptyMap(), "");
+        exec.verify(() ->
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
+                        eq("-o"), eq("res1=value1"), eq("-o"), eq("res2=value2")));
+        exec.close();
+    }
+
+    @Test
+    public void checkRightArgsWhenStartingClusterTaskWithWorkspaces() throws IOException {
+        Map<String, Workspace> workspaces = new HashMap<>();
+        workspaces.put("work1", new Workspace("work1", Workspace.Kind.PVC, "value1"));
+        workspaces.put("work2", new Workspace("work2", Workspace.Kind.CONFIGMAP, "value2"));
+        workspaces.put("work3", new Workspace("work3", Workspace.Kind.SECRET, "value3"));
+        workspaces.put("work4", new Workspace("work4", Workspace.Kind.EMPTYDIR, null));
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
+
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", workspaces, "");
+        exec.verify(() ->
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
+                        eq("-w"), eq("name=work2,config=value2"), eq("-w"), eq("name=work1,claimName=value1"),
+                        eq("-w"), eq("name=work4,emptyDir="), eq("-w"), eq("name=work3,secret=value3")));
+        exec.close();
+    }
+
+    @Test
+    public void checkRightArgsWhenStartingClusterTaskWithServiceAccounts() throws IOException {
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
+
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "sa", Collections.emptyMap(), "");
+        exec.verify(() ->
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq("-s=sa")));
+        exec.close();
+    }
+
+    @Test
+    public void checkRightArgsWhenStartingClusterTaskWithPrefixName() throws IOException {
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
+
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "prefix");
+        exec.verify(() ->
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
+                        eq("--prefix-name=prefix")));
+        exec.close();
+    }
+
+    @Test
+    public void checkRightArgsWhenStartingClusterTaskWithMultipleInputs() throws IOException {
+        Map<String, String> params = new HashMap<>();
+        params.put("param1", "value1");
+        Map<String, String> inputResources = new HashMap<>();
+        inputResources.put("res1", "value1");
+        inputResources.put("res2", "value2");
+        Map<String, String> outputResources = new HashMap<>();
+        outputResources.put("out1", "value1");
+        Map<String, Workspace> workspaces = new HashMap<>();
+        workspaces.put("work1", new Workspace("work1", Workspace.Kind.PVC, "value1"));
+        workspaces.put("work2", new Workspace("work2", Workspace.Kind.SECRET, "value2"));
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
+
+        tkn.startClusterTask("ns", "name", params, inputResources, outputResources, "sa", workspaces, "prefix");
+        exec.verify(() ->
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
+                        eq("-s=sa"),
+                        eq("-w"), eq("name=work2,secret=value2"), eq("-w"), eq("name=work1,claimName=value1"),
+                        eq("-p"), eq("param1=value1"),
+                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2"),
+                        eq("-o"), eq("out1=value1"),
+                        eq("--prefix-name=prefix")));
+        exec.close();
+    }
+
+    @Test
+    public void checkRightRunNameIsReturnedWhenStartingClusterTask() throws IOException {
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("run:foo");
+
+        String output = tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        exec.verify(() ->
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns")));
+        exec.close();
+        assertEquals(output, "foo");
+    }
+
+    @Test
+    public void checkNullIsReturnedWhenStartingClusterTaskReturnInvalidResult() throws IOException {
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
+
+        String output = tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        exec.verify(() ->
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns")));
+        exec.close();
+        assertNull(output);
+    }
 }
