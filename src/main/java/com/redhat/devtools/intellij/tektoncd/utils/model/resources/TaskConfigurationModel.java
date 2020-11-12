@@ -54,7 +54,10 @@ public class TaskConfigurationModel extends ResourceConfigurationModel {
 
         if (outputsNode != null) {
             for (JsonNode item : outputsNode) {
-                result.add(new Output().fromJson(item));
+                Output o = new Output().fromJson(item);
+                if (o != null) {
+                    result.add(o);
+                }
             }
         }
 

@@ -101,7 +101,10 @@ public abstract class ResourceConfigurationModel extends ConfigurationModel {
         if (node != null) {
             for (JsonNode item : node) {
                 try {
-                    result.add(new Input().fromJson(item, kind));
+                    Input i = new Input().fromJson(item, kind);
+                    if (i != null) {
+                        result.add(i);
+                    }
                 } catch (Exception e) {
                     logger.warn(e.getLocalizedMessage());
                 }

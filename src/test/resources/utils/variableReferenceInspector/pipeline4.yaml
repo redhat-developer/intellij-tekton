@@ -1,0 +1,18 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: app-deploy
+spec:
+  params:
+    - name: p1
+      default: value1
+  resources:
+    - name: source-repo
+      type: git
+  workspaces:
+    - name: password-vault
+  tasks:
+    - name: foo
+      taskRef:
+        kind: Task
+        name: foo

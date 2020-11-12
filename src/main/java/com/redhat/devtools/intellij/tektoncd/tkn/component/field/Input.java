@@ -63,6 +63,10 @@ public class Input {
     }
 
     public Input fromJson(JsonNode inputNode, Kind kind) {
+        if (!inputNode.has("name") ||
+                inputNode.get("name").isNull()) {
+            return null;
+        }
         String name = inputNode.get("name").asText();
         String type = "string";
         Optional<String> description = Optional.empty();
