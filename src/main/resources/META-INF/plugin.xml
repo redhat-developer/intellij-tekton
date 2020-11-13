@@ -91,6 +91,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
     <fileDocumentSynchronizationVetoer implementation="com.redhat.devtools.intellij.tektoncd.listener.SaveInEditorListener" order="first" />
+    <virtualFileSystem implementationClass="com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager" key="tekton" physical="true" />
     <completion.contributor language="any" implementationClass="com.redhat.devtools.intellij.tektoncd.completion.DictionaryContributor"/>
     <toolWindow id="Tekton" anchor="left" factoryClass="com.redhat.devtools.intellij.tektoncd.WindowToolFactory" icon="/images/cluster.png"/>
     <fileEditorProvider implementation="com.redhat.devtools.intellij.tektoncd.ui.editors.TektonFileEditorProvider"/>

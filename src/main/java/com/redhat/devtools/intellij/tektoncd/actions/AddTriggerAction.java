@@ -17,6 +17,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
@@ -29,6 +30,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFile;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.Utils;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
@@ -164,12 +166,8 @@ public class AddTriggerAction extends TektonAction {
     }
 
     protected AddTriggerModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, Map<String, String> triggerBindings) throws IOException {
-        String configuration = "";
-        if (element instanceof PipelineNode) {
-            configuration = tkncli.getPipelineYAML(namespace, element.getName());
-        } else if (element instanceof TaskNode) {
-            configuration = tkncli.getTaskYAML(namespace, element.getName());
-        }
+        String urlRun = TreeHelper.getTektonResourceUrl(element, true);
+        String configuration = ((TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(urlRun)).getContent().toString();
         return new AddTriggerModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
     }
 

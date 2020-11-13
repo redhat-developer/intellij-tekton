@@ -265,8 +265,8 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getClusterTriggerBindingYAML(String namespace, String ctb) throws IOException {
-        return ExecHelper.execute(command, envVars, "ctb", "describe", ctb, "-n", namespace, "-o", "yaml");
+    public String getClusterTriggerBindingYAML(String ctb) throws IOException {
+        return ExecHelper.execute(command, envVars, "ctb", "describe", ctb, "-o", "yaml");
     }
 
     @Override
@@ -521,9 +521,27 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public Watch watchPipeline(String namespace, String pipeline, Watcher<Pipeline> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1beta1().pipelines().inNamespace(namespace).withName(pipeline).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
     public Watch watchPipelines(String namespace, Watcher<Pipeline> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1beta1().pipelines().inNamespace(namespace).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public Watch watchPipelineRun(String namespace, String pipelineRun, Watcher<io.fabric8.tekton.pipeline.v1beta1.PipelineRun> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1beta1().pipelineRuns().inNamespace(namespace).withName(pipelineRun).watch(watcher);
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }
@@ -557,9 +575,27 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public Watch watchTaskRun(String namespace, String taskRun, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).withName(taskRun).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
     public Watch watchTaskRuns(String namespace, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public Watch watchPipelineResource(String namespace, String pipelineResource, Watcher<PipelineResource> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1alpha1().pipelineResources().inNamespace(namespace).withName(pipelineResource).watch(watcher);
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }
@@ -575,9 +611,27 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public Watch watchClusterTask(String clusterTask, Watcher<ClusterTask> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1beta1().clusterTasks().withName(clusterTask).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
     public Watch watchClusterTasks(Watcher<ClusterTask> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1beta1().clusterTasks().watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public Watch watchCondition(String namespace, String condition, Watcher<io.fabric8.tekton.pipeline.v1alpha1.Condition> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1alpha1().conditions().inNamespace(namespace).withName(condition).watch(watcher);
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }
@@ -593,9 +647,27 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public Watch watchTriggerTemplate(String namespace, String triggerTemplate, Watcher<TriggerTemplate> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1alpha1().triggerTemplates().inNamespace(namespace).withName(triggerTemplate).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
     public Watch watchTriggerTemplates(String namespace, Watcher<TriggerTemplate> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1alpha1().triggerTemplates().inNamespace(namespace).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public Watch watchTriggerBinding(String namespace, String triggerBinding, Watcher<TriggerBinding> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1alpha1().triggerBindings().inNamespace(namespace).withName(triggerBinding).watch(watcher);
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }
@@ -611,9 +683,27 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public Watch watchClusterTriggerBinding(String clusterTriggerBinding, Watcher<ClusterTriggerBinding> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1alpha1().clusterTriggerBindings().withName(clusterTriggerBinding).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
     public Watch watchClusterTriggerBindings(Watcher<ClusterTriggerBinding> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1alpha1().clusterTriggerBindings().watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public Watch watchEventListener(String namespace, String eventListener, Watcher<EventListener> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1alpha1().eventListeners().inNamespace(namespace).withName(eventListener).watch(watcher);
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }

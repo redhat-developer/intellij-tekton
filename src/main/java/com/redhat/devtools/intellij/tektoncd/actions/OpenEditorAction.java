@@ -23,8 +23,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
-import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
-
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import javax.swing.tree.TreePath;
 
 public class OpenEditorAction extends TektonAction {
@@ -45,6 +44,6 @@ public class OpenEditorAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        TreeHelper.openTektonResourceInEditor(path);
+        VirtualFileHelper.openTektonVirtualFileInEditor(path);
     }
 }

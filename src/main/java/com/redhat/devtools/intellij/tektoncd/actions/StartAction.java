@@ -16,6 +16,7 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
@@ -32,6 +33,8 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
+import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFile;
+import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -141,11 +144,11 @@ public class StartAction extends TektonAction {
     protected StartResourceModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "";
         List<? extends Run> runs = new ArrayList<>();
+        String urlRun = TreeHelper.getTektonResourceUrl(element, true);
+        configuration = ((TektonVirtualFile) VirtualFileManager.getInstance().findFileByUrl(urlRun)).getContent().toString();
         if (element instanceof PipelineNode) {
-            configuration = tkncli.getPipelineYAML(namespace, element.getName());
             runs = tkncli.getPipelineRuns(namespace, element.getName());
         } else if (element instanceof TaskNode) {
-            configuration = tkncli.getTaskYAML(namespace, element.getName());
             runs = tkncli.getTaskRuns(namespace, element.getName());
         } else if (element instanceof ClusterTaskNode) {
             configuration = tkncli.getClusterTaskYAML(element.getName());
