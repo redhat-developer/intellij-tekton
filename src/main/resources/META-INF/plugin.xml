@@ -78,13 +78,14 @@
 
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="192"/>
+  <idea-version since-build="192.5728.98"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
   <depends>com.intellij.modules.lang</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>org.jetbrains.plugins.yaml</depends>
+  <depends>org.intellij.plugins.markdown</depends>
   <depends optional="true" config-file="plugin-json.xml">com.intellij.modules.json</depends>
   <depends optional="true" config-file="plugin-kubernetes.xml">com.intellij.kubernetes</depends>
 
@@ -102,6 +103,7 @@
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
       <action class="com.redhat.devtools.intellij.tektoncd.actions.pipeline.CreatePipelineAction" text="New Pipeline"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskAction" text="New Task"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.TektonHubAction" text="Import from TektonHub"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.CreateClusterTaskAction" text="New ClusterTask"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.resource.CreateResourceAction" text="New Pipeline Resource"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.condition.CreateConditionAction" text="New Condition"/>

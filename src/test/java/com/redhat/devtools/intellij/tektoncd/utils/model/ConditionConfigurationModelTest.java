@@ -11,8 +11,14 @@
 package com.redhat.devtools.intellij.tektoncd.utils.model;
 
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
+import com.redhat.devtools.intellij.tektoncd.hub.api.ResourceApi;
+import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiException;
+import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
+import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
+import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.ConditionConfigurationModel;
 import java.io.IOException;
+import java.util.List;
 import org.junit.Test;
 
 
@@ -23,6 +29,14 @@ public class ConditionConfigurationModelTest extends BaseTest {
 
     @Test
     public void checkEmptyConditionModel() throws IOException {
+        ResourceApi resApi = new ResourceApi();
+        try {
+            Resources resources = resApi.resourceList(20);
+            List<ResourceVersionData> v = HubModel.getInstance().getVersionsById(1);
+
+            //allHubItems.addAll(resources.getData().stream().map(resource -> new HubItem(resource)).collect(Collectors.toList()));
+            String t  ="";
+        } catch (ApiException e) { }
         String configuration = load("condition.yaml");
         ConditionConfigurationModel model = (ConditionConfigurationModel) ConfigurationModelFactory.getModel(configuration);
         assertEquals(model.getName(), "foo");

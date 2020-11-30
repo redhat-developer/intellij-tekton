@@ -22,7 +22,7 @@ def versionsMap = ['IU-2019.2':'192.5728.98','IU-2019.3':'193.5233.144','IU-2020
 intellij {
     version ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName 'com.redhat.devtools.intellij.tekton'
-    plugins 'terminal', 'yaml', 'com.intellij.kubernetes:' + versionsMap[ideaVersion]
+    plugins 'terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion]
     updateSinceUntilBuild false
 }
 
@@ -82,7 +82,7 @@ publishPlugin {
 
 openApiGenerate {
     generatorName = "java"
-    inputSpec = "https://raw.githubusercontent.com/tektoncd/hub/v0.3.0/api/gen/http/openapi3.yaml".toString()
+    inputSpec = "https://raw.githubusercontent.com/tektoncd/hub/master/api/gen/http/openapi3.yaml".toString()
     outputDir = "$buildDir/hubapi-java".toString()
     apiPackage = "com.redhat.devtools.intellij.tektoncd.hub.api"
     invokerPackage = "com.redhat.devtools.intellij.tektoncd.hub.invoker"
@@ -97,6 +97,7 @@ openApiGenerate {
     // (e.g. SCALA_POST_PROCESS_FILE) to the linter/formatter to be processed.
     // This command will be passed one file at a time for most supported post processors.
     enablePostProcessFile = false
+    typeMappings = [ OffsetDateTime: "String"]
 }
 
 compileJava.dependsOn tasks.openApiGenerate
