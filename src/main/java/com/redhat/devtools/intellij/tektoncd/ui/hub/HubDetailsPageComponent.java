@@ -58,7 +58,6 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
@@ -95,7 +94,6 @@ public class HubDetailsPageComponent extends MultiPanel {
     private JComboBox versionsCmb;
     private JLabel myRating;
     private JEditorPane myDetailsComponent, myDescriptionComponent, myYamlComponent;
-    private JScrollPane yamlScroll;
     private LinkPanel myHomePage;
     private JBPanelWithEmptyText myEmptyPanel;
     private JEditorPane myTopDescription;
@@ -250,12 +248,11 @@ public class HubDetailsPageComponent extends MultiPanel {
         // third tab - includes yaml
         myYamlComponent = createJEditorPane();
         JPanel yamlPanel = createBottomTab(myYamlComponent);
-        yamlScroll = createScrollPane(yamlPanel);
 
         JTabbedPane bottomTabs = new JBTabbedPane();
         bottomTabs.addTab("Details", createScrollPane(detailsPanel));
         bottomTabs.addTab("Description", createScrollPane(descriptionPanel));
-        bottomTabs.addTab("Yaml", yamlScroll);
+        bottomTabs.addTab("Yaml", createScrollPane(yamlPanel));
 
         myPanel.add(bottomTabs, BorderLayout.CENTER);
     }
@@ -286,10 +283,10 @@ public class HubDetailsPageComponent extends MultiPanel {
             versionsCmb.removeAllItems();
             HubModel.getInstance().getVersionsById(resource.getId()).forEach(version -> {
                 versionsCmb.addItem(version);
-                if (version.getVersion().equals(resource.getLatestVersion().getVersion())) {
-                    versionsCmb.setSelectedItem(version.getVersion());
-                }
+
             });
+            versionsCmb.setSelectedIndex(versionsCmb.getItemCount() - 1);
+
 
             BasicComboBoxRenderer versionCmbRenderer = new BasicComboBoxRenderer()
             {
@@ -376,25 +373,23 @@ public class HubDetailsPageComponent extends MultiPanel {
     }
 
     private void loadBottomTabs(URI rawURL) {
-        loadDescription(rawURL);
         loadYaml(rawURL);
+        loadDescription(rawURL);
     }
 
     private void loadYaml(URI rawURI) {
         //TODO add loading icon
         myYamlComponent.setText("loading");
 
-        //ExecHelper.submit(() -> {
-        try {
-            String yaml = HubModel.getInstance().getContentByURI(rawURI.toString());
-            yaml = yaml.replace("\n", "<br\\>").replace(" ", "&nbsp;");
-            myYamlComponent.setText(yaml);
-            myYamlComponent.scrollToReference("---");
-            yamlScroll.getVerticalScrollBar().setValue(0);
-        } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
-        }
-        //});
+        ExecHelper.submit(() -> {
+            try {
+                String yaml = HubModel.getInstance().getContentByURI(rawURI.toString());
+                myYamlComponent.setText("<pre>" + yaml + "</pre>");
+            } catch (IOException e) {
+                logger.warn(e.getLocalizedMessage());
+            }
+        });
+
     }
 
     private void loadDescription(URI rawURI) {
