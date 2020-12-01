@@ -329,20 +329,20 @@ public class HubDetailsPageComponent extends MultiPanel {
                     } else {
                         confirmationMessage = "Do you want to install this " + resource.getKind() + " to the cluster?";
                     }
-
+                    Notification notification;
                     try {
                         Optional<String> rawURI = resource.getVersions().stream().filter(version -> version.getVersion().equalsIgnoreCase(versionSelected)).map(version -> version.getRawURL().toString()).findFirst();
                         if (rawURI.isPresent()) {
                             installed = HubModel.getInstance().installHubItem(project, namespace, rawURI.get(), confirmationMessage);
                         }
-                    } catch (IOException ex) {  }
-                    Notification notification;
-                    if (!installed) {
-                        notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName(), NotificationType.ERROR);
-                    } else {
-                        notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
+                        if (installed) {
+                            notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
+                            Notifications.Bus.notify(notification);
+                        }
+                    } catch (IOException ex) {
+                        notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR);
+                        Notifications.Bus.notify(notification);
                     }
-                    Notifications.Bus.notify(notification);
                 }
 
                 @Override

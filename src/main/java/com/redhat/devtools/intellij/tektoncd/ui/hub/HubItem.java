@@ -103,23 +103,23 @@ public class HubItem {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                boolean installed = false;
                 String confirmationMessage = "";
                 if (alreadyOnCluster) {
                     confirmationMessage = "A " + resource.getKind() + " with this name already exists on the cluster. By installing this " + resource.getKind() + " the one on the cluster will be overwritten. Do you want to install it?";
                 } else {
                     confirmationMessage = "Do you want to install this " + resource.getKind() + " to the cluster?";
                 }
-                try {
-                    installed = HubModel.getInstance().installHubItem(project, namespace, resource.getLatestVersion().getRawURL().toString(), confirmationMessage);
-                } catch (IOException ex) { }
                 Notification notification;
-                if (!installed) {
-                    notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName(), NotificationType.ERROR);
-                } else {
-                    notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
+                try {
+                    boolean installed = HubModel.getInstance().installHubItem(project, namespace, resource.getLatestVersion().getRawURL().toString(), confirmationMessage);
+                    if (installed) {
+                        notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
+                        Notifications.Bus.notify(notification);
+                    }
+                } catch (IOException ex) {
+                    notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR);
+                    Notifications.Bus.notify(notification);
                 }
-                Notifications.Bus.notify(notification);
             }
 
             @Override
