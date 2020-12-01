@@ -258,8 +258,8 @@
           "type": "string"
         },
         "lastTransitionTime": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/VolatileTime"
+          "type": "string",
+          "format": "data-time"
         },
         "reason": {
           "type": "string"
@@ -1314,7 +1314,8 @@
           "type": "string"
         },
         "time": {
-          "$ref": "#/definitions/Time"
+          "type": "string",
+          "format": "data-time"
         },
         "fieldsType": {
           "type": "string"
@@ -1459,11 +1460,12 @@
           "type": "integer"
         },
         "creationTimestamp": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/Time"
+          "type": "string",
+          "format": "data-time"
         },
         "deletionTimestamp": {
-          "$ref": "#/definitions/Time"
+          "type": "string",
+          "format": "data-time"
         },
         "deletionGracePeriodSeconds": {
           "type": "integer"
@@ -2428,11 +2430,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "Time": {
-      "properties": {},
-      "additionalProperties": false,
-      "type": "object"
-    },
     "Toleration": {
       "properties": {
         "key": {
@@ -2635,18 +2632,6 @@
     },
     "Userinfo": {
       "properties": {},
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "VolatileTime": {
-      "required": [
-        "Inner"
-      ],
-      "properties": {
-        "Inner": {
-          "$ref": "#/definitions/Time"
-        }
-      },
       "additionalProperties": false,
       "type": "object"
     },

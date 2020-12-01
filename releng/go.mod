@@ -9,6 +9,7 @@ require (
 	github.com/tektoncd/triggers v0.9.0
 	k8s.io/apimachinery v0.19.0
 	k8s.io/test-infra v0.0.0-20200828131253-b23899a92dfa // indirect
+	knative.dev/pkg v0.0.0-20200922164940-4bf40ad82aab
 	sigs.k8s.io/boskos v0.0.0-20200819010710-984516eae7e8 // indirect
 )
 
