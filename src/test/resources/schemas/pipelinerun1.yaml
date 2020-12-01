@@ -1,0 +1,83 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"tekton.dev/v1beta1","kind":"Pipeline","metadata":{"annotations":{},"name":"not-working-pp","namespace":"tekton"},"spec":{"tasks":[{"name":"print-the-recipe","params":[{"name":"filename","value":"recipe.txt"}],"taskRef":{"kind":"Task","name":"print-data"},"workspaces":[{"name":"storage","workspace":"shared-data"}]}],"workspaces":[{"name":"shared-data"}]}}
+  creationTimestamp: "2020-10-08T16:14:13Z"
+  generateName: not-working-pp-run-
+  generation: 1
+  labels:
+    tekton.dev/pipeline: not-working-pp
+  name: not-working-pp-run-2v6zx
+  namespace: tekton
+  resourceVersion: "6515779"
+  selfLink: /apis/tekton.dev/v1beta1/namespaces/tekton/pipelineruns/not-working-pp-run-2v6zx
+  uid: 9efe1563-5916-47f1-b2db-6ecd1a2eda80
+spec:
+  pipelineRef:
+    name: not-working-pp
+  timeout: 1h0m0s
+  workspaces:
+    - name: shared-data
+      persistentVolumeClaim:
+        claimName: shared-task-storage
+status:
+  completionTime: "2020-10-08T16:14:45Z"
+  conditions:
+    - lastTransitionTime: "2020-10-08T16:14:45Z"
+      message: 'Tasks Completed: 1 (Failed: 1, Cancelled 0), Skipped: 0'
+      reason: Failed
+      status: "False"
+      type: Succeeded
+  pipelineSpec:
+    tasks:
+      - name: print-the-recipe
+        params:
+          - name: filename
+            value: recipe.txt
+        taskRef:
+          kind: Task
+          name: print-data
+        workspaces:
+          - name: storage
+            workspace: shared-data
+    workspaces:
+      - name: shared-data
+  startTime: "2020-10-08T16:14:13Z"
+  taskRuns:
+    not-working-pp-run-2v6zx-print-the-recipe-m6fs7:
+      pipelineTaskName: print-the-recipe
+      status:
+        completionTime: "2020-10-08T16:14:45Z"
+        conditions:
+          - lastTransitionTime: "2020-10-08T16:14:45Z"
+            message: |
+              "step-print-secrets" exited with code 1 (image: "docker-pullable://ubuntu@sha256:bc2f7250f69267c9c6b66d7b6a81a54d3878bb85f1ebb5f951c896d13e6ba537"); for logs run: kubectl -n tekton logs not-working-pp-run-2v6zx-print-the-recipe-m6fs7-pod-fr896 -c step-print-secrets
+            reason: Failed
+            status: "False"
+            type: Succeeded
+        podName: not-working-pp-run-2v6zx-print-the-recipe-m6fs7-pod-fr896
+        startTime: "2020-10-08T16:14:14Z"
+        steps:
+          - container: step-print-secrets
+            imageID: docker-pullable://ubuntu@sha256:bc2f7250f69267c9c6b66d7b6a81a54d3878bb85f1ebb5f951c896d13e6ba537
+            name: print-secrets
+            terminated:
+              containerID: docker://829364f1095bf47c0144c69edf1a5f1c78b953e2ea05030a30c4c9eb073dcb05
+              exitCode: 1
+              finishedAt: "2020-10-08T16:14:45Z"
+              reason: Error
+              startedAt: "2020-10-08T16:14:45Z"
+        taskSpec:
+          params:
+            - name: filename
+              type: string
+          steps:
+            - image: ubuntu
+              name: print-secrets
+              resources: {}
+              script: cat $(workspaces.storage.path)/$(params.filename)
+          workspaces:
+            - name: storage
+              readOnly: true
