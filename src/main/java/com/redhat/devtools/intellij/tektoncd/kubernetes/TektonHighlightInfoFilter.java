@@ -37,6 +37,6 @@ public class TektonHighlightInfoFilter implements HighlightInfoFilter {
     }
 
     private boolean isKubernetesHighlight(HighlightInfo highlightInfo) {
-        return TOOLTIP_REGEXP.matcher(highlightInfo.getToolTip()).matches();
+        return highlightInfo.getToolTip() != null && TOOLTIP_REGEXP.matcher(highlightInfo.getToolTip()).matches();
     }
 }
