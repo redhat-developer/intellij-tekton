@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - uses: engineerd/setup-kind@v0.4.0
+      - uses: engineerd/setup-kind@v0.5.0
       - name: Step up cluster
         run: |
           kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
