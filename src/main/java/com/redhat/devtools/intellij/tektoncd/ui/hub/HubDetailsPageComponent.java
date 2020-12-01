@@ -31,6 +31,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
+import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -52,6 +53,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -61,6 +63,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.intellij.markdown.ast.ASTNode;
@@ -276,19 +279,33 @@ public class HubDetailsPageComponent extends MultiPanel {
             }
             versionsCmb.removeAllItems();
             HubModel.getInstance().getVersionsById(resource.getId()).forEach(version -> {
-                versionsCmb.addItem(version.getVersion());
+                versionsCmb.addItem(version);
                 if (version.getVersion().equals(resource.getLatestVersion().getVersion())) {
                     versionsCmb.setSelectedItem(version.getVersion());
                 }
             });
+
+            BasicComboBoxRenderer versionCmbRenderer = new BasicComboBoxRenderer()
+            {
+                public Component getListCellRendererComponent(
+                        JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+                {
+                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+                    if (value instanceof ResourceVersionData)
+                    {
+                        ResourceVersionData version = (ResourceVersionData)value;
+                        setText( version.getVersion() );
+                    }
+
+                    return this;
+                }
+            };
+            versionsCmb.setRenderer(versionCmbRenderer);
             versionsCmb.addItemListener(e -> {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    String versionSelected = e.getItem().toString();
-                    Optional<URI> rawURI = resource.getVersions().
-                            stream().filter(version -> version.getVersion().equalsIgnoreCase(versionSelected)).map(versionData -> versionData.getRawURL()).findFirst();
-                    if (rawURI.isPresent()) {
-                        loadBottomTabs(rawURI.get());
-                    }
+                    ResourceVersionData versionSelected = (ResourceVersionData) e.getItem();
+                    loadBottomTabs(versionSelected.getRawURL());
                 }
             });
 
@@ -367,15 +384,17 @@ public class HubDetailsPageComponent extends MultiPanel {
         //TODO add loading icon
         myYamlComponent.setText("loading");
 
-        ExecHelper.submit(() -> {
+        //CompletableFuture.runAsync(() -> {
             try {
                 String yaml = HubModel.getInstance().getContentByURI(rawURI.toString());
-                yaml = yaml.replace("\n", "<br\\>");
+                yaml = yaml.replace("\n", "<br\\>").replace(" ", "&nbsp;");
                 myYamlComponent.setText(yaml);
+                myYamlComponent.scrollToReference("---");
+                yamlScroll.getVerticalScrollBar().setValue(0);
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage());
             }
-        });
+        //});
     }
 
     private void loadDescription(URI rawURI) {
@@ -383,7 +402,8 @@ public class HubDetailsPageComponent extends MultiPanel {
         myDescriptionComponent.setText("");
         ExecHelper.submit(() -> {
             try {
-                String text = HubModel.getInstance().getContentByURI(rawURI.toString());
+                String readmeURI = rawURI.toString().substring(0, rawURI.toString().lastIndexOf("/")) + "/README.md";
+                String text = HubModel.getInstance().getContentByURI(readmeURI);
 
                 final MarkdownFlavourDescriptor flavour = new GFMFlavourDescriptor();
                 final ASTNode parsedTree1 = new MarkdownParser(flavour).buildMarkdownTreeFromString(text);

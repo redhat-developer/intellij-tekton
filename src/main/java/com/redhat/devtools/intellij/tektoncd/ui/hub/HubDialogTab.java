@@ -29,15 +29,11 @@ import com.intellij.util.ui.UIUtil;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
 import org.jetbrains.annotations.NotNull;
-
-
-import static java.awt.event.KeyEvent.VK_ENTER;
 
 public abstract class HubDialogTab {
 
@@ -89,31 +85,30 @@ public abstract class HubDialogTab {
 
     @NotNull
     protected void createSearchTextField(final int flyDelay) {
-        this.mySearchTextField = new SearchTextField();
-        this.mySearchTextField.setBorder(JBUI.Borders.customLine(SEARCH_FIELD_BORDER_COLOR));
-
-        this.mySearchTextField.addKeyListener(new KeyListener() {
+        mySearchTextField = new SearchTextField() {
             @Override
-            public void keyTyped(KeyEvent e) {}
+            protected boolean preprocessEventForTextField(KeyEvent event) {
+                int keyCode = event.getKeyCode();
+                int id = event.getID();
 
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == VK_ENTER) {
-                    return;
+                if (keyCode == KeyEvent.VK_ENTER || event.getKeyChar() == '\n') {
+                    return true;
                 }
+                if ((keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_UP) && id == KeyEvent.KEY_PRESSED) {
+                    return true;
+                }
+                return super.preprocessEventForTextField(event);
             }
-
-            @Override
-            public void keyReleased(KeyEvent e) { }
-        });
-        JBTextField editor = this.mySearchTextField.getTextEditor();
+        };
+        mySearchTextField.setBorder(JBUI.Borders.customLine(SEARCH_FIELD_BORDER_COLOR));
+        JBTextField editor = mySearchTextField.getTextEditor();
         editor.putClientProperty("JTextField.Search.Gap", JBUIScale.scale(6));
         editor.putClientProperty("JTextField.Search.GapEmptyText", JBUIScale.scale(-1));
         editor.setBorder(JBUI.Borders.empty(6, 6));
         editor.setOpaque(true);
         editor.setBackground(SEARCH_BG_COLOR);
         String text = "Search for task or pipeline"; //"Type / to see options";
-        StatusText emptyText = this.mySearchTextField.getTextEditor().getEmptyText();
+        StatusText emptyText = mySearchTextField.getTextEditor().getEmptyText();
         emptyText.appendText(text, new SimpleTextAttributes(0, GRAY_COLOR));
     }
 
