@@ -356,7 +356,7 @@ public class HubDetailsPageComponent extends MultiPanel {
             });
 
             myRating.setText(resource.getRating().toString());
-            myDetailsComponent.setText(resource.getLatestVersion().getDescription().replace("<br>", "\n") + "<br>Tags:<br>" + resource.getTags().stream().map(tag -> tag.getName()).collect(Collectors.joining(", ")));
+            myDetailsComponent.setText(resource.getLatestVersion().getDescription().replace("\n", "<br>") + "<br>Tags:<br>" + resource.getTags().stream().map(tag -> tag.getName()).collect(Collectors.joining(", ")));
             myHomePage.show(resource.getKind() + " Homepage", () -> {
                 try {
                     Desktop.getDesktop().browse(resource.getLatestVersion().getWebURL());
