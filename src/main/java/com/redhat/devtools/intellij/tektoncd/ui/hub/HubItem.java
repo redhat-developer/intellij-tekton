@@ -12,6 +12,9 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.google.common.base.Strings;
 import com.intellij.icons.AllIcons;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.ui.JBUI;
@@ -39,6 +42,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.ui.hub.HubDialogTab.MAIN_BG_COLOR;
 
 public class HubItem {
@@ -95,12 +99,11 @@ public class HubItem {
         installBtn.setBackground(MAIN_BG_COLOR);
         installBtn.addMouseListener(new MouseListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
+            public void mouseClicked(MouseEvent e) { }
 
             @Override
             public void mousePressed(MouseEvent e) {
+                boolean installed = false;
                 String confirmationMessage = "";
                 if (alreadyOnCluster) {
                     confirmationMessage = "A " + resource.getKind() + " with this name already exists on the cluster. By installing this " + resource.getKind() + " the one on the cluster will be overwritten. Do you want to install it?";
@@ -108,13 +111,15 @@ public class HubItem {
                     confirmationMessage = "Do you want to install this " + resource.getKind() + " to the cluster?";
                 }
                 try {
-                    boolean installed = HubModel.getInstance().installHubItem(project, namespace, resource.getLatestVersion().getRawURL().toString(), confirmationMessage);
-                    if (!installed) {
-                        // TODO show a warning/error message??
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                    installed = HubModel.getInstance().installHubItem(project, namespace, resource.getLatestVersion().getRawURL().toString(), confirmationMessage);
+                } catch (IOException ex) { }
+                Notification notification;
+                if (!installed) {
+                    notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName(), NotificationType.ERROR);
+                } else {
+                    notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
                 }
+                Notifications.Bus.notify(notification);
             }
 
             @Override

@@ -14,6 +14,9 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.plugins.LinkPanel;
 import com.intellij.ide.plugins.MultiPanel;
 import com.intellij.ide.plugins.newui.VerticalLayout;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.BrowserHyperlinkListener;
@@ -74,6 +77,9 @@ import org.intellij.markdown.parser.MarkdownParser;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class HubDetailsPageComponent extends MultiPanel {
     private static final Logger logger = LoggerFactory.getLogger(HubDetailsPageComponent.class);
@@ -311,48 +317,42 @@ public class HubDetailsPageComponent extends MultiPanel {
 
             installBtn.addMouseListener(new MouseListener() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
-
-                }
+                public void mouseClicked(MouseEvent e) { }
 
                 @Override
                 public void mousePressed(MouseEvent e) {
-
-                   /* if (alreadyOnCluster) {
+                    boolean installed = false;
+                    String confirmationMessage = "";
+                    String versionSelected = ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion();
+                    if (tasks.contains(resource.getName())) {
                         confirmationMessage = "A " + resource.getKind() + " with this name already exists on the cluster. By installing this " + resource.getKind() + " the one on the cluster will be overwritten. Do you want to install it?";
                     } else {
                         confirmationMessage = "Do you want to install this " + resource.getKind() + " to the cluster?";
-                    }*/
+                    }
+
                     try {
-                        boolean installed = false;
-                        String confirmationMessage = "";
-                        String versionSelected = versionsCmb.getSelectedItem().toString();
                         Optional<String> rawURI = resource.getVersions().stream().filter(version -> version.getVersion().equalsIgnoreCase(versionSelected)).map(version -> version.getRawURL().toString()).findFirst();
                         if (rawURI.isPresent()) {
-                            installed = HubModel.getInstance().installHubItem(project, namespace, rawURI.get(), "");
+                            installed = HubModel.getInstance().installHubItem(project, namespace, rawURI.get(), confirmationMessage);
                         }
-                        if (!installed) {
-                            // TODO show a warning/error message??
-                        }
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+                    } catch (IOException ex) {  }
+                    Notification notification;
+                    if (!installed) {
+                        notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName(), NotificationType.ERROR);
+                    } else {
+                        notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
                     }
+                    Notifications.Bus.notify(notification);
                 }
 
                 @Override
-                public void mouseReleased(MouseEvent e) {
-
-                }
+                public void mouseReleased(MouseEvent e) { }
 
                 @Override
-                public void mouseEntered(MouseEvent e) {
-
-                }
+                public void mouseEntered(MouseEvent e) { }
 
                 @Override
-                public void mouseExited(MouseEvent e) {
-
-                }
+                public void mouseExited(MouseEvent e) { }
             });
 
             myRating.setText(resource.getRating().toString());
@@ -384,16 +384,16 @@ public class HubDetailsPageComponent extends MultiPanel {
         //TODO add loading icon
         myYamlComponent.setText("loading");
 
-        //CompletableFuture.runAsync(() -> {
-            try {
-                String yaml = HubModel.getInstance().getContentByURI(rawURI.toString());
-                yaml = yaml.replace("\n", "<br\\>").replace(" ", "&nbsp;");
-                myYamlComponent.setText(yaml);
-                myYamlComponent.scrollToReference("---");
-                yamlScroll.getVerticalScrollBar().setValue(0);
-            } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage());
-            }
+        //ExecHelper.submit(() -> {
+        try {
+            String yaml = HubModel.getInstance().getContentByURI(rawURI.toString());
+            yaml = yaml.replace("\n", "<br\\>").replace(" ", "&nbsp;");
+            myYamlComponent.setText(yaml);
+            myYamlComponent.scrollToReference("---");
+            yamlScroll.getVerticalScrollBar().setValue(0);
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage());
+        }
         //});
     }
 
