@@ -91,7 +91,7 @@ public class HubItem {
 
         JLabel installBtn = new JLabel("Install", SwingConstants.CENTER);
         installBtn.setForeground(JBUI.CurrentTheme.Link.linkColor());
-        installBtn.setPreferredSize(new Dimension(80, 60));
+        installBtn.setPreferredSize(new Dimension(60, 60));
         Border outside = new MatteBorder(1, 1, 1, 1, JBUI.CurrentTheme.Link.linkColor());
         Border inside = new EmptyBorder(3, 0, 3, 0);
         CompoundBorder cb = BorderFactory.createCompoundBorder(outside, inside);
