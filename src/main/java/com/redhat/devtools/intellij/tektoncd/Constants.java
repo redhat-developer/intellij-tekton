@@ -60,4 +60,10 @@ public class Constants {
     public static final String TERMINAL_TITLE = "Tekton";
 
     public static final String STRUCTURE_PROPERTY = Constants.class.getPackage().getName() + ".structure";
+
+    public enum InstallStatus {
+        ERROR,
+        INSTALLED,
+        OVERWRITTEN
+    }
 }

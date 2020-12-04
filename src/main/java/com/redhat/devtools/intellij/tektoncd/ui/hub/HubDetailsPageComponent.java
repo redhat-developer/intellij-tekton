@@ -14,10 +14,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.plugins.LinkPanel;
 import com.intellij.ide.plugins.MultiPanel;
 import com.intellij.ide.plugins.newui.VerticalLayout;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.BrowserHyperlinkListener;
 import com.intellij.ui.ColorUtil;
@@ -48,8 +44,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
@@ -77,9 +73,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-
 public class HubDetailsPageComponent extends MultiPanel {
     private static final Logger logger = LoggerFactory.getLogger(HubDetailsPageComponent.class);
 
@@ -97,14 +90,10 @@ public class HubDetailsPageComponent extends MultiPanel {
     private LinkPanel myHomePage;
     private JBPanelWithEmptyText myEmptyPanel;
     private JEditorPane myTopDescription;
-    private Project project;
-    private List<String> tasks;
-    private String namespace;
+    private HubModel model;
 
-    public HubDetailsPageComponent(Project project, String namespace, List<String> tasks) {
-        this.project = project;
-        this.tasks = tasks;
-        this.namespace = namespace;
+    public HubDetailsPageComponent(HubModel model) {
+        this.model = model;
         createDetailsPanel();
         createEmptyPanel();
         select(1, true);
@@ -268,7 +257,7 @@ public class HubDetailsPageComponent extends MultiPanel {
         return super.create(key);
     }
 
-    public void show(HubItem item) {
+    public void show(HubItem item, BiConsumer<HubItem, String> doInstallAction) {
         if (item == null) {
             select(1, true);
         } else {
@@ -281,7 +270,7 @@ public class HubDetailsPageComponent extends MultiPanel {
                 versionsCmb.removeItemListener(versionsCmb.getItemListeners()[0]);
             }
             versionsCmb.removeAllItems();
-            HubModel.getInstance().getVersionsById(resource.getId()).forEach(version -> {
+            model.getVersionsById(resource.getId()).forEach(version -> {
                 versionsCmb.addItem(version);
 
             });
@@ -318,27 +307,10 @@ public class HubDetailsPageComponent extends MultiPanel {
 
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    boolean installed = false;
-                    String confirmationMessage = "";
                     String versionSelected = ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion();
-                    if (tasks.contains(resource.getName())) {
-                        confirmationMessage = "A " + resource.getKind() + " with this name already exists on the cluster. By installing this " + resource.getKind() + " the one on the cluster will be overwritten. Do you want to install it?";
-                    } else {
-                        confirmationMessage = "Do you want to install this " + resource.getKind() + " to the cluster?";
-                    }
-                    Notification notification;
-                    try {
-                        Optional<String> rawURI = resource.getVersions().stream().filter(version -> version.getVersion().equalsIgnoreCase(versionSelected)).map(version -> version.getRawURL().toString()).findFirst();
-                        if (rawURI.isPresent()) {
-                            installed = HubModel.getInstance().installHubItem(project, namespace, rawURI.get(), confirmationMessage);
-                        }
-                        if (installed) {
-                            notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
-                            Notifications.Bus.notify(notification);
-                        }
-                    } catch (IOException ex) {
-                        notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR);
-                        Notifications.Bus.notify(notification);
+                    Optional<String> rawURI = resource.getVersions().stream().filter(version -> version.getVersion().equalsIgnoreCase(versionSelected)).map(version -> version.getRawURL().toString()).findFirst();
+                    if (rawURI.isPresent()) {
+                        doInstallAction.accept(item, rawURI.get());
                     }
                 }
 
@@ -383,7 +355,7 @@ public class HubDetailsPageComponent extends MultiPanel {
 
         ExecHelper.submit(() -> {
             try {
-                String yaml = HubModel.getInstance().getContentByURI(rawURI.toString());
+                String yaml = model.getContentByURI(rawURI.toString());
                 myYamlComponent.setText("<pre>" + yaml + "</pre>");
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage());
@@ -398,7 +370,7 @@ public class HubDetailsPageComponent extends MultiPanel {
         ExecHelper.submit(() -> {
             try {
                 String readmeURI = rawURI.toString().substring(0, rawURI.toString().lastIndexOf("/")) + "/README.md";
-                String text = HubModel.getInstance().getContentByURI(readmeURI);
+                String text = model.getContentByURI(readmeURI);
 
                 final MarkdownFlavourDescriptor flavour = new GFMFlavourDescriptor();
                 final ASTNode parsedTree1 = new MarkdownParser(flavour).buildMarkdownTreeFromString(text);

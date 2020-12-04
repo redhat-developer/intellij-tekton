@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Divider;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
@@ -29,7 +28,6 @@ import com.intellij.util.ui.UIUtil;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
-import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
@@ -51,11 +49,11 @@ public abstract class HubDialogTab {
             JBColor.namedColor("Plugins.SearchField.borderColor", new JBColor(0xC5C5C5, 0x515151));
     public static final Color SEARCH_BG_COLOR = JBColor.namedColor("Plugins.SearchField.background", MAIN_BG_COLOR);
 
-    public HubDialogTab(Project project, String namespace, List<String> tasks) {
-        createPanel(project, namespace, tasks);
+    public HubDialogTab(HubModel model) {
+        createPanel(model);
     }
 
-    private void createPanel(Project project, String namespace, List<String> tasks) {
+    private void createPanel(HubModel model) {
         // empty panel to be shown if no results is available
         myEmptyPanel = new JBPanelWithEmptyText();
         myEmptyPanel.setBorder(new CustomLineBorder(SEARCH_FIELD_BORDER_COLOR, JBUI.insets(1, 0, 0, 0)));
@@ -79,7 +77,7 @@ public abstract class HubDialogTab {
         };
         tabPanel.setFirstComponent(listPanel);
 
-        myDetailsPage = new HubDetailsPageComponent(project, namespace, tasks);
+        myDetailsPage = new HubDetailsPageComponent(model);
         tabPanel.setSecondComponent(myDetailsPage);
     }
 

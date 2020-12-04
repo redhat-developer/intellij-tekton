@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
@@ -18,8 +19,8 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDialog;
+import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
@@ -38,7 +39,7 @@ public class TektonHubAction extends TektonAction {
 
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
-            List<String> tasks = Collections.emptyList();
+            List<String> tasks;
             try {
                 tasks = tkncli.getTasks(namespace).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
             } catch (IOException e) {
@@ -50,9 +51,10 @@ public class TektonHubAction extends TektonAction {
                 return;
             }
 
-            List<String> finalTasks = tasks;
-            HubDialog hubDialog = UIHelper.executeInUI(() -> {
-                HubDialog wizard = new HubDialog(getEventProject(anActionEvent), namespace, finalTasks);
+            Project project = getEventProject(anActionEvent);
+            HubModel model = new HubModel(project, namespace, tasks);
+            UIHelper.executeInUI(() -> {
+                HubDialog wizard = new HubDialog(project, model);
                 wizard.show();
                 return wizard;
             });

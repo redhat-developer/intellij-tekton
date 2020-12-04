@@ -11,44 +11,51 @@
 package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.google.common.base.Strings;
-import com.intellij.openapi.project.Project;
+import com.intellij.icons.AllIcons;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.border.CustomLineBorder;
 import com.intellij.ui.components.JBPanelWithEmptyText;
 import com.intellij.util.ui.JBUI;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiCallback;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiException;
+import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import org.jetbrains.annotations.NotNull;
 
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+
 public class HubMarketplaceTab extends HubDialogTab {
 
     private JLabel lblResultsCount;
-    private List<String> tasks;
-    private Project project;
-    private String namespace;
+    private HubModel model;
 
-    public HubMarketplaceTab(Project project, String namespace, List<String> tasks) {
-        super(project, namespace, tasks);
-        this.project = project;
-        this.tasks = tasks;
-        this.namespace = namespace;
+    public HubMarketplaceTab(HubModel model) {
+        super(model);
+        this.model = model;
     }
 
     @Override
@@ -89,7 +96,7 @@ public class HubMarketplaceTab extends HubDialogTab {
 
                     }
                 };
-                HubModel.getInstance().search(self.mySearchTextField.getText(), null, null, callback);
+                model.search(self.mySearchTextField.getText(), null, null, callback);
             }
         });
     }
@@ -97,7 +104,7 @@ public class HubMarketplaceTab extends HubDialogTab {
     @NotNull
     @Override
     protected void updateDetailsPanel(HubItem item) {
-        myDetailsPage.show(item);
+        myDetailsPage.show(item, getInstallCallback());
     }
 
     @NotNull
@@ -127,12 +134,11 @@ public class HubMarketplaceTab extends HubDialogTab {
         innerContentPanel.removeAll();
         for (HubItem item: items) {
             Consumer<HubItem> consumer = resource -> updateDetailsPanel(resource);
-            boolean sameNameOnCluster = tasks.contains(item.getResource().getName());
-            JPanel itemAsPanel = item.createPanel(project, namespace, sameNameOnCluster, consumer);
+            JPanel itemAsPanel = item.createPanel(model, consumer, getInstallCallback());
             itemAsPanel.addMouseListener(new MouseListener() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    String old = HubModel.getInstance().getSelectedHubItem();
+                    String old = model.getSelectedHubItem();
                     if (Strings.isNullOrEmpty(old) || old != item.getResource().getName()) {
                         if (!Strings.isNullOrEmpty(old)) {
                             Optional<HubItem> oldItem = items.stream().filter(item -> item.getResource().getName().equalsIgnoreCase(old)).findFirst();
@@ -146,7 +152,7 @@ public class HubMarketplaceTab extends HubDialogTab {
                         item.rightSide.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
                         item.bottomCenterPanel.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
                         updateDetailsPanel(item);
-                        HubModel.getInstance().setSelectedHubItem(item.getResource().getName());
+                        model.setSelectedHubItem(item.getResource().getName());
                     }
                 }
 
@@ -179,5 +185,27 @@ public class HubMarketplaceTab extends HubDialogTab {
 
     private void updateResultCounter(int count) {
         lblResultsCount.setText("Results (" + count + ")");
+    }
+
+    private BiConsumer<HubItem, String> getInstallCallback() {
+        return (hubItem, uri) -> {
+            Notification notification;
+            ResourceData resource = hubItem.getResource();
+            try {
+                Constants.InstallStatus installed = model.installHubItem(resource.getName(), resource.getKind(), uri);
+                if (installed == Constants.InstallStatus.INSTALLED) {
+                    JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
+                    warningNameAlreadyUsed.setToolTipText("A " + resource.getKind() + " with this name already exists on the cluster.");
+                    hubItem.updateBottomPanel(warningNameAlreadyUsed);
+                }
+                if (installed != Constants.InstallStatus.ERROR) {
+                    notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
+                    Notifications.Bus.notify(notification);
+                }
+            } catch (IOException ex) {
+                notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR);
+                Notifications.Bus.notify(notification);
+            }
+        };
     }
 }

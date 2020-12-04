@@ -15,7 +15,6 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.util.ui.JBDimension;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.jetbrains.annotations.Nullable;
@@ -24,9 +23,9 @@ public class HubDialog extends DialogWrapper {
 
     private JComponent myContentPanel;
 
-    public HubDialog(@Nullable Project project, String namespace, List<String> tasks) {
+    public HubDialog(Project project, HubModel model) {
         super(project, true);
-        createComponent(project, namespace, tasks);
+        createComponent(model);
         init();
     }
 
@@ -45,9 +44,9 @@ public class HubDialog extends DialogWrapper {
         return panel;
     }
 
-    public void createComponent(Project project, String namespace, List<String> tasks) {
-        HubMarketplaceTab marketplaceTab = new HubMarketplaceTab(project, namespace, tasks);
-        marketplaceTab.draw(HubModel.getInstance().getAllHubItems());
+    public void createComponent(HubModel model) {
+        HubMarketplaceTab marketplaceTab = new HubMarketplaceTab(model);
+        marketplaceTab.draw(model.getAllHubItems());
         myContentPanel = marketplaceTab.getTabPanel();
     }
 }

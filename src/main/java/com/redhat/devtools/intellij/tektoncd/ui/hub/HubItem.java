@@ -12,10 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.google.common.base.Strings;
 import com.intellij.icons.AllIcons;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.ui.JBUI;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
@@ -26,10 +22,11 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -42,7 +39,6 @@ import org.jetbrains.annotations.NotNull;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.ui.hub.HubDialogTab.MAIN_BG_COLOR;
 
 public class HubItem {
@@ -54,7 +50,7 @@ public class HubItem {
         this.resource = resource;
     }
 
-    public JPanel createPanel(Project project, String namespace, boolean alreadyOnCluster, Consumer<HubItem> doSelectAction) {
+    public JPanel createPanel(HubModel model, Consumer<HubItem> doSelectAction, BiConsumer<HubItem, String> doInstallAction) {
 
         JLabel lblNameHubItem = new JLabel(this.resource.getName());
         lblNameHubItem.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -83,7 +79,7 @@ public class HubItem {
             bottomCenterPanel.add(kind);
         }
 
-        if (alreadyOnCluster) {
+        if (model.getTasksInstalled().contains(resource.getName())) {
             JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
             warningNameAlreadyUsed.setToolTipText("A " + resource.getKind() + " with this name already exists on the cluster.");
             bottomCenterPanel.add(warningNameAlreadyUsed);
@@ -97,45 +93,24 @@ public class HubItem {
         CompoundBorder cb = BorderFactory.createCompoundBorder(outside, inside);
         installBtn.setBorder(cb);
         installBtn.setBackground(MAIN_BG_COLOR);
+        HubItem self = this;
         installBtn.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) { }
 
             @Override
             public void mousePressed(MouseEvent e) {
-                String confirmationMessage = "";
-                if (alreadyOnCluster) {
-                    confirmationMessage = "A " + resource.getKind() + " with this name already exists on the cluster. By installing this " + resource.getKind() + " the one on the cluster will be overwritten. Do you want to install it?";
-                } else {
-                    confirmationMessage = "Do you want to install this " + resource.getKind() + " to the cluster?";
-                }
-                Notification notification;
-                try {
-                    boolean installed = HubModel.getInstance().installHubItem(project, namespace, resource.getLatestVersion().getRawURL().toString(), confirmationMessage);
-                    if (installed) {
-                        notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
-                        Notifications.Bus.notify(notification);
-                    }
-                } catch (IOException ex) {
-                    notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR);
-                    Notifications.Bus.notify(notification);
-                }
+                doInstallAction.accept(self, resource.getLatestVersion().getRawURL().toString());
             }
 
             @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
+            public void mouseReleased(MouseEvent e) { }
 
             @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
+            public void mouseEntered(MouseEvent e) { }
 
             @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
+            public void mouseExited(MouseEvent e) { }
         });
 
         rightSide = new JPanel(new BorderLayout());
@@ -156,7 +131,7 @@ public class HubItem {
             parent.add(lblIcon, BorderLayout.LINE_START);
         }
 
-        String selected = HubModel.getInstance().getSelectedHubItem();
+        String selected = model.getSelectedHubItem();
         if (!Strings.isNullOrEmpty(selected) && selected.equals(this.getResource().getName())) {
             parent.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
             rightSide.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
@@ -177,5 +152,11 @@ public class HubItem {
             return IconLoader.findIcon("/images/pipeline.svg", TektonTreeStructure.class);
         }
         return null;
+    }
+
+    public void updateBottomPanel(JComponent component) {
+        bottomCenterPanel.add(component);
+        parent.revalidate();
+        parent.repaint();
     }
 }
