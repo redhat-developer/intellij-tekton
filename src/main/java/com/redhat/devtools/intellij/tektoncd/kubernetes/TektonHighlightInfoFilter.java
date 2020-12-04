@@ -33,7 +33,7 @@ public class TektonHighlightInfoFilter implements HighlightInfoFilter {
 
     private boolean isTektonFile(PsiFile file) {
         KubernetesTypeInfo info = KubernetesTypeInfo.extractMeta(file);
-        return info.getApiGroup().startsWith("tekton.dev") || info.getApiGroup().startsWith("trigger.tekton.dev");
+        return info.getApiGroup().startsWith("tekton.dev") || info.getApiGroup().startsWith("triggers.tekton.dev");
     }
 
     private boolean isKubernetesHighlight(HighlightInfo highlightInfo) {
