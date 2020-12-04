@@ -347,7 +347,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
     @Override
     public NodeDescriptor createDescriptor(Object element, NodeDescriptor parentDescriptor) {
         if (element instanceof TektonRootNode) {
-            Tkn tkn = ((TektonRootNode)element).getTkn();
+        Tkn tkn = ((TektonRootNode)element).getTkn();
             return new LabelAndIconDescriptor(project, element, tkn != null?tkn.getMasterUrl().toString():"Loading", CLUSTER_ICON, parentDescriptor);
         }
         if (element instanceof NamespaceNode) {
@@ -376,51 +376,36 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         }
         if (element instanceof TaskRunsNode) {
             return new LabelAndIconDescriptor(project, element, ((TaskRunsNode) element).getName(), TASK_RUN_ICON, parentDescriptor);
-        }
-        if (element instanceof ClusterTasksNode) {
-            return new LabelAndIconDescriptor(project, element, ((ClusterTasksNode)element).getName(), CLUSTER_TASK_ICON, parentDescriptor);
-        }
-        if (element instanceof ClusterTaskNode) {
-            return new LabelAndIconDescriptor(project, element, ((ClusterTaskNode)element).getName(), CLUSTER_TASK_ICON, parentDescriptor);
-        }
-        if (element instanceof ResourcesNode) {
-            return new LabelAndIconDescriptor(project, element, ((ResourcesNode)element).getName(), PIPELINE_RESOURCE_ICON, parentDescriptor);
-        }
-        if (element instanceof ResourceNode) {
-            return new LabelAndIconDescriptor(project, element, ((ResourceNode)element).getName(), PIPELINE_RESOURCE_ICON, parentDescriptor);
-        }
-        if (element instanceof ConditionsNode) {
-            return new LabelAndIconDescriptor(project, element, ((ConditionsNode)element).getName(), CONDITION_ICON, parentDescriptor);
-        }
-        if (element instanceof ConditionNode) {
-            return new LabelAndIconDescriptor(project, element, ((ConditionNode)element).getName(), CONDITION_ICON, parentDescriptor);
-        }
-        if (element instanceof TriggerTemplatesNode) {
-            return new LabelAndIconDescriptor(project, element, ((TriggerTemplatesNode)element).getName(), TRIGGER_TEMPLATE_ICON, parentDescriptor);
-        }
-        if (element instanceof TriggerTemplateNode) {
-            return new LabelAndIconDescriptor(project, element, ((TriggerTemplateNode)element).getName(), TRIGGER_TEMPLATE_ICON, parentDescriptor);
-        }
-        if (element instanceof TriggerBindingsNode) {
-            return new LabelAndIconDescriptor(project, element, ((TriggerBindingsNode)element).getName(), TRIGGER_BINDING_ICON, parentDescriptor);
-        }
-        if (element instanceof TriggerBindingNode) {
-            return new LabelAndIconDescriptor(project, element, ((TriggerBindingNode)element).getName(), TRIGGER_BINDING_ICON, parentDescriptor);
-        }
-        if (element instanceof ClusterTriggerBindingsNode) {
-            return new LabelAndIconDescriptor(project, element, ((ClusterTriggerBindingsNode)element).getName(), CLUSTER_TRIGGER_BINDING_ICON, parentDescriptor);
-        }
-        if (element instanceof ClusterTriggerBindingNode) {
-            return new LabelAndIconDescriptor(project, element, ((ClusterTriggerBindingNode)element).getName(), CLUSTER_TRIGGER_BINDING_ICON, parentDescriptor);
-        }
-        if (element instanceof EventListenersNode) {
-            return new LabelAndIconDescriptor(project, element, ((EventListenersNode)element).getName(), EVENT_LISTENER_ICON, parentDescriptor);
-        }
-        if (element instanceof EventListenerNode) {
-            return new LabelAndIconDescriptor(project, element, ((EventListenerNode)element).getName(), EVENT_LISTENER_ICON, parentDescriptor);
-        }
-        if (element instanceof MessageNode) {
-            return new LabelAndIconDescriptor(project, element, ((MessageNode)element).getName(), AllIcons.General.Warning, parentDescriptor);
+        } else if (element instanceof ClusterTasksNode) {
+            return new LabelAndIconDescriptor(project, element, ((ClusterTasksNode) element).getName(), CLUSTER_TASK_ICON, parentDescriptor);
+        } else if (element instanceof ClusterTaskNode) {
+            return new LabelAndIconDescriptor(project, element, ((ClusterTaskNode) element).getName(), CLUSTER_TASK_ICON, parentDescriptor);
+        } else if (element instanceof ResourcesNode) {
+            return new LabelAndIconDescriptor(project, element, ((ResourcesNode) element).getName(), PIPELINE_RESOURCE_ICON, parentDescriptor);
+        } else if (element instanceof ResourceNode) {
+            return new LabelAndIconDescriptor(project, element, ((ResourceNode) element).getName(), PIPELINE_RESOURCE_ICON, parentDescriptor);
+        } else if (element instanceof ConditionsNode) {
+            return new LabelAndIconDescriptor(project, element, ((ConditionsNode) element).getName(), CONDITION_ICON, parentDescriptor);
+        } else if (element instanceof ConditionNode) {
+            return new LabelAndIconDescriptor(project, element, ((ConditionNode) element).getName(), CONDITION_ICON, parentDescriptor);
+        } else if (element instanceof TriggerTemplatesNode) {
+            return new LabelAndIconDescriptor(project, element, ((TriggerTemplatesNode) element).getName(), TRIGGER_TEMPLATE_ICON, parentDescriptor);
+        } else if (element instanceof TriggerTemplateNode) {
+            return new LabelAndIconDescriptor(project, element, ((TriggerTemplateNode) element).getName(), TRIGGER_TEMPLATE_ICON, parentDescriptor);
+        } else if (element instanceof TriggerBindingsNode) {
+            return new LabelAndIconDescriptor(project, element, ((TriggerBindingsNode) element).getName(), TRIGGER_BINDING_ICON, parentDescriptor);
+        } else if (element instanceof TriggerBindingNode) {
+            return new LabelAndIconDescriptor(project, element, ((TriggerBindingNode) element).getName(), TRIGGER_BINDING_ICON, parentDescriptor);
+        } else if (element instanceof ClusterTriggerBindingsNode) {
+            return new LabelAndIconDescriptor(project, element, ((ClusterTriggerBindingsNode) element).getName(), CLUSTER_TRIGGER_BINDING_ICON, parentDescriptor);
+        } else if (element instanceof ClusterTriggerBindingNode) {
+            return new LabelAndIconDescriptor(project, element, ((ClusterTriggerBindingNode) element).getName(), CLUSTER_TRIGGER_BINDING_ICON, parentDescriptor);
+        } else if (element instanceof EventListenersNode) {
+            return new LabelAndIconDescriptor(project, element, ((EventListenersNode) element).getName(), EVENT_LISTENER_ICON, parentDescriptor);
+        } else if (element instanceof EventListenerNode) {
+            return new LabelAndIconDescriptor(project, element, ((EventListenerNode) element).getName(), EVENT_LISTENER_ICON, parentDescriptor);
+        } else if (element instanceof MessageNode) {
+            return new LabelAndIconDescriptor(project, element, ((MessageNode) element).getName(), AllIcons.General.Warning, parentDescriptor);
         }
         return null;
     }
