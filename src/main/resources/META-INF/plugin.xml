@@ -127,13 +127,26 @@
 
   <extensions defaultExtensionNs="org.jboss.tools.intellij.kubernetes">
     <resourceProvider
-            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.PipelinesProvider$Factory" />
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.ClusterTasksProvider$Factory" />
     <resourceProvider
             implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.TasksProvider$Factory" />
-  </extensions>
-
-  <extensions defaultExtensionNs="org.jboss.tools.intellij.kubernetes">
-    <structureContribution
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.TaskRunsProvider$Factory" />
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.PipelinesProvider$Factory" />
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.PipelineRunsProvider$Factory" />
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.PipelineResourcesProvider$Factory" />
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.TriggerTemplatesProvider$Factory" />
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.TriggerBindingsProvider$Factory" />
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.EventListenersProvider$Factory" />
+    <resourceProvider
+            implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.model.resource.ConditionsProvider$Factory" />
+  <structureContribution
             implementation="com.redhat.devtools.intellij.tektoncd.kubernetes.tree.TektonStructure$Factory" />
   </extensions>
 
