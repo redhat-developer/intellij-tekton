@@ -34,9 +34,7 @@ public class TektonHubAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-
         ExecHelper.submit(() -> {
-
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
             List<String> tasks;

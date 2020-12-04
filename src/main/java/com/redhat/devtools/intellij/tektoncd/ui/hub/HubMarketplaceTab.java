@@ -41,21 +41,20 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import org.jetbrains.annotations.NotNull;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
 
 public class HubMarketplaceTab extends HubDialogTab {
 
     private JLabel lblResultsCount;
-    private HubModel model;
 
     public HubMarketplaceTab(HubModel model) {
         super(model);
-        this.model = model;
     }
 
     @Override
@@ -73,30 +72,7 @@ public class HubMarketplaceTab extends HubDialogTab {
             }
 
             private void searchOnTheFly() {
-                ApiCallback<Resources> callback = new ApiCallback<Resources>() {
-                    @Override
-                    public void onFailure(ApiException e, int statusCode, Map<String, List<String>> responseHeaders) {
-                        if(statusCode == 404) {
-                            draw(Collections.emptyList());
-                        }
-                    }
-
-                    @Override
-                    public void onSuccess(Resources result, int statusCode, Map<String, List<String>> responseHeaders) {
-                        draw(result.getData().stream().map(resource -> new HubItem(resource)).collect(Collectors.toList()));
-                    }
-
-                    @Override
-                    public void onUploadProgress(long bytesWritten, long contentLength, boolean done) {
-
-                    }
-
-                    @Override
-                    public void onDownloadProgress(long bytesRead, long contentLength, boolean done) {
-
-                    }
-                };
-                model.search(self.mySearchTextField.getText(), null, null, callback);
+                model.search(self.mySearchTextField.getText(), null, null, getSearchCallback());
             }
         });
     }
@@ -111,14 +87,11 @@ public class HubMarketplaceTab extends HubDialogTab {
     @Override
     protected JComponent createContentPanel() {
         JPanel wrapperInnerContent = new JPanel(new BorderLayout());
-        wrapperInnerContent.setMaximumSize(new Dimension(
-                Integer.MAX_VALUE,
-                80
-        ));
+        wrapperInnerContent.setMaximumSize(new Dimension(Integer.MAX_VALUE,80));
 
         // small panel between search and list hub items
         lblResultsCount = new JLabel();
-        lblResultsCount.setBorder(new EmptyBorder(5, 5, 5, 5));
+        lblResultsCount.setBorder(JBUI.Borders.empty(5));
         wrapperInnerContent.add(lblResultsCount, BorderLayout.PAGE_START);
 
         // list of hub items
@@ -143,14 +116,10 @@ public class HubMarketplaceTab extends HubDialogTab {
                         if (!Strings.isNullOrEmpty(old)) {
                             Optional<HubItem> oldItem = items.stream().filter(item -> item.getResource().getName().equalsIgnoreCase(old)).findFirst();
                             if (oldItem.isPresent()) {
-                                oldItem.get().parent.setBackground(MAIN_BG_COLOR);
-                                oldItem.get().rightSide.setBackground(MAIN_BG_COLOR);
-                                oldItem.get().bottomCenterPanel.setBackground(MAIN_BG_COLOR);
+                                oldItem.get().repaint(false);
                             }
                         }
-                        item.parent.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
-                        item.rightSide.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
-                        item.bottomCenterPanel.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
+                        item.repaint(true);
                         updateDetailsPanel(item);
                         model.setSelectedHubItem(item.getResource().getName());
                     }
@@ -178,13 +147,9 @@ public class HubMarketplaceTab extends HubDialogTab {
             myEmptyPanel.getEmptyText().setText("Nothing found.");
             innerContentPanel.add(myEmptyPanel);
         }
-        updateResultCounter(items.size());
+        lblResultsCount.setText("Results (" + items.size()+ ")");
         innerContentPanel.revalidate();
         innerContentPanel.repaint();
-    }
-
-    private void updateResultCounter(int count) {
-        lblResultsCount.setText("Results (" + count + ")");
     }
 
     private BiConsumer<HubItem, String> getInstallCallback() {
@@ -208,4 +173,31 @@ public class HubMarketplaceTab extends HubDialogTab {
             }
         };
     }
+
+    private ApiCallback<Resources> getSearchCallback() {
+         return new ApiCallback<Resources>() {
+            @Override
+            public void onFailure(ApiException e, int statusCode, Map<String, List<String>> responseHeaders) {
+                if(statusCode == 404) {
+                    draw(Collections.emptyList());
+                }
+            }
+
+            @Override
+            public void onSuccess(Resources result, int statusCode, Map<String, List<String>> responseHeaders) {
+                draw(result.getData().stream().map(resource -> new HubItem(resource)).collect(Collectors.toList()));
+            }
+
+            @Override
+            public void onUploadProgress(long bytesWritten, long contentLength, boolean done) {
+
+            }
+
+            @Override
+            public void onDownloadProgress(long bytesRead, long contentLength, boolean done) {
+
+            }
+        };
+    }
+
 }

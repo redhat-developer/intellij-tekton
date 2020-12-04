@@ -26,11 +26,6 @@ public class HubDialog extends DialogWrapper {
     public HubDialog(Project project, HubModel model) {
         super(project, true);
         createComponent(model);
-        init();
-    }
-
-    @Override
-    protected void init() {
         super.init();
     }
 

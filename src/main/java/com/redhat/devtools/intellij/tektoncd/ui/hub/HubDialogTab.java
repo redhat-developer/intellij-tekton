@@ -11,8 +11,6 @@
 package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.intellij.openapi.ui.Divider;
-import com.intellij.ui.Gray;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.SimpleTextAttributes;
@@ -24,50 +22,53 @@ import com.intellij.ui.scale.JBUIScale;
 import com.intellij.util.Alarm;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.StatusText;
-import com.intellij.util.ui.UIUtil;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
 import org.jetbrains.annotations.NotNull;
 
+
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.GRAY_COLOR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_BG_COLOR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
+
 public abstract class HubDialogTab {
 
     protected final Alarm mySearchUpdateAlarm = new Alarm();
+    protected HubModel model;
     protected HubDetailsPageComponent myDetailsPage;
     protected JBPanelWithEmptyText myEmptyPanel;
     private JComponent myContentPanel;
     protected JPanel innerContentPanel;
     protected SearchTextField mySearchTextField;
     private OnePixelSplitter tabPanel;
-    public static final Color MAIN_BG_COLOR =
-            JBColor.namedColor("Plugins.background", new JBColor(() -> JBColor.isBright() ? UIUtil.getListBackground() : new Color(0x313335)));
-    public static final Color GRAY_COLOR = JBColor.namedColor("Label.infoForeground", new JBColor(Gray._120, Gray._135));
-    public static final Color SEARCH_FIELD_BORDER_COLOR =
-            JBColor.namedColor("Plugins.SearchField.borderColor", new JBColor(0xC5C5C5, 0x515151));
-    public static final Color SEARCH_BG_COLOR = JBColor.namedColor("Plugins.SearchField.background", MAIN_BG_COLOR);
 
     public HubDialogTab(HubModel model) {
-        createPanel(model);
+        this.model = model;
+        createEmptyPanel();
+        createPanel();
     }
 
-    private void createPanel(HubModel model) {
+    private void createEmptyPanel() {
         // empty panel to be shown if no results is available
         myEmptyPanel = new JBPanelWithEmptyText();
         myEmptyPanel.setBorder(new CustomLineBorder(SEARCH_FIELD_BORDER_COLOR, JBUI.insets(1, 0, 0, 0)));
         myEmptyPanel.setOpaque(true);
         myEmptyPanel.setBackground(MAIN_BG_COLOR);
         myEmptyPanel.getEmptyText().setText("Nothing found.");
+    }
 
+    private void createPanel() {
         // main content panel
         this.createSearchTextField(250);
         myContentPanel = createContentPanel();
 
-        JPanel listPanel = new JPanel(new BorderLayout());
-        listPanel.add(this.mySearchTextField, "North");
-        listPanel.add(this.myContentPanel);
+        JPanel leftColumnPanel = new JPanel(new BorderLayout());
+        leftColumnPanel.add(mySearchTextField, "North");
+        leftColumnPanel.add(myContentPanel);
         tabPanel = new OnePixelSplitter(false, 0.35F) {
             protected Divider createDivider() {
                 Divider divider = super.createDivider();
@@ -75,13 +76,12 @@ public abstract class HubDialogTab {
                 return divider;
             }
         };
-        tabPanel.setFirstComponent(listPanel);
+        tabPanel.setFirstComponent(leftColumnPanel);
 
         myDetailsPage = new HubDetailsPageComponent(model);
         tabPanel.setSecondComponent(myDetailsPage);
     }
 
-    @NotNull
     protected void createSearchTextField(final int flyDelay) {
         mySearchTextField = new SearchTextField() {
             @Override
@@ -110,7 +110,6 @@ public abstract class HubDialogTab {
         emptyText.appendText(text, new SimpleTextAttributes(0, GRAY_COLOR));
     }
 
-    @NotNull
     protected abstract void updateDetailsPanel(HubItem item);
 
     @NotNull

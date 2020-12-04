@@ -70,21 +70,17 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
             return false;
         }
 
-        // refresh node
-        Tree tree;
-        TektonTreeStructure treeStructure;
-        try {
-            tree = TreeHelper.getTree(project);
-            treeStructure = (TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
-            ParentableNode selected = vf.getUserData(TARGET_NODE);
-            if (selected != null) {
-                treeStructure.fireModified(selected);
-            }
-        } catch (Exception e) {
-            logger.warn("Error: " + e.getLocalizedMessage(), e);
-        }
-
         if (isSaved) {
+            try {
+                Tree tree = TreeHelper.getTree(project);
+                TektonTreeStructure treeStructure = (TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
+                ParentableNode selected = vf.getUserData(TARGET_NODE);
+                if (selected != null) {
+                    treeStructure.fireModified(selected);
+                }
+            } catch (Exception e) {
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
+            }
             // notify user if saving was completed successfully
             notification = new Notification(NOTIFICATION_ID, "Save Successful", StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " has been saved!", NotificationType.INFORMATION);
             Notifications.Bus.notify(notification);

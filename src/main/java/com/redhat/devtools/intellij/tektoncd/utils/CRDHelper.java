@@ -16,6 +16,7 @@ import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
 
 public class CRDHelper {
@@ -37,6 +38,6 @@ public class CRDHelper {
     }
 
     public static boolean isClusterScopedResource(String kind) {
-        return kind == KIND_CLUSTERTASKS || kind == KIND_CLUSTERTASK || kind == KIND_CLUSTERTRIGGERBINDINGS || kind == KIND_CLUSTERTRIGGERBINDINGS;
+        return kind == KIND_CLUSTERTASKS || kind == KIND_CLUSTERTASK || kind == KIND_CLUSTERTRIGGERBINDING || kind == KIND_CLUSTERTRIGGERBINDINGS;
     }
 }

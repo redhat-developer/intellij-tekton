@@ -36,8 +36,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HubModel {
-
     private Logger logger = LoggerFactory.getLogger(HubModel.class);
+
     private List<HubItem> allHubItems;
     private Map<String, String> resourcesYaml;
     private Project project;
@@ -81,10 +81,9 @@ public class HubModel {
     }
 
     public void search(String query, List<String> kinds, List<String> tags, ApiCallback<Resources> callback) {
-        String querySanitized = getActualQuery(query);
         ResourceApi resApi = new ResourceApi();
         try {
-            resApi.resourceQueryAsync(querySanitized, kinds, tags, null, null, callback);
+            resApi.resourceQueryAsync(query, kinds, tags, null, null, callback);
         } catch (ApiException e) {
             logger.warn(e.getLocalizedMessage());
         }
@@ -96,19 +95,6 @@ public class HubModel {
 
     public void setSelectedHubItem(String itemSelected) {
         this.selected = itemSelected;
-    }
-
-    private String getActualQuery(String query) {
-        if (query.contains("/sortBy:downloads")) {
-            return query.replace("/sortBy:downloads", "");
-        } else if (query.contains("/sortBy:name")) {
-            return query.replace("/sortBy:name", "");
-        } else if (query.contains("/sortBy:rating")) {
-            return query.replace("/sortBy:rating", "");
-        } else if (query.contains("/sortBy:updated")) {
-            return query.replace("/sortBy:updated", "");
-        }
-        return query;
     }
 
     public List<ResourceVersionData> getVersionsById(int id) {
@@ -167,7 +153,7 @@ public class HubModel {
         if (alreadyOnCluster) {
             confirmationMessage = "A " + kind + " with name " + name + " already exists on the cluster. By installing this " + kind + " the one on the cluster will be overwritten. Do you want to install it?";
         } else {
-            confirmationMessage = "Do you want to install this " + kind + " to the cluster?";
+            confirmationMessage = "Do you want to install the " + kind + " " + name + " on the cluster?";
         }
         if (DeployHelper.saveOnCluster(project, namespace, yaml, confirmationMessage)) {
             if (!alreadyOnCluster) {

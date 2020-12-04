@@ -17,6 +17,7 @@ import com.intellij.util.ui.JBUI;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -39,12 +40,13 @@ import org.jetbrains.annotations.NotNull;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
-import static com.redhat.devtools.intellij.tektoncd.ui.hub.HubDialogTab.MAIN_BG_COLOR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
 
 public class HubItem {
 
     private ResourceData resource;
-    public JPanel parent, rightSide, bottomCenterPanel;
+    private JPanel parent, rightSide, bottomCenterPanel;
 
     public HubItem(@NotNull ResourceData resource) {
         this.resource = resource;
@@ -52,49 +54,120 @@ public class HubItem {
 
     public JPanel createPanel(HubModel model, Consumer<HubItem> doSelectAction, BiConsumer<HubItem, String> doInstallAction) {
 
-        JLabel lblNameHubItem = new JLabel(this.resource.getName());
-        lblNameHubItem.setBorder(new EmptyBorder(5, 5, 5, 5));
-        lblNameHubItem.setFont(lblNameHubItem.getFont().deriveFont(Font.BOLD));
+        Font defaultFont = (new JLabel()).getFont();
+
+        JLabel nameHubItem = createCustomizedLabel(this.resource.getName(), null, -1, JBUI.Borders.empty(5), null, null, defaultFont.deriveFont(Font.BOLD), "");
 
         // bottom central panel - includes version/rating/kind
         bottomCenterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bottomCenterPanel.setBackground(MAIN_BG_COLOR);
 
-        JLabel version = new JLabel("v. " + this.resource.getLatestVersion().getVersion());
-        version.setBorder(new EmptyBorder(0, 0, 5, 5));
-        version.setForeground(JBUI.CurrentTheme.Label.disabledForeground());
+        JLabel version = createCustomizedLabel("v. " + this.resource.getLatestVersion().getVersion(), null, -1,
+                                                                JBUI.Borders.empty(0, 0, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
         bottomCenterPanel.add(version);
 
-        JLabel rating = new JLabel(this.resource.getRating().toString(), AllIcons.Plugins.Rating, SwingConstants.RIGHT);
-        rating.setBorder(new EmptyBorder(0, 5, 5, 5));
-        rating.setForeground(JBUI.CurrentTheme.Label.disabledForeground());
+        JLabel rating = createCustomizedLabel(this.resource.getRating().toString(), AllIcons.Plugins.Rating, SwingConstants.RIGHT,
+                                                                JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
         bottomCenterPanel.add(rating);
 
         Icon kindIcon = getIconByKind(this.resource.getKind());
         if (kindIcon != null) {
-            JLabel kind = new JLabel("", kindIcon, SwingConstants.LEFT);
-            kind.setBorder(new EmptyBorder(0, 5, 5, 5));
-            kind.setForeground(JBUI.CurrentTheme.Label.disabledForeground());
-            kind.setToolTipText(this.resource.getKind());
+            JLabel kind = createCustomizedLabel("", kindIcon, SwingConstants.LEFT,
+                                                                JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, this.resource.getKind());
             bottomCenterPanel.add(kind);
         }
 
         if (model.getTasksInstalled().contains(resource.getName())) {
-            JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
-            warningNameAlreadyUsed.setToolTipText("A " + resource.getKind() + " with this name already exists on the cluster.");
+            JLabel warningNameAlreadyUsed = createCustomizedLabel("",  AllIcons.General.Warning, SwingConstants.CENTER,
+                    JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + resource.getKind() + " with this name already exists on the cluster.");
             bottomCenterPanel.add(warningNameAlreadyUsed);
         }
 
-        JLabel installBtn = new JLabel("Install", SwingConstants.CENTER);
-        installBtn.setForeground(JBUI.CurrentTheme.Link.linkColor());
-        installBtn.setPreferredSize(new Dimension(60, 60));
         Border outside = new MatteBorder(1, 1, 1, 1, JBUI.CurrentTheme.Link.linkColor());
         Border inside = new EmptyBorder(3, 0, 3, 0);
         CompoundBorder cb = BorderFactory.createCompoundBorder(outside, inside);
-        installBtn.setBorder(cb);
-        installBtn.setBackground(MAIN_BG_COLOR);
+        JLabel installBtn = createCustomizedLabel("Install",  null, SwingConstants.CENTER,
+                cb, MAIN_BG_COLOR, JBUI.CurrentTheme.Link.linkColor(), null, "A " + resource.getKind() + " with this name already exists on the cluster.");
+        installBtn.setPreferredSize(new Dimension(60, 60));
+        addMouseListener(installBtn, doInstallAction);
+
+        rightSide = new JPanel(new BorderLayout());
+        rightSide.setBackground(MAIN_BG_COLOR);
+        rightSide.add(nameHubItem, BorderLayout.CENTER);
+        rightSide.add(bottomCenterPanel, BorderLayout.PAGE_END);
+        rightSide.add(installBtn, BorderLayout.LINE_END);
+
+        parent = new JPanel(new BorderLayout());
+        parent.setBackground(MAIN_BG_COLOR);
+        parent.setMaximumSize(new Dimension(Integer.MAX_VALUE,80));
+        parent.setBorder(MARGIN_10);
+        parent.add(rightSide, BorderLayout.CENTER);
+
+        Icon icon = null; // TODO get icon somewhere
+        if (icon != null) {
+            JLabel lblIcon = new JLabel("", icon, SwingConstants.LEFT);
+            parent.add(lblIcon, BorderLayout.LINE_START);
+        }
+
+        paintAsSelected(model, doSelectAction);
+        return parent;
+    }
+
+    public ResourceData getResource() {
+        return this.resource;
+    }
+
+    public void repaint(boolean isSelected) {
+        if (!isSelected) {
+            parent.setBackground(MAIN_BG_COLOR);
+            rightSide.setBackground(MAIN_BG_COLOR);
+            bottomCenterPanel.setBackground(MAIN_BG_COLOR);
+        } else {
+            parent.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
+            rightSide.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
+            bottomCenterPanel.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
+        }
+    }
+
+    private void paintAsSelected(HubModel model, Consumer<HubItem> doSelectAction) {
+        String selected = model.getSelectedHubItem();
+        if (!Strings.isNullOrEmpty(selected) && selected.equals(this.getResource().getName())) {
+            parent.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
+            rightSide.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
+            bottomCenterPanel.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
+            doSelectAction.accept(this);
+        }
+    }
+
+    private JLabel createCustomizedLabel(String text, Icon icon, int horizontalAlignment, Border border, Color background, Color foreground, Font font, String tooltip) {
+        JLabel label = new JLabel(text);
+        if (icon != null) {
+            label.setIcon(icon);
+        }
+        if (horizontalAlignment > -1) {
+            label.setHorizontalAlignment(horizontalAlignment);
+        }
+        if (border != null) {
+            label.setBorder(border);
+        }
+        if (background != null) {
+            label.setBackground(background);
+        }
+        if (foreground != null) {
+            label.setForeground(foreground);
+        }
+        if (font != null) {
+            label.setFont(font);
+        }
+        if (!tooltip.isEmpty()) {
+            label.setToolTipText(tooltip);
+        }
+        return label;
+    }
+
+    private void addMouseListener(JLabel label, BiConsumer<HubItem, String> doInstallAction) {
         HubItem self = this;
-        installBtn.addMouseListener(new MouseListener() {
+        label.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) { }
 
@@ -112,37 +185,6 @@ public class HubItem {
             @Override
             public void mouseExited(MouseEvent e) { }
         });
-
-        rightSide = new JPanel(new BorderLayout());
-        rightSide.setBackground(MAIN_BG_COLOR);
-        rightSide.add(lblNameHubItem, BorderLayout.CENTER);
-        rightSide.add(bottomCenterPanel, BorderLayout.PAGE_END);
-        rightSide.add(installBtn, BorderLayout.LINE_END);
-
-        parent = new JPanel(new BorderLayout());
-        parent.setBackground(MAIN_BG_COLOR);
-        parent.setMaximumSize(new Dimension(Integer.MAX_VALUE,80));
-        parent.setBorder(new EmptyBorder(10, 10, 10, 10));
-        parent.add(rightSide, BorderLayout.CENTER);
-
-        Icon icon = null; // TODO get icon somewhere
-        if (icon != null) {
-            JLabel lblIcon = new JLabel("", icon, SwingConstants.LEFT);
-            parent.add(lblIcon, BorderLayout.LINE_START);
-        }
-
-        String selected = model.getSelectedHubItem();
-        if (!Strings.isNullOrEmpty(selected) && selected.equals(this.getResource().getName())) {
-            parent.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
-            rightSide.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
-            bottomCenterPanel.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
-            doSelectAction.accept(this);
-        }
-        return parent;
-    }
-
-    public ResourceData getResource() {
-        return this.resource;
     }
 
     private Icon getIconByKind(String kind) {

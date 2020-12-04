@@ -17,7 +17,6 @@ import com.intellij.ide.plugins.newui.VerticalLayout;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.BrowserHyperlinkListener;
 import com.intellij.ui.ColorUtil;
-import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.border.CustomLineBorder;
 import com.intellij.ui.components.JBPanelWithEmptyText;
@@ -32,7 +31,6 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -73,17 +71,18 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.GRAY_COLOR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
+
 public class HubDetailsPageComponent extends MultiPanel {
     private static final Logger logger = LoggerFactory.getLogger(HubDetailsPageComponent.class);
 
     private OpaquePanel myPanel;
-    public static final Color MAIN_BG_COLOR = JBColor.namedColor("Plugins.background", new JBColor(() -> JBColor.isBright() ? UIUtil.getListBackground() : new Color(0x313335)));
     private JLabel myIconLabel, installBtn;
     private JPanel myNameAndButtons;
     private JLabel myNameComponent;
-    public static final Color GRAY_COLOR = JBColor.namedColor("Label.infoForeground", new JBColor(Gray._120, Gray._135));
-    public static final Color SEARCH_FIELD_BORDER_COLOR = JBColor.namedColor("Plugins.SearchField.borderColor", new JBColor(0xC5C5C5, 0x515151));
-
     private JComboBox versionsCmb;
     private JLabel myRating;
     private JEditorPane myDetailsComponent, myDescriptionComponent, myYamlComponent;
@@ -123,7 +122,6 @@ public class HubDetailsPageComponent extends MultiPanel {
     @NotNull
     private JPanel createHeaderPanel() {
         JPanel header = new NonOpaquePanel(new BorderLayout(JBUIScale.scale(20), 0));
-        //header.setBorder(JBUI.Borders.emptyRight(20));
         myPanel.add(header, BorderLayout.NORTH);
 
         myIconLabel = new JLabel();
@@ -151,7 +149,6 @@ public class HubDetailsPageComponent extends MultiPanel {
         installBtn.setBorder(cb1);
         installBtn.setBackground(MAIN_BG_COLOR);
 
-
         myNameAndButtons = new JPanel(new BorderLayout());
         myNameAndButtons.setBackground(MAIN_BG_COLOR);
         myNameAndButtons.add(myNameComponent, BorderLayout.CENTER);
@@ -176,6 +173,29 @@ public class HubDetailsPageComponent extends MultiPanel {
 
     private void createMetricsPanel(@NotNull JPanel centerPanel) {
         versionsCmb = new ComboBox();
+        BasicComboBoxRenderer versionCmbRenderer = new BasicComboBoxRenderer()
+        {
+            public Component getListCellRendererComponent(
+                    JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+            {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+                if (value instanceof ResourceVersionData)
+                {
+                    ResourceVersionData version = (ResourceVersionData)value;
+                    setText( version.getVersion() );
+                }
+
+                return this;
+            }
+        };
+        versionsCmb.setRenderer(versionCmbRenderer);
+        versionsCmb.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                ResourceVersionData versionSelected = (ResourceVersionData) e.getItem();
+                loadBottomTabs(versionSelected.getRawURL());
+            }
+        });
 
         myRating = new JLabel("", AllIcons.Plugins.Rating, SwingConstants.CENTER);
         myRating.setOpaque(false);
@@ -266,9 +286,6 @@ public class HubDetailsPageComponent extends MultiPanel {
             String nameItem = resource.getLatestVersion().getDisplayName().isEmpty() ? resource.getName() : resource.getLatestVersion().getDisplayName();
             myNameComponent.setText(nameItem);
 
-            if (versionsCmb.getItemListeners().length > 0) {
-                versionsCmb.removeItemListener(versionsCmb.getItemListeners()[0]);
-            }
             versionsCmb.removeAllItems();
             model.getVersionsById(resource.getId()).forEach(version -> {
                 versionsCmb.addItem(version);
@@ -276,31 +293,9 @@ public class HubDetailsPageComponent extends MultiPanel {
             });
             versionsCmb.setSelectedIndex(versionsCmb.getItemCount() - 1);
 
-
-            BasicComboBoxRenderer versionCmbRenderer = new BasicComboBoxRenderer()
-            {
-                public Component getListCellRendererComponent(
-                        JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
-                {
-                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-                    if (value instanceof ResourceVersionData)
-                    {
-                        ResourceVersionData version = (ResourceVersionData)value;
-                        setText( version.getVersion() );
-                    }
-
-                    return this;
-                }
-            };
-            versionsCmb.setRenderer(versionCmbRenderer);
-            versionsCmb.addItemListener(e -> {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    ResourceVersionData versionSelected = (ResourceVersionData) e.getItem();
-                    loadBottomTabs(versionSelected.getRawURL());
-                }
-            });
-
+            if (installBtn.getMouseListeners().length > 0) {
+                installBtn.removeMouseListener(installBtn.getMouseListeners()[0]);
+            }
             installBtn.addMouseListener(new MouseListener() {
                 @Override
                 public void mouseClicked(MouseEvent e) { }
@@ -325,12 +320,12 @@ public class HubDetailsPageComponent extends MultiPanel {
             });
 
             myRating.setText(resource.getRating().toString());
-            myDetailsComponent.setText(resource.getLatestVersion().getDescription().replace("\n", "<br>") + "<br>Tags:<br>" + resource.getTags().stream().map(tag -> tag.getName()).collect(Collectors.joining(", ")));
+            myDetailsComponent.setText(resource.getLatestVersion().getDescription().replace("\n", "<br>") + "<br><br>Tags:<br>" + resource.getTags().stream().map(tag -> tag.getName()).collect(Collectors.joining(", ")));
             myHomePage.show(resource.getKind() + " Homepage", () -> {
                 try {
                     Desktop.getDesktop().browse(resource.getLatestVersion().getWebURL());
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.warn(e.getLocalizedMessage());
                 }
             });
 
