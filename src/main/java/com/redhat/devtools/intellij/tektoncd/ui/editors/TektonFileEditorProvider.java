@@ -16,6 +16,7 @@ import com.intellij.openapi.fileEditor.FileEditorProvider;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.TextEditorWithPreview;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -25,7 +26,7 @@ import com.redhat.devtools.intellij.tektoncd.validation.KubernetesTypeInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class TektonFileEditorProvider implements FileEditorProvider {
+public class TektonFileEditorProvider implements FileEditorProvider, DumbAware {
     private static final String EDITOR_TYPE_ID = "tekton";
     private static final Key<GraphUpdater> GRAPH_UPDATER_KEY = Key.create(TektonFileEditorProvider.class.getName() + ".graphUpdater");
 
