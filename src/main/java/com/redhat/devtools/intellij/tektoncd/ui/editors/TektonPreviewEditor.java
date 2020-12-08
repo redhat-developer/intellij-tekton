@@ -84,6 +84,7 @@ public class TektonPreviewEditor extends UserDataHolderBase implements FileEdito
         this.graphUpdater = graphUpdater;
         document.addDocumentListener(this, this);
         graph = new mxGraph();
+        graph.setHtmlLabels(true);
         loadModel();
         mxGraphComponent graphComponent = new mxGraphComponent(graph);
         graphComponent.addMouseWheelListener(new MouseAdapter() {

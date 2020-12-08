@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.net.URL;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -50,19 +51,9 @@ public class PipelineRunGraphUpdater extends AbstractPipelineGraphUpdater<Pipeli
         }
     }
 
-    @Override
-    protected String getNodeStyle(PipelineRun content, Node node) {
-        String style = super.getNodeStyle(content, node);
-        if (node.type == Type.TASK) {
-            boolean succeeded = isTaskSucceeded(content, node.name);
-            if (succeeded) {
-                style += "fillColor=green;";
-            } else {
-                style += "fillColor=red;";
-            }
-        }
-        return style;
-    }
+    private static final URL SUCCESS_ICON = PipelineRunGraphUpdater.class.getResource("/images/success.png");
+
+    private static final URL FAILED_ICON = PipelineRunGraphUpdater.class.getResource("/images/failed.png");
 
     @Override
     protected String getNodeLabel(PipelineRun content, Node node) {
@@ -75,6 +66,7 @@ public class PipelineRunGraphUpdater extends AbstractPipelineGraphUpdater<Pipeli
                 label += "\n" + DateHelper.humanizeDate(Instant.parse(taskStatus.get().getStatus().getStartTime()),
                         Instant.parse(taskStatus.get().getStatus().getCompletionTime()));
             }
+            label = "<table><tr><td align=\"center\"><img src=\"" + (isTaskSucceeded(content, node.name)?SUCCESS_ICON.toString():FAILED_ICON.toString()) + "\"/></td><td>" + label + "</td></tr></table>";
         }
         return label;
     }
