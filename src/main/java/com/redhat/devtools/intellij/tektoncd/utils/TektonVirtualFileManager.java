@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
@@ -111,7 +111,7 @@ public class TektonVirtualFileManager {
             content = tkncli.getTriggerBindingYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDINGS)) {
             content = tkncli.getClusterTriggerBindingYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_EVENTLISTENER)) {
+        } else if (kind.equalsIgnoreCase(KIND_EVENTLISTENERS)) {
             content = tkncli.getEventListenerYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
             content = tkncli.getTaskRunYAML(namespace, resourceName);

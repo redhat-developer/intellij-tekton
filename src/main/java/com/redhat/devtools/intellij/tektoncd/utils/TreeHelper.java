@@ -22,22 +22,15 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
-import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunsNode;
-import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TaskRunsNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
@@ -51,20 +44,27 @@ import java.util.Map;
 import javax.swing.tree.TreePath;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
 
 public class TreeHelper {
@@ -128,7 +128,7 @@ public class TreeHelper {
             kind = KIND_CLUSTERTRIGGERBINDINGS;
         } else if (node instanceof EventListenerNode) {
             content = tkncli.getEventListenerYAML(namespace, node.getName());
-            kind = KIND_EVENTLISTENER;
+            kind = KIND_EVENTLISTENERS;
         } else if (node instanceof TaskRunNode) {
             content = tkncli.getTaskRunYAML(namespace, node.getName());
             kind = KIND_TASKRUN;
@@ -138,33 +138,6 @@ public class TreeHelper {
         }
 
         return Pair.create(content, kind);
-    }
-
-    public static String getKindByNode(ParentableNode<?> node) {
-        String kind = "";
-
-        if (node instanceof PipelinesNode) {
-            kind = KIND_PIPELINES;
-        } else if (node instanceof PipelineNode) {
-            kind = KIND_PIPELINE;
-        } else if (node instanceof PipelineRunsNode) {
-            kind = KIND_PIPELINERUNS;
-        } else if (node instanceof PipelineRunNode) {
-            kind = KIND_PIPELINERUN;
-        } else if (node instanceof ResourcesNode) {
-            kind = KIND_RESOURCES;
-        } else if (node instanceof TasksNode) {
-            kind = KIND_TASKS;
-        } else if (node instanceof TaskNode) {
-            kind = KIND_TASK;
-        } else if (node instanceof TaskRunsNode) {
-            kind = KIND_TASKRUNS;
-        } else if (node instanceof ClusterTasksNode) {
-            kind = KIND_CLUSTERTASKS;
-        } else if (node instanceof ConditionsNode) {
-            kind = KIND_CONDITIONS;
-        }
-        return kind;
     }
 
     public static void openTektonResourceInEditor(TreePath path) {
@@ -186,6 +159,47 @@ public class TreeHelper {
             Project project = element.getRoot().getProject();
             String namespace = element.getNamespace();
             VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.getFirst(), yamlAndKind.getSecond());
+        }
+    }
+
+    public static String getPluralKind(String kind) {
+        switch(kind.toLowerCase()) {
+            case KIND_PIPELINE: {
+                return KIND_PIPELINES;
+            }
+            case KIND_PIPELINERUN: {
+                return KIND_PIPELINERUNS;
+            }
+            case KIND_TASK: {
+                return KIND_TASKS;
+            }
+            case KIND_TASKRUN: {
+                return KIND_TASKRUNS;
+            }
+            case KIND_CLUSTERTASK: {
+                return KIND_CLUSTERTASKS;
+            }
+            case KIND_CONDITION: {
+                return KIND_CONDITIONS;
+            }
+            case KIND_RESOURCE: {
+                return KIND_RESOURCES;
+            }
+            case KIND_TRIGGERTEMPLATE: {
+                return KIND_TRIGGERTEMPLATES;
+            }
+            case KIND_TRIGGERBINDING: {
+                return KIND_TRIGGERBINDINGS;
+            }
+            case KIND_CLUSTERTRIGGERBINDING: {
+                return KIND_CLUSTERTRIGGERBINDINGS;
+            }
+            case KIND_EVENTLISTENER: {
+                return KIND_EVENTLISTENERS;
+            }
+            default: {
+                return kind;
+            }
         }
     }
 

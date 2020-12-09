@@ -30,10 +30,9 @@ import com.redhat.devtools.intellij.tektoncd.listener.TreeDoubleClickListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TreeExpansionListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TreePopupMenuListener;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import org.jetbrains.annotations.NotNull;
 
 public class WindowToolFactory implements ToolWindowFactory {
     @Override

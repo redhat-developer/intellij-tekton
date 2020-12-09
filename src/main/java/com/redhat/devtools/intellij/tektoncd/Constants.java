@@ -27,7 +27,7 @@ public class Constants {
     public static final String KIND_TRIGGERTEMPLATES = "triggertemplates";
     public static final String KIND_TRIGGERBINDINGS = "triggerbindings";
     public static final String KIND_CLUSTERTRIGGERBINDINGS = "clustertriggerbindings";
-    public static final String KIND_EVENTLISTENER = "eventlisteners";
+    public static final String KIND_EVENTLISTENERS = "eventlisteners";
     public static final String KIND_PIPELINERUNS = "pipelineruns";
     public static final String KIND_TASKRUNS = "taskruns";
 
@@ -36,6 +36,12 @@ public class Constants {
     public static final String KIND_TASK = "task";
     public static final String KIND_CLUSTERTASK = "clustertask";
     public static final String KIND_TASKRUN = "taskrun";
+    public static final String KIND_CONDITION = "condition";
+    public static final String KIND_RESOURCE = "pipelineresource";
+    public static final String KIND_TRIGGERTEMPLATE = "triggertemplate";
+    public static final String KIND_TRIGGERBINDING = "triggerbinding";
+    public static final String KIND_CLUSTERTRIGGERBINDING = "clustertriggerbinding";
+    public static final String KIND_EVENTLISTENER = "eventlistener";
 
     public static final String KIND_PVC =  "PersistentVolumeClaim";
     public static final String KIND_CONFIGMAP =  "ConfigMap";
@@ -54,4 +60,10 @@ public class Constants {
     public static final String TERMINAL_TITLE = "Tekton";
 
     public static final String STRUCTURE_PROPERTY = Constants.class.getPackage().getName() + ".structure";
+
+    public enum InstallStatus {
+        ERROR,
+        INSTALLED,
+        OVERWRITTEN
+    }
 }
