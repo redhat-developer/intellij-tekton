@@ -15,7 +15,13 @@ import com.intellij.icons.AllIcons;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.popup.Balloon;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.border.CustomLineBorder;
 import com.intellij.ui.components.JBPanelWithEmptyText;
 import com.intellij.util.ui.JBUI;
@@ -154,7 +160,6 @@ public class HubMarketplaceTab extends HubDialogTab {
 
     private BiConsumer<HubItem, String> getInstallCallback() {
         return (hubItem, uri) -> {
-            Notification notification;
             ResourceData resource = hubItem.getResource();
             try {
                 Constants.InstallStatus installed = model.installHubItem(resource.getName(), resource.getKind(), uri);
@@ -164,14 +169,26 @@ public class HubMarketplaceTab extends HubDialogTab {
                     hubItem.updateBottomPanel(warningNameAlreadyUsed);
                 }
                 if (installed != Constants.InstallStatus.ERROR) {
-                    notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
-                    Notifications.Bus.notify(notification);
+                    notify("Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION, true);
                 }
             } catch (IOException ex) {
-                notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR);
-                Notifications.Bus.notify(notification);
+                notify("Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR, false);
             }
         };
+    }
+
+    private void notify(String title, String content, NotificationType type, boolean withBalloon) {
+        Notification notification;
+        notification = new Notification(NOTIFICATION_ID, title, content, type);
+        Notifications.Bus.notify(notification);
+        if (withBalloon) {
+            StatusBar statusBar = WindowManager.getInstance().getStatusBar(model.getProject());
+            JBPopupFactory.getInstance()
+                    .createHtmlTextBalloonBuilder(content, (type == NotificationType.ERROR ? MessageType.ERROR : MessageType.INFO), null)
+                    .setFadeoutTime(7500)
+                    .createBalloon()
+                    .show(RelativePoint.getNorthEastOf(statusBar.getComponent()), Balloon.Position.atRight);
+        }
     }
 
     private ApiCallback<Resources> getSearchCallback() {

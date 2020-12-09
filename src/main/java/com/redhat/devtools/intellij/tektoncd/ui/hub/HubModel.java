@@ -168,4 +168,9 @@ public class HubModel {
     public List<String> getTasksInstalled() {
         return tasksInstalled;
     }
+
+    public Project getProject() {
+        return project;
+    }
+
 }
