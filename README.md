@@ -18,6 +18,25 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
 
+### Tekton Hub integration
+
+The Tekton Hub can now be search for tasks. Once you've found a task that satisfies your requirements, you can install it on the cluster.
+
+![](images/0.4.0/tekton1.gif)
+
+### Improved code validation
+#### Unused parameters / resources / workspaces
+
+When a pipeline or task is defining parameters, resources or workspaces that are not being used in the pipeline or task definition, then this parameter, resource or workspace is grey highlighted just like an unused variable is highlighted in a classic code editor.
+
+![](images/0.4.0/tekton2.gif)
+
+
+
+## Previous releases
+
+## 0.3.0
+
 ### Improved code completion
 #### Cluster task references
 
@@ -29,8 +48,6 @@ When a name of a task is to be specified in a pipeline definition, then the list
 
 When a task is selected inside a pipeline definition during code completion, the list of parameters to be passed to this task is inserted into the pipeline definition. If the definition of a parameter contains a default value, then this value is also inserted into the pipeline definiton.
 On the same topic, if the task definition contains a list of workspaces, then a list of workspaces will be inserted into the pipeline definition as well.
-
-## Previous releases
 
 ## 0.2.0
 
