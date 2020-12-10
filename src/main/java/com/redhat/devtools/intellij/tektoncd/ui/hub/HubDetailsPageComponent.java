@@ -41,6 +41,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -248,7 +250,7 @@ public class HubDetailsPageComponent extends MultiPanel {
         //first tab - includes long description + link
         myDetailsComponent = createJEditorPane();
         JPanel detailsPanel = createBottomTab(myDetailsComponent);
-        myHomePage = new LinkPanel(detailsPanel, true, null, null);
+        myHomePage = createLinkPanel(detailsPanel);
 
         // second tab - includes readme
         myDescriptionComponent = createJEditorPane();
@@ -264,6 +266,24 @@ public class HubDetailsPageComponent extends MultiPanel {
         bottomTabs.addTab("Yaml", createScrollPane(yamlPanel));
 
         myPanel.add(bottomTabs, BorderLayout.CENTER);
+    }
+
+    /*
+    * 2020.3 introduced an incompatible way of creating LinkPanel so reflection is our saver.
+     */
+    @NotNull
+    private LinkPanel createLinkPanel(JPanel detailsPanel) {
+        try {
+            return LinkPanel.class.getConstructor(new Class[] { JPanel.class, Boolean.TYPE, Boolean.TYPE, Object.class, Object.class}).newInstance(
+                    detailsPanel, true, false, null, null);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            try {
+                return LinkPanel.class.getConstructor(new Class[] { JPanel.class, Boolean.TYPE, Object.class, Object.class}).newInstance(
+                        detailsPanel, true, null, null);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e1) {
+                return null;
+            }
+        }
     }
 
     @Override
