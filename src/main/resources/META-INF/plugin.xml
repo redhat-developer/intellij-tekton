@@ -13,6 +13,8 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.4.1</b></p>
+  <p>Fix incompatibility with 2020.3</p>
   <p><b>0.4.0</b></p>
   <p>Tekton Hub integration</p>
   <p><ul>
