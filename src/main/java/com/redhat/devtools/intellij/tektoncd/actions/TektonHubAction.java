@@ -37,9 +37,10 @@ public class TektonHubAction extends TektonAction {
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
-            List<String> tasks;
+            List<String> tasks, clusterTasks;
             try {
                 tasks = tkncli.getTasks(namespace).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
+                clusterTasks = tkncli.getClusterTasks().stream().map(ct -> ct.getMetadata().getName()).collect(Collectors.toList());
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
@@ -50,7 +51,7 @@ public class TektonHubAction extends TektonAction {
             }
 
             Project project = getEventProject(anActionEvent);
-            HubModel model = new HubModel(project, namespace, tasks);
+            HubModel model = new HubModel(project, namespace, tasks, clusterTasks);
             UIHelper.executeInUI(() -> {
                 HubDialog wizard = new HubDialog(project, model);
                 wizard.show();

@@ -41,7 +41,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Optional;
@@ -54,6 +53,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
@@ -82,7 +82,7 @@ public class HubDetailsPageComponent extends MultiPanel {
     private static final Logger logger = LoggerFactory.getLogger(HubDetailsPageComponent.class);
 
     private OpaquePanel myPanel;
-    private JLabel myIconLabel, installBtn;
+    private JLabel myIconLabel, installBtn, installAsCTBtn;
     private JPanel myNameAndButtons;
     private JLabel myNameComponent;
     private JComboBox versionsCmb;
@@ -143,18 +143,53 @@ public class HubDetailsPageComponent extends MultiPanel {
 
         installBtn = new JLabel("Install", SwingConstants.CENTER);
         installBtn.setForeground(JBUI.CurrentTheme.Link.linkColor());
-        installBtn.setPreferredSize(new Dimension(80, 60));
-        Border outside = new MatteBorder(1, 1, 1, 1, JBUI.CurrentTheme.Link.linkColor());
-        Border inside = new EmptyBorder(15, 0, 15, 10);
-        CompoundBorder cb = BorderFactory.createCompoundBorder(inside, outside);
-        CompoundBorder cb1 = BorderFactory.createCompoundBorder(cb, new EmptyBorder(0, 10, 0, 10));
-        installBtn.setBorder(cb1);
+        installBtn.setPreferredSize(new Dimension(60, 30));
+        installBtn.setBorder(new MatteBorder(1, 1, 1, 0, JBUI.CurrentTheme.Link.linkColor()));
         installBtn.setBackground(MAIN_BG_COLOR);
+
+        installAsCTBtn = new JLabel("Install as ClusterTask");
+        JPopupMenu popup = new JPopupMenu();
+        popup.add(installAsCTBtn);
+
+        Border outside = new MatteBorder(1, 0, 1, 1, JBUI.CurrentTheme.Link.linkColor());
+        CompoundBorder cb1Options = BorderFactory.createCompoundBorder(new EmptyBorder(0, 0, 0, 15), outside);
+        JLabel installOptions = new JLabel("", AllIcons.General.ArrowDown, SwingConstants.LEFT);
+        installOptions.setBackground(MAIN_BG_COLOR);
+        installOptions.setBorder(cb1Options);
+        installOptions.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) { }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) { }
+
+            @Override
+            public void mouseExited(MouseEvent e) { }
+
+            private void maybeShowPopup(MouseEvent e) {
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        });
+
+        JPanel installPanel = new JPanel(new BorderLayout());
+        installPanel.setBackground(MAIN_BG_COLOR);
+        installPanel.add(installBtn, BorderLayout.CENTER);
+        installPanel.add(installOptions, BorderLayout.EAST);
 
         myNameAndButtons = new JPanel(new BorderLayout());
         myNameAndButtons.setBackground(MAIN_BG_COLOR);
         myNameAndButtons.add(myNameComponent, BorderLayout.CENTER);
-        myNameAndButtons.add(installBtn, BorderLayout.EAST);
+        myNameAndButtons.add(installPanel, BorderLayout.EAST);
 
         centerPanel.add(myNameAndButtons, VerticalLayout.FILL_HORIZONTAL);
 
@@ -297,7 +332,7 @@ public class HubDetailsPageComponent extends MultiPanel {
         return super.create(key);
     }
 
-    public void show(HubItem item, BiConsumer<HubItem, String> doInstallAction) {
+    public void show(HubItem item, BiConsumer<HubItem, String> doInstallAction, BiConsumer<HubItem, String> doInstallAsClusterTaskAction) {
         if (item == null) {
             select(1, true);
         } else {
@@ -313,31 +348,8 @@ public class HubDetailsPageComponent extends MultiPanel {
             });
             versionsCmb.setSelectedIndex(versionsCmb.getItemCount() - 1);
 
-            if (installBtn.getMouseListeners().length > 0) {
-                installBtn.removeMouseListener(installBtn.getMouseListeners()[0]);
-            }
-            installBtn.addMouseListener(new MouseListener() {
-                @Override
-                public void mouseClicked(MouseEvent e) { }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    String versionSelected = ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion();
-                    Optional<String> rawURI = resource.getVersions().stream().filter(version -> version.getVersion().equalsIgnoreCase(versionSelected)).map(version -> version.getRawURL().toString()).findFirst();
-                    if (rawURI.isPresent()) {
-                        doInstallAction.accept(item, rawURI.get());
-                    }
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) { }
-
-                @Override
-                public void mouseEntered(MouseEvent e) { }
-
-                @Override
-                public void mouseExited(MouseEvent e) { }
-            });
+            setListenerInstallBtn(installBtn, item, doInstallAction);
+            setListenerInstallBtn(installAsCTBtn, item, doInstallAsClusterTaskAction);
 
             myRating.setText(resource.getRating().toString());
             myDetailsComponent.setText(resource.getLatestVersion().getDescription().replace("\n", "<br>") + "<br><br>Tags:<br>" + resource.getTags().stream().map(tag -> tag.getName()).collect(Collectors.joining(", ")));
@@ -397,5 +409,46 @@ public class HubDetailsPageComponent extends MultiPanel {
                 logger.warn(e.getLocalizedMessage());
             }
         });
+    }
+
+    private void setListenerInstallBtn(JLabel installBtn, HubItem item, BiConsumer<HubItem, String> doInstallAction) {
+        if (installBtn.getMouseListeners().length > 0) {
+            installBtn.removeMouseListener(installBtn.getMouseListeners()[0]);
+        }
+        installBtn.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                installHubItem(item, doInstallAction);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+    }
+
+    private void installHubItem(HubItem item, BiConsumer<HubItem, String> doInstallAction) {
+        ResourceData resource = item.getResource();
+        String versionSelected = ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion();
+        Optional<String> rawURI = resource.getVersions().stream().filter(version -> version.getVersion().equalsIgnoreCase(versionSelected)).map(version -> version.getRawURL().toString()).findFirst();
+        if (rawURI.isPresent()) {
+            doInstallAction.accept(item, rawURI.get());
+        }
     }
 }

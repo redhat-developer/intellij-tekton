@@ -51,6 +51,7 @@ import javax.swing.event.DocumentEvent;
 import org.jetbrains.annotations.NotNull;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
@@ -86,7 +87,7 @@ public class HubMarketplaceTab extends HubDialogTab {
     @NotNull
     @Override
     protected void updateDetailsPanel(HubItem item) {
-        myDetailsPage.show(item, getInstallCallback());
+        myDetailsPage.show(item, getInstallCallback(), getInstallAsClusterTaskCallback());
     }
 
     @NotNull
@@ -160,21 +161,31 @@ public class HubMarketplaceTab extends HubDialogTab {
 
     private BiConsumer<HubItem, String> getInstallCallback() {
         return (hubItem, uri) -> {
-            ResourceData resource = hubItem.getResource();
-            try {
-                Constants.InstallStatus installed = model.installHubItem(resource.getName(), resource.getKind(), uri);
-                if (installed == Constants.InstallStatus.INSTALLED) {
-                    JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
-                    warningNameAlreadyUsed.setToolTipText("A " + resource.getKind() + " with this name already exists on the cluster.");
-                    hubItem.updateBottomPanel(warningNameAlreadyUsed);
-                }
-                if (installed != Constants.InstallStatus.ERROR) {
-                    notify("Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION, true);
-                }
-            } catch (IOException ex) {
-                notify("Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR, false);
-            }
+            installHubItem(hubItem, hubItem.getResource().getKind(), uri);
         };
+    }
+
+    private BiConsumer<HubItem, String> getInstallAsClusterTaskCallback() {
+        return (hubItem, uri) -> {
+            installHubItem(hubItem, KIND_CLUSTERTASK, uri);
+        };
+    }
+
+    private void installHubItem(HubItem hubItem, String kindToBeSaved, String uri) {
+        ResourceData resource = hubItem.getResource();
+        try {
+            Constants.InstallStatus installed = model.installHubItem(resource.getName(), kindToBeSaved, uri);
+            if (installed == Constants.InstallStatus.INSTALLED) {
+                JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
+                warningNameAlreadyUsed.setToolTipText("A " + kindToBeSaved + " with this name already exists on the cluster.");
+                hubItem.updateBottomPanel(warningNameAlreadyUsed);
+            }
+            if (installed != Constants.InstallStatus.ERROR) {
+                notify("Save Successful", kindToBeSaved + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION, true);
+            }
+        } catch (IOException ex) {
+            notify("Error", "An error occurred while saving " + kindToBeSaved + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR, false);
+        }
     }
 
     private void notify(String title, String content, NotificationType type, boolean withBalloon) {

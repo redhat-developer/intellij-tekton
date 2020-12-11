@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.hub.api.ResourceApi;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiCallback;
@@ -35,6 +36,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+
 public class HubModel {
     private Logger logger = LoggerFactory.getLogger(HubModel.class);
 
@@ -42,12 +47,13 @@ public class HubModel {
     private Map<String, String> resourcesYaml;
     private Project project;
     private String selected, namespace;
-    private List<String> tasksInstalled;
+    private List<String> tasksInstalled, clusterTasksInstalled;
 
-    public HubModel(Project project, String namespace, List<String> tasks) {
+    public HubModel(Project project, String namespace, List<String> tasks, List<String> clusterTasks) {
         this.allHubItems = new ArrayList<>();
         this.resourcesYaml = new HashMap<>();
         this.tasksInstalled = tasks;
+        this.clusterTasksInstalled = clusterTasks;
         this.project = project;
         this.namespace = namespace;
     }
@@ -138,7 +144,7 @@ public class HubModel {
     /**
      * install a hub item in the cluster
      * @param name name of the hub item to save
-     * @param kind kind of the hub item to save
+     * @param kind kind to be used to save the hub item
      * @param uri uri where to download the hub item
      * @return status of install
      * @throws IOException
@@ -148,17 +154,31 @@ public class HubModel {
         if (yaml.isEmpty()) {
             return Constants.InstallStatus.ERROR;
         }
+        String kindInYaml = YAMLHelper.getStringValueFromYAML(yaml, new String[] {"kind"});
+        if (!kindInYaml.equalsIgnoreCase(kind)) {
+            yaml = yaml.replace(kindInYaml, kind);
+        }
         String confirmationMessage;
-        boolean alreadyOnCluster = tasksInstalled.contains(name);
-        if (alreadyOnCluster) {
+        boolean isTask = kind.equalsIgnoreCase(KIND_TASK);
+        boolean isClusterTask = kind.equalsIgnoreCase(KIND_CLUSTERTASK);
+        boolean clusterTaskAlreadyOnCluster = isClusterTask && clusterTasksInstalled.contains(name);
+        boolean taskAlreadyOnCluster = isTask && tasksInstalled.contains(name);
+        if (taskAlreadyOnCluster || clusterTaskAlreadyOnCluster) {
             confirmationMessage = "A " + kind + " with name " + name + " already exists on the cluster. By installing this " + kind + " the one on the cluster will be overwritten. Do you want to install it?";
         } else {
             confirmationMessage = "Do you want to install the " + kind + " " + name + " on the cluster?";
         }
         if (DeployHelper.saveOnCluster(project, namespace, yaml, confirmationMessage)) {
-            if (!alreadyOnCluster) {
-                tasksInstalled.add(name);
-                return Constants.InstallStatus.INSTALLED;
+            if (isTask) {
+                if (!taskAlreadyOnCluster) {
+                    tasksInstalled.add(name);
+                    return Constants.InstallStatus.INSTALLED;
+                }
+            } else if (isClusterTask) {
+                if (!clusterTaskAlreadyOnCluster) {
+                    clusterTasksInstalled.add(name);
+                    return Constants.InstallStatus.INSTALLED;
+                }
             }
             return Constants.InstallStatus.OVERWRITTEN;
         }
