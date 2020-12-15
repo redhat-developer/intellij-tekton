@@ -8,20 +8,16 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.utils;
+package com.redhat.devtools.intellij.tektoncd.ui.inspector;
 
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import java.io.File;
 import java.util.List;
-import org.jetbrains.yaml.schema.YamlJsonSchemaHighlightingInspection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

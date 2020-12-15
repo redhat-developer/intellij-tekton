@@ -114,7 +114,10 @@
     <fileEditorProvider implementation="com.redhat.devtools.intellij.tektoncd.ui.editors.TektonFileEditorProvider"/>
     <localInspection language="yaml" bundle="messages.YAMLBundle" displayName="Tekton Unused Variable inspector"
                      level="WARNING" groupKey="inspections.group.name" enabledByDefault="true"
-                     implementationClass="com.redhat.devtools.intellij.tektoncd.utils.VariableReferencesInspector"/>
+                     implementationClass="com.redhat.devtools.intellij.tektoncd.ui.inspector.VariableReferencesInspector"/>
+    <localInspection language="yaml" bundle="messages.YAMLBundle" displayName="Tekton Final Tasks inspector"
+                     level="WARNING" groupKey="inspections.group.name" enabledByDefault="true"
+                     implementationClass="com.redhat.devtools.intellij.tektoncd.ui.inspector.FinallyReferencesInspector"/>
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
