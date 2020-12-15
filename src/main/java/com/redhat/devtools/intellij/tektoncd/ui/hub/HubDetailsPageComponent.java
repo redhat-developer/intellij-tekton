@@ -230,7 +230,7 @@ public class HubDetailsPageComponent extends MultiPanel {
         versionsCmb.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 ResourceVersionData versionSelected = (ResourceVersionData) e.getItem();
-                loadBottomTabs(versionSelected.getRawURL());
+                loadBottomTabs(versionSelected.getDisplayName(), versionSelected.getRawURL());
             }
         });
 
@@ -343,6 +343,7 @@ public class HubDetailsPageComponent extends MultiPanel {
 
             versionsCmb.removeAllItems();
             model.getVersionsById(resource.getId()).forEach(version -> {
+                version.setDisplayName(item.getResource().getName());
                 versionsCmb.addItem(version);
 
             });
@@ -365,25 +366,26 @@ public class HubDetailsPageComponent extends MultiPanel {
             description = description.indexOf("\n") > -1 ? description.substring(0, description.indexOf("\n")) : description;
             myTopDescription.setText(description);
 
-            loadBottomTabs(resource.getLatestVersion().getRawURL());
+            loadBottomTabs(item.getResource().getName(), resource.getLatestVersion().getRawURL());
 
             select(0, true);
         }
     }
 
-    private void loadBottomTabs(URI rawURL) {
-        loadYaml(rawURL);
-        loadDescription(rawURL);
+    private void loadBottomTabs(String item, URI rawURL) {
+        loadYaml(item, rawURL);
+        loadDescription(item, rawURL);
     }
 
-    private void loadYaml(URI rawURI) {
+    private void loadYaml(String item, URI rawURI) {
         //TODO add loading icon
         myYamlComponent.setText("loading");
-
         ExecHelper.submit(() -> {
             try {
                 String yaml = model.getContentByURI(rawURI.toString());
-                myYamlComponent.setText("<pre>" + yaml + "</pre>");
+                if (item != null && item.equalsIgnoreCase(model.getSelectedHubItem())) {
+                    myYamlComponent.setText("<pre>" + yaml + "</pre>");
+                }
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage());
             }
@@ -391,7 +393,7 @@ public class HubDetailsPageComponent extends MultiPanel {
 
     }
 
-    private void loadDescription(URI rawURI) {
+    private void loadDescription(String item, URI rawURI) {
         //TODO add loading icon
         myDescriptionComponent.setText("");
         ExecHelper.submit(() -> {
@@ -403,8 +405,9 @@ public class HubDetailsPageComponent extends MultiPanel {
                 final ASTNode parsedTree1 = new MarkdownParser(flavour).buildMarkdownTreeFromString(text);
                 final String html = new HtmlGenerator(text, parsedTree1, flavour, false).generateHtml();
 
-                myDescriptionComponent.setText(html);
-
+                if (item.equalsIgnoreCase(model.getSelectedHubItem())) {
+                    myDescriptionComponent.setText(html);
+                }
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage());
             }
