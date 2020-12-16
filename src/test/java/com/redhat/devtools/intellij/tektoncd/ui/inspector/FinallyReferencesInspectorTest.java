@@ -16,6 +16,7 @@ import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
+import com.redhat.devtools.intellij.tektoncd.inspector.FinallyReferencesInspector;
 import java.io.File;
 import java.util.List;
 import org.junit.After;
