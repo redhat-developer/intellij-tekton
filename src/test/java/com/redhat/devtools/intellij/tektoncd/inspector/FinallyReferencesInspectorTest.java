@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.ui.inspector;
+package com.redhat.devtools.intellij.tektoncd.inspector;
 
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
@@ -16,7 +16,6 @@ import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import com.redhat.devtools.intellij.tektoncd.inspector.FinallyReferencesInspector;
 import java.io.File;
 import java.util.List;
 import org.junit.After;
@@ -38,7 +37,7 @@ public class FinallyReferencesInspectorTest {
 
         myFixture = IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(fixture, factory.createTempDirTestFixture());
 
-        myFixture.setTestDataPath("src/test/resources/ui/inspector/finallyReferencesInspector/");
+        myFixture.setTestDataPath("src/test/resources/inspector/finallyReferencesInspector/");
         myFixture.setUp();
         myFixture.enableInspections(FinallyReferencesInspector.class);
         VfsRootAccess.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
