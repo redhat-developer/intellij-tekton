@@ -8,10 +8,9 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.utils;
+package com.redhat.devtools.intellij.tektoncd.inspector;
 
 import com.intellij.codeInspection.InspectionManager;
-import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -28,12 +27,11 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigura
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class VariableReferencesInspector extends LocalInspectionTool {
+public class VariableReferencesInspector extends BaseInspector {
 
     @Nullable
     @Override
@@ -181,19 +179,5 @@ public class VariableReferencesInspector extends LocalInspectionTool {
     private boolean isSpecDirectChild(ASTNode node) {
         return node.getTreeParent().getTreeParent().getTreeParent().getText().startsWith("spec:") ||
                 node.getTreeParent().getTreeParent().getTreeParent().getFirstChildNode().getText().startsWith("resources");
-    }
-
-    private boolean isPipeline(PsiFile file) {
-        List<Integer> pipelineIndex = indexesOfByPattern(Pattern.compile("kind:\\s*Pipeline"), file.getText());
-        return !pipelineIndex.isEmpty();
-    }
-
-    private List<Integer> indexesOfByPattern(Pattern pattern, String textWhereToSearch) {
-        List<Integer> indexes = new ArrayList<>();
-        Matcher matcher = pattern.matcher(textWhereToSearch);
-        while (matcher.find()) {
-            indexes.add(matcher.start());
-        }
-        return indexes;
     }
 }
