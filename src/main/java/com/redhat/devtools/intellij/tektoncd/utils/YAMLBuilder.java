@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 
 public class YAMLBuilder {
@@ -217,6 +218,14 @@ public class YAMLBuilder {
         triggersNode.add(triggerNode);
 
         return triggersNode;
+    }
+
+    public static ObjectNode createRun(ActionToRunModel model) {
+        if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
+            return createPipelineRun(model);
+        } else {
+            return createTaskRun(model);
+        }
     }
 
     public static ObjectNode createPipelineRun(ActionToRunModel model) {

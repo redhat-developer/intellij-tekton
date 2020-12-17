@@ -472,7 +472,7 @@ public abstract class BaseWizard extends DialogWrapper {
     protected void updatePreview(ActionToRunModel model) {
         String preview = "";
         try {
-            preview = new YAMLMapper().writeValueAsString(YAMLBuilder.createTaskRun(model)); //.createPreview(model);
+            preview = new YAMLMapper().writeValueAsString(YAMLBuilder.createRun(model));
         } catch (IOException e) {
             //logger.warn("Error: " + e.getLocalizedMessage());
         }
