@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -140,12 +141,12 @@ public class YAMLBuilderTest extends BaseTest {
         String content = load("task1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
-        ObjectNode taskRunNode = YAMLBuilder.createTaskRun("task", model);
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
         assertEquals(taskRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(taskRunNode.get("kind").asText(), "TaskRun");
-        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "task-");
-        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "task");
+        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "foo");
         assertFalse(taskRunNode.get("spec").has("serviceAccountName"));
         assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(taskRunNode.get("spec").has("params"));
@@ -159,12 +160,12 @@ public class YAMLBuilderTest extends BaseTest {
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         model.setServiceAccount("sa");
 
-        ObjectNode taskRunNode = YAMLBuilder.createTaskRun("task", model);
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
         assertEquals(taskRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(taskRunNode.get("kind").asText(), "TaskRun");
-        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "task-");
-        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "task");
+        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "foo");
         assertEquals(taskRunNode.get("spec").get("serviceAccountName").asText(), "sa");
         assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(taskRunNode.get("spec").has("params"));
@@ -177,12 +178,12 @@ public class YAMLBuilderTest extends BaseTest {
         String content = load("task3.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
-        ObjectNode taskRunNode = YAMLBuilder.createTaskRun("task", model);
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
         assertEquals(taskRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(taskRunNode.get("kind").asText(), "TaskRun");
-        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "task-");
-        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "task");
+        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "foo");
         assertFalse(taskRunNode.get("spec").has("serviceAccountName"));
         assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
         assertTrue(taskRunNode.get("spec").has("params"));
@@ -196,12 +197,12 @@ public class YAMLBuilderTest extends BaseTest {
         String content = load("task6.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
-        ObjectNode taskRunNode = YAMLBuilder.createTaskRun("task", model);
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
         assertEquals(taskRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(taskRunNode.get("kind").asText(), "TaskRun");
-        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "task-");
-        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "task");
+        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "foo");
         assertFalse(taskRunNode.get("spec").has("serviceAccountName"));
         assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(taskRunNode.get("spec").has("params"));
@@ -216,12 +217,12 @@ public class YAMLBuilderTest extends BaseTest {
         String content = load("task8.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
-        ObjectNode taskRunNode = YAMLBuilder.createTaskRun("task", model);
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
         assertEquals(taskRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(taskRunNode.get("kind").asText(), "TaskRun");
-        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "task-");
-        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "task");
+        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "foo");
         assertFalse(taskRunNode.get("spec").has("serviceAccountName"));
         assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(taskRunNode.get("spec").has("params"));
@@ -242,12 +243,12 @@ public class YAMLBuilderTest extends BaseTest {
             model.getWorkspaces().put("write-disallowed", new Workspace("foo2", Workspace.Kind.EMPTYDIR, "foo"));
         }
 
-        ObjectNode taskRunNode = YAMLBuilder.createTaskRun("task", model);
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
         assertEquals(taskRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(taskRunNode.get("kind").asText(), "TaskRun");
-        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "task-");
-        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "task");
+        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "foo");
         assertFalse(taskRunNode.get("spec").has("serviceAccountName"));
         assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(taskRunNode.get("spec").has("params"));
@@ -255,6 +256,50 @@ public class YAMLBuilderTest extends BaseTest {
         assertTrue(taskRunNode.get("spec").has("workspaces"));
         assertEquals(taskRunNode.get("spec").get("workspaces").get(0).get("name").asText(), "foo1");
         assertEquals(taskRunNode.get("spec").get("workspaces").get(1).get("name").asText(), "foo2");
+    }
+
+    @Test
+    public void checkTaskRunCreatedWithTaskConfigurationModelWithoutWorkspace() throws IOException {
+        String content = load("task5.yaml");
+        TaskConfigurationModel model = new TaskConfigurationModel(content);
+
+
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
+
+        assertEquals(taskRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
+        assertEquals(taskRunNode.get("kind").asText(), "TaskRun");
+        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "foo");
+        assertTrue(taskRunNode.get("spec").has("serviceAccountName"));
+        assertEquals(taskRunNode.get("spec").get("serviceAccountName").asText(), "");
+        assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
+        assertTrue(taskRunNode.get("spec").has("params"));
+        assertFalse(taskRunNode.get("spec").has("resources"));
+        assertFalse(taskRunNode.get("spec").has("workspaces"));
+    }
+
+    @Test
+    public void checkTaskRunCreatedWithTaskConfigurationModelWithWorkspace() throws IOException {
+        String content = load("task10.yaml");
+        TaskConfigurationModel model = new TaskConfigurationModel(content);
+
+
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
+
+        assertEquals(taskRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
+        assertEquals(taskRunNode.get("kind").asText(), "TaskRun");
+        assertEquals(taskRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(taskRunNode.get("spec").get("taskRef").get("name").asText(), "foo");
+        assertTrue(taskRunNode.get("spec").has("serviceAccountName"));
+        assertEquals(taskRunNode.get("spec").get("serviceAccountName").asText(), "");
+        assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
+        assertFalse(taskRunNode.get("spec").has("params"));
+        assertFalse(taskRunNode.get("spec").has("resources"));
+        assertTrue(taskRunNode.get("spec").has("workspaces"));
+        assertEquals(taskRunNode.get("spec").get("workspaces").get(0).get("name").asText(), "write-allowed");
+        assertEquals(taskRunNode.get("spec").get("workspaces").get(1).get("name").asText(), "write-disallowed");
+        assertTrue(taskRunNode.get("spec").get("workspaces").get(0).has("EmptyDir"));
+        assertTrue(taskRunNode.get("spec").get("workspaces").get(1).has("EmptyDir"));
     }
 
     /////////////////////////////////////////////////////////
@@ -266,7 +311,7 @@ public class YAMLBuilderTest extends BaseTest {
         String content = load("task1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
-        ObjectNode taskRunNode = YAMLBuilder.createTaskRun("task", model);
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
         ObjectNode triggerTemplateNode = YAMLBuilder.createTriggerTemplate("template", Collections.emptyList(), Arrays.asList(taskRunNode));
 
         assertEquals(triggerTemplateNode.get("apiVersion").asText(), "triggers.tekton.dev/v1alpha1");
@@ -281,7 +326,7 @@ public class YAMLBuilderTest extends BaseTest {
         String content = load("task1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
-        ObjectNode taskRunNode = YAMLBuilder.createTaskRun("task", model);
+        ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
         ObjectNode triggerTemplateNode = YAMLBuilder.createTriggerTemplate("template", Arrays.asList("param1", "param2"), Arrays.asList(taskRunNode));
 
         assertEquals(triggerTemplateNode.get("apiVersion").asText(), "triggers.tekton.dev/v1alpha1");

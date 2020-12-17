@@ -267,105 +267,72 @@ public class YAMLBuilder {
     }
 
     public static ObjectNode createTaskRun(ActionToRunModel model) {
-        ObjectNode rootNode = YAML_MAPPER.createObjectNode();
+        return createTaskRunInternal(model.getResource().getName(),
+                                     model.getParams(),
+                                     model.getInputResources(),
+                                     model.getOutputResources(),
+                                     model.getWorkspaces(),
+                                     model.getServiceAccount().isEmpty() ? null : model.getServiceAccount());
 
-        rootNode.put("apiVersion", "tekton.dev/v1beta1");
-        rootNode.put("kind", "TaskRun");
-
-        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
-        metadataNode.put("generateName", model.getResource().getName() + "-");
-
-        rootNode.set("metadata", metadataNode);
-
-        ObjectNode specNode = YAML_MAPPER.createObjectNode();
-
-        ObjectNode pipelineRefNode = YAML_MAPPER.createObjectNode();
-        pipelineRefNode.put("name", model.getResource().getName());
-
-        specNode.set("taskRef", pipelineRefNode);
-
-        if (!model.getServiceAccount().isEmpty()) {
-            specNode.put("serviceAccountName", model.getServiceAccount());
-        }
-
-        ArrayNode paramsNode = createParamsNodeFromInput(model.getParams());
-        if (paramsNode.size() > 0) {
-            specNode.set("params", paramsNode);
-        }
-
-        ObjectNode resourcesNode = YAML_MAPPER.createObjectNode();
-
-        ArrayNode inputResourcesNode = createInputResourcesNode(model.getInputResources());
-        if (inputResourcesNode.size() > 0) {
-            resourcesNode.set("inputs", inputResourcesNode);
-        }
-
-        ArrayNode outputResourcesNode = createOutputResourcesNode(model.getOutputResources());
-        if (outputResourcesNode.size() > 0) {
-            resourcesNode.set("outputs", outputResourcesNode);
-        }
-
-        if (resourcesNode.size() > 0) {
-            specNode.set("resources", resourcesNode);
-        }
-
-        ArrayNode workspacesNode = createWorkspaceNode(model.getWorkspaces());
-        if (workspacesNode.size() > 0) {
-            specNode.set("workspaces", workspacesNode);
-        }
-
-        rootNode.set("spec", specNode);
-
-        return rootNode;
     }
 
     public static ObjectNode createTaskRun(TaskConfigurationModel model) {
-        ObjectNode rootNode = YAML_MAPPER.createObjectNode();
-
-        rootNode.put("apiVersion", "tekton.dev/v1beta1");
-        rootNode.put("kind", "TaskRun");
-
-        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
-        metadataNode.put("generateName", model.getName() + "-");
-
-        rootNode.set("metadata", metadataNode);
-
-        ObjectNode specNode = YAML_MAPPER.createObjectNode();
-
-        ObjectNode pipelineRefNode = YAML_MAPPER.createObjectNode();
-        pipelineRefNode.put("name", model.getName());
-
-        specNode.set("taskRef", pipelineRefNode);
-
-        specNode.put("serviceAccountName", "");
-
-        ArrayNode paramsNode = createParamsNodeFromInput(model.getParams());
-        if (paramsNode.size() > 0) {
-            specNode.set("params", paramsNode);
-        }
-
-        ObjectNode resourcesNode = YAML_MAPPER.createObjectNode();
-
-        ArrayNode inputResourcesNode = createInputResourcesNode(model.getInputResources());
-        if (inputResourcesNode.size() > 0) {
-            resourcesNode.set("inputs", inputResourcesNode);
-        }
-
-        ArrayNode outputResourcesNode = createOutputResourcesNode(model.getOutputResources());
-        if (outputResourcesNode.size() > 0) {
-            resourcesNode.set("outputs", outputResourcesNode);
-        }
-
-        if (resourcesNode.size() > 0) {
-            specNode.set("resources", resourcesNode);
-        }
-
-        // set workspaces to default emptydir
         Map<String, Workspace> workspaces = new HashMap<>();
         model.getWorkspaces().stream().forEach(workspaceName -> {
             Workspace workspace = new Workspace(workspaceName,  Workspace.Kind.EMPTYDIR, null);
             workspaces.put(workspaceName, workspace);
         });
+        return createTaskRunInternal(model.getName(),
+                                     model.getParams(),
+                                     model.getInputResources(),
+                                     model.getOutputResources(),
+                                     workspaces,
+                                     "");
+    }
+
+    public static ObjectNode createTaskRunInternal(String name, List<Input> params, List<Input> inputResources, List<Output> outputs, Map<String, Workspace> workspaces, String serviceAccount) {
+        ObjectNode rootNode = YAML_MAPPER.createObjectNode();
+
+        rootNode.put("apiVersion", "tekton.dev/v1beta1");
+        rootNode.put("kind", "TaskRun");
+
+        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
+        metadataNode.put("generateName", name + "-");
+
+        rootNode.set("metadata", metadataNode);
+
+        ObjectNode specNode = YAML_MAPPER.createObjectNode();
+
+        ObjectNode pipelineRefNode = YAML_MAPPER.createObjectNode();
+        pipelineRefNode.put("name", name);
+
+        specNode.set("taskRef", pipelineRefNode);
+
+        if (serviceAccount != null) {
+            specNode.put("serviceAccountName", serviceAccount);
+        }
+
+        ArrayNode paramsNode = createParamsNodeFromInput(params);
+        if (paramsNode.size() > 0) {
+            specNode.set("params", paramsNode);
+        }
+
+        ObjectNode resourcesNode = YAML_MAPPER.createObjectNode();
+
+        ArrayNode inputResourcesNode = createInputResourcesNode(inputResources);
+        if (inputResourcesNode.size() > 0) {
+            resourcesNode.set("inputs", inputResourcesNode);
+        }
+
+        ArrayNode outputResourcesNode = createOutputResourcesNode(outputs);
+        if (outputResourcesNode.size() > 0) {
+            resourcesNode.set("outputs", outputResourcesNode);
+        }
+
+        if (resourcesNode.size() > 0) {
+            specNode.set("resources", resourcesNode);
+        }
+
         ArrayNode workspacesNode = createWorkspaceNode(workspaces);
         if (workspacesNode.size() > 0) {
             specNode.set("workspaces", workspacesNode);
