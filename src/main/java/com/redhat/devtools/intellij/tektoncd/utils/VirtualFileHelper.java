@@ -28,22 +28,26 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 public class VirtualFileHelper {
     static Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
 
-    public static void openVirtualFileInEditor(Project project, String namespace, String name, String content, String kind) {
+    public static void openVirtualFileInEditor(Project project, String namespace, String name, String content, String kind, boolean forceWritable) {
         Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
                 filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + name + ".yaml")).findFirst();
         if (!editor.isPresent()) {
-            VirtualFileHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + name + ".yaml", content, kind, null);
+            VirtualFileHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + name + ".yaml", content, kind, null, forceWritable);
         } else {
             FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
         }
     }
 
     public static void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode) {
+        createAndOpenVirtualFile(project, namespace, name, content, kind, targetNode, false);
+    }
+
+    public static void  createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode, boolean forceWritable) {
         try {
             VirtualFile vf;
 
             //open TaskRun and PipelineRun in read only mode
-            if (KIND_PIPELINERUN.equals(kind) || KIND_TASKRUN.equals(kind)) {
+            if (!forceWritable && (KIND_PIPELINERUN.equals(kind) || KIND_TASKRUN.equals(kind))) {
                 vf = new LightVirtualFile(name, content);
                 vf.setWritable(false);
             } else {

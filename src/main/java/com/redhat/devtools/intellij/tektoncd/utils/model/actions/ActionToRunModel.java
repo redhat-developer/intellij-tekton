@@ -93,6 +93,10 @@ public abstract class ActionToRunModel extends ConfigurationModel {
         return this.isValid;
     }
 
+    public ResourceConfigurationModel getResource() {
+        return resource;
+    }
+
     public String getErrorMessage() {
         return this.errorMessage;
     }

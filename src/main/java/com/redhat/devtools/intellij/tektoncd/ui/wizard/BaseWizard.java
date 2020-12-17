@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.intellij.CommonBundle;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.IdeBundle;
@@ -467,10 +468,11 @@ public abstract class BaseWizard extends DialogWrapper {
         }
     }
 
+
     protected void updatePreview(ActionToRunModel model) {
         String preview = "";
         try {
-            preview = YAMLBuilder.createPreview(model);
+            preview = new YAMLMapper().writeValueAsString(YAMLBuilder.createTaskRun(model)); //.createPreview(model);
         } catch (IOException e) {
             //logger.warn("Error: " + e.getLocalizedMessage());
         }

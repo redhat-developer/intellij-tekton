@@ -158,7 +158,7 @@ public class TreeHelper {
         if (yamlAndKind != null && !yamlAndKind.getFirst().isEmpty()) {
             Project project = element.getRoot().getProject();
             String namespace = element.getNamespace();
-            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.getFirst(), yamlAndKind.getSecond());
+            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.getFirst(), yamlAndKind.getSecond(), false);
         }
     }
 

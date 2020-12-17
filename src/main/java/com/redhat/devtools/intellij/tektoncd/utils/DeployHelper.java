@@ -62,13 +62,17 @@ public class DeployHelper {
 
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(model.getKind()) ? "" : namespace;
-            Map<String, Object> resource = tknCli.getCustomResource(namespace, model.getName(), model.getCrdContext());
-            if (resource == null) {
+            if (CRDHelper.isRunResource(model.getKind())) {
                 tknCli.createCustomResource(resourceNamespace, model.getCrdContext(), yaml);
             } else {
-                JsonNode customResource = JSONHelper.MapToJSON(resource);
-                ((ObjectNode) customResource).set("spec", model.getSpec());
-                tknCli.editCustomResource(resourceNamespace, model.getName(), model.getCrdContext(), customResource.toString());
+                Map<String, Object> resource = tknCli.getCustomResource(namespace, model.getName(), model.getCrdContext());
+                if (resource == null) {
+                    tknCli.createCustomResource(resourceNamespace, model.getCrdContext(), yaml);
+                } else {
+                    JsonNode customResource = JSONHelper.MapToJSON(resource);
+                    ((ObjectNode) customResource).set("spec", model.getSpec());
+                    tknCli.editCustomResource(resourceNamespace, model.getName(), model.getCrdContext(), customResource.toString());
+                }
             }
         } catch (KubernetesClientException e) {
             Status errorStatus = e.getStatus();
@@ -84,7 +88,8 @@ public class DeployHelper {
 
     public static DeployModel isValid(String yaml) throws IOException {
         String name = YAMLHelper.getStringValueFromYAML(yaml, new String[] {"metadata", "name"});
-        if (Strings.isNullOrEmpty(name)) {
+        String generateName = YAMLHelper.getStringValueFromYAML(yaml, new String[] {"metadata", "generateName"});
+        if (Strings.isNullOrEmpty(name) && Strings.isNullOrEmpty(generateName)) {
             throw new IOException("Tekton file has not a valid format. Name field is not valid or found.");
         }
         String apiVersion = YAMLHelper.getStringValueFromYAML(yaml, new String[] {"apiVersion"});
