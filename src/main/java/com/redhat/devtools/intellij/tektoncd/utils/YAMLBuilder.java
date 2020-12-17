@@ -18,13 +18,16 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 
 public class YAMLBuilder {
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
@@ -216,24 +219,62 @@ public class YAMLBuilder {
         return triggersNode;
     }
 
-    public static ObjectNode createPipelineRun(String pipeline, AddTriggerModel model) {
-        //TODO use fabric8 client to create pipelinerun and taskrun
+    public static ObjectNode createPipelineRun(ActionToRunModel model) {
+        return createRunInternal("PipelineRun", model);
+    }
+
+    public static ObjectNode createTaskRun(ConfigurationModel model) {
+        return createRunInternal("TaskRun", model);
+    }
+
+    public static ObjectNode createRunInternal(String kind, ConfigurationModel model) {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
         rootNode.put("apiVersion", "tekton.dev/v1beta1");
-        rootNode.put("kind", "PipelineRun");
+        rootNode.put("kind", kind);
 
         ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
-        metadataNode.put("generateName", pipeline + "-");
-
-        //TODO add labels
+        metadataNode.put("generateName", model.getName() + "-");
 
         rootNode.set("metadata", metadataNode);
 
+        ObjectNode spec = YAML_MAPPER.createObjectNode();
+        if (model instanceof ActionToRunModel) {
+            ActionToRunModel actionModel = (ActionToRunModel)model;
+            if (kind.equalsIgnoreCase(KIND_PIPELINERUN)) {
+                spec = createPipelineRunSpec(actionModel);
+            } else {
+                spec = createTaskRunSpec(actionModel.getResource().getName(),
+                        actionModel.getParams(),
+                        actionModel.getInputResources(),
+                        actionModel.getOutputResources(),
+                        actionModel.getWorkspaces(),
+                        actionModel.getServiceAccount().isEmpty() ? null : actionModel.getServiceAccount());
+            }
+        } else if (model instanceof TaskConfigurationModel) {
+            Map<String, Workspace> workspaces = new HashMap<>();
+            ((TaskConfigurationModel)model).getWorkspaces().stream().forEach(workspaceName -> {
+                Workspace workspace = new Workspace(workspaceName,  Workspace.Kind.EMPTYDIR, null);
+                workspaces.put(workspaceName, workspace);
+            });
+            spec = createTaskRunSpec(model.getName(),
+                    ((TaskConfigurationModel)model).getParams(),
+                    ((TaskConfigurationModel)model).getInputResources(),
+                    ((TaskConfigurationModel)model).getOutputResources(),
+                    workspaces,
+                    "");
+        }
+
+        rootNode.set("spec", spec);
+
+        return rootNode;
+    }
+
+    private static ObjectNode createPipelineRunSpec(ActionToRunModel model) {
         ObjectNode specNode = YAML_MAPPER.createObjectNode();
 
         ObjectNode pipelineRefNode = YAML_MAPPER.createObjectNode();
-        pipelineRefNode.put("name", pipeline);
+        pipelineRefNode.put("name", model.getResource().getName());
 
         specNode.set("pipelineRef", pipelineRefNode);
 
@@ -261,46 +302,10 @@ public class YAMLBuilder {
             specNode.set("workspaces", workspacesNode);
         }
 
-        rootNode.set("spec", specNode);
-
-        return rootNode;
+        return specNode;
     }
 
-    public static ObjectNode createTaskRun(ActionToRunModel model) {
-        return createTaskRunInternal(model.getResource().getName(),
-                                     model.getParams(),
-                                     model.getInputResources(),
-                                     model.getOutputResources(),
-                                     model.getWorkspaces(),
-                                     model.getServiceAccount().isEmpty() ? null : model.getServiceAccount());
-
-    }
-
-    public static ObjectNode createTaskRun(TaskConfigurationModel model) {
-        Map<String, Workspace> workspaces = new HashMap<>();
-        model.getWorkspaces().stream().forEach(workspaceName -> {
-            Workspace workspace = new Workspace(workspaceName,  Workspace.Kind.EMPTYDIR, null);
-            workspaces.put(workspaceName, workspace);
-        });
-        return createTaskRunInternal(model.getName(),
-                                     model.getParams(),
-                                     model.getInputResources(),
-                                     model.getOutputResources(),
-                                     workspaces,
-                                     "");
-    }
-
-    public static ObjectNode createTaskRunInternal(String name, List<Input> params, List<Input> inputResources, List<Output> outputs, Map<String, Workspace> workspaces, String serviceAccount) {
-        ObjectNode rootNode = YAML_MAPPER.createObjectNode();
-
-        rootNode.put("apiVersion", "tekton.dev/v1beta1");
-        rootNode.put("kind", "TaskRun");
-
-        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
-        metadataNode.put("generateName", name + "-");
-
-        rootNode.set("metadata", metadataNode);
-
+    private static ObjectNode createTaskRunSpec(String name, List<Input> params, List<Input> inputResources, List<Output> outputs, Map<String, Workspace> workspaces, String serviceAccount) {
         ObjectNode specNode = YAML_MAPPER.createObjectNode();
 
         ObjectNode pipelineRefNode = YAML_MAPPER.createObjectNode();
@@ -337,10 +342,7 @@ public class YAMLBuilder {
         if (workspacesNode.size() > 0) {
             specNode.set("workspaces", workspacesNode);
         }
-
-        rootNode.set("spec", specNode);
-
-        return rootNode;
+        return specNode;
     }
 
     public static ObjectNode createTriggerTemplate(String name, List<String> params, List<ObjectNode> runs) {

@@ -36,12 +36,12 @@ public class YAMLBuilderTest extends BaseTest {
         String content = load("pipeline1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
-        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun("pipeline", model);
+        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
         assertEquals(pipelineRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(pipelineRunNode.get("kind").asText(), "PipelineRun");
-        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "pipeline-");
-        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "pipeline");
+        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "foo");
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountName"));
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(pipelineRunNode.get("spec").has("params"));
@@ -55,12 +55,12 @@ public class YAMLBuilderTest extends BaseTest {
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         model.setServiceAccount("sa");
 
-        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun("pipeline", model);
+        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
         assertEquals(pipelineRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(pipelineRunNode.get("kind").asText(), "PipelineRun");
-        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "pipeline-");
-        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "pipeline");
+        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "foo");
         assertEquals(pipelineRunNode.get("spec").get("serviceAccountName").asText(), "sa");
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(pipelineRunNode.get("spec").has("params"));
@@ -73,12 +73,12 @@ public class YAMLBuilderTest extends BaseTest {
         String content = load("pipeline3.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
-        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun("pipeline", model);
+        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
         assertEquals(pipelineRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(pipelineRunNode.get("kind").asText(), "PipelineRun");
-        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "pipeline-");
-        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "pipeline");
+        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "foo");
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountName"));
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountNames"));
         assertTrue(pipelineRunNode.get("spec").has("params"));
@@ -92,12 +92,12 @@ public class YAMLBuilderTest extends BaseTest {
         String content = load("pipeline4.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
-        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun("pipeline", model);
+        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
         assertEquals(pipelineRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(pipelineRunNode.get("kind").asText(), "PipelineRun");
-        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "pipeline-");
-        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "pipeline");
+        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "foo");
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountName"));
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(pipelineRunNode.get("spec").has("params"));
@@ -117,12 +117,12 @@ public class YAMLBuilderTest extends BaseTest {
             model.getWorkspaces().put("recipe-store", new Workspace("foo2", Workspace.Kind.EMPTYDIR, "foo"));
         }
 
-        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun("pipeline", model);
+        ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
         assertEquals(pipelineRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
         assertEquals(pipelineRunNode.get("kind").asText(), "PipelineRun");
-        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "pipeline-");
-        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "pipeline");
+        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "foo-");
+        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "foo");
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountName"));
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(pipelineRunNode.get("spec").has("params"));
