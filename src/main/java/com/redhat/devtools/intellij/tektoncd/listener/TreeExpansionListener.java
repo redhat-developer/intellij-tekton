@@ -10,8 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.listener;
 
+import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 
 import javax.swing.event.TreeExpansionEvent;
@@ -23,6 +26,7 @@ public class TreeExpansionListener implements TreeWillExpandListener {
         ParentableNode<? extends ParentableNode<?>> expandingElement = StructureTreeAction.getElement(treeExpansionEvent.getPath().getLastPathComponent());
         if (WatchHandler.get().canBeWatched(expandingElement)) {
             WatchHandler.get().setWatchByNode(expandingElement, treeExpansionEvent.getPath());
+            ((TektonTreeStructure)((Tree)treeExpansionEvent.getSource()).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(expandingElement);
         }
     }
 
