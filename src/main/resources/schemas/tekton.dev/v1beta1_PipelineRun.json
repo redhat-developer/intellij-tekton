@@ -1735,6 +1735,45 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "PipelineRunRunStatus": {
+      "properties": {
+        "pipelineTaskName": {
+          "type": "string"
+        },
+        "status": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/RunStatus"
+        },
+        "whenExpressions": {
+          "items": {
+            "required": [
+              "input",
+              "operator",
+              "values"
+            ],
+            "properties": {
+              "input": {
+                "type": "string"
+              },
+              "operator": {
+                "type": "string"
+              },
+              "values": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "PipelineRunSpec": {
       "properties": {
         "pipelineRef": {
@@ -1842,6 +1881,15 @@
             ".*": {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "$ref": "#/definitions/PipelineRunTaskRunStatus"
+            }
+          },
+          "type": "object"
+        },
+        "runs": {
+          "patternProperties": {
+            ".*": {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "$ref": "#/definitions/PipelineRunRunStatus"
             }
           },
           "type": "object"
@@ -2475,6 +2523,11 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "RawExtension": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
     "ResourceFieldSelector": {
       "required": [
         "resource"
@@ -2527,6 +2580,64 @@
             }
           },
           "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "RunResult": {
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "RunStatus": {
+      "properties": {
+        "observedGeneration": {
+          "type": "integer"
+        },
+        "conditions": {
+          "items": {
+            "$ref": "#/definitions/Condition"
+          },
+          "type": "array"
+        },
+        "annotations": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "data-time"
+        },
+        "completionTime": {
+          "type": "string",
+          "format": "data-time"
+        },
+        "results": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/RunResult"
+          },
+          "type": "array"
+        },
+        "extraFields": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/RawExtension"
         }
       },
       "additionalProperties": false,

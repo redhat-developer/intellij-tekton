@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/alecthomas/jsonschema v0.0.0-20200217214135-7152f22193c9
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0
-	github.com/tektoncd/pipeline v0.18.0
+	github.com/tektoncd/pipeline v0.19.0
 	github.com/tektoncd/triggers v0.9.0
 	k8s.io/apimachinery v0.19.0
 	k8s.io/test-infra v0.0.0-20200828131253-b23899a92dfa // indirect
