@@ -16,6 +16,7 @@ import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDialog;
@@ -30,7 +31,7 @@ import org.slf4j.LoggerFactory;
 public class TektonHubAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(TektonHubAction.class);
 
-    public TektonHubAction() { super(TasksNode.class); }
+    public TektonHubAction() { super(TasksNode.class, ClusterTasksNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {

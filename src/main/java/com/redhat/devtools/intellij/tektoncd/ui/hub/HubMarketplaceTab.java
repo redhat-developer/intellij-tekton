@@ -114,7 +114,7 @@ public class HubMarketplaceTab extends HubDialogTab {
         innerContentPanel.removeAll();
         for (HubItem item: items) {
             Consumer<HubItem> consumer = resource -> updateDetailsPanel(resource);
-            JPanel itemAsPanel = item.createPanel(model, consumer, getInstallCallback());
+            JPanel itemAsPanel = item.createPanel(model, consumer, getInstallCallback(), getInstallAsClusterTaskCallback());
             itemAsPanel.addMouseListener(new MouseListener() {
                 @Override
                 public void mouseClicked(MouseEvent e) {

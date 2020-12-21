@@ -69,7 +69,7 @@ public abstract class HubDialogTab {
         JPanel leftColumnPanel = new JPanel(new BorderLayout());
         leftColumnPanel.add(mySearchTextField, "North");
         leftColumnPanel.add(myContentPanel);
-        tabPanel = new OnePixelSplitter(false, 0.30F) {
+        tabPanel = new OnePixelSplitter(false, 0.37F) {
             protected Divider createDivider() {
                 Divider divider = super.createDivider();
                 divider.setBackground(SEARCH_FIELD_BORDER_COLOR);
