@@ -102,7 +102,7 @@ public class YAMLBuilder {
                 break;
             }
             case EMPTYDIR: {
-                workspaceNode.put(workspace.getKind().toString(), "{}");
+                workspaceNode.putObject(workspace.getKind().toString());
                 break;
             }
             default:
