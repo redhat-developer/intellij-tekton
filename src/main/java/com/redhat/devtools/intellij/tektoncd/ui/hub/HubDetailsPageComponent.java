@@ -78,7 +78,6 @@ public class HubDetailsPageComponent extends MultiPanel {
 
     private OpaquePanel myPanel;
     private JLabel myIconLabel;
-            //installBtn, installAsCTBtn;
     private JPanel myNameAndButtons;
     private JLabel myNameComponent;
     private JComboBox versionsCmb, installActionsCombo;
