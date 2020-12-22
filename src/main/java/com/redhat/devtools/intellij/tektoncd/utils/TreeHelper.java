@@ -124,7 +124,7 @@ public class TreeHelper {
             content = tkncli.getTriggerBindingYAML(namespace, node.getName());
             kind = KIND_TRIGGERBINDINGS;
         } else if (node instanceof ClusterTriggerBindingNode) {
-            content = tkncli.getClusterTriggerBindingYAML(namespace, node.getName());
+            content = tkncli.getClusterTriggerBindingYAML(node.getName());
             kind = KIND_CLUSTERTRIGGERBINDINGS;
         } else if (node instanceof EventListenerNode) {
             content = tkncli.getEventListenerYAML(namespace, node.getName());

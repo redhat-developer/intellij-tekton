@@ -48,8 +48,6 @@ import io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.EventListener;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -58,11 +56,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
@@ -218,8 +216,8 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getClusterTriggerBindings(String namespace) throws IOException {
-        String output = ExecHelper.execute(command, envVars, "ctb", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
+    public List<String> getClusterTriggerBindings() throws IOException {
+        String output = ExecHelper.execute(command, envVars, "ctb", "ls", "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
 
@@ -265,8 +263,8 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getClusterTriggerBindingYAML(String namespace, String ctb) throws IOException {
-        return ExecHelper.execute(command, envVars, "ctb", "describe", ctb, "-n", namespace, "-o", "yaml");
+    public String getClusterTriggerBindingYAML(String ctb) throws IOException {
+        return ExecHelper.execute(command, envVars, "ctb", "describe", ctb, "-o", "yaml");
     }
 
     @Override
