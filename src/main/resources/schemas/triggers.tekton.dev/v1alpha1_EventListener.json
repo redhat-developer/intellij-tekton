@@ -753,6 +753,10 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/PodTemplate"
         },
+        "namespaceSelector": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/NamespaceSelector"
+        },
         "resources": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/Resources"
@@ -1298,6 +1302,18 @@
         },
         "readOnly": {
           "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "NamespaceSelector": {
+      "properties": {
+        "matchNames": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,

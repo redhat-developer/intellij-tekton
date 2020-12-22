@@ -1140,6 +1140,8 @@ github.com/tektoncd/triggers v0.8.0 h1:jdbVSBek4+TUI8LdX9ezJUaEWfJKEwHt4SfhkY0NE
 github.com/tektoncd/triggers v0.8.0/go.mod h1:haXEFvSZhYUPP7WKb0LIq8+GtcgebzZMxp1ybCME3sc=
 github.com/tektoncd/triggers v0.9.0 h1:9xgsLl5A3mqnRNzXXm8fAVOpiLUQEE7rXeqZNHDSWLQ=
 github.com/tektoncd/triggers v0.9.0/go.mod h1:BccgHGtBbJp6gpKCxU/X2j6it4lLFE6HIT7zn7BKX94=
+github.com/tektoncd/triggers v0.10.2 h1:WNXWbo0SodGlkmmRaSQmmi+UAjGDbcsIlvurIllEQwU=
+github.com/tektoncd/triggers v0.10.2/go.mod h1:KXxQTLWnItncpk7fx/TTajJXWUhFqPbt6UlJUYr6lzw=
 github.com/tetafro/godot v0.3.7/go.mod h1:/7NLHhv08H1+8DNj0MElpAACw1ajsCuf3TKNQxA5S+0=
 github.com/tetafro/godot v0.4.2/go.mod h1:/7NLHhv08H1+8DNj0MElpAACw1ajsCuf3TKNQxA5S+0=
 github.com/tidwall/gjson v1.3.5/go.mod h1:P256ACg0Mn+j1RXIDXoss50DeIABTYK1PULOJHhxOls=
@@ -1238,6 +1240,7 @@ go.uber.org/zap v1.10.0/go.mod h1:vwi/ZaCAaUcBkycHslxD9B2zi4UTXhF60s6SWpuDF0Q=
 go.uber.org/zap v1.13.0/go.mod h1:zwrFLgMcdUuIBviXEYEH1YKNaOBnKXsx2IPda5bBwHM=
 go.uber.org/zap v1.14.1/go.mod h1:Mb2vm2krFEG5DV0W9qcHBYFtp/Wku1cvYaqPsS/WYfc=
 go.uber.org/zap v1.15.0/go.mod h1:Mb2vm2krFEG5DV0W9qcHBYFtp/Wku1cvYaqPsS/WYfc=
+go.uber.org/zap v1.16.0/go.mod h1:MA8QOfq0BHJwdXa996Y4dYkAqRKB8/1K1QMMZVaNZjQ=
 gocloud.dev v0.19.0/go.mod h1:SmKwiR8YwIMMJvQBKLsC3fHNyMwXLw3PMDO+VVteJMI=
 golang.org/x/crypto v0.0.0-20171113213409-9f005a07e0d3/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20180608092829-8ac0e0d97ce4/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
