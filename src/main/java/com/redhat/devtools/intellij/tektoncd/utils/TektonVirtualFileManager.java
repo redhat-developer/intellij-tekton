@@ -21,6 +21,8 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watcher;
 import java.io.IOException;
 import java.util.Map;
+
+import io.fabric8.kubernetes.client.WatcherException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +91,7 @@ public class TektonVirtualFileManager {
             }
 
             @Override
-            public void onClose(KubernetesClientException cause) {  }
+            public void onClose(WatcherException cause) {  }
         };
     }
 
