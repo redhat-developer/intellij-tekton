@@ -298,8 +298,8 @@ public class YAMLBuilderTest extends BaseTest {
         assertTrue(taskRunNode.get("spec").has("workspaces"));
         assertEquals(taskRunNode.get("spec").get("workspaces").get(0).get("name").asText(), "write-allowed");
         assertEquals(taskRunNode.get("spec").get("workspaces").get(1).get("name").asText(), "write-disallowed");
-        assertTrue(taskRunNode.get("spec").get("workspaces").get(0).has("EmptyDir"));
-        assertTrue(taskRunNode.get("spec").get("workspaces").get(1).has("EmptyDir"));
+        assertTrue(taskRunNode.get("spec").get("workspaces").get(0).has("emptyDir"));
+        assertTrue(taskRunNode.get("spec").get("workspaces").get(1).has("emptyDir"));
     }
 
     /////////////////////////////////////////////////////////
