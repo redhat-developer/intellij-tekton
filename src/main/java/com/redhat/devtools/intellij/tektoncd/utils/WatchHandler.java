@@ -15,6 +15,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.utils.DateHelper;
+import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
@@ -221,7 +222,8 @@ public class WatchHandler {
                     RefreshQueue.get().addAll(watches.get(watchId).getNodes());
                 }
                 // watches for *runs are always active so there also could be nothing to refresh, only a notification to display
-                if (!(resource instanceof io.fabric8.tekton.pipeline.v1beta1.PipelineRun) ||
+                if (!SettingsState.getInstance().displayPipelineRunResultAsNotification ||
+                        !(resource instanceof io.fabric8.tekton.pipeline.v1beta1.PipelineRun) ||
                         Strings.isNullOrEmpty(((PipelineRun) resource).getStatus().getCompletionTime())) {
                     return;
                 }

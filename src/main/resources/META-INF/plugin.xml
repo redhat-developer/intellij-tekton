@@ -108,6 +108,10 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
+    <applicationConfigurable parentId="tools" instance="com.redhat.devtools.intellij.tektoncd.settings.SettingsConfigurable"
+                             id="com.redhat.devtools.intellij.tektoncd.settings.SettingsConfigurable"
+                             displayName="Tekton Pipelines by Red Hat"/>
+    <applicationService serviceImplementation="com.redhat.devtools.intellij.tektoncd.settings.SettingsState"/>
     <fileDocumentSynchronizationVetoer implementation="com.redhat.devtools.intellij.tektoncd.listener.SaveInEditorListener" order="first" />
     <completion.contributor language="any" implementationClass="com.redhat.devtools.intellij.tektoncd.completion.DictionaryContributor"/>
     <toolWindow id="Tekton" anchor="left" factoryClass="com.redhat.devtools.intellij.tektoncd.WindowToolFactory" icon="/images/cluster.png"/>
