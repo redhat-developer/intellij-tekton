@@ -48,14 +48,16 @@ public class HubModel {
     private Project project;
     private String selected, namespace;
     private List<String> tasksInstalled, clusterTasksInstalled;
+    private boolean isTaskView;
 
-    public HubModel(Project project, String namespace, List<String> tasks, List<String> clusterTasks) {
+    public HubModel(Project project, String namespace, List<String> tasks, List<String> clusterTasks, boolean isTaskView) {
         this.allHubItems = new ArrayList<>();
         this.resourcesYaml = new HashMap<>();
         this.tasksInstalled = tasks;
         this.clusterTasksInstalled = clusterTasks;
         this.project = project;
         this.namespace = namespace;
+        this.isTaskView = isTaskView;
     }
 
     public Future<List<HubItem>> retrieveAllHubItems() {
@@ -189,8 +191,14 @@ public class HubModel {
         return tasksInstalled;
     }
 
+    public List<String> getClusterTasksInstalled() {
+        return clusterTasksInstalled;
+    }
+
     public Project getProject() {
         return project;
     }
+
+    public boolean getIsTaskView() { return isTaskView; }
 
 }

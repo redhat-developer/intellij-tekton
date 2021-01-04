@@ -44,6 +44,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import javax.swing.JComboBox;
@@ -87,6 +91,8 @@ public class HubDetailsPageComponent extends MultiPanel {
     private JBPanelWithEmptyText myEmptyPanel;
     private JEditorPane myTopDescription;
     private HubModel model;
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private ScheduledFuture scheduler;
 
     public HubDetailsPageComponent(HubModel model) {
         this.model = model;
@@ -141,8 +147,13 @@ public class HubDetailsPageComponent extends MultiPanel {
         installActionsCombo.setPreferredSize(new Dimension(200, 30));
         installActionsCombo.setBorder(new MatteBorder(1, 1, 1, 1, JBUI.CurrentTheme.Link.linkColor()));
 
-        installActionsCombo.addItem("Install");
-        installActionsCombo.addItem("Install as ClusterTask");
+        if (model.getIsTaskView()) {
+            installActionsCombo.addItem("Install");
+            installActionsCombo.addItem("Install as ClusterTask");
+        } else {
+            installActionsCombo.addItem("Install as ClusterTask");
+            installActionsCombo.addItem("Install");
+        }
 
         JPanel installPanel = new JPanel(new BorderLayout());
         installPanel.setBackground(MAIN_BG_COLOR);
@@ -334,13 +345,21 @@ public class HubDetailsPageComponent extends MultiPanel {
     }
 
     private void loadBottomTabs(String item, URI rawURL) {
-        loadYaml(item, rawURL);
-        loadDescription(item, rawURL);
+        if (scheduler != null && !scheduler.isCancelled() && !scheduler.isDone()) {
+            scheduler.cancel(true);
+        }
+
+        scheduler = executor.schedule(() -> {
+            myYamlComponent.setText("loading");
+            myDescriptionComponent.setText("");
+            loadYaml(item, rawURL);
+            loadDescription(item, rawURL);
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
     private void loadYaml(String item, URI rawURI) {
         //TODO add loading icon
-        myYamlComponent.setText("loading");
+
         ExecHelper.submit(() -> {
             try {
                 String yaml = model.getContentByURI(rawURI.toString());
@@ -356,7 +375,6 @@ public class HubDetailsPageComponent extends MultiPanel {
 
     private void loadDescription(String item, URI rawURI) {
         //TODO add loading icon
-        myDescriptionComponent.setText("");
         ExecHelper.submit(() -> {
             try {
                 String readmeURI = rawURI.toString().substring(0, rawURI.toString().lastIndexOf("/")) + "/README.md";

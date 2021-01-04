@@ -76,9 +76,19 @@ public class HubItem {
             bottomCenterPanel.add(kind);
         }
 
-        if (model.getTasksInstalled().contains(resource.getName())) {
-            JLabel warningNameAlreadyUsed = createCustomizedLabel("",  AllIcons.General.Warning, SwingConstants.CENTER,
-                    JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + resource.getKind() + " with this name already exists on the cluster.");
+        JLabel warningNameAlreadyUsed = null;
+        if (model.getIsTaskView()) {
+            if (model.getTasksInstalled().contains(resource.getName())) {
+                warningNameAlreadyUsed = createCustomizedLabel("", AllIcons.General.Warning, SwingConstants.CENTER,
+                        JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + resource.getKind() + " with this name already exists on the cluster.");
+            }
+        } else {
+            if (model.getClusterTasksInstalled().contains(resource.getName())) {
+                warningNameAlreadyUsed = createCustomizedLabel("", AllIcons.General.Warning, SwingConstants.CENTER,
+                        JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A clusterTask with this name already exists on the cluster.");
+            }
+        }
+        if (warningNameAlreadyUsed != null) {
             bottomCenterPanel.add(warningNameAlreadyUsed);
         }
 
@@ -87,8 +97,13 @@ public class HubItem {
         installActionsCombo.setPreferredSize(new Dimension(180, 30));
         installActionsCombo.setBorder(new MatteBorder(1, 1, 1, 1, JBUI.CurrentTheme.Link.linkColor()));
 
-        installActionsCombo.addItem("Install");
-        installActionsCombo.addItem("Install as ClusterTask");
+        if (model.getIsTaskView()) {
+            installActionsCombo.addItem("Install");
+            installActionsCombo.addItem("Install as ClusterTask");
+        } else {
+            installActionsCombo.addItem("Install as ClusterTask");
+            installActionsCombo.addItem("Install");
+        }
         addMouseListener(installActionsCombo, doInstallAction, doInstallAsCTAction);
 
         rightSide = new JPanel(new BorderLayout());
