@@ -163,13 +163,12 @@ public interface Tkn {
     List<String> getTriggerBindings(String namespace) throws IOException;
 
     /**
-     * Return the list of clusterTriggerbindings in a namespace
+     * Return the list of clusterTriggerbindings in the cluster
      *
-     * @param namespace the namespace to use
      * @return the list of clusterTriggerbindings
      * @throws IOException if communication errored
      */
-    List<String> getClusterTriggerBindings(String namespace) throws IOException;
+    List<String> getClusterTriggerBindings() throws IOException;
 
     /**
      * Return the list of eventListeners in a namespace
@@ -246,12 +245,11 @@ public interface Tkn {
     /**
      * Get clusterTriggerBinding configuration in YAML
      *
-     * @param namespace the namespace of the clusterTriggerBinding
      * @param ctb the clusterTriggerBinding to use
      * @return clusterTriggerBinding configuration
      * @throws IOException if communication errored
      */
-    String getClusterTriggerBindingYAML(String namespace, String ctb) throws IOException;
+    String getClusterTriggerBindingYAML(String ctb) throws IOException;
 
     /**
      * Get eventListener configuration in YAML

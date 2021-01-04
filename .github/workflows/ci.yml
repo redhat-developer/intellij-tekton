@@ -38,6 +38,7 @@ jobs:
       - name: Step up cluster
         run: |
           kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+          kubectl apply --filename https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
           kubectl create ns testns
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

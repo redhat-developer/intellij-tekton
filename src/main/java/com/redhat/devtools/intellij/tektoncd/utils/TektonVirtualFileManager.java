@@ -110,7 +110,7 @@ public class TektonVirtualFileManager {
         } else if (kind.equalsIgnoreCase(KIND_TRIGGERBINDINGS)) {
             content = tkncli.getTriggerBindingYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDINGS)) {
-            content = tkncli.getClusterTriggerBindingYAML(namespace, resourceName);
+            content = tkncli.getClusterTriggerBindingYAML(resourceName);
         } else if (kind.equalsIgnoreCase(KIND_EVENTLISTENERS)) {
             content = tkncli.getEventListenerYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_TASKRUN)) {

@@ -10,9 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
-import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Test;

@@ -211,7 +211,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> ctbs = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getClusterTriggerBindings(element.getNamespace()).forEach(template -> ctbs.add(new ClusterTriggerBindingNode(element.getRoot(), element, template)));
+            tkn.getClusterTriggerBindings().forEach(template -> ctbs.add(new ClusterTriggerBindingNode(element.getRoot(), element, template)));
         } catch (IOException e) {
             ctbs.add(new MessageNode(element.getRoot(), element, "Failed to load cluster trigger bindings"));
         }
