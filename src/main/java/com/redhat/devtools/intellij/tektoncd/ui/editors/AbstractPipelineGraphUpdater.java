@@ -127,25 +127,28 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
         Map<String,Node> tree = new LinkedHashMap<>();
         Map<String, List<String>> relations = new HashMap<>();
         for (PipelineTask task : tasks) {
-            if (task != null && StringUtils.isNotBlank(task.getName())) {
-                String name = task.getName();
-                String taskId = idPrefix + TASK_PREFIX + name;
-                Node taskNode = new Node(Type.TASK, taskId, name);
-                tree.put(taskId, taskNode);
-                if (task.getRunAfter() != null) {
-                    addRelations(idPrefix, relations, taskId, task.getRunAfter());
-                }
-                if (task.getParams() != null) {
-                    addTaskParamRelations(idPrefix, relations, taskId, task.getParams());
-                }
-                if (task.getResources() != null && task.getResources().getInputs() != null) {
-                    addTaskResourceInputRelations(idPrefix, relations, taskId, task.getResources().getInputs());
-                }
-                List<String> whenTasks = processWhen(task);
-                whenTasks.forEach(parentName -> addRelation(idPrefix, relations, taskId, parentName));
-                if (task.getConditions() != null) {
-                    createTaskConditionNodes(idPrefix, tree, relations, task.getConditions(), taskNode);
-                }
+            if (task == null
+                    || StringUtils.isBlank(task.getName())) {
+                continue;
+            }
+
+            String name = task.getName();
+            String taskId = idPrefix + TASK_PREFIX + name;
+            Node taskNode = new Node(Type.TASK, taskId, name);
+            tree.put(taskId, taskNode);
+            if (task.getRunAfter() != null) {
+                addRelations(idPrefix, relations, taskId, task.getRunAfter());
+            }
+            if (task.getParams() != null) {
+                addTaskParamRelations(idPrefix, relations, taskId, task.getParams());
+            }
+            if (task.getResources() != null && task.getResources().getInputs() != null) {
+                addTaskResourceInputRelations(idPrefix, relations, taskId, task.getResources().getInputs());
+            }
+            List<String> whenTasks = processWhen(task);
+            whenTasks.forEach(parentName -> addRelation(idPrefix, relations, taskId, parentName));
+            if (task.getConditions() != null) {
+                createTaskConditionNodes(idPrefix, tree, relations, task.getConditions(), taskNode);
             }
         }
         createChildNodes(tree, relations);
@@ -154,33 +157,39 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
 
     private static void createTaskConditionNodes(String idPrefix, Map<String, Node> tree, Map<String, List<String>> relations, List<PipelineTaskCondition> conditions, Node taskNode) {
         for (PipelineTaskCondition condition : conditions) {
-            if (condition != null && StringUtils.isNotBlank(condition.getConditionRef())) {
-                String conditionId = idPrefix + CONDITION_PREFIX + condition.getConditionRef();
-                Node conditionNode = new Node(Type.CONDITION, conditionId, condition.getConditionRef());
-                conditionNode.children.add(taskNode);
-                tree.put(conditionId, conditionNode);
-                addConditionResourceInputResource(relations, condition, conditionId);
+            if (condition == null
+                    || StringUtils.isBlank(condition.getConditionRef())) {
+                continue;
             }
+            String conditionId = idPrefix + CONDITION_PREFIX + condition.getConditionRef();
+            Node conditionNode = new Node(Type.CONDITION, conditionId, condition.getConditionRef());
+            conditionNode.children.add(taskNode);
+            tree.put(conditionId, conditionNode);
+            addConditionResourceInputResource(relations, condition, conditionId);
         }
     }
 
     private static void addConditionResourceInputResource(Map<String, List<String>> relations, PipelineTaskCondition condition, String conditionId) {
         for (PipelineTaskInputResource resource : condition.getResources()) {
-            if (resource != null && resource.getFrom() != null) {
-                for (String parentName : resource.getFrom()) {
-                    String parentTaskId = TASK_PREFIX + parentName;
-                    relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
-                    relations.get(parentTaskId).add(conditionId);
-                }
+            if (resource == null
+                    || resource.getFrom() == null) {
+                continue;
+            }
+            for (String parentName : resource.getFrom()) {
+                String parentTaskId = TASK_PREFIX + parentName;
+                relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
+                relations.get(parentTaskId).add(conditionId);
             }
         }
     }
 
     private static void addTaskResourceInputRelations(String idPrefix, Map<String, List<String>> relations, String taskId, List<PipelineTaskInputResource> inputs) {
         inputs.forEach(input -> {
-            if (input != null && input.getFrom() != null) {
-                addRelations(idPrefix, relations, taskId, input.getFrom());
+            if (input == null
+                    || input.getFrom() == null) {
+                return;
             }
+            addRelations(idPrefix, relations, taskId, input.getFrom());
         });
     }
 
