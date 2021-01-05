@@ -38,8 +38,8 @@ public class PipelineGraphUpdaterTest {
         PipelineGraphUpdater.Node node = tree.values().iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("foo", node.name);
-        assertNotNull(node.childs);
-        assertTrue(node.childs.isEmpty());
+        assertNotNull(node.children);
+        assertTrue(node.children.isEmpty());
     }
 
     @Test
@@ -51,8 +51,8 @@ public class PipelineGraphUpdaterTest {
         PipelineGraphUpdater.Node node = tree.values().iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("foo", node.name);
-        assertNotNull(node.childs);
-        assertTrue(node.childs.isEmpty());
+        assertNotNull(node.children);
+        assertTrue(node.children.isEmpty());
     }
 
     @Test
@@ -64,13 +64,13 @@ public class PipelineGraphUpdaterTest {
         PipelineGraphUpdater.Node node = tree.values().iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("first", node.name);
-        assertNotNull(node.childs);
-        assertEquals(1, node.childs.size());
-        node = node.childs.iterator().next();
+        assertNotNull(node.children);
+        assertEquals(1, node.children.size());
+        node = node.children.iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("second", node.name);
-        assertNotNull(node.childs);
-        assertTrue(node.childs.isEmpty());
+        assertNotNull(node.children);
+        assertTrue(node.children.isEmpty());
     }
 
     @Test
@@ -82,13 +82,13 @@ public class PipelineGraphUpdaterTest {
         PipelineGraphUpdater.Node node = tree.values().iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("first", node.name);
-        assertNotNull(node.childs);
-        assertEquals(1, node.childs.size());
-        node = node.childs.iterator().next();
+        assertNotNull(node.children);
+        assertEquals(1, node.children.size());
+        node = node.children.iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("second", node.name);
-        assertNotNull(node.childs);
-        assertTrue(node.childs.isEmpty());
+        assertNotNull(node.children);
+        assertTrue(node.children.isEmpty());
     }
 
     @Test
@@ -100,13 +100,13 @@ public class PipelineGraphUpdaterTest {
         PipelineGraphUpdater.Node node = tree.values().iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("first", node.name);
-        assertNotNull(node.childs);
-        assertEquals(1, node.childs.size());
-        node = node.childs.iterator().next();
+        assertNotNull(node.children);
+        assertEquals(1, node.children.size());
+        node = node.children.iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("second", node.name);
-        assertNotNull(node.childs);
-        assertTrue(node.childs.isEmpty());
+        assertNotNull(node.children);
+        assertTrue(node.children.isEmpty());
     }
 
     @Test
@@ -118,13 +118,13 @@ public class PipelineGraphUpdaterTest {
         PipelineGraphUpdater.Node node = tree.values().iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("first", node.name);
-        assertNotNull(node.childs);
-        assertEquals(1, node.childs.size());
-        node = node.childs.iterator().next();
+        assertNotNull(node.children);
+        assertEquals(1, node.children.size());
+        node = node.children.iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("second", node.name);
-        assertNotNull(node.childs);
-        assertTrue(node.childs.isEmpty());
+        assertNotNull(node.children);
+        assertTrue(node.children.isEmpty());
     }
 
     @Test
@@ -136,12 +136,12 @@ public class PipelineGraphUpdaterTest {
         PipelineGraphUpdater.Node node = tree.values().iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("first", node.name);
-        assertNotNull(node.childs);
-        assertEquals(1, node.childs.size());
-        node = node.childs.iterator().next();
+        assertNotNull(node.children);
+        assertEquals(1, node.children.size());
+        node = node.children.iterator().next();
         assertEquals(PipelineGraphUpdater.Type.TASK, node.type);
         assertEquals("second", node.name);
-        assertNotNull(node.childs);
-        assertTrue(node.childs.isEmpty());
+        assertNotNull(node.children);
+        assertTrue(node.children.isEmpty());
     }
 }

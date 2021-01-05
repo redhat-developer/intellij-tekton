@@ -47,7 +47,7 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
         Type type;
         String id;
         String name;
-        Collection<Node> childs = new ArrayList();
+        Collection<Node> children = new ArrayList();
 
         public Node(Type type, String id, String name) {
             this.type = type;
@@ -70,11 +70,11 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
             }
             Map<String, Node> tree = generateTree(tasks, "");
             Node finallyNode = new Node(Type.CONDITION, "__finally__", "finally");
-            finallyNode.childs = finallyNodes;
+            finallyNode.children = finallyNodes;
             if (!finallyNodes.isEmpty()) {
-                tree.values().stream().flatMap(node -> Stream.concat(node.childs.stream(), Stream.of(node))).forEach(node -> {
-                    if (node.childs.isEmpty()) {
-                        node.childs = Collections.singletonList(finallyNode);
+                tree.values().stream().flatMap(node -> Stream.concat(node.children.stream(), Stream.of(node))).forEach(node -> {
+                    if (node.children.isEmpty()) {
+                        node.children = Collections.singletonList(finallyNode);
                     }
                 });
             }
@@ -90,8 +90,8 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
     private void generateGraph(T content, mxGraph graph, Collection<Node> nodes, Map<String, Object> context) {
         for (Node node : nodes) {
             Object vertex = createVertex(content, graph, node, context);
-            generateGraph(content, graph, node.childs, context);
-            for (Node child : node.childs) {
+            generateGraph(content, graph, node.children, context);
+            for (Node child : node.children) {
                 if (!context.containsKey(node.id + "->" + child.id)) {
                     context.put(node.id + "->" + child.id, graph.insertEdge(null, node.id + "->" + child.id,
                             "", vertex, createVertex(content, graph, child, context)));
@@ -157,7 +157,7 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
             if (condition != null && StringUtils.isNotBlank(condition.getConditionRef())) {
                 String conditionId = idPrefix + CONDITION_PREFIX + condition.getConditionRef();
                 Node conditionNode = new Node(Type.CONDITION, conditionId, condition.getConditionRef());
-                conditionNode.childs.add(taskNode);
+                conditionNode.children.add(taskNode);
                 tree.put(conditionId, conditionNode);
                 addConditionResourceInputResource(relations, condition, conditionId);
             }
@@ -218,7 +218,7 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
             Node sourceNode = tree.get(entry.getKey());
             if (sourceNode != null) {
                 for (String target : entry.getValue()) {
-                    sourceNode.childs.add(tree.get(target));
+                    sourceNode.children.add(tree.get(target));
                     toRemove.add(target);
                 }
             }
