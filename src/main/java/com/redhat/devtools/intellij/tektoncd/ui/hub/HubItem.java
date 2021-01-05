@@ -76,19 +76,19 @@ public class HubItem {
             bottomCenterPanel.add(kind);
         }
 
-        JLabel warningNameAlreadyUsed = null;
+        String labelText = null;
         if (model.getIsTaskView()) {
             if (model.getTasksInstalled().contains(resource.getName())) {
-                warningNameAlreadyUsed = createCustomizedLabel("", AllIcons.General.Warning, SwingConstants.CENTER,
-                        JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + resource.getKind() + " with this name already exists on the cluster.");
+                labelText = "A task with this name already exists on the cluster.";
             }
         } else {
             if (model.getClusterTasksInstalled().contains(resource.getName())) {
-                warningNameAlreadyUsed = createCustomizedLabel("", AllIcons.General.Warning, SwingConstants.CENTER,
-                        JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A clusterTask with this name already exists on the cluster.");
+                labelText = "A clusterTask with this name already exists on the cluster.";
             }
         }
-        if (warningNameAlreadyUsed != null) {
+        if (labelText != null) {
+            JLabel warningNameAlreadyUsed = createCustomizedLabel("", AllIcons.General.Warning, SwingConstants.CENTER,
+                    JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + resource.getKind() + " with this name already exists on the cluster.");
             bottomCenterPanel.add(warningNameAlreadyUsed);
         }
 

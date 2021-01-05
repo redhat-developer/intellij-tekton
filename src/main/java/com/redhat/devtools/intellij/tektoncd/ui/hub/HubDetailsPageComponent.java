@@ -88,7 +88,6 @@ public class HubDetailsPageComponent extends MultiPanel {
     private JBPanelWithEmptyText myEmptyPanel;
     private JEditorPane myTopDescription;
     private HubModel model;
-    private JBScrollPane myDescriptionScrollbar, myYamlScrollBar;
 
     public HubDetailsPageComponent(HubModel model) {
         this.model = model;
@@ -259,17 +258,15 @@ public class HubDetailsPageComponent extends MultiPanel {
         // second tab - includes readme
         myDescriptionComponent = createJEditorPane();
         JPanel descriptionPanel = createBottomTab(myDescriptionComponent);
-        myDescriptionScrollbar = createScrollPane(descriptionPanel);
 
         // third tab - includes yaml
         myYamlComponent = createJEditorPane();
         JPanel yamlPanel = createBottomTab(myYamlComponent);
-        myYamlScrollBar = createScrollPane(yamlPanel);
 
         JTabbedPane bottomTabs = new JBTabbedPane();
         bottomTabs.addTab("Details", createScrollPane(detailsPanel));
-        bottomTabs.addTab("Description", myDescriptionScrollbar);
-        bottomTabs.addTab("Yaml", myYamlScrollBar);
+        bottomTabs.addTab("Description", createScrollPane(descriptionPanel));
+        bottomTabs.addTab("Yaml", createScrollPane(yamlPanel));
 
         myPanel.add(bottomTabs, BorderLayout.CENTER);
     }
