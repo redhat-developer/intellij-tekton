@@ -55,6 +55,7 @@ public class TektonHubAction extends TektonAction {
             HubModel model = new HubModel(project, namespace, tasks, clusterTasks, element instanceof TasksNode);
             UIHelper.executeInUI(() -> {
                 HubDialog wizard = new HubDialog(project, model);
+                wizard.setModal(false);
                 wizard.show();
                 return wizard;
             });

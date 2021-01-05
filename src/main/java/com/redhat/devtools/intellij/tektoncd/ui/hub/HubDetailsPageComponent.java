@@ -28,6 +28,7 @@ import com.intellij.ui.scale.JBUIScale;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
 import java.awt.BorderLayout;
@@ -44,10 +45,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import javax.swing.JComboBox;
@@ -91,8 +88,7 @@ public class HubDetailsPageComponent extends MultiPanel {
     private JBPanelWithEmptyText myEmptyPanel;
     private JEditorPane myTopDescription;
     private HubModel model;
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-    private ScheduledFuture scheduler;
+    private JBScrollPane myDescriptionScrollbar, myYamlScrollBar;
 
     public HubDetailsPageComponent(HubModel model) {
         this.model = model;
@@ -263,15 +259,17 @@ public class HubDetailsPageComponent extends MultiPanel {
         // second tab - includes readme
         myDescriptionComponent = createJEditorPane();
         JPanel descriptionPanel = createBottomTab(myDescriptionComponent);
+        myDescriptionScrollbar = createScrollPane(descriptionPanel);
 
         // third tab - includes yaml
         myYamlComponent = createJEditorPane();
         JPanel yamlPanel = createBottomTab(myYamlComponent);
+        myYamlScrollBar = createScrollPane(yamlPanel);
 
         JTabbedPane bottomTabs = new JBTabbedPane();
         bottomTabs.addTab("Details", createScrollPane(detailsPanel));
-        bottomTabs.addTab("Description", createScrollPane(descriptionPanel));
-        bottomTabs.addTab("Yaml", createScrollPane(yamlPanel));
+        bottomTabs.addTab("Description", myDescriptionScrollbar);
+        bottomTabs.addTab("Yaml", myYamlScrollBar);
 
         myPanel.add(bottomTabs, BorderLayout.CENTER);
     }
@@ -345,27 +343,17 @@ public class HubDetailsPageComponent extends MultiPanel {
     }
 
     private void loadBottomTabs(String item, URI rawURL) {
-        if (scheduler != null && !scheduler.isCancelled() && !scheduler.isDone()) {
-            scheduler.cancel(true);
-        }
-
-        scheduler = executor.schedule(() -> {
-            myYamlComponent.setText("loading");
-            myDescriptionComponent.setText("");
-            loadYaml(item, rawURL);
-            loadDescription(item, rawURL);
-        }, 500, TimeUnit.MILLISECONDS);
+        loadYaml(item, rawURL);
+        loadDescription(item, rawURL);
     }
 
     private void loadYaml(String item, URI rawURI) {
         //TODO add loading icon
-
+        myYamlComponent.setText("loading");
         ExecHelper.submit(() -> {
             try {
                 String yaml = model.getContentByURI(rawURI.toString());
-                if (item != null && item.equalsIgnoreCase(model.getSelectedHubItem())) {
-                    myYamlComponent.setText("<pre>" + yaml + "</pre>");
-                }
+                updateEditor(item, myYamlComponent, "<pre>" + yaml + "</pre>");
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage());
             }
@@ -375,6 +363,7 @@ public class HubDetailsPageComponent extends MultiPanel {
 
     private void loadDescription(String item, URI rawURI) {
         //TODO add loading icon
+        myDescriptionComponent.setText("");
         ExecHelper.submit(() -> {
             try {
                 String readmeURI = rawURI.toString().substring(0, rawURI.toString().lastIndexOf("/")) + "/README.md";
@@ -384,11 +373,22 @@ public class HubDetailsPageComponent extends MultiPanel {
                 final ASTNode parsedTree1 = new MarkdownParser(flavour).buildMarkdownTreeFromString(text);
                 final String html = new HtmlGenerator(text, parsedTree1, flavour, false).generateHtml();
 
-                if (item.equalsIgnoreCase(model.getSelectedHubItem())) {
-                    myDescriptionComponent.setText(html);
-                }
+                updateEditor(item, myDescriptionComponent, html);
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage());
+            }
+        });
+    }
+
+    private void updateEditor(String item, JEditorPane editor, String content) {
+        UIHelper.executeInUI(() -> {
+            if (item != null && item.equalsIgnoreCase(model.getSelectedHubItem())) {
+                try {
+                    editor.setText(content);
+                    editor.setCaretPosition(0);
+                } catch (Exception ex) {
+                    logger.warn(ex.getLocalizedMessage());
+                }
             }
         });
     }

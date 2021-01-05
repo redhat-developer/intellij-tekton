@@ -120,6 +120,7 @@ public class HubMarketplaceTab extends HubDialogTab {
                 public void mouseClicked(MouseEvent e) {
                     String old = model.getSelectedHubItem();
                     if (Strings.isNullOrEmpty(old) || old != item.getResource().getName()) {
+                        model.setSelectedHubItem(item.getResource().getName());
                         if (!Strings.isNullOrEmpty(old)) {
                             Optional<HubItem> oldItem = items.stream().filter(item -> item.getResource().getName().equalsIgnoreCase(old)).findFirst();
                             if (oldItem.isPresent()) {
@@ -128,7 +129,6 @@ public class HubMarketplaceTab extends HubDialogTab {
                         }
                         item.repaint(true);
                         updateDetailsPanel(item);
-                        model.setSelectedHubItem(item.getResource().getName());
                     }
                 }
 
