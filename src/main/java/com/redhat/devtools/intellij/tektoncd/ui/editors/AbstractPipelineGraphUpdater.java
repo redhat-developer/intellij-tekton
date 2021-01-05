@@ -13,12 +13,13 @@ package com.redhat.devtools.intellij.tektoncd.ui.editors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.mxgraph.view.mxGraph;
-import io.fabric8.tekton.pipeline.v1beta1.ArrayOrString;
+import io.fabric8.tekton.pipeline.v1beta1.Param;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineSpec;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTask;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTaskCondition;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTaskInputResource;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -132,70 +133,97 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
                 Node taskNode = new Node(Type.TASK, taskId, name);
                 tree.put(taskId, taskNode);
                 if (task.getRunAfter() != null) {
-                    for (String parentName : task.getRunAfter()) {
-                        addRelation(idPrefix, relations, taskId, parentName);
-                    }
+                    addRelations(idPrefix, relations, taskId, task.getRunAfter());
                 }
                 if (task.getParams() != null) {
-                    task.getParams().forEach(param -> {
-                        if (param != null && param.getValue() != null) {
-                            List<String> values = param.getValue().getArrayVal();
-                            if (param.getValue().getType().equals("string")) {
-                                values = Collections.singletonList(param.getValue().getStringVal());
-                            }
-                            values.forEach(val -> {
-                                String parentName = extractTaskName(val);
-                                if (parentName != null) {
-                                    addRelation(idPrefix, relations, taskId, parentName);
-                                }
-                            });
-                        }
-                    });
+                    addTaskParamRelations(idPrefix, relations, taskId, task.getParams());
                 }
                 if (task.getResources() != null && task.getResources().getInputs() != null) {
-                    task.getResources().getInputs().forEach(input -> {
-                        if (input != null && input.getFrom() != null) {
-                            for(String parentName : input.getFrom()) {
-                                addRelation(idPrefix, relations, taskId, parentName);
-                            }
-                        }
-                    });
+                    addTaskResourceInputRelations(idPrefix, relations, taskId, task.getResources().getInputs());
                 }
                 List<String> whenTasks = processWhen(task);
                 whenTasks.forEach(parentName -> addRelation(idPrefix, relations, taskId, parentName));
                 if (task.getConditions() != null) {
-                    for(PipelineTaskCondition condition : task.getConditions()) {
-                        if (condition != null && StringUtils.isNotBlank(condition.getConditionRef())) {
-                            String conditionId = idPrefix + CONDITION_PREFIX + condition.getConditionRef();
-                            Node conditionNode = new Node(Type.CONDITION, conditionId,condition.getConditionRef());
-                            conditionNode.childs.add(taskNode);
-                            tree.put(conditionId, conditionNode);
-                            for(PipelineTaskInputResource resource : condition.getResources()) {
-                                if (resource != null && resource.getFrom() != null) {
-                                    for(String parentName : resource.getFrom()) {
-                                        String parentTaskId = TASK_PREFIX + parentName;
-                                        relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
-                                        relations.get(parentTaskId).add(conditionId);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    createTaskConditionNodes(idPrefix, tree, relations, task.getConditions(), taskNode);
                 }
             }
         }
+        createChildNodes(tree, relations);
+        return tree;
+    }
+
+    private static void createTaskConditionNodes(String idPrefix, Map<String, Node> tree, Map<String, List<String>> relations, List<PipelineTaskCondition> conditions, Node taskNode) {
+        for (PipelineTaskCondition condition : conditions) {
+            if (condition != null && StringUtils.isNotBlank(condition.getConditionRef())) {
+                String conditionId = idPrefix + CONDITION_PREFIX + condition.getConditionRef();
+                Node conditionNode = new Node(Type.CONDITION, conditionId, condition.getConditionRef());
+                conditionNode.childs.add(taskNode);
+                tree.put(conditionId, conditionNode);
+                addConditionResourceInputResource(relations, condition, conditionId);
+            }
+        }
+    }
+
+    private static void addConditionResourceInputResource(Map<String, List<String>> relations, PipelineTaskCondition condition, String conditionId) {
+        for (PipelineTaskInputResource resource : condition.getResources()) {
+            if (resource != null && resource.getFrom() != null) {
+                for (String parentName : resource.getFrom()) {
+                    String parentTaskId = TASK_PREFIX + parentName;
+                    relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
+                    relations.get(parentTaskId).add(conditionId);
+                }
+            }
+        }
+    }
+
+    private static void addTaskResourceInputRelations(String idPrefix, Map<String, List<String>> relations, String taskId, List<PipelineTaskInputResource> inputs) {
+        inputs.forEach(input -> {
+            if (input != null && input.getFrom() != null) {
+                addRelations(idPrefix, relations, taskId, input.getFrom());
+            }
+        });
+    }
+
+    private static void addTaskParamRelations(String idPrefix, Map<String, List<String>> relations, String taskId, List<Param> params) {
+        params.forEach(param -> addTaskParamRelation(idPrefix, relations, taskId, param));
+    }
+
+    private static void addTaskParamRelation(String idPrefix, Map<String, List<String>> relations, String taskId, Param param) {
+        if (param == null
+                || param.getValue() == null) {
+            return;
+        }
+        List<String> values = param.getValue().getArrayVal();
+        if (param.getValue().getType().equals("string")) {
+            values = Collections.singletonList(param.getValue().getStringVal());
+        }
+        values.forEach(val -> {
+            String parentName = extractTaskName(val);
+            if (parentName != null) {
+                addRelation(idPrefix, relations, taskId, parentName);
+            }
+        });
+    }
+
+    /**
+     * Adds children to the nodes within the given tree as indicated by the given relations (key = parent, value = child).
+     *
+     * @param tree the tree that contains all nodes
+     * @param relations the relations that specify parent/child-relations
+     */
+    @NotNull
+    private static void createChildNodes(Map<String, Node> tree, Map<String, List<String>> relations) {
         Set<String> toRemove = new HashSet<>();
         for (Map.Entry<String, List<String>> entry : relations.entrySet()) {
-            if (tree.containsKey(entry.getKey())) {
+            Node sourceNode = tree.get(entry.getKey());
+            if (sourceNode != null) {
                 for (String target : entry.getValue()) {
-                    Node source = tree.get(entry.getKey());
-                    source.childs.add(tree.get(target));
+                    sourceNode.childs.add(tree.get(target));
                     toRemove.add(target);
                 }
             }
         }
         toRemove.forEach(id -> tree.remove(id));
-        return tree;
     }
 
     private static List<String> processWhen(PipelineTask task) {
@@ -229,6 +257,12 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
             }
         }
         return null;
+    }
+
+    private static void addRelations(String idPrefix, Map<String, List<String>> relations, String taskId, List<String> parents) {
+        for (String parentName : parents) {
+            addRelation(idPrefix, relations, taskId, parentName);
+        }
     }
 
     private static void addRelation(String prefix, Map<String, List<String>> relations, String taskId, String parentName) {
