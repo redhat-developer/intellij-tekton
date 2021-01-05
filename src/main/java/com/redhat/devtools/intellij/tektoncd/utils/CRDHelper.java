@@ -18,6 +18,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 
 public class CRDHelper {
     public static CustomResourceDefinitionContext getCRDContext(String apiVersion, String plural) {
@@ -38,6 +40,10 @@ public class CRDHelper {
     }
 
     public static boolean isClusterScopedResource(String kind) {
-        return kind == KIND_CLUSTERTASKS || kind == KIND_CLUSTERTASK || kind == KIND_CLUSTERTRIGGERBINDING || kind == KIND_CLUSTERTRIGGERBINDINGS;
+        return kind.equalsIgnoreCase(KIND_CLUSTERTASKS) || kind.equalsIgnoreCase(KIND_CLUSTERTASK) || kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDING) || kind.equalsIgnoreCase(KIND_CLUSTERTRIGGERBINDINGS);
+    }
+
+    public static boolean isRunResource(String kind) {
+        return kind.equalsIgnoreCase(KIND_PIPELINERUN) || kind.equalsIgnoreCase(KIND_TASKRUN);
     }
 }

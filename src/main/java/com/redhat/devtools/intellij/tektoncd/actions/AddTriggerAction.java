@@ -134,9 +134,9 @@ public class AddTriggerAction extends TektonAction {
                    String triggerTemplateName = element.getName() + "-template-" + randomString;
                    ObjectNode run;
                    if (element instanceof PipelineNode) {
-                       run = YAMLBuilder.createPipelineRun(element.getName(), model);
+                       run = YAMLBuilder.createPipelineRun(model);
                    } else {
-                       run = YAMLBuilder.createTaskRun(element.getName(), model);
+                       run = YAMLBuilder.createTaskRun(model);
                    }
                    ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings), Arrays.asList(run));
                    saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);

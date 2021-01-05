@@ -43,10 +43,10 @@ public class Constants {
     public static final String KIND_CLUSTERTRIGGERBINDING = "clustertriggerbinding";
     public static final String KIND_EVENTLISTENER = "eventlistener";
 
-    public static final String KIND_PVC =  "PersistentVolumeClaim";
-    public static final String KIND_CONFIGMAP =  "ConfigMap";
-    public static final String KIND_SECRET =  "Secret";
-    public static final String KIND_EMPTYDIR =  "EmptyDir";
+    public static final String KIND_PVC = "persistentVolumeClaim";
+    public static final String KIND_CONFIGMAP = "configMap";
+    public static final String KIND_SECRET = "secret";
+    public static final String KIND_EMPTYDIR =  "emptyDir";
 
     public static final String FLAG_SERVICEACCOUNT = "-s";
     public static final String FLAG_TASKSERVICEACCOUNT = "--task-serviceaccount";
