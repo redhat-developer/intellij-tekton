@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T> {
@@ -145,7 +146,7 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
             if (task.getResources() != null && task.getResources().getInputs() != null) {
                 addTaskResourceInputRelations(idPrefix, relations, taskId, task.getResources().getInputs());
             }
-            List<String> whenTasks = processWhen(task);
+            List<String> whenTasks = getWhenTasks(task);
             whenTasks.forEach(parentName -> addRelation(idPrefix, relations, taskId, parentName));
             if (task.getConditions() != null) {
                 createTaskConditionNodes(idPrefix, tree, relations, task.getConditions(), taskNode);
@@ -235,26 +236,10 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
         toRemove.forEach(id -> tree.remove(id));
     }
 
-    private static List<String> processWhen(PipelineTask task) {
-        List<String> tasks = new ArrayList<>();
-        if (task.getAdditionalProperties() != null && task.getAdditionalProperties().containsKey(WHEN_PROPERTY)) {
-            Object whens = task.getAdditionalProperties().get(WHEN_PROPERTY);
-            if (whens instanceof Collection) {
-                ((Collection)whens).forEach(when -> {
-                    if (when instanceof Map) {
-                        Object input = ((Map)when).get(INPUT_PROPERTY);
-                        if (input instanceof String) {
-                            String taskName = extractTaskName((String) input);
-                            if (taskName != null) {
-                                tasks.add(taskName);
-                            }
-                        }
-                    }
-
-                });
-            }
-        }
-        return tasks;
+    private static List<String> getWhenTasks(PipelineTask task) {
+        return task.getWhen().stream()
+                .map(expression -> extractTaskName(expression.getInput()))
+                .collect(Collectors.toList());
     }
 
     private static String extractTaskName(String input) {
