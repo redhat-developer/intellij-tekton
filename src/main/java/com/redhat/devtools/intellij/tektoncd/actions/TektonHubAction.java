@@ -16,6 +16,7 @@ import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDialog;
@@ -30,16 +31,17 @@ import org.slf4j.LoggerFactory;
 public class TektonHubAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(TektonHubAction.class);
 
-    public TektonHubAction() { super(TasksNode.class); }
+    public TektonHubAction() { super(TasksNode.class, ClusterTasksNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
-            List<String> tasks;
+            List<String> tasks, clusterTasks;
             try {
                 tasks = tkncli.getTasks(namespace).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
+                clusterTasks = tkncli.getClusterTasks().stream().map(ct -> ct.getMetadata().getName()).collect(Collectors.toList());
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
@@ -50,9 +52,10 @@ public class TektonHubAction extends TektonAction {
             }
 
             Project project = getEventProject(anActionEvent);
-            HubModel model = new HubModel(project, namespace, tasks);
+            HubModel model = new HubModel(project, namespace, tasks, clusterTasks, element instanceof TasksNode);
             UIHelper.executeInUI(() -> {
                 HubDialog wizard = new HubDialog(project, model);
+                wizard.setModal(false);
                 wizard.show();
                 return wizard;
             });

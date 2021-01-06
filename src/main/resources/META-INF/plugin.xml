@@ -123,7 +123,6 @@
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
       <action class="com.redhat.devtools.intellij.tektoncd.actions.pipeline.CreatePipelineAction" text="New Pipeline"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskAction" text="New Task"/>
-      <action class="com.redhat.devtools.intellij.tektoncd.actions.TektonHubAction" text="Import from TektonHub"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.CreateClusterTaskAction" text="New ClusterTask"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.resource.CreateResourceAction" text="New Pipeline Resource"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.condition.CreateConditionAction" text="New Condition"/>
@@ -131,6 +130,7 @@
       <action class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateTriggerBindingAction" text="New TriggerBinding"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateClusterTriggerBindingAction" text="New ClusterTriggerBinding"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateEventListenerAction" text="New Event Listener"/>
+      <action class="com.redhat.devtools.intellij.tektoncd.actions.TektonHubAction" text="Import from TektonHub"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.OpenEditorAction" text="Open in Editor"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.StartAction" text="Start"/>
       <action class="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" text="Mirror Start"/>
