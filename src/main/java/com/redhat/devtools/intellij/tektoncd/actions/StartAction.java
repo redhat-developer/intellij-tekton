@@ -123,9 +123,7 @@ public class StartAction extends TektonAction {
                         followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
                     }
 
-                    UIHelper.executeInUI(() -> {
-                        WatchHandler.get().setWatchByKind(tkncli, project, namespace, KIND_PIPELINERUN);
-                    });
+                    WatchHandler.get().setWatchByKind(tkncli, project, namespace, KIND_PIPELINERUN);
 
                     ParentableNode nodeToRefresh = element;
                     if (element instanceof PipelineRunNode || element instanceof TaskRunNode) {

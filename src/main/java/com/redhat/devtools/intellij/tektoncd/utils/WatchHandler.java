@@ -114,7 +114,7 @@ public class WatchHandler {
             }
             watches.put(watchId, null);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn(e.getLocalizedMessage());
         }
     }
 

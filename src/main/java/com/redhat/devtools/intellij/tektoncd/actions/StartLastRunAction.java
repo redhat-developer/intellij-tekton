@@ -17,7 +17,6 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -27,11 +26,10 @@ import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
+import java.io.IOException;
+import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.swing.tree.TreePath;
-import java.io.IOException;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
@@ -60,9 +58,7 @@ public class StartLastRunAction extends TektonAction {
                     followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
                 }
 
-                UIHelper.executeInUI(() -> {
-                    WatchHandler.get().setWatchByKind(tkncli, project, namespace, KIND_PIPELINERUN);
-                });
+                WatchHandler.get().setWatchByKind(tkncli, project, namespace, KIND_PIPELINERUN);
 
                 ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
             } catch (IOException e) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Red Hat, Inc.
+ * Copyright (c) 2021 Red Hat, Inc.
  * Distributed under license by Red Hat, Inc. All rights reserved.
  * This program is made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution,
@@ -20,6 +20,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.awt.RelativePoint;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
@@ -36,12 +37,15 @@ public class NotificationHelper {
     }
 
     public static void notifyWithBalloon(Project project, String content, NotificationType type) {
-        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
-        JBPopupFactory.getInstance()
-                .createHtmlTextBalloonBuilder(content, (type == NotificationType.ERROR ? MessageType.ERROR : MessageType.INFO), null)
-                .setFadeoutTime(7500)
-                .createBalloon()
-                .show(RelativePoint.getNorthEastOf(statusBar.getComponent()), Balloon.Position.atRight);
+        UIHelper.executeInUI(() -> {
+                StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+                JBPopupFactory.getInstance()
+                    .createHtmlTextBalloonBuilder(content, (type == NotificationType.ERROR ? MessageType.ERROR : MessageType.INFO), null)
+                    .setFadeoutTime(7500)
+                    .createBalloon()
+                    .show(RelativePoint.getNorthEastOf(statusBar.getComponent()), Balloon.Position.atRight);
+        });
+
     }
 
 }
