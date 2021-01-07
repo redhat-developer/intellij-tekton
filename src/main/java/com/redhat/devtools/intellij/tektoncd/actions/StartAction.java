@@ -15,6 +15,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
@@ -32,6 +33,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
+import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
@@ -59,6 +62,7 @@ public class StartAction extends TektonAction {
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
+        Project project = element.getRoot().getProject();
         ExecHelper.submit(() -> {
             Notification notification;
             List<Resource> resources;
@@ -118,6 +122,8 @@ public class StartAction extends TektonAction {
                         FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
                         followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
                     }
+
+                    WatchHandler.get().setWatchByKind(tkncli, project, namespace, KIND_PIPELINERUN);
 
                     ParentableNode nodeToRefresh = element;
                     if (element instanceof PipelineRunNode || element instanceof TaskRunNode) {
