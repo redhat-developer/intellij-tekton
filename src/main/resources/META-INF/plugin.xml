@@ -13,6 +13,22 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.5.0</b></p>
+  <p>Tekton Hub integration</p>
+  <p><ul>
+  <li>Tasks from the TektonHub can now be installed as cluster tasks</li>
+  </ul></p>
+  <p>Enhanced code validation</p>
+  <p><ul>
+  <li>runAfter uses in a finally sequence is reported as an error</li>
+  </ul></p>
+  <p>UI enhancements</p>
+  <p><ul>
+  <li>Pipeline execution status can be reported as asynchronous notification</li>
+  <li>Task and pipeline start wizard can display generated taskrun and pipelinerun payloads</li>
+  </ul></p>
+  <p>Validation and code assist aligned with Tekton Pipeline 0.19.0 and Tekton Triggers 0.10.2</p>
+  <p>Switch to tkn 0.15.0</p>
   <p><b>0.4.1</b></p>
   <p>Fix incompatibility with 2020.3</p>
   <p><b>0.4.0</b></p>

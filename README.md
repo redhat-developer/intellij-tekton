@@ -17,6 +17,41 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 ## New and Noteworthy
 
 This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
+The Tekton CLI in use has been upgrated to 0.15.0.
+
+### Enhanced Tekton Hub integration
+
+Tasks searched on the TektonHub can now be installed as cluster tasks.
+
+![](images/0.5.0/tekton1.gif)
+
+### Pipeline execution reported as notification
+
+When a new pipeline is started, its execution status is new reported asynchronously as a notification. 
+
+![](images/0.5.0/tekton2.gif)
+
+This can be turned off through a setting under **Settings -> Tools -> Tekton Pipelines by Red Hat**:
+
+![](images/0.5.0/tekton3.png)
+
+
+### Improved code validation
+#### Wrong uses of runAfter
+
+Task ordering can be managed through the **runAfter** field. However, uses of this field is not allowed when specifying **finally** tasks. Such wrong usages will be reported when editing your pipeline through an error marker:
+
+![](images/0.5.0/tekton4.png)
+
+### Preview when starting a task or pipeline
+
+When starting a task or a pipeline, it is possible to see the generated taskrun or pipelinerun payload with the **Show Preview** option:
+
+![](images/0.5.0/tekton5.gif)
+
+## Previous releases
+
+## 0.4.1
 
 ### Tekton Hub integration
 
@@ -30,10 +65,6 @@ The Tekton Hub can now be search for tasks. Once you've found a task that satisf
 When a pipeline or task is defining parameters, resources or workspaces that are not being used in the pipeline or task definition, then this parameter, resource or workspace is grey highlighted just like an unused variable is highlighted in a classic code editor.
 
 ![](images/0.4.0/tekton2.gif)
-
-
-
-## Previous releases
 
 ## 0.3.0
 
