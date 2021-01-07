@@ -12,16 +12,8 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.google.common.base.Strings;
 import com.intellij.icons.AllIcons;
-import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.openapi.wm.StatusBar;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.DocumentAdapter;
-import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.border.CustomLineBorder;
 import com.intellij.ui.components.JBPanelWithEmptyText;
 import com.intellij.util.ui.JBUI;
@@ -30,6 +22,7 @@ import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiCallback;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiException;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
+import com.redhat.devtools.intellij.tektoncd.utils.NotificationHelper;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
@@ -52,7 +45,6 @@ import org.jetbrains.annotations.NotNull;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
 
@@ -181,24 +173,10 @@ public class HubMarketplaceTab extends HubDialogTab {
                 hubItem.updateBottomPanel(warningNameAlreadyUsed);
             }
             if (installed != Constants.InstallStatus.ERROR) {
-                notify("Save Successful", kindToBeSaved + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION, true);
+                NotificationHelper.notify(model.getProject(), "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION, true);
             }
         } catch (IOException ex) {
-            notify("Error", "An error occurred while saving " + kindToBeSaved + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR, false);
-        }
-    }
-
-    private void notify(String title, String content, NotificationType type, boolean withBalloon) {
-        Notification notification;
-        notification = new Notification(NOTIFICATION_ID, title, content, type);
-        Notifications.Bus.notify(notification);
-        if (withBalloon) {
-            StatusBar statusBar = WindowManager.getInstance().getStatusBar(model.getProject());
-            JBPopupFactory.getInstance()
-                    .createHtmlTextBalloonBuilder(content, (type == NotificationType.ERROR ? MessageType.ERROR : MessageType.INFO), null)
-                    .setFadeoutTime(7500)
-                    .createBalloon()
-                    .show(RelativePoint.getNorthEastOf(statusBar.getComponent()), Balloon.Position.atRight);
+            NotificationHelper.notify(model.getProject(), "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR, false);
         }
     }
 
