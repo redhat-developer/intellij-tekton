@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
+
+import io.fabric8.kubernetes.client.WatcherException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -243,7 +245,7 @@ public class WatchHandler {
             }
 
             @Override
-            public void onClose(KubernetesClientException cause) {  }
+            public void onClose(WatcherException cause) {  }
         };
     }
 
