@@ -504,11 +504,6 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void followLogsEventListener(String namespace, String el) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "el", "logs", el, "-f", "-n", namespace);
-    }
-
-    @Override
     public String getTaskRunYAML(String namespace, String taskRun) throws IOException {
         return ExecHelper.execute(command, envVars, "taskrun", "describe", taskRun, "-n", namespace, "-o", "yaml");
     }
