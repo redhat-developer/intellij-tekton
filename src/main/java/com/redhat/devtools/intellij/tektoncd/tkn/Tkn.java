@@ -487,6 +487,14 @@ public interface Tkn {
     void showLogsTaskRun(String namespace, String taskRun) throws IOException;
 
     /**
+     * Get logs for an eventListener
+     * @param namespace the namespace to use
+     * @param el name of the eventListener
+     * @throws IOException if communication errored
+     */
+    void showLogsEventListener(String namespace, String el) throws IOException;
+
+    /**
      * Follow logs for a PipelineRun
      *
      * @param namespace the namespace to use
@@ -502,6 +510,14 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void followLogsTaskRun(String namespace, String taskRun) throws IOException;
+
+    /**
+     * Follow logs for an EventListener
+     * @param namespace the namespace to use
+     * @param el name of the EventListener
+     * @throws IOException if communication errored
+     */
+    void followLogsEventListener(String namespace, String el) throws IOException;
 
     /**
      * Get TaskRun configuration in YAML

@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.actions.logs;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
-import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
@@ -20,31 +19,33 @@ import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.RunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.RunPickerDialog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.swing.tree.TreePath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class LogsBaseAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(LogsBaseAction.class);
 
     public LogsBaseAction() { super(RunNode.class, TaskNode.class, PipelineNode.class); }
 
+    public LogsBaseAction(Class clazz) {
+        super(RunNode.class, TaskNode.class, PipelineNode.class, clazz);
+    }
+
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
-            String resourceName = pickRun(namespace, element, anActionEvent.getPresentation().getText(), tkncli);
+            String resourceName = pickResourceName(namespace, element, anActionEvent.getPresentation().getText(), tkncli);
             if (resourceName == null) return;
 
             this.actionPerformed(namespace, resourceName, element.getClass(), tkncli);
@@ -53,13 +54,13 @@ public abstract class LogsBaseAction extends TektonAction {
 
     public abstract void actionPerformed(String namespace, String resourceName, Class nodeClass, Tkn tkncli);
 
-    private String pickRun(String namespace, ParentableNode selected, String action, Tkn tkncli) {
+    private String pickResourceName(String namespace, ParentableNode selected, String action, Tkn tkncli) {
         if (PipelineNode.class.equals(selected.getClass())) {
             return this.pickPipelineRunByPipeline(namespace, selected.getName(), action, tkncli);
         } else if (TaskNode.class.equals(selected.getClass())) {
             return this.pickTaskRunByTask(namespace, selected.getName(), action, tkncli);
         }
-        return ((RunNode) selected).getName();
+        return selected.getName();
     }
 
     private String pickPipelineRunByPipeline(String namespace, String name, String actionName, Tkn tkncli) {
