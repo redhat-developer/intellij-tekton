@@ -479,6 +479,16 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public String getLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
+        return ExecHelper.execute(command, envVars, "pipelinerun", "logs", pipelineRun, "-n", namespace);
+    }
+
+    @Override
+    public String getLogsTaskRun(String namespace, String taskRun) throws IOException {
+        return ExecHelper.execute(command, envVars, "taskrun", "logs", taskRun, "-n", namespace);
+    }
+
+    @Override
     public void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
         ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
     }
