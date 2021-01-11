@@ -19,6 +19,7 @@ public class SettingsView {
     private final JBCheckBox chkDisplayPipelineRunResultAsNotification = new JBCheckBox("Display PipelineRuns result as notification");
     private final JBCheckBox chkEnableDeleteAllRelatedResourcesAsDefault = new JBCheckBox("Enable delete all related resource as default");
     private final JBCheckBox chkShowStartWizardWithNoInputs = new JBCheckBox("Show start wizard when a pipeline/task have no inputs (this allows to set up service accounts)");
+    private final JBCheckBox chkDisplayLogsInEditor = new JBCheckBox("Show logs in text editor");
 
     public SettingsView() {
         myMainPanel = FormBuilder.createFormBuilder()
@@ -55,5 +56,13 @@ public class SettingsView {
 
     public void setShowStartWizardWithNoInputs(boolean newStatus) {
         chkShowStartWizardWithNoInputs.setSelected(newStatus);
+    }
+
+    public boolean getDisplayLogsInEditor() {
+        return chkDisplayLogsInEditor.isSelected();
+    }
+
+    public void setDisplayLogsInEditor(boolean newStatus) {
+        chkDisplayLogsInEditor.setSelected(newStatus);
     }
 }

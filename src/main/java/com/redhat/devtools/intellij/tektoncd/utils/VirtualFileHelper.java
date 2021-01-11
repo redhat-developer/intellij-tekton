@@ -3,7 +3,6 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
-import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -58,7 +57,7 @@ public class VirtualFileHelper {
             VirtualFile vf;
 
             if (isReadOnly) {
-                vf = new LightVirtualFile(name, PlainTextFileType.INSTANCE, content);
+                vf = new LightVirtualFile(name, content);
                 vf.setWritable(false);
             } else {
                 vf = createTempFile(name, content);

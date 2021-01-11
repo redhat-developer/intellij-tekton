@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.actions.logs;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
@@ -33,7 +34,7 @@ public class ShowLogsAction extends LogsBaseAction {
 
     public void actionPerformed(Project project, String namespace, String resourceName, Class nodeClass,  Tkn tkncli) {
         try {
-            boolean showLogsInEditor = true;
+            boolean showLogsInEditor = SettingsState.getInstance().displayLogsInEditor;
             String logs = "";
             if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {
                 if (showLogsInEditor) {
