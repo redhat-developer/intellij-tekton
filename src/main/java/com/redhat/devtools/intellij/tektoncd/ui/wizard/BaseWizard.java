@@ -136,7 +136,9 @@ public abstract class BaseWizard extends DialogWrapper {
         previewTextArea = new JTextArea();
         previewTextArea.setEditable(false);
         previewTextArea.setBorder(MARGIN_10);
+        previewTextArea.setSize(new Dimension(300, 400));
         previewTextArea.setFont(TIMES_PLAIN_14);
+        previewTextArea.setLineWrap(true);
 
         JPanel previewPanel = new JPanel();
         previewPanel.add(previewTextArea);
@@ -230,9 +232,6 @@ public abstract class BaseWizard extends DialogWrapper {
 
             if (!UIUtil.isUnderDarcula()) {
                 myHelpButton.putClientProperty("JButton.buttonType", "help");
-            }
-            if (UIUtil.isUnderAquaLookAndFeel()) {
-                myHelpButton.setText("");
             }
 
             int index = 0;
