@@ -14,9 +14,18 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.testFramework.LightVirtualFile;
+import com.redhat.devtools.intellij.common.CommonConstants;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.twelvemonkeys.lang.Platform;
@@ -48,8 +57,13 @@ import io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.EventListener;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -58,9 +72,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.NotNull;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
@@ -505,7 +522,66 @@ public class TknCli implements Tkn {
 
     @Override
     public void followLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+        boolean toeditor = true;
+        if (!toeditor) {
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+        }
+
+        try {
+            ProcessBuilder builder = (new ProcessBuilder(command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace)).directory(new File(CommonConstants.HOME_FOLDER)).redirectErrorStream(true);
+            builder.environment().putAll(envVars);
+
+            //rec.redirectOutput(vf.getOutputStream(null));
+            Process p = builder.start();
+            boolean isPost2018_3 = ApplicationInfo.getInstance().getBuild().getBaselineVersion() >= 183;
+            RedirectedProcess process = new RedirectedProcess(p, true, isPost2018_3);
+
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String content = "";
+                String line;
+                String name = "log.log";
+                VirtualFile vf = new LightVirtualFile(name);
+            FileEditor[] editors = new FileEditor[0];
+                try {
+                    Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
+                            filter(fileEditor -> fileEditor.getFile().getName().startsWith(name)).findFirst();
+
+                    if (!editor.isPresent()) {
+                        UIHelper.executeInUI(() -> FileEditorManager.getInstance(project).openFile(vf, true));
+                        //VirtualFileHelper.createAndOpenVirtualFile(project, "", name, content, "", null, true);
+                    }
+
+                    while ((line = reader.readLine()) != null) {
+                        content = content + "\n" + line;
+
+
+
+                    }
+                } catch (IOException var8) {
+                   // throw var8;
+                }
+
+            String finalContent = content;
+            final Runnable readRunner = new Runnable() {
+                @Override
+                public void run() {
+                    FileEditorManager.getInstance(project).getSelectedTextEditor().getDocument().setText(finalContent);
+                }
+            };
+            ApplicationManager.getApplication().invokeLater(() -> CommandProcessor.getInstance().executeCommand(project,
+                    () -> ApplicationManager.getApplication().runWriteAction(readRunner), "DiskRead", null));
+
+
+            if (p.waitFor() != 0) {
+                throw new IOException("Process returned exit code: " + p.exitValue(), (Throwable)null);
+            }
+        } catch (InterruptedException e) {
+            throw new IOException(e.getLocalizedMessage());
+        } catch (IOException var8) {
+            throw var8;
+        }
+
     }
 
     @Override
@@ -711,5 +787,134 @@ public class TknCli implements Tkn {
             }
         }
         return null;
+    }
+
+    private static class RedirectedProcess extends Process {
+        private final Process delegate;
+        private final InputStream inputStream;
+
+        private RedirectedProcess(Process delegate, boolean redirect, boolean delay) {
+            this.delegate = delegate;
+            this.inputStream = new RedirectedStream(delegate.getInputStream(), redirect, delay) {
+            };
+        }
+
+        public OutputStream getOutputStream() {
+            return this.delegate.getOutputStream();
+        }
+
+        public InputStream getInputStream() {
+            return this.inputStream;
+        }
+
+        public InputStream getErrorStream() {
+            return this.delegate.getErrorStream();
+        }
+
+        public int waitFor() throws InterruptedException {
+            return this.delegate.waitFor();
+        }
+
+        public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
+            return this.delegate.waitFor(timeout, unit);
+        }
+
+        public int exitValue() {
+            return this.delegate.exitValue();
+        }
+
+        public void destroy() {
+            this.delegate.destroy();
+        }
+
+        public Process destroyForcibly() {
+            return this.delegate.destroyForcibly();
+        }
+
+        public boolean isAlive() {
+            return this.delegate.isAlive();
+        }
+    }
+
+    private static class RedirectedStream extends FilterInputStream {
+        private boolean emitLF;
+        private final boolean redirect;
+        private final boolean delay;
+
+        private RedirectedStream(InputStream delegate, boolean redirect, boolean delay) {
+            super(delegate);
+            this.emitLF = false;
+            this.redirect = redirect;
+            this.delay = delay;
+        }
+
+        public synchronized int read() throws IOException {
+            if (this.emitLF) {
+                this.emitLF = false;
+                return 10;
+            } else {
+                int c = super.read();
+                if (this.redirect && c == 10) {
+                    this.emitLF = true;
+                    c = 13;
+                }
+
+                return c;
+            }
+        }
+
+        public synchronized int read(@NotNull byte[] b) throws IOException {
+            if (b == null) {
+                return 0;
+            }
+
+            return this.read(b, 0, b.length);
+        }
+
+        public synchronized int read(@NotNull byte[] b, int off, int len) throws IOException {
+            if (b == null) {
+                return 1;
+            }
+
+            if (b == null) {
+                throw new NullPointerException();
+            } else if (off >= 0 && len >= 0 && len <= b.length - off) {
+                if (len == 0) {
+                    return 0;
+                } else {
+                    int c = this.read();
+                    if (c == -1) {
+                        if (this.delay) {
+                            try {
+                                Thread.sleep(60000L);
+                            } catch (InterruptedException var7) {
+                            }
+                        }
+
+                        return -1;
+                    } else {
+                        b[off] = (byte)c;
+                        int i = 1;
+
+                        try {
+                            while(i < len && this.available() > 0) {
+                                c = this.read();
+                                if (c == -1) {
+                                    break;
+                                }
+
+                                b[off + i] = (byte)c;
+                                ++i;
+                            }
+                        } catch (IOException var8) {
+                        }
+
+                        return i;
+                    }
+                }
+            } else {
+                throw new IndexOutOfBoundsException();
+            }
+        }
     }
 }
