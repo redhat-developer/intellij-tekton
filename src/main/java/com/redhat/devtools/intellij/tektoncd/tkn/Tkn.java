@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import io.fabric8.kubernetes.client.Watch;
@@ -20,7 +21,6 @@ import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -437,7 +437,7 @@ public interface Tkn {
      * @throws IOException if communication errored
      * @return PipelineRun name
      */
-    String startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
+    String startPipeline(String namespace, String pipeline, Map<String, Input> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Re-run the pipeline using last pipelinerun values
@@ -463,7 +463,7 @@ public interface Tkn {
      * @throws IOException if communication errored
      * @return TaskRun name
      */
-    String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
+    String startTask(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Start the execution of a task
@@ -479,7 +479,7 @@ public interface Tkn {
      * @throws IOException if communication errored
      * @return TaskRun name
      */
-    String startClusterTask(String namespace, String clusterTask, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
+    String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Re-run the task using last taskrun values

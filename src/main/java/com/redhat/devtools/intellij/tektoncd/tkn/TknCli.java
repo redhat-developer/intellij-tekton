@@ -20,6 +20,7 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
@@ -471,14 +472,14 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> resources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    public String startPipeline(String namespace, String pipeline, Map<String, Input> parameters, Map<String, String> resources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("pipeline", "start", pipeline, "-n", namespace));
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
         }
         args.addAll(argsToList(taskServiceAccount, FLAG_TASKSERVICEACCOUNT));
         args.addAll(workspaceArgsToList(workspaces));
-        args.addAll(argsToList(parameters, FLAG_PARAMETER));
+        args.addAll(paramsToArgsList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(resources, FLAG_INPUTRESOURCEPIPELINE));
         if (!runPrefixName.isEmpty()) {
             args.add(FLAG_PREFIXNAME + "=" + runPrefixName);
@@ -493,22 +494,22 @@ public class TknCli implements Tkn {
         return this.getTektonRunName(output);
     }
 
-    public String startTask(String namespace, String task, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    public String startTask(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
         return startTaskInternal(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
     }
 
-    public String startClusterTask(String namespace, String clusterTask, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    public String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("clustertask", "start", clusterTask, "-n", namespace)); // -n is used to retreive input/output resources
         return startTaskInternal(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
     }
 
-    private String startTaskInternal(List<String> args, Map<String, String> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    private String startTaskInternal(List<String> args, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
         }
         args.addAll(workspaceArgsToList(workspaces));
-        args.addAll(argsToList(parameters, FLAG_PARAMETER));
+        args.addAll(paramsToArgsList(parameters, FLAG_PARAMETER));
         args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCETASK));
         args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
         if (!runPrefixName.isEmpty()) {
@@ -522,6 +523,19 @@ public class TknCli implements Tkn {
     public String startLastTask(String namespace, String task) throws IOException {
         String output = ExecHelper.execute(command, envVars, "task", "start", task, "--last", "-n", namespace);
         return getTektonRunName(output);
+    }
+
+    private List<String> paramsToArgsList(Map<String, Input> argMap, String flag) {
+        List<String> args = new ArrayList<>();
+        if (argMap != null) {
+            argMap.entrySet().stream().forEach(param -> {
+                if (!param.getKey().isEmpty() && !(param.getValue().type().equalsIgnoreCase("string") && param.getValue().value().isEmpty())) {
+                    args.add(flag);
+                    args.add(param.getKey() + "=" + param.getValue().value());
+                }
+            });
+        }
+        return args;
     }
 
     private List<String> argsToList(Map<String, String> argMap, String flag) {
