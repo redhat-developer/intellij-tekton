@@ -216,9 +216,11 @@ public class TriggerStep extends BaseStep {
         textAreaNewTriggerBinding.setEditable(true);
         textAreaNewTriggerBinding.setText("");
         textAreaNewTriggerBinding.setFont(defaultLabelFont);
+        textAreaNewTriggerBinding.setLineWrap(true);
 
         scrollTriggerBindingAreaPane = new JBScrollPane(textAreaNewTriggerBinding);
-        scrollTriggerBindingAreaPane.setBorder(BORDER_LABEL_NAME);
+        Dimension sizeTextAreaNewTriggerBinding = textAreaNewTriggerBinding.getPreferredScrollableViewportSize();
+        scrollTriggerBindingAreaPane.setPreferredSize(new Dimension(sizeTextAreaNewTriggerBinding.width, sizeTextAreaNewTriggerBinding.height + 10));
 
         editRightPanel.add(scrollTriggerBindingAreaPane, buildGridBagConstraints(0, internalRow, 2, GridBagConstraints.WEST, new Insets(10, 0, 0, 0)));
         internalRow++;
