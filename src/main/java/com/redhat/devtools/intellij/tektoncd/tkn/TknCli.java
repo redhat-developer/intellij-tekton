@@ -489,6 +489,11 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public void showLogsEventListener(String namespace, String el) throws IOException {
+        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "el", "logs", el, "-n", namespace);
+    }
+
+    @Override
     public void followLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
         ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
     }
