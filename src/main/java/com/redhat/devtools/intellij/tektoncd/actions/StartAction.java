@@ -21,6 +21,7 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
+import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -89,19 +90,28 @@ public class StartAction extends TektonAction {
                 return;
             }
 
-            StartWizard startWizard = UIHelper.executeInUI(() -> {
-                String titleDialog;
-                if (element instanceof PipelineNode) {
-                    titleDialog = "Pipeline " + element.getName();
-                } else {
-                    titleDialog = "Task " + element.getName();
-                }
-                StartWizard wizard = new StartWizard(titleDialog, element, getEventProject(anActionEvent), model);
-                wizard.show();
-                return wizard;
-            });
+            boolean hasNoInputs = model.getParams().isEmpty()
+                                    && model.getInputResources().isEmpty()
+                                    && model.getOutputResources().isEmpty()
+                                    && model.getWorkspaces().isEmpty();
+            boolean showWizardWithNoInputs = SettingsState.getInstance().showStartWizardWithNoInputs || !hasNoInputs;
 
-            if (startWizard.isOK()) {
+            StartWizard startWizard = null;
+            if (showWizardWithNoInputs) {
+                startWizard = UIHelper.executeInUI(() -> {
+                    String titleDialog;
+                    if (element instanceof PipelineNode) {
+                        titleDialog = "Pipeline " + element.getName();
+                    } else {
+                        titleDialog = "Task " + element.getName();
+                    }
+                    StartWizard wizard = new StartWizard(titleDialog, element, getEventProject(anActionEvent), model);
+                    wizard.show();
+                    return wizard;
+                });
+            }
+
+            if (!showWizardWithNoInputs || (startWizard != null && startWizard.isOK())) {
                 try {
                     String serviceAccount = model.getServiceAccount();
                     Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();

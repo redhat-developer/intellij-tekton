@@ -35,6 +35,8 @@ public class SettingsConfigurable  implements Configurable {
     public boolean isModified() {
         SettingsState settings = SettingsState.getInstance();
         boolean modified = mySettingsView.getDisplayPipelineRunResultAsNotification() != settings.displayPipelineRunResultAsNotification;
+        modified |= mySettingsView.getEnableDeleteAllRelatedResourcesAsDefault() != settings.enableDeleteAllRelatedResourcesAsDefault;
+        modified |= mySettingsView.getShowStartWizardWithNoInputs() != settings.showStartWizardWithNoInputs;
         return modified;
     }
 
@@ -42,12 +44,16 @@ public class SettingsConfigurable  implements Configurable {
     public void apply() throws ConfigurationException {
         SettingsState settings = SettingsState.getInstance();
         settings.displayPipelineRunResultAsNotification = mySettingsView.getDisplayPipelineRunResultAsNotification();
+        settings.enableDeleteAllRelatedResourcesAsDefault = mySettingsView.getEnableDeleteAllRelatedResourcesAsDefault();
+        settings.showStartWizardWithNoInputs = mySettingsView.getShowStartWizardWithNoInputs();
     }
 
     @Override
     public void reset() {
         SettingsState settings = SettingsState.getInstance();
         mySettingsView.setDisplayPipelineRunResultAsNotification(settings.displayPipelineRunResultAsNotification);
+        mySettingsView.setEnableDeleteAllRelatedResourcesAsDefault(settings.enableDeleteAllRelatedResourcesAsDefault);
+        mySettingsView.setShowStartWizardWithNoInputs(settings.showStartWizardWithNoInputs);
     }
 
     @Override

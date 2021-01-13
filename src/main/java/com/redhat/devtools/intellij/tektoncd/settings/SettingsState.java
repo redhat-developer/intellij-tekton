@@ -25,6 +25,8 @@ import org.jetbrains.annotations.Nullable;
 public class SettingsState implements PersistentStateComponent<SettingsState> {
 
     public boolean displayPipelineRunResultAsNotification = true;
+    public boolean enableDeleteAllRelatedResourcesAsDefault = false;
+    public boolean showStartWizardWithNoInputs = true;
 
     public static SettingsState getInstance() {
         return ServiceManager.getService(SettingsState.class);
