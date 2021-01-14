@@ -94,10 +94,10 @@ public class StartAction extends TektonAction {
                                     && model.getInputResources().isEmpty()
                                     && model.getOutputResources().isEmpty()
                                     && model.getWorkspaces().isEmpty();
-            boolean showWizardWithNoInputs = SettingsState.getInstance().showStartWizardWithNoInputs || !hasNoInputs;
+            boolean showWizard = SettingsState.getInstance().showStartWizardWithNoInputs || !hasNoInputs;
 
             StartWizard startWizard = null;
-            if (showWizardWithNoInputs) {
+            if (showWizard) {
                 startWizard = UIHelper.executeInUI(() -> {
                     String titleDialog;
                     if (element instanceof PipelineNode) {
@@ -111,7 +111,7 @@ public class StartAction extends TektonAction {
                 });
             }
 
-            if (!showWizardWithNoInputs || (startWizard != null && startWizard.isOK())) {
+            if (!showWizard || (startWizard != null && startWizard.isOK())) {
                 try {
                     String serviceAccount = model.getServiceAccount();
                     Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
