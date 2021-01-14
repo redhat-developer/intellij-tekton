@@ -14,10 +14,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.command.CommandProcessor;
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -72,7 +69,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -525,63 +521,40 @@ public class TknCli implements Tkn {
         boolean toeditor = true;
         if (!toeditor) {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+        } else {
+            executeToEditor();
         }
 
-        try {
-            ProcessBuilder builder = (new ProcessBuilder(command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace)).directory(new File(CommonConstants.HOME_FOLDER)).redirectErrorStream(true);
-            builder.environment().putAll(envVars);
+    }
 
-            //rec.redirectOutput(vf.getOutputStream(null));
-            Process p = builder.start();
-            boolean isPost2018_3 = ApplicationInfo.getInstance().getBuild().getBaselineVersion() >= 183;
-            RedirectedProcess process = new RedirectedProcess(p, true, isPost2018_3);
+    private void executeToEditor(String title, Map<String, String> envs, String... command) throws IOException {
+        ProcessBuilder builder = (new ProcessBuilder(command)).directory(new File(CommonConstants.HOME_FOLDER)).redirectErrorStream(true);
+        builder.environment().putAll(envs);
+        Process p = builder.start();
+        linkProcessToEditor(p);
+    }
 
+    private void linkProcessToEditor(Process p) {
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            String name = "log.log";
+            VirtualFile vf = new LightVirtualFile(name);
+            UIHelper.executeInUI(() -> FileEditorManager.getInstance(project).openFile(vf, true));
+            StringBuilder sb = new StringBuilder();
+            String line;
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String content = "";
-                String line;
-                String name = "log.log";
-                VirtualFile vf = new LightVirtualFile(name);
-            FileEditor[] editors = new FileEditor[0];
-                try {
-                    Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
-                            filter(fileEditor -> fileEditor.getFile().getName().startsWith(name)).findFirst();
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8"));
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
 
-                    if (!editor.isPresent()) {
-                        UIHelper.executeInUI(() -> FileEditorManager.getInstance(project).openFile(vf, true));
-                        //VirtualFileHelper.createAndOpenVirtualFile(project, "", name, content, "", null, true);
-                    }
-
-                    while ((line = reader.readLine()) != null) {
-                        content = content + "\n" + line;
-
-
-
-                    }
-                } catch (IOException var8) {
-                   // throw var8;
+                    UIHelper.executeInUI(() -> ApplicationManager.getApplication().runWriteAction(
+                            () -> FileEditorManager.getInstance(project).getSelectedTextEditor().getDocument().setText(sb.toString())
+                    ));
                 }
+            }catch(IOException e) {
 
-            String finalContent = content;
-            final Runnable readRunner = new Runnable() {
-                @Override
-                public void run() {
-                    FileEditorManager.getInstance(project).getSelectedTextEditor().getDocument().setText(finalContent);
-                }
-            };
-            ApplicationManager.getApplication().invokeLater(() -> CommandProcessor.getInstance().executeCommand(project,
-                    () -> ApplicationManager.getApplication().runWriteAction(readRunner), "DiskRead", null));
-
-
-            if (p.waitFor() != 0) {
-                throw new IOException("Process returned exit code: " + p.exitValue(), (Throwable)null);
             }
-        } catch (InterruptedException e) {
-            throw new IOException(e.getLocalizedMessage());
-        } catch (IOException var8) {
-            throw var8;
-        }
-
+        });
     }
 
     @Override
