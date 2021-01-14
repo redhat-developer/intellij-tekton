@@ -11,7 +11,6 @@
 package com.redhat.devtools.intellij.tektoncd.actions.logs;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
@@ -49,11 +48,11 @@ public abstract class LogsBaseAction extends TektonAction {
             String resourceName = pickResourceName(namespace, element, anActionEvent.getPresentation().getText(), tkncli);
             if (resourceName == null) return;
 
-            this.actionPerformed(getEventProject(anActionEvent), namespace, resourceName, element.getClass(), tkncli);
+            this.actionPerformed(namespace, resourceName, element.getClass(), tkncli);
         });
     }
 
-    public abstract void actionPerformed(Project project, String namespace, String resourceName, Class nodeClass, Tkn tkncli);
+    public abstract void actionPerformed(String namespace, String resourceName, Class nodeClass, Tkn tkncli);
 
     private String pickResourceName(String namespace, ParentableNode selected, String action, Tkn tkncli) {
         if (PipelineNode.class.equals(selected.getClass())) {

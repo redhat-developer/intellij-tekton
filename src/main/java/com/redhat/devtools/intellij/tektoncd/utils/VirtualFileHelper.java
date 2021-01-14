@@ -70,8 +70,6 @@ public class VirtualFileHelper {
             if (targetNode != null) vf.putUserData(TARGET_NODE, targetNode);
 
             FileEditorManager.getInstance(project).openFile(vf, true);
-
-            //vf.getFileSystem().addVirtualFileListener(new FileChangedListener());
         } catch (IOException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }

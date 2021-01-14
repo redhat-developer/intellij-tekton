@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions.logs;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
@@ -31,7 +30,7 @@ public class ShowLogsAction extends LogsBaseAction {
         super(EventListenerNode.class);
     }
 
-    public void actionPerformed(Project project, String namespace, String resourceName, Class nodeClass,  Tkn tkncli) {
+    public void actionPerformed(String namespace, String resourceName, Class nodeClass, Tkn tkncli) {
         try {
             boolean toEditor = SettingsState.getInstance().displayLogsInEditor;
             if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {

@@ -54,11 +54,8 @@ import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -68,10 +65,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.NotNull;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
@@ -758,134 +753,5 @@ public class TknCli implements Tkn {
             }
         }
         return null;
-    }
-
-    private static class RedirectedProcess extends Process {
-        private final Process delegate;
-        private final InputStream inputStream;
-
-        private RedirectedProcess(Process delegate, boolean redirect, boolean delay) {
-            this.delegate = delegate;
-            this.inputStream = new RedirectedStream(delegate.getInputStream(), redirect, delay) {
-            };
-        }
-
-        public OutputStream getOutputStream() {
-            return this.delegate.getOutputStream();
-        }
-
-        public InputStream getInputStream() {
-            return this.inputStream;
-        }
-
-        public InputStream getErrorStream() {
-            return this.delegate.getErrorStream();
-        }
-
-        public int waitFor() throws InterruptedException {
-            return this.delegate.waitFor();
-        }
-
-        public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
-            return this.delegate.waitFor(timeout, unit);
-        }
-
-        public int exitValue() {
-            return this.delegate.exitValue();
-        }
-
-        public void destroy() {
-            this.delegate.destroy();
-        }
-
-        public Process destroyForcibly() {
-            return this.delegate.destroyForcibly();
-        }
-
-        public boolean isAlive() {
-            return this.delegate.isAlive();
-        }
-    }
-
-    private static class RedirectedStream extends FilterInputStream {
-        private boolean emitLF;
-        private final boolean redirect;
-        private final boolean delay;
-
-        private RedirectedStream(InputStream delegate, boolean redirect, boolean delay) {
-            super(delegate);
-            this.emitLF = false;
-            this.redirect = redirect;
-            this.delay = delay;
-        }
-
-        public synchronized int read() throws IOException {
-            if (this.emitLF) {
-                this.emitLF = false;
-                return 10;
-            } else {
-                int c = super.read();
-                if (this.redirect && c == 10) {
-                    this.emitLF = true;
-                    c = 13;
-                }
-
-                return c;
-            }
-        }
-
-        public synchronized int read(@NotNull byte[] b) throws IOException {
-            if (b == null) {
-                return 0;
-            }
-
-            return this.read(b, 0, b.length);
-        }
-
-        public synchronized int read(@NotNull byte[] b, int off, int len) throws IOException {
-            if (b == null) {
-                return 1;
-            }
-
-            if (b == null) {
-                throw new NullPointerException();
-            } else if (off >= 0 && len >= 0 && len <= b.length - off) {
-                if (len == 0) {
-                    return 0;
-                } else {
-                    int c = this.read();
-                    if (c == -1) {
-                        if (this.delay) {
-                            try {
-                                Thread.sleep(60000L);
-                            } catch (InterruptedException var7) {
-                            }
-                        }
-
-                        return -1;
-                    } else {
-                        b[off] = (byte)c;
-                        int i = 1;
-
-                        try {
-                            while(i < len && this.available() > 0) {
-                                c = this.read();
-                                if (c == -1) {
-                                    break;
-                                }
-
-                                b[off + i] = (byte)c;
-                                ++i;
-                            }
-                        } catch (IOException var8) {
-                        }
-
-                        return i;
-                    }
-                }
-            } else {
-                throw new IndexOutOfBoundsException();
-            }
-        }
     }
 }

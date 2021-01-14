@@ -130,7 +130,7 @@ public class StartAction extends TektonAction {
                     }
                     if(runName != null) {
                         FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
-                        followLogsAction.actionPerformed(project, namespace, runName, element.getClass(), tkncli);
+                        followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
                     }
 
                     WatchHandler.get().setWatchByKind(tkncli, project, namespace, KIND_PIPELINERUN);
