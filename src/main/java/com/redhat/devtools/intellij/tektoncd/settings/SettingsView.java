@@ -17,10 +17,14 @@ import javax.swing.JPanel;
 public class SettingsView {
     private final JPanel myMainPanel;
     private final JBCheckBox chkDisplayPipelineRunResultAsNotification = new JBCheckBox("Display PipelineRuns result as notification");
+    private final JBCheckBox chkEnableDeleteAllRelatedResourcesAsDefault = new JBCheckBox("Enable delete all related resource as default");
+    private final JBCheckBox chkShowStartWizardWithNoInputs = new JBCheckBox("Show start wizard when a pipeline/task have no inputs (this allows to set up service accounts)");
 
     public SettingsView() {
         myMainPanel = FormBuilder.createFormBuilder()
                 .addComponent(chkDisplayPipelineRunResultAsNotification, 1)
+                .addComponent(chkEnableDeleteAllRelatedResourcesAsDefault, 1)
+                .addComponent(chkShowStartWizardWithNoInputs, 1)
                 .addComponentFillVertically(new JPanel(), 0)
                 .getPanel();
     }
@@ -37,4 +41,19 @@ public class SettingsView {
         chkDisplayPipelineRunResultAsNotification.setSelected(newStatus);
     }
 
+    public boolean getEnableDeleteAllRelatedResourcesAsDefault() {
+        return chkEnableDeleteAllRelatedResourcesAsDefault.isSelected();
+    }
+
+    public void setEnableDeleteAllRelatedResourcesAsDefault(boolean newStatus) {
+        chkEnableDeleteAllRelatedResourcesAsDefault.setSelected(newStatus);
+    }
+
+    public boolean getShowStartWizardWithNoInputs() {
+        return chkShowStartWizardWithNoInputs.isSelected();
+    }
+
+    public void setShowStartWizardWithNoInputs(boolean newStatus) {
+        chkShowStartWizardWithNoInputs.setSelected(newStatus);
+    }
 }

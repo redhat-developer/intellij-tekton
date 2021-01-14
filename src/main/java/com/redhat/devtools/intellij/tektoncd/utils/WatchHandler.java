@@ -34,9 +34,9 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 import io.fabric8.knative.internal.pkg.apis.Condition;
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import java.io.IOException;
 import java.time.Duration;
@@ -48,8 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
-
-import io.fabric8.kubernetes.client.WatcherException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -226,6 +224,7 @@ public class WatchHandler {
                 // watches for *runs are always active so there also could be nothing to refresh, only a notification to display
                 if (!SettingsState.getInstance().displayPipelineRunResultAsNotification ||
                         !(resource instanceof io.fabric8.tekton.pipeline.v1beta1.PipelineRun) ||
+                        ((PipelineRun) resource).getStatus() == null ||
                         Strings.isNullOrEmpty(((PipelineRun) resource).getStatus().getCompletionTime())) {
                     return;
                 }

@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.ui;
 
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBScrollPane;
+import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -98,6 +99,7 @@ public class DeleteDialog extends DialogWrapper{
         addComponent(deleteResourceText, new EmptyBorder(20, 10, 5, 10), null, 0, 3, GridBagConstraints.NORTHWEST);
 
         deleteResourcesChb = new JCheckBox(deleteChkText);
+        deleteResourcesChb.setSelected(SettingsState.getInstance().enableDeleteAllRelatedResourcesAsDefault);
         addComponent(deleteResourcesChb, new EmptyBorder(5, 10, 10, 10), null, 0, 4, GridBagConstraints.NORTHWEST);
     }
 
