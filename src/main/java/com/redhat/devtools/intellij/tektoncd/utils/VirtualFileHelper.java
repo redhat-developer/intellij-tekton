@@ -1,5 +1,6 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -28,23 +29,24 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 public class VirtualFileHelper {
     static Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
 
-    public static void openVirtualFileInEditor(Project project, String name, String content) {
-        Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
-                filter(fileEditor -> fileEditor.getFile().getName().startsWith(name)).findFirst();
-        if (!editor.isPresent()) {
-            VirtualFileHelper.createAndOpenVirtualFile(project, "", name, content, "", null, true);
-        } else {
-            FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
-        }
+    public static void openVirtualFileInEditor(Project project, String name, String content, boolean edit) {
+        innerOpenVirtualFileInEditor(project, "", name, content, "", edit, !edit);
     }
 
     public static void openVirtualFileInEditor(Project project, String namespace, String name, String content, String kind, boolean forceWritable) {
+        innerOpenVirtualFileInEditor(project, namespace, namespace + "-" + name + ".yaml", content, kind, false, !forceWritable && (KIND_PIPELINERUN.equals(kind) || KIND_TASKRUN.equals(kind)));
+    }
+
+    public static void innerOpenVirtualFileInEditor(Project project, String namespace, String name, String content, String kind, boolean edit, boolean readOnly) {
         Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
-                filter(fileEditor -> fileEditor.getFile().getName().startsWith(namespace + "-" + name + ".yaml")).findFirst();
+                filter(fileEditor -> fileEditor.getFile().getName().startsWith(name)).findFirst();
         if (!editor.isPresent()) {
-            VirtualFileHelper.createAndOpenVirtualFile(project, namespace, namespace + "-" + name + ".yaml", content, kind, null, !forceWritable && (KIND_PIPELINERUN.equals(kind) || KIND_TASKRUN.equals(kind)));
+            VirtualFileHelper.createAndOpenVirtualFile(project, namespace, name, content, kind, null, readOnly);
         } else {
-            FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
+            Editor openedEditor = FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
+            if (edit) {
+                openedEditor.getDocument().setText(content);
+            }
         }
     }
 

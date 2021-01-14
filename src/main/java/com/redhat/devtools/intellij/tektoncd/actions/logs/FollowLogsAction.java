@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
@@ -29,10 +30,11 @@ public class FollowLogsAction extends LogsBaseAction {
     public void actionPerformed(Project project, String namespace, String resourceName, Class nodeClass, Tkn tkncli) {
         ExecHelper.submit(() -> {
             try {
+                boolean toEditor = SettingsState.getInstance().displayLogsInEditor;
                 if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {
-                    tkncli.followLogsPipelineRun(namespace, resourceName);
+                    tkncli.followLogsPipelineRun(namespace, resourceName, toEditor);
                 } else if (TaskNode.class.equals(nodeClass) || TaskRunNode.class.equals(nodeClass)) {
-                    tkncli.followLogsTaskRun(namespace, resourceName);
+                    tkncli.followLogsTaskRun(namespace, resourceName, toEditor);
                 }
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->

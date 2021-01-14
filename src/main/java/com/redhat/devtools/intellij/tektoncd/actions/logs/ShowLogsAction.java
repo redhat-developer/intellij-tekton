@@ -20,7 +20,6 @@ import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,26 +33,13 @@ public class ShowLogsAction extends LogsBaseAction {
 
     public void actionPerformed(Project project, String namespace, String resourceName, Class nodeClass,  Tkn tkncli) {
         try {
-            boolean showLogsInEditor = SettingsState.getInstance().displayLogsInEditor;
-            String logs = "";
+            boolean toEditor = SettingsState.getInstance().displayLogsInEditor;
             if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {
-                if (showLogsInEditor) {
-                    logs = tkncli.getLogsPipelineRun(namespace, resourceName);
-                } else {
-                    tkncli.showLogsPipelineRun(namespace, resourceName);
-                }
+                tkncli.showLogsPipelineRun(namespace, resourceName, toEditor);
             } else if (TaskNode.class.equals(nodeClass) || TaskRunNode.class.equals(nodeClass)) {
-                if (showLogsInEditor) {
-                    logs = tkncli.getLogsTaskRun(namespace, resourceName);
-                } else {
-                    tkncli.showLogsTaskRun(namespace, resourceName);
-                }
+                tkncli.showLogsTaskRun(namespace, resourceName, toEditor);
             } else if (EventListenerNode.class.equals(nodeClass)) {
                 tkncli.showLogsEventListener(namespace, resourceName);
-            }
-            if (!logs.isEmpty()) {
-                String finalLogs = logs;
-                UIHelper.executeInUI(() -> VirtualFileHelper.openVirtualFileInEditor(project, resourceName + "-logs.log", finalLogs));
             }
         } catch (IOException e) {
             UIHelper.executeInUI(() ->

@@ -26,6 +26,7 @@ public class SettingsView {
                 .addComponent(chkDisplayPipelineRunResultAsNotification, 1)
                 .addComponent(chkEnableDeleteAllRelatedResourcesAsDefault, 1)
                 .addComponent(chkShowStartWizardWithNoInputs, 1)
+                .addComponent(chkDisplayLogsInEditor, 1)
                 .addComponentFillVertically(new JPanel(), 0)
                 .getPanel();
     }

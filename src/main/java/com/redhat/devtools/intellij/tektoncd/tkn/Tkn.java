@@ -470,41 +470,23 @@ public interface Tkn {
     String startLastTask(String namespace, String task) throws IOException;
 
     /**
-     * Get logs for a PipelineRun
-     *
-     * @param namespace the namespace to use
-     * @param pipelineRun name of the PipelineRun
-     * @throws IOException if communication errored
-     * @return logs of pipelinerun
-     */
-    String getLogsPipelineRun(String namespace, String pipelineRun) throws IOException;
-
-    /**
-     * Get logs for a TaskRun
-     *
-     * @param namespace the namespace to use
-     * @param taskRun name of the TaskRun
-     * @throws IOException if communication errored
-     * @return logs of taskrun
-     */
-    String getLogsTaskRun(String namespace, String taskRun) throws IOException;
-
-    /**
      * Show logs for a PipelineRun
      *
      * @param namespace the namespace to use
      * @param pipelineRun name of the PipelineRun
+     * @param toEditor true if logs has to be redirected and displayed in the editor
      * @throws IOException if communication errored
      */
-    void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException;
+    void showLogsPipelineRun(String namespace, String pipelineRun, boolean toEditor) throws IOException;
 
     /**
      * Get logs for a TaskRun
      * @param namespace the namespace to use
      * @param taskRun name of the TaskRun
+     * @param toEditor true if logs has to be redirected and displayed in the editor
      * @throws IOException if communication errored
      */
-    void showLogsTaskRun(String namespace, String taskRun) throws IOException;
+    void showLogsTaskRun(String namespace, String taskRun, boolean toEditor) throws IOException;
 
     /**
      * Get logs for an eventListener
@@ -519,17 +501,19 @@ public interface Tkn {
      *
      * @param namespace the namespace to use
      * @param pipelineRun name of the PipelineRun
+     * @param toEditor true if logs has to be redirected and displayed in the editor
      * @throws IOException if communication errored
      */
-    void followLogsPipelineRun(String namespace, String pipelineRun) throws IOException;
+    void followLogsPipelineRun(String namespace, String pipelineRun, boolean toEditor) throws IOException;
 
     /**
      * Follow logs for a TaskRun
      * @param namespace the namespace to use
      * @param taskRun name of the TaskRun
+     * @param toEditor true if logs has to be redirected and displayed in the editor
      * @throws IOException if communication errored
      */
-    void followLogsTaskRun(String namespace, String taskRun) throws IOException;
+    void followLogsTaskRun(String namespace, String taskRun, boolean toEditor) throws IOException;
 
     /**
      * Get TaskRun configuration in YAML
