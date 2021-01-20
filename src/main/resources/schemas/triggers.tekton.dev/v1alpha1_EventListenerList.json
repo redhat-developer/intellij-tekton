@@ -1596,7 +1596,17 @@
           "type": "string"
         },
         "value": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
         }
       },
       "additionalProperties": false,
@@ -2490,19 +2500,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "TriggerBindingSpec": {
-      "properties": {
-        "params": {
-          "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/Param"
-          },
-          "type": "array"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
     "TriggerInterceptor": {
       "properties": {
         "webhook": {
@@ -2548,10 +2545,6 @@
         "kind": {
           "type": "string"
         },
-        "spec": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/TriggerBindingSpec"
-        },
         "apiversion": {
           "type": "string"
         }
@@ -2560,9 +2553,6 @@
       "type": "object"
     },
     "TriggerSpecTemplate": {
-      "required": [
-        "name"
-      ],
       "properties": {
         "name": {
           "type": "string"
@@ -2870,6 +2860,7 @@
         },
         "header": {
           "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
             "$ref": "#/definitions/Param"
           },
           "type": "array"
