@@ -86,11 +86,15 @@ public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider 
         Tkn tkn = TreeHelper.getTkn(project);
         String ns = parameters.getOriginalFile().getVirtualFile().getUserData(NAMESPACE);
         try {
-            String nameTask = currentTaskNode.get("taskRef").get("name").asText("");
+            JsonNode taskRef = currentTaskNode.get("taskRef");
+            if (taskRef == null) {
+                return Collections.emptyList();
+            }
+            String nameTask = taskRef.has("name") ? taskRef.get("name").asText("") : "";
             if (nameTask.isEmpty()) {
                 return Collections.emptyList();
             }
-            String kind = currentTaskNode.get("taskRef").get("kind").asText("Task");
+            String kind = taskRef.has("kind") ? taskRef.get("kind").asText(KIND_TASK) : KIND_TASK;
             Optional<Task> task = Optional.empty();
             Optional<ClusterTask> cTask = Optional.empty();
 
