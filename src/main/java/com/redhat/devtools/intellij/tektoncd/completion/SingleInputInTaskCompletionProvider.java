@@ -23,7 +23,9 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
+import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
+import io.fabric8.tekton.pipeline.v1beta1.TaskSpec;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 
 public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider {
@@ -86,20 +90,32 @@ public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider 
             if (nameTask.isEmpty()) {
                 return Collections.emptyList();
             }
-            Optional<Task> task = tkn.getTasks(ns).stream().filter(t -> t.getMetadata().getName().equalsIgnoreCase(nameTask)).findFirst();
-            if (task.isPresent()) {
+            String kind = currentTaskNode.get("taskRef").get("kind").asText("Task");
+            Optional<Task> task = Optional.empty();
+            Optional<ClusterTask> cTask = Optional.empty();
+
+            if (kind.equalsIgnoreCase(KIND_TASK)) {
+                task = tkn.getTasks(ns).stream().filter(t -> t.getMetadata().getName().equalsIgnoreCase(nameTask)).findFirst();
+            } else if (kind.equalsIgnoreCase(KIND_CLUSTERTASK)){
+                cTask = tkn.getClusterTasks().stream().filter(t -> t.getMetadata().getName().equalsIgnoreCase(nameTask)).findFirst();
+            }
+
+            TaskSpec spec = task.isPresent() ? task.get().getSpec() :
+                            cTask.isPresent() ? cTask.get().getSpec() :
+                            null;
+            if (spec != null) {
                 switch (currentInputType.toLowerCase()) {
                     case "params": {
-                        return getParamsLookups(task.get(), currentTaskNode);
+                        return getParamsLookups(spec, currentTaskNode);
                     }
                     case "inputs": {
-                        return getInputResourcesLookups(task.get(), currentTaskNode);
+                        return getInputResourcesLookups(spec, currentTaskNode);
                     }
                     case "outputs": {
-                        return getOutputResourcesLookups(task.get(), currentTaskNode);
+                        return getOutputResourcesLookups(spec, currentTaskNode);
                     }
                     case "workspaces": {
-                        return getWorkspacesLookups(task.get(), currentTaskNode);
+                        return getWorkspacesLookups(spec, currentTaskNode);
                     }
                 }
             }
@@ -109,12 +125,12 @@ public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider 
         return Collections.emptyList();
     }
 
-    private List<LookupElementBuilder> getParamsLookups(Task task, JsonNode taskNode) {
+    private List<LookupElementBuilder> getParamsLookups(TaskSpec spec, JsonNode taskNode) {
         List<LookupElementBuilder> singleParamInputLookups = new ArrayList<>();
 
         if (taskNode.has("params")) {
             List<String> existingParams = getInputsInNode(taskNode.get("params"));
-            task.getSpec().getParams().stream().filter(param -> !existingParams.contains(param.getName())).forEach(param -> {
+            spec.getParams().stream().filter(param -> !existingParams.contains(param.getName())).forEach(param -> {
                 singleParamInputLookups.add(0, LookupElementBuilder.create(param)
                         .withPresentableText(param.getName())
                         .withLookupString(param.getName())
@@ -125,13 +141,13 @@ public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider 
         return singleParamInputLookups;
     }
 
-    private List<LookupElementBuilder> getInputResourcesLookups(Task task, JsonNode taskNode) {
+    private List<LookupElementBuilder> getInputResourcesLookups(TaskSpec spec, JsonNode taskNode) {
         List<LookupElementBuilder> singleInputResourcesLookups = new ArrayList<>();
 
         if (taskNode.has("resources") &&
             taskNode.get("resources").has("inputs")) {
             List<String> existingInputs = getInputsInNode(taskNode.get("resources").get("inputs"));
-            task.getSpec().getResources().getInputs().stream().filter(input -> !existingInputs.contains(input.getName())).forEach(input -> {
+            spec.getResources().getInputs().stream().filter(input -> !existingInputs.contains(input.getName())).forEach(input -> {
                 singleInputResourcesLookups.add(0, LookupElementBuilder.create(input)
                         .withPresentableText(input.getName())
                         .withLookupString(input.getName())
@@ -142,13 +158,13 @@ public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider 
         return singleInputResourcesLookups;
     }
 
-    private List<LookupElementBuilder> getOutputResourcesLookups(Task task, JsonNode taskNode) {
+    private List<LookupElementBuilder> getOutputResourcesLookups(TaskSpec spec, JsonNode taskNode) {
         List<LookupElementBuilder> singleOutputResourcesLookups = new ArrayList<>();
 
         if (taskNode.has("resources") &&
             taskNode.get("resources").has("outputs")) {
             List<String> existingOutputs = getInputsInNode(taskNode.get("resources").get("outputs"));
-            task.getSpec().getResources().getOutputs().stream().filter(output -> !existingOutputs.contains(output.getName())).forEach(output -> {
+            spec.getResources().getOutputs().stream().filter(output -> !existingOutputs.contains(output.getName())).forEach(output -> {
                 singleOutputResourcesLookups.add(0, LookupElementBuilder.create(output)
                         .withPresentableText(output.getName())
                         .withLookupString(output.getName())
@@ -159,13 +175,13 @@ public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider 
         return singleOutputResourcesLookups;
     }
 
-    private List<LookupElementBuilder> getWorkspacesLookups(Task task, JsonNode taskNode) {
+    private List<LookupElementBuilder> getWorkspacesLookups(TaskSpec spec, JsonNode taskNode) {
         List<LookupElementBuilder> singleWorkspaceInputLookups = new ArrayList<>();
 
         if (taskNode.has("workspaces")) {
             List<String> existingWorkspaces = getInputsInNode(taskNode.get("workspaces"));
 
-            task.getSpec().getWorkspaces().stream().filter(workspace -> !existingWorkspaces.contains(workspace.getName())).forEach(workspace -> {
+            spec.getWorkspaces().stream().filter(workspace -> !existingWorkspaces.contains(workspace.getName())).forEach(workspace -> {
                 singleWorkspaceInputLookups.add(0, LookupElementBuilder.create(workspace)
                         .withPresentableText(workspace.getName())
                         .withLookupString(workspace.getName())
