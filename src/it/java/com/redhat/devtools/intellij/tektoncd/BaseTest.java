@@ -15,9 +15,6 @@ import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 
@@ -38,9 +35,5 @@ public abstract class BaseTest {
     @After
     public void tearDown() throws Exception {
         myFixture.tearDown();
-    }
-
-    protected String load(String name) throws IOException {
-        return IOUtils.toString(BaseTest.class.getResource("/" + name), StandardCharsets.UTF_8);
     }
 }

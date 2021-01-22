@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import com.redhat.devtools.intellij.tektoncd.TestUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -26,8 +27,8 @@ public class TknCliTaskTest extends TknCliTest {
     @Test
     public void verifyCreateTaskAndDelete() throws IOException {
         final String TASK_NAME = "first";
-        String resourceBody = load("task1.yaml").replace("taskfoo", TASK_NAME);
-        saveResource(resourceBody, NAMESPACE, "tasks");
+        String resourceBody = TestUtils.load("task1.yaml").replace("taskfoo", TASK_NAME);
+        TestUtils.saveResource(tkn, resourceBody, NAMESPACE, "tasks");
         // verify task has been created
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
@@ -40,14 +41,14 @@ public class TknCliTaskTest extends TknCliTest {
     @Test
     public void verifyTaskYAMLIsReturnedCorrectly() throws IOException {
         final String TASK_NAME = "second";
-        String resourceBody = load("task1.yaml").replace("taskfoo", TASK_NAME);
-        saveResource(resourceBody, NAMESPACE, "tasks");
+        String resourceBody = TestUtils.load("task1.yaml").replace("taskfoo", TASK_NAME);
+        TestUtils.saveResource(tkn, resourceBody, NAMESPACE, "tasks");
         // verify pipeline has been created
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // get YAML from cluster and verify is the same uploaded
         String resourceBodyFromCluster = tkn.getTaskYAML(NAMESPACE, TASK_NAME);
-        assertEquals(getSpecFromResource(resourceBody), getSpecFromResource(resourceBodyFromCluster));
+        assertEquals(TestUtils.getSpecFromResource(resourceBody), TestUtils.getSpecFromResource(resourceBodyFromCluster));
         // clean up and verify cleaning succeed
         tkn.deleteTasks(NAMESPACE, tasks, false);
         tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
@@ -58,10 +59,10 @@ public class TknCliTaskTest extends TknCliTest {
     public void verifyCreateTaskAndTaskRunAndDeleteAll() throws IOException, InterruptedException {
         final String TASK_NAME = "third-task-test";
         final String TASK_RUN_NAME = "run-third-task-test";
-        String taskConfig = load("task1.yaml").replace("taskfoo", TASK_NAME);
-        String taskRunConfig = load("taskrun1.yaml").replace("taskfoo", TASK_NAME).replace("taskrunfoo", TASK_RUN_NAME);
-        saveResource(taskConfig, NAMESPACE, "tasks");
-        saveResource(taskRunConfig, NAMESPACE, "taskruns");
+        String taskConfig = TestUtils.load("task1.yaml").replace("taskfoo", TASK_NAME);
+        String taskRunConfig = TestUtils.load("taskrun1.yaml").replace("taskfoo", TASK_NAME).replace("taskrunfoo", TASK_RUN_NAME);
+        TestUtils.saveResource(tkn, taskConfig, NAMESPACE, "tasks");
+        TestUtils.saveResource(tkn, taskRunConfig, NAMESPACE, "taskruns");
 
         // verify task has been created
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());

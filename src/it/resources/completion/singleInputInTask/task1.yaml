@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: single-input-in-task
+  namespace: testns
+spec:
+  workspaces:
+    - name: write-allowed
+    - name: write-disallowed
+      readOnly: true
+  params:
+    - name: param1
+      type: string
+    - name: param2
+      type: string
+  resources:
+    inputs:
+      - name: resource1
+        type: git
+    outputs:
+      - name: resource1
+        type: image
+      - name: resource2
+        type: image
+  steps:
+    - args:
+        - -c
+        - $(<caret>
+      command:
+        - /bin/bash
+      image: fedora
+      name: build-sources
+      resources: {}

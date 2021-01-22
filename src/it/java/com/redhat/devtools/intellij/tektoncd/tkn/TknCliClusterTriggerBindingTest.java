@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import com.redhat.devtools.intellij.tektoncd.TestUtils;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,8 +27,8 @@ public class TknCliClusterTriggerBindingTest extends TknCliTest {
     @Test
     public void verifyCreateClusterTriggerBindingAndDelete() throws IOException {
         final String CTB_NAME = "ctbfirst";
-        String resourceBody = load("clustertriggerbinding1.yaml").replace("ctbfoo", CTB_NAME);
-        saveResource(resourceBody, "", CTB_PLURAL);
+        String resourceBody = TestUtils.load("clustertriggerbinding1.yaml").replace("ctbfoo", CTB_NAME);
+        TestUtils.saveResource(tkn, resourceBody, "", CTB_PLURAL);
         // verify ctb has been created
         List<String> ctbs = tkn.getClusterTriggerBindings();
         assertTrue(ctbs.contains(CTB_NAME));
@@ -40,14 +41,14 @@ public class TknCliClusterTriggerBindingTest extends TknCliTest {
     @Test
     public void verifyClusterTriggerBindingYAMLIsReturnedCorrectly() throws IOException {
         final String CTB_NAME = "ctbsecond";
-        String resourceBody = load("clustertriggerbinding1.yaml").replace("ctbfoo", CTB_NAME);
-        saveResource(resourceBody, "", CTB_PLURAL);
+        String resourceBody = TestUtils.load("clustertriggerbinding1.yaml").replace("ctbfoo", CTB_NAME);
+        TestUtils.saveResource(tkn, resourceBody, "", CTB_PLURAL);
         // verify ctb has been created
         List<String> ctbs = tkn.getClusterTriggerBindings();
         assertTrue(ctbs.contains(CTB_NAME));
         // get YAML from cluster and verify is the same uploaded
         String resourceBodyFromCluster = tkn.getClusterTriggerBindingYAML(CTB_NAME);
-        assertEquals(getSpecFromResource(resourceBody), getSpecFromResource(resourceBodyFromCluster));
+        assertEquals(TestUtils.getSpecFromResource(resourceBody), TestUtils.getSpecFromResource(resourceBodyFromCluster));
         /// clean up and verify cleaning succeed
         tkn.deleteClusterTriggerBindings(ctbs.stream().filter(ctb -> ctb.equalsIgnoreCase(CTB_NAME)).collect(Collectors.toList()));
         ctbs = tkn.getClusterTriggerBindings();

@@ -1,0 +1,15 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: foo
+  namespace: testns
+spec:
+  params:
+    - name: param1
+    - name: param2
+  tasks:
+    - name: step1
+      taskRef:
+        name: single-input-in-task
+      params:
+      - name: <caret>
