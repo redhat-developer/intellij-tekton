@@ -16,16 +16,20 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
@@ -39,6 +43,8 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_1
 public class ParametersStep extends BaseStep {
 
     Map<String, JTextField> textFields;
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private ScheduledFuture scheduler;
 
     public ParametersStep(ActionToRunModel model) {
         super("Parameters", model);
@@ -121,20 +127,38 @@ public class ParametersStep extends BaseStep {
 
     private void addListener(String idParam, JTextField txtValueParam, Border defaultBorder, int row) {
         // listen to when the focus is lost by the textbox and update the model so the preview shows the updated value
-        txtValueParam.addFocusListener(new FocusAdapter() {
+        txtValueParam.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void focusLost(FocusEvent e) {
-                super.focusLost(e);
-                setInputValue(model.getParams(), idParam, txtValueParam.getText());
-                // reset error graphics if an error occurred earlier
-                if (isValid(txtValueParam)) {
-                    txtValueParam.setBorder(defaultBorder);
-                    if (errorFieldsByRow.containsKey(row)) {
-                        deleteComponent(errorFieldsByRow.get(row));
-                    }
+            public void insertUpdate(DocumentEvent e) {
+                update();
+            }
 
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                update();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                update();
+            }
+
+            public void update() {
+                if (scheduler != null && !scheduler.isCancelled() && !scheduler.isDone()) {
+                    scheduler.cancel(true);
                 }
-                fireStateChanged();
+
+                scheduler = executor.schedule(() -> {
+                    setInputValue(model.getParams(), idParam, txtValueParam.getText());
+                    // reset error graphics if an error occurred earlier
+                    if (isValid(txtValueParam)) {
+                        txtValueParam.setBorder(defaultBorder);
+                        if (errorFieldsByRow.containsKey(row)) {
+                            deleteComponent(errorFieldsByRow.get(row));
+                        }
+                    }
+                    fireStateChanged();
+                }, 500, TimeUnit.MILLISECONDS);
             }
         });
     }
