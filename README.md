@@ -2,8 +2,7 @@
 [plugin-repo]: https://plugins.jetbrains.com/plugin/14096-tekton-pipelines-by-red-hat
 [plugin-version-svg]: https://img.shields.io/jetbrains/plugin/v/14096-tekton-pipelines-by-red-hat.svg
 [plugin-downloads-svg]: https://img.shields.io/jetbrains/plugin/d/14096-tekton-pipelines-by-red-hat.svg
-[![Build Status](https://travis-ci.com/redhat-developer/intellij-tekton.svg?branch=master)](https://travis-ci.com/github/redhat-developer/intellij-tekton)
-![Java CI with Gradle](https://github.com/redhat-developer/intellij-tekton/workflows/Java%20CI%20with%20Gradle/badge.svg)
+![Build status](https://github.com/redhat-developer/intellij-tekton/workflows/Java%20CI%20with%20Gradle/badge.svg)
 ![Validate against IJ versions](https://github.com/redhat-developer/intellij-tekton/workflows/Validate%20against%20IJ%20versions/badge.svg)
 [![JetBrains plugins][plugin-version-svg]][plugin-repo]
 [![JetBrains plugins][plugin-downloads-svg]][plugin-repo]
