@@ -16,10 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.redhat.devtools.intellij.common.CommonConstants;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
-import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
@@ -52,10 +50,8 @@ import io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.EventListener;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -65,6 +61,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 
@@ -77,6 +74,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PREFIXNAME;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 
 public class TknCli implements Tkn {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
@@ -489,9 +488,9 @@ public class TknCli implements Tkn {
         if (!toEditor) {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
         } else {
-            executeWithEditor(namespace + "-" + pipelineRun + ".log", envVars, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
+            String fileName = namespace + "-" + KIND_PIPELINERUN + "-" + pipelineRun + ".log";
+            ExecHelper.executeWithUI(envVars, outputToEditor(fileName),command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
         }
-
     }
 
     @Override
@@ -499,7 +498,8 @@ public class TknCli implements Tkn {
         if (!toEditor) {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-n", namespace);
         } else {
-            executeWithEditor(namespace + "-" + taskRun + ".log", envVars, command, "taskrun", "logs", taskRun, "-n", namespace);
+            String fileName = namespace + "-" + KIND_TASKRUN + "-" + taskRun + ".log";
+            ExecHelper.executeWithUI(envVars, outputToEditor(fileName),command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
         }
     }
 
@@ -513,7 +513,8 @@ public class TknCli implements Tkn {
         if (!toEditor) {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
         } else {
-            executeWithEditor(namespace + "-" + pipelineRun + ".log", envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+            String fileName = namespace + "-" + KIND_PIPELINERUN + "-" + pipelineRun + "-follow.log";
+            ExecHelper.executeWithUI(envVars, openEmptyEditor(fileName), outputToEditor(fileName),command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
         }
     }
 
@@ -522,37 +523,19 @@ public class TknCli implements Tkn {
         if (!toEditor) {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
         } else {
-            executeWithEditor(namespace + "-" + taskRun + ".log", envVars, command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+            String fileName = namespace + "-" + KIND_TASKRUN + "-" + taskRun + "-follow.log";
+            ExecHelper.executeWithUI(envVars, openEmptyEditor(fileName), outputToEditor(fileName),command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
         }
     }
 
-    private void executeWithEditor(String nameFile, Map<String, String> envs, String... command) throws IOException {
-        ProcessBuilder builder = (new ProcessBuilder(command)).directory(new File(CommonConstants.HOME_FOLDER)).redirectErrorStream(true);
-        builder.environment().putAll(envs);
-        Process p = builder.start();
-        linkProcessToEditor(p, nameFile);
+    private Runnable openEmptyEditor(String fileName) {
+        return () -> VirtualFileHelper.openVirtualFileInEditor(project, fileName, "", true);
     }
 
-    private void linkProcessToEditor(Process p, String nameFile) {
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            // open empty editor so user see it immediately after the click
-            UIHelper.executeInUI(() -> VirtualFileHelper.openVirtualFileInEditor(project, nameFile, "", true));
-            StringBuilder sb = new StringBuilder();
-            String line;
-
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8"));
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
-
-                    UIHelper.executeInUI(() -> ApplicationManager.getApplication().runWriteAction(
-                            () -> VirtualFileHelper.openVirtualFileInEditor(project, nameFile, sb.toString(), true)
-                    ));
-                }
-            }catch(IOException e) {
-
-            }
-        });
+    private Consumer<String> outputToEditor(String fileName) {
+        return (sb) -> ApplicationManager.getApplication().runWriteAction(
+                            () -> VirtualFileHelper.openVirtualFileInEditor(project, fileName, sb, true)
+        );
     }
 
     @Override
