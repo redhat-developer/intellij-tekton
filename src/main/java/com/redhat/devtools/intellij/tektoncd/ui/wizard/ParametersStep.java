@@ -19,10 +19,6 @@ import java.awt.GridBagConstraints;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -43,8 +39,6 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_1
 public class ParametersStep extends BaseStep {
 
     Map<String, JTextField> textFields;
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-    private ScheduledFuture scheduler;
 
     public ParametersStep(ActionToRunModel model) {
         super("Parameters", model);
@@ -144,21 +138,15 @@ public class ParametersStep extends BaseStep {
             }
 
             public void update() {
-                if (scheduler != null && !scheduler.isCancelled() && !scheduler.isDone()) {
-                    scheduler.cancel(true);
-                }
-
-                scheduler = executor.schedule(() -> {
-                    setInputValue(model.getParams(), idParam, txtValueParam.getText());
-                    // reset error graphics if an error occurred earlier
-                    if (isValid(txtValueParam)) {
-                        txtValueParam.setBorder(defaultBorder);
-                        if (errorFieldsByRow.containsKey(row)) {
-                            deleteComponent(errorFieldsByRow.get(row));
-                        }
+                setInputValue(model.getParams(), idParam, txtValueParam.getText());
+                // reset error graphics if an error occurred earlier
+                if (isValid(txtValueParam)) {
+                    txtValueParam.setBorder(defaultBorder);
+                    if (errorFieldsByRow.containsKey(row)) {
+                        deleteComponent(errorFieldsByRow.get(row));
                     }
-                    fireStateChanged();
-                }, 500, TimeUnit.MILLISECONDS);
+                }
+                fireStateChanged();
             }
         });
     }
