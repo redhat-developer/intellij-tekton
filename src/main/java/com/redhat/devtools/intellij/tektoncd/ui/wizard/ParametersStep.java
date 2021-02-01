@@ -16,8 +16,6 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +24,8 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
@@ -121,10 +121,23 @@ public class ParametersStep extends BaseStep {
 
     private void addListener(String idParam, JTextField txtValueParam, Border defaultBorder, int row) {
         // listen to when the focus is lost by the textbox and update the model so the preview shows the updated value
-        txtValueParam.addFocusListener(new FocusAdapter() {
+        txtValueParam.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void focusLost(FocusEvent e) {
-                super.focusLost(e);
+            public void insertUpdate(DocumentEvent e) {
+                update();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                update();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                update();
+            }
+
+            public void update() {
                 setInputValue(model.getParams(), idParam, txtValueParam.getText());
                 // reset error graphics if an error occurred earlier
                 if (isValid(txtValueParam)) {
@@ -132,7 +145,6 @@ public class ParametersStep extends BaseStep {
                     if (errorFieldsByRow.containsKey(row)) {
                         deleteComponent(errorFieldsByRow.get(row));
                     }
-
                 }
                 fireStateChanged();
             }
