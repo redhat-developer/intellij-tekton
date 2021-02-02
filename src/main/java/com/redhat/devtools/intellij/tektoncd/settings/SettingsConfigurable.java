@@ -37,6 +37,7 @@ public class SettingsConfigurable  implements Configurable {
         boolean modified = mySettingsView.getDisplayPipelineRunResultAsNotification() != settings.displayPipelineRunResultAsNotification;
         modified |= mySettingsView.getEnableDeleteAllRelatedResourcesAsDefault() != settings.enableDeleteAllRelatedResourcesAsDefault;
         modified |= mySettingsView.getShowStartWizardWithNoInputs() != settings.showStartWizardWithNoInputs;
+        modified |= mySettingsView.getDisplayLogsInEditor() != settings.displayLogsInEditor;
         return modified;
     }
 
@@ -46,6 +47,7 @@ public class SettingsConfigurable  implements Configurable {
         settings.displayPipelineRunResultAsNotification = mySettingsView.getDisplayPipelineRunResultAsNotification();
         settings.enableDeleteAllRelatedResourcesAsDefault = mySettingsView.getEnableDeleteAllRelatedResourcesAsDefault();
         settings.showStartWizardWithNoInputs = mySettingsView.getShowStartWizardWithNoInputs();
+        settings.displayLogsInEditor = mySettingsView.getDisplayLogsInEditor();
     }
 
     @Override
@@ -54,6 +56,7 @@ public class SettingsConfigurable  implements Configurable {
         mySettingsView.setDisplayPipelineRunResultAsNotification(settings.displayPipelineRunResultAsNotification);
         mySettingsView.setEnableDeleteAllRelatedResourcesAsDefault(settings.enableDeleteAllRelatedResourcesAsDefault);
         mySettingsView.setShowStartWizardWithNoInputs(settings.showStartWizardWithNoInputs);
+        mySettingsView.setDisplayLogsInEditor(settings.displayLogsInEditor);
     }
 
     @Override

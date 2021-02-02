@@ -27,6 +27,7 @@ public class SettingsState implements PersistentStateComponent<SettingsState> {
     public boolean displayPipelineRunResultAsNotification = true;
     public boolean enableDeleteAllRelatedResourcesAsDefault = false;
     public boolean showStartWizardWithNoInputs = true;
+    public boolean displayLogsInEditor = false;
 
     public static SettingsState getInstance() {
         return ServiceManager.getService(SettingsState.class);

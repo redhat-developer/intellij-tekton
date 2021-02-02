@@ -14,11 +14,13 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.twelvemonkeys.lang.Platform;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
@@ -59,6 +61,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 
@@ -71,6 +74,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PREFIXNAME;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 
 public class TknCli implements Tkn {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
@@ -479,13 +484,23 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void showLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
+    public void showLogsPipelineRun(String namespace, String pipelineRun, boolean toEditor) throws IOException {
+        if (!toEditor) {
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
+        } else {
+            String fileName = namespace + "-" + KIND_PIPELINERUN + "-" + pipelineRun + ".log";
+            ExecHelper.executeWithUI(envVars, outputToEditor(fileName),command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+        }
     }
 
     @Override
-    public void showLogsTaskRun(String namespace, String taskRun) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-n", namespace);
+    public void showLogsTaskRun(String namespace, String taskRun, boolean toEditor) throws IOException {
+        if (!toEditor) {
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-n", namespace);
+        } else {
+            String fileName = namespace + "-" + KIND_TASKRUN + "-" + taskRun + ".log";
+            ExecHelper.executeWithUI(envVars, outputToEditor(fileName),command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+        }
     }
 
     @Override
@@ -494,13 +509,33 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void followLogsPipelineRun(String namespace, String pipelineRun) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+    public void followLogsPipelineRun(String namespace, String pipelineRun, boolean toEditor) throws IOException {
+        if (!toEditor) {
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+        } else {
+            String fileName = namespace + "-" + KIND_PIPELINERUN + "-" + pipelineRun + "-follow.log";
+            ExecHelper.executeWithUI(envVars, openEmptyEditor(fileName), outputToEditor(fileName),command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+        }
     }
 
     @Override
-    public void followLogsTaskRun(String namespace, String taskRun) throws IOException {
-        ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+    public void followLogsTaskRun(String namespace, String taskRun, boolean toEditor) throws IOException {
+        if (!toEditor) {
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+        } else {
+            String fileName = namespace + "-" + KIND_TASKRUN + "-" + taskRun + "-follow.log";
+            ExecHelper.executeWithUI(envVars, openEmptyEditor(fileName), outputToEditor(fileName),command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+        }
+    }
+
+    private Runnable openEmptyEditor(String fileName) {
+        return () -> VirtualFileHelper.openVirtualFileInEditor(project, fileName, "", true);
+    }
+
+    private Consumer<String> outputToEditor(String fileName) {
+        return (sb) -> ApplicationManager.getApplication().runWriteAction(
+                            () -> VirtualFileHelper.openVirtualFileInEditor(project, fileName, sb, true)
+        );
     }
 
     @Override
