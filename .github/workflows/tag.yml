@@ -44,5 +44,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: '${{ github.workspace }}/build/distributions/com.redhat.devtools.intellij.tekton-${{ steps.get_version.outputs.VERSION }}.zip'
-          asset_name: '${{ github.workspace }}/build/distributions/com.redhat.devtools.intellij.tekton-${{ steps.get_version.outputs.VERSION }}.zip'
+          asset_name: 'plugin-${{ steps.get_version.outputs.VERSION }}.zip'
           asset_content_type: application/zip
