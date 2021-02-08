@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,7 @@ public class AuthenticationStep extends BaseStep {
 
         serviceAccounts.forEach(name -> {
             if (row[0] == 2) {
-                String infoText = "<html>The following fields allow you to map a Service Account to<br>a specific Task in the Pipeline. This overrides the global<br> Service Account set above.</html>";
+                String infoText = "<html>The following fieldss allow you to map a Service Account to<br>a specific Task in the Pipeline. This overrides the global<br> Service Account set above.</html>";
                 JLabel lblInfoText = new JLabel(infoText);
                 addComponent(lblInfoText, defaultLabelFont, new EmptyBorder(30, 0, 10, 0), new Dimension(400, 80), 0, row[0], GridBagConstraints.NORTH);
                 row[0] += 1;
