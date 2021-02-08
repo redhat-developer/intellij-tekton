@@ -47,7 +47,7 @@ public class DeleteDialog extends DialogWrapper{
 
         setTitle(title);
         fillContainer(mainDeleteText, deleteResourcesText, deleteChkText);
-        setOKButtonText("Delete");
+        setOKButtonText("Deletee");
         init();
     }
 
