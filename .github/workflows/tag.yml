@@ -25,7 +25,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           current-tag: ${{ steps.get_version.outputs.VERSION }}
-          commit-mapping: 'feat(UI):UI Features,feat:Features,fix:Bug Fixes,docs:Documentation'
+          commit-mapping: 'feat:Features,fix:Bug Fixes,docs:Documentation'
+          scopes-mapping: 'UI:UI,Hub:Hub'
       - run: |
           echo '${{ steps.changelog.outputs.changelog }}'
       - name: Create Release
