@@ -20,12 +20,12 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
       - name: Simple conventional changelog
-        uses: lstocchi/simple-conventional-changelog@0.0.4
+        uses: lstocchi/simple-conventional-changelog@0.0.5
         id: changelog
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           current-tag: ${{ steps.get_version.outputs.VERSION }}
-          commit-mapping: 'feat:Features,fix:Bug Fixes,docs:Documentation'
+          types-mapping: 'feat:Features,fix:Bug Fixes,docs:Documentation'
           scopes-mapping: 'UI:UI,Hub:Hub'
       - run: |
           echo '${{ steps.changelog.outputs.changelog }}'
