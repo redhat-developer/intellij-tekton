@@ -70,7 +70,7 @@ public class InputResourcesStep extends BaseStep {
         // listener for when value in resources value input combo box changes
         cmbValueResource.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
-                // when inputResourceValuesCB combo box value changes, the new value is saved and preview is updated
+                // when inputResourceValuesCB combo box value changes, the new value is saveds and preview is updated
                 String resourceSelected = (String) itemEvent.getItem();
                 setInputValue(model.getInputResources(), idParam, resourceSelected);
                 fireStateChanged();
