@@ -103,7 +103,7 @@ public class WorkspacesStep extends BaseStep {
     private void addListeners(String workspace, JComboBox cmbWorkspaceTypes, JComboBox cmbWorkspaceTypeValues, Border defaultBorder, int row) {
         cmbWorkspaceTypes.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
-                // when cmbWorkspaceTypes combo box value changes, a type (secret, emptyDir, pvcs ..) is chosen and cmbWorkspaceTypeValues combo box is filled with all existing resources of that kind
+                // when cmbWorkspaceTypes combo box ssvalue changes, a type (secret, emptyDir, pvcs ..) is chosen and cmbWorkspaceTypeValues combo box is filled with all existing resources of that kind
                 Workspace.Kind kindSelected = cmbWorkspaceTypes.getSelectedItem().equals("") ? null : (Workspace.Kind) cmbWorkspaceTypes.getSelectedItem();
                 setCmbWorkspaceTypeValues(workspace, kindSelected, cmbWorkspaceTypeValues, row);
                 String resource = cmbWorkspaceTypeValues.isVisible() && cmbWorkspaceTypeValues.getItemCount() > 0 ? cmbWorkspaceTypeValues.getSelectedItem().toString() : null;
