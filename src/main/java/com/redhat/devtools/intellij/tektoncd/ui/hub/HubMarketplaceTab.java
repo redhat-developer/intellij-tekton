@@ -166,7 +166,6 @@ public class HubMarketplaceTab extends HubDialogTab {
     private void installHubItem(HubItem hubItem, String kindToBeSaved, String version) {
         ResourceData resource = hubItem.getResource();
         try {
-            //Constants.InstallStatus installed = model.installHubItemByUri(resource.getName(), kindToBeSaved, uri);
             Constants.InstallStatus installed = model.installHubItem(resource.getName(), kindToBeSaved, version);
             if (installed == Constants.InstallStatus.INSTALLED) {
                 JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
