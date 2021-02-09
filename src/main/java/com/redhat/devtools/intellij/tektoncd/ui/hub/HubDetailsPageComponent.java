@@ -44,7 +44,6 @@ import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import javax.swing.JComboBox;
@@ -430,9 +429,6 @@ public class HubDetailsPageComponent extends MultiPanel {
     private void installHubItem(HubItem item, BiConsumer<HubItem, String> doInstallAction) {
         ResourceData resource = item.getResource();
         String versionSelected = ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion();
-        Optional<String> rawURI = resource.getVersions().stream().filter(version -> version.getVersion().equalsIgnoreCase(versionSelected)).map(version -> version.getRawURL().toString()).findFirst();
-        if (rawURI.isPresent()) {
-            doInstallAction.accept(item, rawURI.get());
-        }
+        doInstallAction.accept(item, versionSelected);
     }
 }

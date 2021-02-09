@@ -152,21 +152,22 @@ public class HubMarketplaceTab extends HubDialogTab {
     }
 
     private BiConsumer<HubItem, String> getInstallCallback() {
-        return (hubItem, uri) -> {
-            installHubItem(hubItem, hubItem.getResource().getKind(), uri);
+        return (hubItem, version) -> {
+            installHubItem(hubItem, hubItem.getResource().getKind(), version);
         };
     }
 
     private BiConsumer<HubItem, String> getInstallAsClusterTaskCallback() {
-        return (hubItem, uri) -> {
-            installHubItem(hubItem, KIND_CLUSTERTASK, uri);
+        return (hubItem, version) -> {
+            installHubItem(hubItem, KIND_CLUSTERTASK, version);
         };
     }
 
-    private void installHubItem(HubItem hubItem, String kindToBeSaved, String uri) {
+    private void installHubItem(HubItem hubItem, String kindToBeSaved, String version) {
         ResourceData resource = hubItem.getResource();
         try {
-            Constants.InstallStatus installed = model.installHubItem(resource.getName(), kindToBeSaved, uri);
+            //Constants.InstallStatus installed = model.installHubItemByUri(resource.getName(), kindToBeSaved, uri);
+            Constants.InstallStatus installed = model.installHubItem(resource.getName(), kindToBeSaved, version);
             if (installed == Constants.InstallStatus.INSTALLED) {
                 JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
                 warningNameAlreadyUsed.setToolTipText("A " + kindToBeSaved + " with this name already exists on the cluster.");

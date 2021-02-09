@@ -697,6 +697,17 @@ public class TknCli implements Tkn {
         return true;
     }
 
+    @Override
+    public void installTaskFromHub(String task, String version, boolean overwrite) throws IOException {
+        String installType = overwrite ? "reinstall" : "install";
+        ExecHelper.execute(command, envVars, "hub", installType, "task", task, "--version", version);
+    }
+
+    @Override
+    public String getTaskYAMLFromHub(String task, String version) throws IOException {
+        return ExecHelper.execute(command, envVars, "hub", "get", "task", task, "--version", version);
+    }
+
     private String getTempFile(String data) throws IOException {
         File f = File.createTempFile("log", "txt");
         f.deleteOnExit();

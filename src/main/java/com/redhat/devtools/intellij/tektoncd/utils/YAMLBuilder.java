@@ -418,4 +418,12 @@ public class YAMLBuilder {
             throw new IOException(e);
         }
     }
+
+    public static ObjectNode convertToObjectNode(String yaml) throws IOException {
+        try {
+            return (ObjectNode) YAML_MAPPER.readTree(yaml);
+        } catch (JsonProcessingException e) {
+            throw new IOException(e);
+        }
+    }
 }
