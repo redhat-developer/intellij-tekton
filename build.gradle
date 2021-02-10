@@ -22,7 +22,7 @@ def versionsMap = ['IU-2019.2':'192.5728.98','IU-2019.3':'193.5233.144','IU-2020
 intellij {
     version ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName 'com.redhat.devtools.intellij.tekton'
-    plugins 'terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion]
+    plugins 'terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], '/Users/andredietisheim/Documents/jboss-workspaces/intellij-redhat-telemetry/build/idea-sandbox/plugins/com.redhat.devtools.intellij.telemetry/'
     updateSinceUntilBuild false
 }
 
@@ -43,6 +43,8 @@ dependencies {
     //to explicitely declare it here. If the Tekton F8 is
     //updated check the version
     compile 'com.squareup.okio:okio:1.15.0'
+    // telemetry contributes annotations 13.0.0, so we need to declare newer version
+    compile 'org.jetbrains:annotations:16.0.1'
 }
 
 configurations {

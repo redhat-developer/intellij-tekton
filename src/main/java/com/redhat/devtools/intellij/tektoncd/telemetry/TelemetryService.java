@@ -1,0 +1,28 @@
+/*******************************************************************************
+ * Copyright (c) 2021 Red Hat, Inc.
+ * Distributed under license by Red Hat, Inc. All rights reserved.
+ * This program is made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution,
+ * and is available at http://www.eclipse.org/legal/epl-v20.html
+ *
+ * Contributors:
+ * Red Hat, Inc. - initial API and implementation
+ ******************************************************************************/
+package com.redhat.devtools.intellij.tektoncd.telemetry;
+
+import com.intellij.openapi.components.Service;
+import com.redhat.devtools.intellij.telemetry.core.service.util.Lazy;
+
+import static com.redhat.devtools.intellij.telemetry.core.service.Telemetry.*;
+
+@Service
+public class TelemetryService {
+
+    private static final TelemetryService INSTANCE = new TelemetryService();
+
+    private final Lazy<ServiceBuilder> builder = new Lazy<>(() -> service(TelemetryService.class.getClassLoader()));
+
+    public static ServiceBuilder instance() {
+        return INSTANCE.builder.get();
+    }
+}
