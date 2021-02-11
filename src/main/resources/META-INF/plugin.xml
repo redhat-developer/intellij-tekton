@@ -13,6 +13,19 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.6.0</b></p>
+  <p>Enhanced logs</p>
+  <p><ul>
+  <li>Logs have been extended to work with EventListeners and they can be now redirected into the editor</li>
+  </ul></p>
+  <p>Add Plugin preferences</p>
+  <p><ul>
+  <li>It is possible to set preferences to change the default plugin behaviour, such as delete all related resources automatically or avoid showing the wizard if a pipeline/task has no inputs</li>
+  </ul></p>
+  <p>UI enhancements</p>
+  <p><ul>
+  <li>The Start Wizard Preview panel updates on changes and it display texts of any length in a well formatted way</li>
+  </ul></p>
   <p><b>0.5.0</b></p>
   <p>Tekton Hub integration</p>
   <p><ul>
