@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class SingleInputInTaskInsertHandler extends BaseAutoInsertHandler {
     @Override
     public String getParentName() {
-        return "taskRef";
+        return "- name:";
     }
 
     @Override
@@ -38,9 +38,11 @@ public class SingleInputInTaskInsertHandler extends BaseAutoInsertHandler {
     }
 
     private String getParamCompletionText(ParamSpec param, int indentationSize, int indentationParent) {
-        String defaultValue = param.getDefault().getType().equalsIgnoreCase("string")
-                                ? param.getDefault().getStringVal()
-                                : param.getDefault().getArrayVal().stream().collect(Collectors.joining(","));
+        String defaultValue = param.getDefault() == null
+                                ? ""
+                                : param.getDefault().getType().equalsIgnoreCase("string")
+                                    ? param.getDefault().getStringVal()
+                                    : param.getDefault().getArrayVal().stream().collect(Collectors.joining(","));
         return buildCompletionText(param.getName(), "value", defaultValue, indentationSize, indentationParent, 1);
     }
 
