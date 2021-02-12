@@ -16,6 +16,34 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 ## New and Noteworthy
 
 This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
+
+### Enhanced logs
+
+Logs have been extended to work with EventListeners and they can be now redirected into the editor 
+
+![](images/0.6.0/tekton1.gif)
+
+### Add Plugin preferences
+
+It is possible to set preferences to change the default plugin behaviour, such as delete all related resources automatically or avoid showing the wizard if a pipeline/task has no inputs
+
+![](images/0.6.0/tekton2.gif)
+
+### UI enhancements
+
+The Start Wizard Preview panel updates on changes and it display texts of any length in a well formatted way 
+
+![](images/0.6.0/tekton3.gif)
+
+### Code completion on single inputs
+
+When adding a task to a pipeline definition, code completion gets also activated on single inputs (param, input/output resource and workspace). If the input contains a default value, then this value is also inserted into the pipeline definition.
+
+![](images/0.6.0/tekton4.gif)
+
+## Previous releases
+
+## 0.5.0
 The Tekton CLI in use has been upgrated to 0.15.0.
 
 ### Enhanced Tekton Hub integration
@@ -47,8 +75,6 @@ Task ordering can be managed through the **runAfter** field. However, uses of th
 When starting a task or a pipeline, it is possible to see the generated taskrun or pipelinerun payload with the **Show Preview** option:
 
 ![](images/0.5.0/tekton5.gif)
-
-## Previous releases
 
 ## 0.4.1
 
