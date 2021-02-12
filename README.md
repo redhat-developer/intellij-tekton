@@ -29,6 +29,10 @@ It is possible to set preferences to change the default plugin behaviour, such a
 
 The Start Wizard Preview panel updates on changes and it display texts of any length in a well formatted way 
 
+### Code completion on single inputs
+
+When adding a task to a pipeline definition, code completion gets also activated on single inputs (param, input/output resource and workspace). If the input contains a default value, then this value is also inserted into the pipeline definition.
+
 ## Previous releases
 
 ## 0.5.0

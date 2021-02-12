@@ -26,6 +26,10 @@
   <p><ul>
   <li>The Start Wizard Preview panel updates on changes and it display texts of any length in a well formatted way</li>
   </ul></p>
+  <p>Code completion on single inputs</p>
+  <p><ul>
+  <li>When adding a task to a pipeline definition, code completion gets also activated on single inputs (param, input/output resource and workspace). If the input contains a default value, then this value is also inserted into the pipeline definition</li>
+  </ul></p>
   <p><b>0.5.0</b></p>
   <p>Tekton Hub integration</p>
   <p><ul>
