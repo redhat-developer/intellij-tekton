@@ -21,17 +21,25 @@ This new release is based on v1beta1. Although it still supports v1alpha1 resour
 
 Logs have been extended to work with EventListeners and they can be now redirected into the editor 
 
+![](images/0.6.0/tekton1.gif)
+
 ### Add Plugin preferences
 
 It is possible to set preferences to change the default plugin behaviour, such as delete all related resources automatically or avoid showing the wizard if a pipeline/task has no inputs
+
+![](images/0.6.0/tekton2.gif)
 
 ### UI enhancements
 
 The Start Wizard Preview panel updates on changes and it display texts of any length in a well formatted way 
 
+![](images/0.6.0/tekton3.gif)
+
 ### Code completion on single inputs
 
 When adding a task to a pipeline definition, code completion gets also activated on single inputs (param, input/output resource and workspace). If the input contains a default value, then this value is also inserted into the pipeline definition.
+
+![](images/0.6.0/tekton4.gif)
 
 ## Previous releases
 
