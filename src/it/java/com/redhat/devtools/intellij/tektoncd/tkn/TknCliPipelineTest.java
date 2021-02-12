@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import com.redhat.devtools.intellij.tektoncd.TestUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -26,8 +27,8 @@ public class TknCliPipelineTest extends TknCliTest {
     @Test
     public void verifyCreatePipelineAndDelete() throws IOException {
         final String PIPELINE_NAME = "first";
-        String pipelineConfig = load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
-        saveResource(pipelineConfig, NAMESPACE, "pipelines");
+        String pipelineConfig = TestUtils.load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
+        TestUtils.saveResource(tkn, pipelineConfig, NAMESPACE, "pipelines");
         // verify pipeline has been created
         List<String> pipelines = tkn.getPipelines(NAMESPACE);
         assertTrue(pipelines.contains(PIPELINE_NAME));
@@ -40,14 +41,14 @@ public class TknCliPipelineTest extends TknCliTest {
     @Test
     public void verifyPipelineYAMLIsReturnedCorrectly() throws IOException {
         final String PIPELINE_NAME = "second";
-        String pipelineConfig = load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
-        saveResource(pipelineConfig, NAMESPACE, "pipelines");
+        String pipelineConfig = TestUtils.load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
+        TestUtils.saveResource(tkn, pipelineConfig, NAMESPACE, "pipelines");
         // verify pipeline has been created
         List<String> pipelines = tkn.getPipelines(NAMESPACE);
         assertTrue(pipelines.contains(PIPELINE_NAME));
         // get YAML from cluster and verify is the same uploaded
         String resourceBodyFromCluster = tkn.getPipelineYAML(NAMESPACE, PIPELINE_NAME);
-        assertEquals(getSpecFromResource(pipelineConfig), getSpecFromResource(resourceBodyFromCluster));
+        assertEquals(TestUtils.getSpecFromResource(pipelineConfig), TestUtils.getSpecFromResource(resourceBodyFromCluster));
         // clean up and verify cleaning succeed
         tkn.deletePipelines(NAMESPACE, pipelines, false);
         pipelines = tkn.getPipelines(NAMESPACE);
@@ -59,12 +60,12 @@ public class TknCliPipelineTest extends TknCliTest {
         final String TASK_NAME = "forpptest3";
         final String PIPELINE_NAME = "third";
         final String PIPELINE_RUN_NAME = "run-third";
-        String taskConfig = load("task1.yaml").replace("taskfoo", TASK_NAME);
-        String pipelineConfig = load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME).replace("taskfoo", TASK_NAME);
-        String pipelineRunConfig = load("pipelinerun1.yaml").replace("pipelinerunfoo", PIPELINE_RUN_NAME).replace("pipelinefoo", PIPELINE_NAME);
-        saveResource(taskConfig, NAMESPACE, "tasks");
-        saveResource(pipelineConfig, NAMESPACE, "pipelines");
-        saveResource(pipelineRunConfig, NAMESPACE, "pipelineruns");
+        String taskConfig = TestUtils.load("task1.yaml").replace("taskfoo", TASK_NAME);
+        String pipelineConfig = TestUtils.load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME).replace("taskfoo", TASK_NAME);
+        String pipelineRunConfig = TestUtils.load("pipelinerun1.yaml").replace("pipelinerunfoo", PIPELINE_RUN_NAME).replace("pipelinefoo", PIPELINE_NAME);
+        TestUtils.saveResource(tkn, taskConfig, NAMESPACE, "tasks");
+        TestUtils.saveResource(tkn, pipelineConfig, NAMESPACE, "pipelines");
+        TestUtils.saveResource(tkn, pipelineRunConfig, NAMESPACE, "pipelineruns");
 
         // verify task has been created
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());

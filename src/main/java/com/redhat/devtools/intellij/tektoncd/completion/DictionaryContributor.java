@@ -37,6 +37,13 @@ public class DictionaryContributor extends CompletionContributor {
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getAfterParentScalarKeyInSequence("resource", "resources", "inputs", "outputs"),
                 new ResourceInPipelineCompletionProvider());
+        // single input task
+        extend(CompletionType.BASIC,
+                YamlElementPatternHelper.getAfterParentScalarKeyInSequenceFromRoot("name", "tasks", "params", "resources", "workspaces"),
+                new SingleInputInTaskCompletionProvider());
+        extend(CompletionType.BASIC,
+                YamlElementPatternHelper.getAfterParentScalarKeyInSequenceFromRootWithParents("name", "tasks", "resources", "inputs", "outputs"),
+                new SingleInputInTaskCompletionProvider());
         // code completion not related to a specific place in a file. It doesn't depend on any tag
         extend(CompletionType.BASIC,
                 PlatformPatterns

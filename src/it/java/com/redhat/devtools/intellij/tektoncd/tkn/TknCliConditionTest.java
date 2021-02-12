@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import com.redhat.devtools.intellij.tektoncd.TestUtils;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import java.io.IOException;
 import java.util.List;
@@ -26,8 +27,8 @@ public class TknCliConditionTest extends TknCliTest {
     @Test
     public void verifyCreateConditionAndDelete() throws IOException {
         final String CONDITION_NAME = "first";
-        String resourceBody = load("condition1.yaml").replace("conditionfoo", CONDITION_NAME);
-        saveResource(resourceBody, NAMESPACE, "conditions");
+        String resourceBody = TestUtils.load("condition1.yaml").replace("conditionfoo", CONDITION_NAME);
+        TestUtils.saveResource(tkn, resourceBody, NAMESPACE, "conditions");
         // verify condition has been created
         List<Condition> conditions = tkn.getConditions(NAMESPACE);
         assertTrue(conditions.stream().anyMatch(condition -> condition.getMetadata().getName().equals(CONDITION_NAME)));
@@ -40,14 +41,14 @@ public class TknCliConditionTest extends TknCliTest {
     @Test
     public void verifyConditionYAMLIsReturnedCorrectly() throws IOException {
         final String CONDITION_NAME = "second";
-        String resourceBody = load("condition1.yaml").replace("conditionfoo", CONDITION_NAME);
-        saveResource(resourceBody, NAMESPACE, "conditions");
+        String resourceBody = TestUtils.load("condition1.yaml").replace("conditionfoo", CONDITION_NAME);
+        TestUtils.saveResource(tkn, resourceBody, NAMESPACE, "conditions");
         // verify condition has been created
         List<Condition> conditions = tkn.getConditions(NAMESPACE);
         assertTrue(conditions.stream().anyMatch(condition -> condition.getMetadata().getName().equals(CONDITION_NAME)));
         // get YAML from cluster and verify is the same uploaded
         String resourceBodyFromCluster = tkn.getConditionYAML(NAMESPACE, CONDITION_NAME);
-        assertEquals(getSpecFromResource(resourceBody), getSpecFromResource(resourceBodyFromCluster));
+        assertEquals(TestUtils.getSpecFromResource(resourceBody), TestUtils.getSpecFromResource(resourceBodyFromCluster));
         // clean up and verify cleaning succeed
         tkn.deleteConditions(NAMESPACE, conditions.stream().map(condition -> condition.getMetadata().getName()).collect(Collectors.toList()));
         conditions = tkn.getConditions(NAMESPACE);

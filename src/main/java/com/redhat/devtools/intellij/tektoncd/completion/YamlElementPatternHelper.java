@@ -137,4 +137,130 @@ public class YamlElementPatternHelper {
                 .withLanguage(YAMLLanguage.INSTANCE);
     }
 
+    public static ElementPattern<PsiElement> getAfterParentScalarKeyInSequenceFromRoot(String keyName, String root, String... parent) {
+        // it finds parentKey: key: "value" fields
+        return PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(
+                        PlatformPatterns
+                                .psiElement(YAMLScalar.class)
+                                .withParent(
+                                        PlatformPatterns
+                                                .psiElement(YAMLKeyValue.class)
+                                                .withName(
+                                                        PlatformPatterns.string().equalTo(keyName)
+                                                )
+                                                .withParent(
+                                                        PlatformPatterns
+                                                                .psiElement(YAMLMapping.class)
+                                                                .withParent(
+                                                                        PlatformPatterns
+                                                                                .psiElement(YAMLSequenceItem.class)
+                                                                                .withParent(
+                                                                                        PlatformPatterns
+                                                                                                .psiElement(YAMLSequence.class)
+                                                                                                .withParent(
+                                                                                                        PlatformPatterns
+                                                                                                                .psiElement(YAMLKeyValue.class)
+                                                                                                                .withName(
+                                                                                                                        PlatformPatterns.string().oneOf(parent)
+                                                                                                                )
+                                                                                                                .withParent(
+                                                                                                                        PlatformPatterns
+                                                                                                                                .psiElement(YAMLMapping.class)
+                                                                                                                                .withParent(
+                                                                                                                                        PlatformPatterns
+                                                                                                                                                .psiElement(YAMLSequenceItem.class)
+                                                                                                                                                .withParent(
+                                                                                                                                                        PlatformPatterns
+                                                                                                                                                                .psiElement(YAMLSequence.class)
+                                                                                                                                                                .withParent(
+                                                                                                                                                                        PlatformPatterns
+                                                                                                                                                                                .psiElement(YAMLKeyValue.class)
+                                                                                                                                                                                .withName(
+                                                                                                                                                                                        PlatformPatterns.string().equalTo(root)
+                                                                                                                                                                                )
+                                                                                                                                                                )
+                                                                                                                                                )
+                                                                                                                                )
+                                                                                                                )
+                                                                                                )
+                                                                                )
+                                                                )
+                                                )
+                                )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE);
+    }
+
+    public static ElementPattern<PsiElement> getAfterParentScalarKeyInSequenceFromRootWithParents(String keyName, String root, String secondLevelParent, String... firstLevelParent) {
+        // it finds parentKey: key: "value" fields
+        return PlatformPatterns
+                .psiElement(YAMLTokenTypes.TEXT)
+                .withParent(
+                        PlatformPatterns
+                                .psiElement(YAMLScalar.class)
+                                .withParent(
+                                        PlatformPatterns
+                                                .psiElement(YAMLKeyValue.class)
+                                                .withName(
+                                                        PlatformPatterns.string().equalTo(keyName)
+                                                )
+                                                .withParent(
+                                                        PlatformPatterns
+                                                                .psiElement(YAMLMapping.class)
+                                                                .withParent(
+                                                                        PlatformPatterns
+                                                                                .psiElement(YAMLSequenceItem.class)
+                                                                                .withParent(
+                                                                                        PlatformPatterns
+                                                                                                .psiElement(YAMLSequence.class)
+                                                                                                .withParent(
+                                                                                                        PlatformPatterns
+                                                                                                                .psiElement(YAMLKeyValue.class)
+                                                                                                                .withName(
+                                                                                                                        PlatformPatterns.string().oneOf(firstLevelParent)
+                                                                                                                )
+                                                                                                                .withParent(
+                                                                                                                        PlatformPatterns
+                                                                                                                                .psiElement(YAMLMapping.class)
+                                                                                                                                .withParent(
+                                                                                                                                        PlatformPatterns
+                                                                                                                                                .psiElement(YAMLKeyValue.class)
+                                                                                                                                                .withName(
+                                                                                                                                                        PlatformPatterns.string().equalTo(secondLevelParent)
+                                                                                                                                                )
+                                                                                                                                                .withParent(
+                                                                                                                                                        PlatformPatterns
+                                                                                                                                                                .psiElement(YAMLMapping.class)
+                                                                                                                                                                .withParent(
+                                                                                                                                                                        PlatformPatterns
+                                                                                                                                                                                .psiElement(YAMLSequenceItem.class)
+                                                                                                                                                                                .withParent(
+                                                                                                                                                                                        PlatformPatterns
+                                                                                                                                                                                                .psiElement(YAMLSequence.class)
+                                                                                                                                                                                                .withParent(
+                                                                                                                                                                                                        PlatformPatterns
+                                                                                                                                                                                                                .psiElement(YAMLKeyValue.class)
+                                                                                                                                                                                                                .withName(
+                                                                                                                                                                                                                        PlatformPatterns.string().equalTo(root)
+                                                                                                                                                                                                                )
+                                                                                                                                                                                                )
+                                                                                                                                                                                )
+                                                                                                                                                                )
+
+                                                                                                                                                )
+
+                                                                                                                                )
+                                                                                                                )
+                                                                                                )
+                                                                                )
+                                                                )
+                                                )
+                                )
+                )
+                .withLanguage(YAMLLanguage.INSTANCE);
+    }
+
+
 }
