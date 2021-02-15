@@ -27,9 +27,9 @@ intellij {
 }
 
 dependencies {
-    compile 'io.fabric8:openshift-client:5.0.0'
-    compile 'io.fabric8:tekton-client:5.0.0'
-    compile 'com.redhat.devtools.intellij:intellij-common:0.0.1'
+    compile 'io.fabric8:openshift-client:5.0.2'
+    compile 'io.fabric8:tekton-client:5.0.2'
+    compile 'com.redhat.devtools.intellij:intellij-common:0.0.2'
     testCompile 'org.mockito:mockito-inline:3.4.6'
     compile 'com.github.graphstream:gs-core:dev-SNAPSHOT'
     compile 'com.github.graphstream:gs-ui-swing:dev-SNAPSHOT'
