@@ -167,9 +167,6 @@
                      implementationClass="com.redhat.devtools.intellij.tektoncd.inspector.FinallyReferencesInspector"/>
     <nonProjectFileWritingAccessExtension implementation="com.redhat.devtools.intellij.common.editor.AllowNonProjectEditing" />
   </extensions>
-  <applicationListeners>
-    <listener class="com.redhat.devtools.intellij.tektoncd.telemetry.TektonLifecycle" topic="com.intellij.ide.AppLifecycleListener" />
-  </applicationListeners>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
       <action class="com.redhat.devtools.intellij.tektoncd.actions.pipeline.CreatePipelineAction" text="New Pipeline"/>

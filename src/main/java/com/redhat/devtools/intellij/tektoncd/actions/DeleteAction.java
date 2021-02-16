@@ -31,8 +31,6 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.tektoncd.ui.DeleteDialog;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
-import com.redhat.devtools.intellij.telemetry.core.service.Telemetry;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -41,6 +39,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
+
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class DeleteAction extends TektonAction {
 
@@ -59,7 +59,7 @@ public class DeleteAction extends TektonAction {
      */
     public static final int OK_DELETE_RESOURCES_CODE = 2;
 
-    Telemetry.ActionMessage telemetry = TelemetryService.instance().actionPerformed(getClass().getSimpleName());
+    ActionMessage telemetry = TelemetryService.instance().actionPerformed(getClass().getSimpleName());
 
     public DeleteAction() {
         super(true,

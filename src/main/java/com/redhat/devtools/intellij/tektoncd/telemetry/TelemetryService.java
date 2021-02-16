@@ -10,19 +10,16 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.telemetry;
 
-import com.intellij.openapi.components.Service;
-import com.redhat.devtools.intellij.telemetry.core.service.util.Lazy;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
+import com.redhat.devtools.intellij.telemetry.core.util.Lazy;
 
-import static com.redhat.devtools.intellij.telemetry.core.service.Telemetry.*;
-
-@Service
 public class TelemetryService {
 
     private static final TelemetryService INSTANCE = new TelemetryService();
 
-    private final Lazy<ServiceBuilder> builder = new Lazy<>(() -> service(TelemetryService.class.getClassLoader()));
+    private final Lazy<TelemetryMessageBuilder> builder = new Lazy<>(() -> new TelemetryMessageBuilder(TelemetryService.class.getClassLoader()));
 
-    public static ServiceBuilder instance() {
+    public static TelemetryMessageBuilder instance() {
         return INSTANCE.builder.get();
     }
 }
