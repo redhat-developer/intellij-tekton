@@ -192,8 +192,8 @@ public class WatchHandler {
             public void eventReceived(Action action, T resource) {
                 WatchNodes watchNode = watches.get(watchId);
                 if (watchNode != null) {
+                    List<ParentableNode> nodesById = watches.get(watchId).getNodes();
                     if (resource instanceof PipelineRun) {
-                        List<ParentableNode> nodesById = watches.get(watchId).getNodes();
                         List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodesById.get(0)));
                         String pipeline = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipeline");
                         if (pipeline != null) {
@@ -204,7 +204,6 @@ public class WatchHandler {
                         }
                         RefreshQueue.get().addAll(nodesToRefresh);
                     } else if (resource instanceof TaskRun) {
-                        List<ParentableNode> nodesById = watches.get(watchId).getNodes();
                         List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodesById.get(0)));
                         String task = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/task");
                         if (task != null) {
@@ -220,11 +219,9 @@ public class WatchHandler {
                                 }
                             }
                         }
-
-
                         RefreshQueue.get().addAll(nodesToRefresh);
                     } else {
-                        RefreshQueue.get().addAll(watches.get(watchId).getNodes());
+                        RefreshQueue.get().addAll(nodesById);
                     }
                 }
                 // watches for *runs are always active so there also could be nothing to refresh, only a notification to display
