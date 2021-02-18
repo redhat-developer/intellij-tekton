@@ -193,56 +193,11 @@ public class WatchHandler {
                 WatchNodes watchNode = watches.get(watchId);
                 if (watchNode != null) {
                     List<ParentableNode> nodesById = watches.get(watchId).getNodes();
-                    if (resource instanceof PipelineRun) {
-                        List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodesById.get(0)));
-                        String pipeline = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipeline");
-                        if (pipeline != null) {
-                            Optional<ParentableNode> pNode = nodesById.stream().filter(node -> node.getName().equalsIgnoreCase(pipeline)).findFirst();
-                            if (pNode.isPresent()) {
-                                nodesToRefresh.add(pNode.get());
-                            }
-                        }
-                        RefreshQueue.get().addAll(nodesToRefresh);
-                    } else if (resource instanceof TaskRun) {
-                        List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodesById.get(0)));
-                        String task = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/task");
-                        if (task != null) {
-                            Optional<ParentableNode> pNode = nodesById.stream().filter(node -> node.getName().equalsIgnoreCase(task)).findFirst();
-                            if (pNode.isPresent()) {
-                                nodesToRefresh.add(pNode.get());
-                            }
-                            String pipelineRun = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipelineRun");
-                            if (pipelineRun != null) {
-                                List<ParentableNode> pNodes = nodesById.stream().filter(node -> node.getName().equalsIgnoreCase(pipelineRun)).collect(Collectors.toList());
-                                if (!pNodes.isEmpty()) {
-                                    nodesToRefresh.addAll(pNodes);
-                                }
-                            }
-                        }
-                        RefreshQueue.get().addAll(nodesToRefresh);
-                    } else {
-                        RefreshQueue.get().addAll(nodesById);
-                    }
+                    refreshNodesByType(resource, nodesById);
                 }
-                // watches for *runs are always active so there also could be nothing to refresh, only a notification to display
-                if (!SettingsState.getInstance().displayPipelineRunResultAsNotification ||
-                        !(resource instanceof io.fabric8.tekton.pipeline.v1beta1.PipelineRun) ||
-                        ((PipelineRun) resource).getStatus() == null ||
-                        Strings.isNullOrEmpty(((PipelineRun) resource).getStatus().getCompletionTime())) {
-                    return;
-                }
-                Instant completion = Instant.parse(((PipelineRun) resource).getStatus().getCompletionTime());
-                if (Duration.between(watcherStartTime, completion).getSeconds() > 0) {
-                    List<Condition> conditions = ((PipelineRun) resource).getStatus().getConditions();
-                    if (!conditions.isEmpty()) {
-                        String name = "PipelineRun " + resource.getMetadata().getName();
-                        String executionTime = DateHelper.humanizeDate(Instant.parse(((PipelineRun) resource).getStatus().getStartTime()), completion);
-                        if (conditions.get(0).getStatus().equalsIgnoreCase("true")) {
-                            NotificationHelper.notifyWithBalloon(project, name + " successfully completed in " + executionTime, NotificationType.INFORMATION);
-                        } else {
-                            NotificationHelper.notifyWithBalloon(project, name + " failed", NotificationType.ERROR);
-                        }
-                    }
+
+                if (resource instanceof PipelineRun) {
+                    notifyRunCompletion(project, (PipelineRun) resource, watcherStartTime);
                 }
             }
 
@@ -266,6 +221,62 @@ public class WatchHandler {
                element instanceof TriggerBindingsNode ||
                element instanceof ClusterTriggerBindingsNode ||
                element instanceof EventListenersNode;
+    }
+
+    private <T extends HasMetadata> void refreshNodesByType(T resource, List<ParentableNode> nodes) {
+        if (resource instanceof PipelineRun) {
+            List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodes.get(0)));
+            String pipeline = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipeline");
+            if (pipeline != null) {
+                Optional<ParentableNode> pNode = nodes.stream().filter(node -> node.getName().equalsIgnoreCase(pipeline)).findFirst();
+                if (pNode.isPresent()) {
+                    nodesToRefresh.add(pNode.get());
+                }
+            }
+            RefreshQueue.get().addAll(nodesToRefresh);
+        } else if (resource instanceof TaskRun) {
+            List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodes.get(0)));
+            String task = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/task");
+            if (task != null) {
+                Optional<ParentableNode> pNode = nodes.stream().filter(node -> node.getName().equalsIgnoreCase(task)).findFirst();
+                if (pNode.isPresent()) {
+                    nodesToRefresh.add(pNode.get());
+                }
+                String pipelineRun = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipelineRun");
+                if (pipelineRun != null) {
+                    List<ParentableNode> pNodes = nodes.stream().filter(node -> node.getName().equalsIgnoreCase(pipelineRun)).collect(Collectors.toList());
+                    if (!pNodes.isEmpty()) {
+                        nodesToRefresh.addAll(pNodes);
+                    }
+                }
+            }
+            RefreshQueue.get().addAll(nodesToRefresh);
+        } else {
+            RefreshQueue.get().addAll(nodes);
+        }
+    }
+
+    private <T extends HasMetadata> void notifyRunCompletion(Project project, PipelineRun resource, Instant watcherStartTime) {
+        // watches for *runs are always active so there also could be nothing to refresh, only a notification to display
+        if (!SettingsState.getInstance().displayPipelineRunResultAsNotification ||
+                (resource).getStatus() == null ||
+                Strings.isNullOrEmpty(resource.getStatus().getCompletionTime())) {
+            return;
+        }
+
+        Instant completion = Instant.parse(resource.getStatus().getCompletionTime());
+        if (Duration.between(watcherStartTime, completion).getSeconds() > 0) {
+            List<Condition> conditions = resource.getStatus().getConditions();
+            if (!conditions.isEmpty()) {
+                String name = "PipelineRun " + resource.getMetadata().getName();
+                String executionTime = DateHelper.humanizeDate(Instant.parse(resource.getStatus().getStartTime()), completion);
+                if (conditions.get(0).getStatus().equalsIgnoreCase("true")) {
+                    NotificationHelper.notifyWithBalloon(project, name + " successfully completed in " + executionTime, NotificationType.INFORMATION);
+                } else {
+                    NotificationHelper.notifyWithBalloon(project, name + " failed", NotificationType.ERROR);
+                }
+            }
+        }
     }
 }
 
