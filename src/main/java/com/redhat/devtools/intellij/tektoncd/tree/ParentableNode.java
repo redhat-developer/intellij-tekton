@@ -15,7 +15,7 @@ public abstract class ParentableNode<T> {
     private final TektonRootNode root;
     private final String name;
 
-    protected ParentableNode(TektonRootNode root,T parent, String name) {
+    protected ParentableNode(TektonRootNode root, T parent, String name) {
         this.root = root;
         this.parent = parent;
         this.name = name;

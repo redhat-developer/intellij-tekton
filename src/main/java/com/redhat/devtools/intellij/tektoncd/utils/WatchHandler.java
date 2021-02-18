@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 import com.google.common.base.Strings;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.utils.DateHelper;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -38,6 +37,7 @@ import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -46,26 +46,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
 
 public class WatchHandler {
     private static final Logger logger = LoggerFactory.getLogger(WatchHandler.class);
-    private Map<String, WatchNodes> watches;
+    private Map<String, WatchNodes> watchNodes;
 
     private static WatchHandler instance;
 
     private WatchHandler() {
-        watches = new HashMap<>();
+        watchNodes = new HashMap<>();
     }
 
     public static WatchHandler get() {
@@ -80,7 +78,7 @@ public class WatchHandler {
         Watch watch = null;
         WatchNodes wn = null;
 
-        if (this.watches.containsKey(watchId)) {
+        if (this.watchNodes.containsKey(watchId)) {
             return;
         }
 
@@ -94,48 +92,32 @@ public class WatchHandler {
         }
 
         if (wn != null) {
-            watches.put(watchId, wn);
+            watchNodes.put(watchId, wn);
         }
 
     }
 
-    public void setWatchByKind(Tkn tkn, Project project, String namespace, String kind) {
-        String watchId = getWatchId(namespace, kind);
-        if (this.watches.containsKey(watchId)) {
-            return;
-        }
-
-        try {
-            Watcher watcher = getWatcher(watchId, project);
-            if (kind.equalsIgnoreCase(KIND_PIPELINERUN)) {
-                tkn.watchPipelineRuns(namespace, watcher);
-            } else if (kind.equalsIgnoreCase(KIND_TASKRUN)) {
-                tkn.watchTaskRuns(namespace, watcher);
-            }
-            watches.put(watchId, null);
-        } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
-        }
-    }
-
-    public void setWatchByNode(ParentableNode<?> element, TreePath treePath) {
+    public void setWatchByNode(ParentableNode<?> element) {
         Tkn tkn = element.getRoot().getTkn();
 
         String namespace = element.getNamespace();
         String watchId = getWatchId(element);
-        Watcher watcher = getWatcher(watchId, element.getRoot().getProject());
         Watch watch = null;
         WatchNodes wn = null;
 
         // a watch can be associated to multiple nodes
         // (e.g a taskRuns watcher, when a change happens, could update multiple nodes such as a single Task node and the TaskRuns node)
-        if (this.watches.containsKey(watchId)) {
-            wn = this.watches.get(watchId);
-            if (wn != null) {
-                wn.addNode(element, treePath);
-                return;
+        if (this.watchNodes.containsKey(watchId)) {
+            wn = this.watchNodes.get(watchId);
+            if (!wn.getNodes().stream().anyMatch(item -> item.getName().equalsIgnoreCase(element.getName()) &&
+                    ((ParentableNode)item.getParent()).getName().equalsIgnoreCase(((ParentableNode)element.getParent()).getName()))) {
+                wn.getNodes().add(element);
             }
+            return;
         }
+
+
+        Watcher watcher = getWatcher(watchId, element.getRoot().getProject());
 
         try {
             if (element instanceof PipelinesNode) {
@@ -170,30 +152,21 @@ public class WatchHandler {
             } else if (element instanceof EventListenersNode) {
                 watch = tkn.watchEventListeners(namespace, watcher);
             }
-            wn = new WatchNodes(watch, treePath);
+            wn = new WatchNodes(watch, element);
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage());
         }
 
         if (wn != null) {
-            watches.put(watchId, wn);
+            watchNodes.put(watchId, wn);
         }
     }
 
-    public void removeWatch(ParentableNode<?> element, TreePath treePath) {
-        String watchId = getWatchId(element);
-        if (watches.containsKey(watchId)) {
-            WatchNodes wn = watches.get(watchId);
-            wn.removeNode(element, treePath);
-            // kind of temporary hack until we only show the active namespace.
-            // Prevent from closing the watch for *runs that must be always active
-            if (wn != null && wn.isNodesEmpty() &&
-                    !(watchId.equalsIgnoreCase(element.getNamespace() + "-" + KIND_TASKRUNS) ||
-                     watchId.equalsIgnoreCase(element.getNamespace() + "-" + KIND_PIPELINERUNS))) {
-                wn.getWatch().close();
-                watches.remove(watchId);
-            }
-        }
+    public void removeAll() {
+        this.watchNodes.values().stream().forEach(item -> {
+            item.getWatch().close();
+        });
+        this.watchNodes.clear();
     }
 
     private String getWatchId(ParentableNode<?> element) {
@@ -203,7 +176,7 @@ public class WatchHandler {
             name = KIND_TASKRUN;
         } else if (element instanceof PipelineNode) {
             // we are expanding a single pipeline node and we want it to refresh if its pipelineruns change
-            name = KIND_PIPELINERUN;
+            name = KIND_PIPELINERUNS;
         }
         return getWatchId(element.getNamespace(), name);
     }
@@ -217,9 +190,40 @@ public class WatchHandler {
         return new Watcher<T>() {
             @Override
             public void eventReceived(Action action, T resource) {
-                WatchNodes watchNode = watches.get(watchId);
+                WatchNodes watchNode = watchNodes.get(watchId);
                 if (watchNode != null) {
-                    RefreshQueue.get().addAll(watches.get(watchId).getNodes());
+                    if (resource instanceof PipelineRun) {
+                        List<ParentableNode> nodesById = watchNodes.get(watchId).getNodes();
+                        List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodesById.get(0)));
+                        String pipeline = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipeline");
+                        if (pipeline != null) {
+                            Optional<ParentableNode> pNode = nodesById.stream().filter(node -> node.getName().equalsIgnoreCase(pipeline)).findFirst();
+                            if (pNode.isPresent()) {
+                                nodesToRefresh.add(pNode.get());
+                            }
+                        }
+                        RefreshQueue.get().addAll(nodesToRefresh, action);
+                    } else if (resource instanceof TaskRun) {
+                        List<ParentableNode> nodesById = watchNodes.get(watchId).getNodes();
+                        List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodesById.get(0)));
+                        String pipelineRun = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipelineRun");
+                        if (pipelineRun != null) {
+                            List<ParentableNode> pNodes = nodesById.stream().filter(node -> node.getName().equalsIgnoreCase(pipelineRun)).collect(Collectors.toList());
+                            if (!pNodes.isEmpty()) {
+                                nodesToRefresh.addAll(pNodes);
+                            }
+                        }
+                        String task = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/task");
+                        if (task != null) {
+                            Optional<ParentableNode> pNode = nodesById.stream().filter(node -> node.getName().equalsIgnoreCase(task)).findFirst();
+                            if (pNode.isPresent()) {
+                                nodesToRefresh.add(pNode.get());
+                            }
+                        }
+                        RefreshQueue.get().addAll(nodesToRefresh, action);
+                    } else {
+                        RefreshQueue.get().addAll(watchNodes.get(watchId).getNodes(), action);
+                    }
                 }
                 // watches for *runs are always active so there also could be nothing to refresh, only a notification to display
                 if (!SettingsState.getInstance().displayPipelineRunResultAsNotification ||
@@ -266,11 +270,12 @@ public class WatchHandler {
     }
 }
 
+
 class WatchNodes {
     private Watch watch;
-    private List<TreePath> nodesToBeUpdated;
+    private List<ParentableNode> nodesToBeUpdated;
 
-    public WatchNodes(Watch watch, TreePath... nodes) {
+    public WatchNodes(Watch watch, ParentableNode... nodes) {
         this.watch = watch;
         this.nodesToBeUpdated = new ArrayList<>(Arrays.asList(nodes));
     }
@@ -279,27 +284,7 @@ class WatchNodes {
         return this.watch;
     }
 
-    public List<TreePath> getNodes() {
+    public List<ParentableNode> getNodes() {
         return this.nodesToBeUpdated;
-    }
-
-    public void addNode(ParentableNode element, TreePath node) {
-        removeNode(element, node);
-        this.nodesToBeUpdated.add(node);
-    }
-
-    public void removeNode(ParentableNode element, TreePath node) {
-        this.nodesToBeUpdated.remove(node);
-        removeCollapsedNodes(element);
-    }
-
-    public void removeCollapsedNodes(ParentableNode element) {
-        Tree tree = TreeHelper.getTree(element.getRoot().getProject());
-        List<TreePath> nodesToDelete = this.nodesToBeUpdated.stream().filter(path -> !tree.isExpanded(path)).collect(Collectors.toList());
-        this.nodesToBeUpdated.removeAll(nodesToDelete);
-    }
-
-    public boolean isNodesEmpty() {
-        return this.nodesToBeUpdated.isEmpty();
     }
 }

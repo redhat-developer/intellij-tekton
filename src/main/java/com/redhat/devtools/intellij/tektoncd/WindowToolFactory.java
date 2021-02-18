@@ -25,10 +25,9 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
-import com.redhat.devtools.intellij.common.tree.MutableModelSynchronizer;
 import com.redhat.devtools.intellij.tektoncd.listener.TreeDoubleClickListener;
-import com.redhat.devtools.intellij.tektoncd.listener.TreeExpansionListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TreePopupMenuListener;
+import com.redhat.devtools.intellij.tektoncd.tree.MutableTektonModelSynchronizer;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -42,11 +41,11 @@ public class WindowToolFactory implements ToolWindowFactory {
 
             TektonTreeStructure structure = new TektonTreeStructure(project);
             StructureTreeModel<TektonTreeStructure> model = buildModel(structure, project);
-            new MutableModelSynchronizer<>(model, structure, structure);
+            new MutableTektonModelSynchronizer<>(model, structure, structure);
             Tree tree = new Tree(new AsyncTreeModel(model, project));
             tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
+            tree.putClientProperty("model2", tree.getModel());
             tree.setCellRenderer(new NodeRenderer());
-            tree.addTreeWillExpandListener(new TreeExpansionListener());
             ActionManager actionManager = ActionManager.getInstance();
             ActionGroup group = (ActionGroup)actionManager.getAction("com.redhat.devtools.intellij.tektoncd.tree");
             PopupHandler.installPopupHandler(tree, group, ActionPlaces.UNKNOWN, actionManager, new TreePopupMenuListener());
