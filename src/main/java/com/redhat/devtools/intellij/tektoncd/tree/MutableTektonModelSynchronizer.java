@@ -58,7 +58,7 @@ public class MutableTektonModelSynchronizer<T> implements MutableModel.Listener<
         if (isRootNode(element)) {
             path = new TreePath(treeModel.getRoot());
         } else {
-            path = findTreePath(element); //, (DefaultMutableTreeNode)treeModel.getRoot());
+            path = findTreePath(element);
         }
         return path!=null?path:new TreePath(treeModel.getRoot());
     }
@@ -69,20 +69,17 @@ public class MutableTektonModelSynchronizer<T> implements MutableModel.Listener<
     }
 
     private TreePath findTreePath(T element) {
-        if (element == null) {
+        if (element == null ||
+                !(element instanceof ParentableNode)) {
             return null;
         }
-        ParentableNode pNode;
-        if (element instanceof ParentableNode) {
-            pNode = (ParentableNode) element;
-        } else {
-            return null; //usa original method
-        }
-        List<ParentableNode> pNodes = getParentableNodesToNamespace(pNode);
+
+        ParentableNode pNode = (ParentableNode) element;
+        List<ParentableNode> pNodes = getNodesToNamespace(pNode);
         return findTreePath(pNodes, 0, (DefaultMutableTreeNode)treeModel.getRoot());
     }
 
-    private List<ParentableNode> getParentableNodesToNamespace(ParentableNode node) {
+    private List<ParentableNode> getNodesToNamespace(ParentableNode node) {
         List<ParentableNode> nodes = new ArrayList<>();
         while (!(node instanceof NamespaceNode)) {
             nodes.add(0, node);
@@ -104,14 +101,13 @@ public class MutableTektonModelSynchronizer<T> implements MutableModel.Listener<
                 continue;
             }
 
-            if (level == nodes.size() - 1 && child.toString().equalsIgnoreCase(nodes.get(level).getName())) {
-                return new TreePath(((DefaultMutableTreeNode)child).getPath());
-            }
-
-            //se è elemento del livello
             TreePath path = null;
-            if (child.toString().equalsIgnoreCase(nodes.get(level).getName())) { //hasElement(nodes, level + 1, nodes[level])) {
-                path = findTreePath(nodes, level + 1, (DefaultMutableTreeNode) child);
+            if (child.toString().equalsIgnoreCase(nodes.get(level).getName())) {
+                if (level == nodes.size() - 1) {
+                    return new TreePath(((DefaultMutableTreeNode)child).getPath());
+                } else {
+                    path = findTreePath(nodes, level + 1, (DefaultMutableTreeNode) child);
+                }
             }
 
             if (path != null) {
@@ -120,34 +116,6 @@ public class MutableTektonModelSynchronizer<T> implements MutableModel.Listener<
         }
         return null;
     }
-
-    private TreePath findTreePath(T element, DefaultMutableTreeNode start) {
-        if (element == null
-                || start == null) {
-            return null;
-        }
-        Enumeration children = start.children();
-        while (children.hasMoreElements()) {
-            Object child = children.nextElement();
-            if (!(child instanceof DefaultMutableTreeNode)) {
-                continue;
-            }
-            if (hasElement(element, (DefaultMutableTreeNode) child)) {
-                return new TreePath(((DefaultMutableTreeNode)child).getPath());
-            }
-            TreePath path = findTreePath(element, (DefaultMutableTreeNode) child);
-            if (path != null) {
-                return path;
-            }
-        }
-        return null;
-    }
-
-    private boolean hasElement(T element, DefaultMutableTreeNode node) {
-        NodeDescriptor descriptor = (NodeDescriptor) node.getUserObject();
-        return descriptor != null && descriptor.getElement() == element;
-    }
-
 
     @Override
     public void onAdded(T element) {

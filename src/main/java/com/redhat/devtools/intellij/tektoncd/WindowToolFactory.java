@@ -44,7 +44,6 @@ public class WindowToolFactory implements ToolWindowFactory {
             new MutableTektonModelSynchronizer<>(model, structure, structure);
             Tree tree = new Tree(new AsyncTreeModel(model, project));
             tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
-            tree.putClientProperty("model2", tree.getModel());
             tree.setCellRenderer(new NodeRenderer());
             ActionManager actionManager = ActionManager.getInstance();
             ActionGroup group = (ActionGroup)actionManager.getAction("com.redhat.devtools.intellij.tektoncd.tree");

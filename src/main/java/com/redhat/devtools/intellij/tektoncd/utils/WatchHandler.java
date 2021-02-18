@@ -54,16 +54,16 @@ import org.slf4j.LoggerFactory;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
 
 public class WatchHandler {
     private static final Logger logger = LoggerFactory.getLogger(WatchHandler.class);
-    private Map<String, WatchNodes> watchNodes;
+    private Map<String, WatchNodes> watches;
 
     private static WatchHandler instance;
 
     private WatchHandler() {
-        watchNodes = new HashMap<>();
+        watches = new HashMap<>();
     }
 
     public static WatchHandler get() {
@@ -78,7 +78,7 @@ public class WatchHandler {
         Watch watch = null;
         WatchNodes wn = null;
 
-        if (this.watchNodes.containsKey(watchId)) {
+        if (this.watches.containsKey(watchId)) {
             return;
         }
 
@@ -92,7 +92,7 @@ public class WatchHandler {
         }
 
         if (wn != null) {
-            watchNodes.put(watchId, wn);
+            watches.put(watchId, wn);
         }
 
     }
@@ -107,8 +107,8 @@ public class WatchHandler {
 
         // a watch can be associated to multiple nodes
         // (e.g a taskRuns watcher, when a change happens, could update multiple nodes such as a single Task node and the TaskRuns node)
-        if (this.watchNodes.containsKey(watchId)) {
-            wn = this.watchNodes.get(watchId);
+        if (this.watches.containsKey(watchId)) {
+            wn = this.watches.get(watchId);
             if (!wn.getNodes().stream().anyMatch(item -> item.getName().equalsIgnoreCase(element.getName()) &&
                     ((ParentableNode)item.getParent()).getName().equalsIgnoreCase(((ParentableNode)element.getParent()).getName()))) {
                 wn.getNodes().add(element);
@@ -158,22 +158,22 @@ public class WatchHandler {
         }
 
         if (wn != null) {
-            watchNodes.put(watchId, wn);
+            watches.put(watchId, wn);
         }
     }
 
     public void removeAll() {
-        this.watchNodes.values().stream().forEach(item -> {
+        this.watches.values().stream().forEach(item -> {
             item.getWatch().close();
         });
-        this.watchNodes.clear();
+        this.watches.clear();
     }
 
     private String getWatchId(ParentableNode<?> element) {
         String name = element.getName();
         if (element instanceof TaskNode || element instanceof PipelineRunNode) {
             // we are expanding a single task or pipelinerun node and we want it to refresh if its taskruns change
-            name = KIND_TASKRUN;
+            name = KIND_TASKRUNS;
         } else if (element instanceof PipelineNode) {
             // we are expanding a single pipeline node and we want it to refresh if its pipelineruns change
             name = KIND_PIPELINERUNS;
@@ -190,10 +190,10 @@ public class WatchHandler {
         return new Watcher<T>() {
             @Override
             public void eventReceived(Action action, T resource) {
-                WatchNodes watchNode = watchNodes.get(watchId);
+                WatchNodes watchNode = watches.get(watchId);
                 if (watchNode != null) {
                     if (resource instanceof PipelineRun) {
-                        List<ParentableNode> nodesById = watchNodes.get(watchId).getNodes();
+                        List<ParentableNode> nodesById = watches.get(watchId).getNodes();
                         List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodesById.get(0)));
                         String pipeline = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipeline");
                         if (pipeline != null) {
@@ -202,27 +202,29 @@ public class WatchHandler {
                                 nodesToRefresh.add(pNode.get());
                             }
                         }
-                        RefreshQueue.get().addAll(nodesToRefresh, action);
+                        RefreshQueue.get().addAll(nodesToRefresh);
                     } else if (resource instanceof TaskRun) {
-                        List<ParentableNode> nodesById = watchNodes.get(watchId).getNodes();
+                        List<ParentableNode> nodesById = watches.get(watchId).getNodes();
                         List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodesById.get(0)));
-                        String pipelineRun = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipelineRun");
-                        if (pipelineRun != null) {
-                            List<ParentableNode> pNodes = nodesById.stream().filter(node -> node.getName().equalsIgnoreCase(pipelineRun)).collect(Collectors.toList());
-                            if (!pNodes.isEmpty()) {
-                                nodesToRefresh.addAll(pNodes);
-                            }
-                        }
                         String task = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/task");
                         if (task != null) {
                             Optional<ParentableNode> pNode = nodesById.stream().filter(node -> node.getName().equalsIgnoreCase(task)).findFirst();
                             if (pNode.isPresent()) {
                                 nodesToRefresh.add(pNode.get());
                             }
+                            String pipelineRun = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/pipelineRun");
+                            if (pipelineRun != null) {
+                                List<ParentableNode> pNodes = nodesById.stream().filter(node -> node.getName().equalsIgnoreCase(pipelineRun)).collect(Collectors.toList());
+                                if (!pNodes.isEmpty()) {
+                                    nodesToRefresh.addAll(pNodes);
+                                }
+                            }
                         }
-                        RefreshQueue.get().addAll(nodesToRefresh, action);
+
+
+                        RefreshQueue.get().addAll(nodesToRefresh);
                     } else {
-                        RefreshQueue.get().addAll(watchNodes.get(watchId).getNodes(), action);
+                        RefreshQueue.get().addAll(watches.get(watchId).getNodes());
                     }
                 }
                 // watches for *runs are always active so there also could be nothing to refresh, only a notification to display

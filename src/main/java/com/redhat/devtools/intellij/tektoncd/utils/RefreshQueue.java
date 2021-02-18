@@ -14,7 +14,6 @@ import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
-import io.fabric8.kubernetes.client.Watcher;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -40,7 +39,7 @@ public class RefreshQueue {
         return instance;
     }
 
-    public void addAll(List<ParentableNode> nodes, Watcher.Action action) {
+    public void addAll(List<ParentableNode> nodes) {
         if (scheduler != null && !scheduler.isCancelled() && !scheduler.isDone()) {
             scheduler.cancel(true);
         }

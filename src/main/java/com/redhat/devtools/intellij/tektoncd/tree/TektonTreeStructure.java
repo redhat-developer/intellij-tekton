@@ -276,7 +276,6 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 taskRuns.stream().sorted(Comparator.comparing(Run::getStartTime, Comparator.nullsLast(Comparator.naturalOrder()))).forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
             }
         }
-        //watchNodes(taskRunsNodes.toArray());
         return taskRunsNodes.toArray(new Object[taskRunsNodes.size()]);
     }
 
