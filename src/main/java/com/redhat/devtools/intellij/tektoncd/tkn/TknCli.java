@@ -117,7 +117,11 @@ public class TknCli implements Tkn {
 
     @Override
     public String getNamespace() throws IOException {
-        return client.getNamespace();
+        String namespace = client.getNamespace();
+        if (Strings.isNullOrEmpty(namespace)) {
+            namespace = "default";
+        }
+        return namespace;
     }
 
     @Override
