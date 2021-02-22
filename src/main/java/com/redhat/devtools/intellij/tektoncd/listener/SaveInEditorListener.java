@@ -41,7 +41,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 
 public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
-    Logger logger = LoggerFactory.getLogger(SaveInEditorListener.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(SaveInEditorListener.class);
 
     @Override
     public boolean maySaveDocument(@NotNull Document document, boolean isSaveExplicit) {
@@ -50,30 +51,19 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         String namespace = vf.getUserData(NAMESPACE);
         Long lastModificationStamp = vf.getUserData(LAST_MODIFICATION_STAMP);
         Long currentModificationStamp = document.getModificationStamp();
-        if(project == null ||
+        if (project == null ||
                 namespace == null ||
                 !isFileToPush(project, document, vf) ||
                 currentModificationStamp.equals(lastModificationStamp)
         ) {
             return true;
         }
+
         vf.putUserData(LAST_MODIFICATION_STAMP, currentModificationStamp);
-
-        Notification notification;
-        boolean isSaved;
-        try {
-            isSaved = DeployHelper.saveOnCluster(project, namespace, document.getText(), "Do you want to push the changes to the cluster?");
-        } catch (IOException e) {
-            notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
-            Notifications.Bus.notify(notification);
-            logger.warn("Error: " + e.getLocalizedMessage(), e);
-            return false;
-        }
-
-        if (isSaved) {
+        if (save(document, project, namespace)) {
             try {
                 Tree tree = TreeHelper.getTree(project);
-                TektonTreeStructure treeStructure = (TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
+                TektonTreeStructure treeStructure = (TektonTreeStructure) tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
                 ParentableNode selected = vf.getUserData(TARGET_NODE);
                 if (selected != null) {
                     treeStructure.fireModified(selected);
@@ -82,10 +72,21 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
                 logger.warn("Error: " + e.getLocalizedMessage(), e);
             }
             // notify user if saving was completed successfully
-            notification = new Notification(NOTIFICATION_ID, "Save Successful", StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " has been saved!", NotificationType.INFORMATION);
+            Notification notification = new Notification(NOTIFICATION_ID, "Save Successful", StringUtils.capitalize(vf.getUserData(KIND_PLURAL)) + " has been saved!", NotificationType.INFORMATION);
             Notifications.Bus.notify(notification);
         }
         return false;
+    }
+
+    private boolean save(Document document, Project project, String namespace) {
+        try {
+            return DeployHelper.saveOnCluster(project, namespace, document.getText(), "Do you want to push the changes to the cluster?");
+        } catch (IOException e) {
+            Notification notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
+            Notifications.Bus.notify(notification);
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
+            return false;
+        }
     }
 
     private boolean isFileToPush(Project project, Document document, VirtualFile vf) {
