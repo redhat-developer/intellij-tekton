@@ -60,7 +60,7 @@ public class VirtualFileHelper {
     }
 
     public static void  createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode, boolean isReadOnly) {
-        ActionMessage telemetry = TelemetryService.instance().actionPerformed("open editor")
+        ActionMessage telemetry = TelemetryService.instance().action("open editor")
                 .property("resource_kind", kind)
                 .property("resource_namespace", namespace)
         try {

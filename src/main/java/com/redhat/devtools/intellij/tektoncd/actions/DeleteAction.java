@@ -59,7 +59,7 @@ public class DeleteAction extends TektonAction {
      */
     public static final int OK_DELETE_RESOURCES_CODE = 2;
 
-    ActionMessage telemetry = TelemetryService.instance().actionPerformed(getClass().getSimpleName());
+    ActionMessage telemetry = TelemetryService.instance().action("delete resource");
 
     public DeleteAction() {
         super(true,
@@ -121,7 +121,7 @@ public class DeleteAction extends TektonAction {
                     try {
                         deleteResources(type, resourcesByClass, namespace, deleteRelatedResources, tkncli);
                         ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(resourcesByClass.get(type).get(0).getParent());
-                        telemetry.success(type.getSimpleName() + " resources deleted.")
+                        telemetry.result(type.getSimpleName() + " resources deleted.")
                                 .send();
                     } catch (IOException e) {
                         telemetry.error(e)
