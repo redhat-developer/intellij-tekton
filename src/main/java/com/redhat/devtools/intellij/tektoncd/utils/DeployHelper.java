@@ -29,6 +29,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_VERSION;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class DeployHelper {
@@ -47,8 +49,8 @@ public class DeployHelper {
         }
 
         ActionMessage telemetry = TelemetryService.instance().action("save to cluster")
-                .property("resource_kind", model.getKind())
-                .property("resource_version", model.getApiVersion());
+                .property(PROP_RESOURCE_KIND, model.getKind())
+                .property(PROP_RESOURCE_VERSION, model.getApiVersion());
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(model.getKind()) ? "" : namespace;
             boolean isNewResource = executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);

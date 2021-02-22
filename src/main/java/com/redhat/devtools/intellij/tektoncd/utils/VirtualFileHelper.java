@@ -29,6 +29,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.*;
 
 public class VirtualFileHelper {
@@ -46,7 +47,7 @@ public class VirtualFileHelper {
         Optional<FileEditor> editor = Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).
                 filter(fileEditor -> fileEditor.getFile().getName().startsWith(name)).findFirst();
         if (!editor.isPresent()) {
-            VirtualFileHelper.createAndOpenVirtualFile(project, namespace, name, content, kind, null, readOnly);
+            createAndOpenVirtualFile(project, namespace, name, content, kind, null, readOnly);
         } else {
             Editor openedEditor = FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
             if (edit) {
@@ -61,8 +62,7 @@ public class VirtualFileHelper {
 
     public static void  createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode, boolean isReadOnly) {
         ActionMessage telemetry = TelemetryService.instance().action("open editor")
-                .property("resource_kind", kind)
-                .property("resource_namespace", namespace)
+                .property(PROP_RESOURCE_KIND, kind)
         try {
             VirtualFile vf = createVirtualFile(name, content, isReadOnly);
             vf.putUserData(AllowNonProjectEditing.ALLOW_NON_PROJECT_EDITING, true);
