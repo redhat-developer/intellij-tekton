@@ -11,49 +11,25 @@
 package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.intellij.ide.util.treeView.AbstractTreeStructure;
-import com.intellij.ide.util.treeView.NodeDescriptor;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.redhat.devtools.intellij.common.tree.MutableModel;
+import com.redhat.devtools.intellij.common.tree.MutableModelSynchronizer;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.function.Supplier;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-public class MutableTektonModelSynchronizer<T> implements MutableModel.Listener<T> {
-    private final StructureTreeModel treeModel;
-    private final AbstractTreeStructure structure;
-    private final MutableModel<T> mutableModel;
+public class MutableTektonModelSynchronizer<T> extends MutableModelSynchronizer<T> {
 
     public MutableTektonModelSynchronizer(StructureTreeModel treeModel,
                                     AbstractTreeStructure structure,
                                     MutableModel<T> mutableModel) {
-        this.treeModel = treeModel;
-        this.structure = structure;
-        this.mutableModel = mutableModel;
-        this.mutableModel.addListener(this);
+        super(treeModel, structure, mutableModel);
     }
 
-    private void invalidatePath(Supplier<TreePath> pathSupplier) {
-        treeModel.getInvoker().runOrInvokeLater(() -> {
-            TreePath path = pathSupplier.get();
-            if (path.getLastPathComponent() == treeModel.getRoot()) {
-                invalidateRoot();
-            }
-            treeModel.invalidate(path, true);
-        });
-    }
-
-    private void invalidateRoot() {
-        treeModel.invalidate();
-    }
-
-    private T getParentElement(T element) {
-        return (T) structure.getParentElement(element);
-    }
-
-    private TreePath getTreePath(T element) {
+    @Override
+    protected TreePath getTreePath(T element) {
         TreePath path;
         if (isRootNode(element)) {
             path = new TreePath(treeModel.getRoot());
@@ -61,11 +37,6 @@ public class MutableTektonModelSynchronizer<T> implements MutableModel.Listener<
             path = findTreePath(element);
         }
         return path!=null?path:new TreePath(treeModel.getRoot());
-    }
-
-    private boolean isRootNode(T element) {
-        NodeDescriptor descriptor = (NodeDescriptor) ((DefaultMutableTreeNode)treeModel.getRoot()).getUserObject();
-        return descriptor != null && descriptor.getElement() == element;
     }
 
     private TreePath findTreePath(T element) {
@@ -115,21 +86,6 @@ public class MutableTektonModelSynchronizer<T> implements MutableModel.Listener<
             }
         }
         return null;
-    }
-
-    @Override
-    public void onAdded(T element) {
-        invalidatePath(() -> getTreePath(getParentElement(element)));
-    }
-
-    @Override
-    public void onModified(T element) {
-        invalidatePath(() -> getTreePath(element));
-    }
-
-    @Override
-    public void onRemoved(T element) {
-        invalidatePath(() -> getTreePath(getParentElement(element)));
     }
 }
 
