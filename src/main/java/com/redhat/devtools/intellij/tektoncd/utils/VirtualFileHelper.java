@@ -9,12 +9,15 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.redhat.devtools.intellij.common.editor.AllowNonProjectEditing;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
+
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +29,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.*;
 
 public class VirtualFileHelper {
     static Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
@@ -56,25 +60,34 @@ public class VirtualFileHelper {
     }
 
     public static void  createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode, boolean isReadOnly) {
+        ActionMessage telemetry = TelemetryService.instance().actionPerformed("open editor")
+                .property("resource_kind", kind)
+                .property("resource_namespace", namespace)
         try {
-            VirtualFile vf;
-
-            if (isReadOnly) {
-                vf = new LightVirtualFile(name, content);
-                vf.setWritable(false);
-            } else {
-                vf = createTempFile(name, content);
-            }
+            VirtualFile vf = createVirtualFile(name, content, isReadOnly);
             vf.putUserData(AllowNonProjectEditing.ALLOW_NON_PROJECT_EDITING, true);
             vf.putUserData(PROJECT, project);
             if (!kind.isEmpty()) vf.putUserData(KIND_PLURAL, kind);
             if (!namespace.isEmpty()) vf.putUserData(NAMESPACE, namespace);
             if (targetNode != null) vf.putUserData(TARGET_NODE, targetNode);
-
             FileEditorManager.getInstance(project).openFile(vf, true);
+            telemetry.send();
         } catch (IOException e) {
+            telemetry.error(e)
+                    .send();
             logger.warn(e.getLocalizedMessage(), e);
         }
+    }
+
+    private static VirtualFile createVirtualFile(String name, String content, boolean isReadOnly) throws IOException {
+        VirtualFile vf = null;
+        if (isReadOnly) {
+            vf = new LightVirtualFile(name, content);
+            vf.setWritable(false);
+        } else {
+            vf = createTempFile(name, content);
+        }
+        return vf;
     }
 
     private static VirtualFile createTempFile(String name, String content) throws IOException {

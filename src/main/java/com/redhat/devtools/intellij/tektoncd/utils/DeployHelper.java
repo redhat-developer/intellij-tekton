@@ -18,6 +18,7 @@ import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -27,6 +28,8 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class DeployHelper {
     private static final Logger logger = LoggerFactory.getLogger(DeployHelper.class);
@@ -43,11 +46,16 @@ public class DeployHelper {
             return false;
         }
 
+        ActionMessage telemetry = TelemetryService.instance().action("save to cluster")
+                .property("resource_kind", model.getKind())
+                .property("resource_version", model.getApiVersion());
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(model.getKind()) ? "" : namespace;
-            executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
+            boolean isNewResource = executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
+            telemetry.property("new_resource", (isNewResource ? "new" : "existing")).success().send();
         } catch (KubernetesClientException e) {
             String errorMsg = createErrorMessage(model, e);
+            telemetry.error(errorMsg).send();
             logger.warn(errorMsg);
             // give a visual notification to user if an error occurs during saving
             throw new IOException(errorMsg, e);
