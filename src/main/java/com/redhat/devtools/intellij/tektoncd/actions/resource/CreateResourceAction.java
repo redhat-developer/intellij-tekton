@@ -13,13 +13,17 @@ package com.redhat.devtools.intellij.tektoncd.actions.resource;
 import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 
 import javax.swing.tree.TreePath;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_NAMESPACE;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class CreateResourceAction extends TektonAction {
 
@@ -31,7 +35,12 @@ public class CreateResourceAction extends TektonAction {
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: PipelineResource");
 
-        if (!Strings.isNullOrEmpty(content)) {
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create pipelineresource");
+        if (Strings.isNullOrEmpty(content)) {
+            telemetry.error("snippet content empty").send();
+        } else {
+            telemetry.send();
             VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newresource.yaml", content, KIND_RESOURCES, item);
         }
     }

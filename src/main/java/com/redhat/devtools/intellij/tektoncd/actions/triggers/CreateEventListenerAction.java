@@ -13,13 +13,16 @@ package com.redhat.devtools.intellij.tektoncd.actions.triggers;
 import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenersNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 
 import javax.swing.tree.TreePath;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class CreateEventListenerAction extends TektonAction {
     public CreateEventListenerAction() { super(EventListenersNode.class); }
@@ -29,8 +32,13 @@ public class CreateEventListenerAction extends TektonAction {
         EventListenersNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: EventListener");
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create event listener");
 
-        if (!Strings.isNullOrEmpty(content)) {
+        if (Strings.isNullOrEmpty(content)) {
+            telemetry.error("snippet content empty").send();
+        } else {
+            telemetry.send();
             VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-neweventlistener.yaml", content, KIND_EVENTLISTENERS, item);
         }
     }

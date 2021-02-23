@@ -19,6 +19,7 @@ import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
@@ -27,12 +28,16 @@ import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
 import java.io.IOException;
 import javax.swing.tree.TreePath;
+
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_NAMESPACE;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class CreateTaskRunTemplateAction extends TektonAction {
 
@@ -44,12 +49,14 @@ public class CreateTaskRunTemplateAction extends TektonAction {
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
+        ActionMessage telemetry = TelemetryService.instance().action("create task run");
         ExecHelper.submit(() -> {
             Notification notification;
             TaskConfigurationModel model;
             try {
                 model = getModel(element, namespace, tkncli);
             } catch (IOException e) {
+                telemetry.error(e).send();
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
                                 "Failed to create TaskRun templace from " + element.getName() + " in namespace " + namespace + "An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
@@ -59,7 +66,9 @@ public class CreateTaskRunTemplateAction extends TektonAction {
             }
 
             if (!model.isValid()) {
-                UIHelper.executeInUI(() -> Messages.showErrorDialog("Failed to create a TaskRun templace from " + element.getName() + " in namespace " + namespace + ". The task is not valid.", "Error"));
+                String errorMessage = "Failed to create a TaskRun templace from " + element.getName() + " in namespace " + namespace + ". The task is not valid.";
+                telemetry.error(errorMessage).send();
+                UIHelper.executeInUI(() -> Messages.showErrorDialog(errorMessage, "Error"));
                 return;
             }
 
@@ -68,9 +77,11 @@ public class CreateTaskRunTemplateAction extends TektonAction {
                 UIHelper.executeInUI(() ->
                         VirtualFileHelper.openVirtualFileInEditor(anActionEvent.getProject(), namespace, "generate-taskrun-" + model.getName(), contentTask, KIND_TASKRUN, true));
             } catch (IOException e) {
+                String errorMessage = "Failed to create TaskRun templace from" + element.getName() + " in namespace " + namespace + " \n" + e.getLocalizedMessage();
+                telemetry.error(errorMessage).send();
                 notification = new Notification(NOTIFICATION_ID,
                         "Error",
-                        "Failed to create TaskRun templace from" + element.getName() + " in namespace " + namespace + " \n" + e.getLocalizedMessage(),
+                        errorMessage,
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
                 logger.warn("Error: " + e.getLocalizedMessage());

@@ -13,15 +13,20 @@ package com.redhat.devtools.intellij.tektoncd.actions.triggers;
 import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 
 import javax.swing.tree.TreePath;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_NAMESPACE;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class CreateClusterTriggerBindingAction extends TektonAction {
+
     public CreateClusterTriggerBindingAction() { super(ClusterTriggerBindingsNode.class); }
 
     @Override
@@ -29,8 +34,11 @@ public class CreateClusterTriggerBindingAction extends TektonAction {
         ClusterTriggerBindingsNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: ClusterTriggerBinding");
-
-        if (!Strings.isNullOrEmpty(content)) {
+        ActionMessage telemetry = TelemetryService.instance().action("create cluster trigger binding");
+        if (Strings.isNullOrEmpty(content)) {
+            telemetry.error("snippet content empt").send();
+        } else {
+            telemetry.send();
             VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newclustertriggerbinding.yaml", content, KIND_CLUSTERTRIGGERBINDINGS, item);
         }
     }

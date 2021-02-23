@@ -57,7 +57,8 @@ public class DeployHelper {
             telemetry.property("new_resource", (isNewResource ? "new" : "existing")).success().send();
         } catch (KubernetesClientException e) {
             String errorMsg = createErrorMessage(model, e);
-            telemetry.error(errorMsg).send();
+            telemetry.error(errorMsg)
+                    .send();
             logger.warn(errorMsg);
             // give a visual notification to user if an error occurs during saving
             throw new IOException(errorMsg, e);

@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -29,11 +30,12 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.*;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class VirtualFileHelper {
-    static Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
+    private static final Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
+    private static final ActionMessage telemetry = TelemetryService.instance().action("open editor");
 
     public static void openVirtualFileInEditor(Project project, String name, String content, boolean edit) {
         innerOpenVirtualFileInEditor(project, "", name, content, "", edit, !edit);
@@ -52,6 +54,9 @@ public class VirtualFileHelper {
             Editor openedEditor = FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, editor.get().getFile()), true);
             if (edit) {
                 openedEditor.getDocument().setText(content);
+                telemetry
+                        .property(PROP_RESOURCE_KIND, kind)
+                        .send();
             }
         }
     }
@@ -62,7 +67,7 @@ public class VirtualFileHelper {
 
     public static void  createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode, boolean isReadOnly) {
         ActionMessage telemetry = TelemetryService.instance().action("open editor")
-                .property(PROP_RESOURCE_KIND, kind)
+                .property(PROP_RESOURCE_KIND, kind);
         try {
             VirtualFile vf = createVirtualFile(name, content, isReadOnly);
             vf.putUserData(AllowNonProjectEditing.ALLOW_NON_PROJECT_EDITING, true);

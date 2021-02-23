@@ -17,7 +17,9 @@ public class TelemetryService {
 
     public static final String PROP_RESOURCE_KIND = "resource_kind";
     public static final String PROP_RESOURCE_VERSION = "resource_version";
+    public static final String PROP_RESOURCE_NAMESPACE = "resource_namespace";
     public static final String PROP_RESOURCE_CRUD = "resource_crud";
+    public static final String PROP_HAS_TRIGGERS = "has_triggers";
 
     private static final TelemetryService INSTANCE = new TelemetryService();
 

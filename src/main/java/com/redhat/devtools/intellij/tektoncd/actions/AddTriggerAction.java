@@ -45,7 +45,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -31,6 +31,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.tektoncd.ui.DeleteDialog;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
+import com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils;
 
 import java.io.IOException;
 import java.util.Arrays;

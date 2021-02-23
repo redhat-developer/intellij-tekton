@@ -13,13 +13,16 @@ package com.redhat.devtools.intellij.tektoncd.actions.clustertask;
 import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 
 import javax.swing.tree.TreePath;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class CreateClusterTaskAction extends TektonAction {
 
@@ -31,7 +34,12 @@ public class CreateClusterTaskAction extends TektonAction {
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: ClusterTask");
 
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create cluster task");
         if (!Strings.isNullOrEmpty(content)) {
+            telemetry.error("snippet content empty").send();
+        } else {
+            telemetry.send();
             VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, "newclustertask.yaml", content, KIND_CLUSTERTASKS, item);
         }
     }
