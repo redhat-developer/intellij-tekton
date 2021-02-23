@@ -21,6 +21,7 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
@@ -50,6 +51,7 @@ import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class AddTriggerAction extends TektonAction {
     private static final Logger logger = LoggerFactory.getLogger(AddTriggerAction.class);
@@ -70,6 +72,8 @@ public class AddTriggerAction extends TektonAction {
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create trigger");
         ExecHelper.submit(() -> {
             try {
                 Map<String, String> triggerBindingTemplates = SnippetHelper.getTriggerBindingTemplates();
@@ -81,8 +85,10 @@ public class AddTriggerAction extends TektonAction {
                 }
 
                 String kind = (element instanceof PipelineNode) ? "Pipeline " : "Task ";
+                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, kind);
                 AddTriggerWizard addTriggerWizard = openTriggerBindingWizard(anActionEvent, element, triggerBindingTemplates, model, kind);
                 if (!addTriggerWizard.isOK()) {
+                    telemetry.result("wizard aborted").send();
                     return;
                 }
                 // take/create all triggerBindings
@@ -108,10 +114,11 @@ public class AddTriggerAction extends TektonAction {
                         .map(binding -> binding.replace(" NEW", ""))
                         .collect(Collectors.toList()), triggerTemplateName);
                 saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
+                telemetry.result("bindings and resources created").send();
                 notifySuccessOperation("EventListener " + eventListenerName);
                 TreeHelper.refresh(getEventProject(anActionEvent), (ParentableNode) ((ParentableNode) element.getParent()).getParent());
             } catch (IOException e) {
-                String errorMessage = "Failed to add a trigger to " + element.getName() + " in namespace " + namespace + "\n" + e.getLocalizedMessage();
+                telemetry.error(e).send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         errorMessage,
