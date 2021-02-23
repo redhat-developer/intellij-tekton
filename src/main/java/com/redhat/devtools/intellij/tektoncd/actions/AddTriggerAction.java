@@ -35,6 +35,7 @@ import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 
 public class AddTriggerAction extends TektonAction {
-    Logger logger = LoggerFactory.getLogger(AddTriggerAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(AddTriggerAction.class);
 
     public AddTriggerAction() { super(PipelineNode.class, TaskNode.class); }
 
@@ -69,114 +70,107 @@ public class AddTriggerAction extends TektonAction {
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
-            List<Resource> resources;
-            List<String> serviceAccounts, secrets, configMaps, persistentVolumeClaims;
-            Map<String, String> triggerBindings, triggerBindingTemplates;
-            AddTriggerModel model;
             try {
-                resources = tkncli.getResources(namespace);
-                serviceAccounts = tkncli.getServiceAccounts(namespace);
-                secrets = tkncli.getSecrets(namespace);
-                configMaps = tkncli.getConfigMaps(namespace);
-                persistentVolumeClaims = tkncli.getPersistentVolumeClaim(namespace);
-                triggerBindings = getTriggerBindings(namespace, tkncli);
-                triggerBindingTemplates = SnippetHelper.getTriggerBindingTemplates();
-                model = getModel(element, namespace, tkncli, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
-            } catch (IOException e) {
-                UIHelper.executeInUI(() ->
-                        Messages.showErrorDialog(
-                                "Failed to add a trigger to " + element.getName() + " in namespace " + namespace + ". An error occurred while retrieving informations.\n" + e.getLocalizedMessage(),
-                                "Error"));
-                logger.warn("Error: " + e.getLocalizedMessage());
-                return;
-            }
+                Map<String, String> triggerBindingTemplates = SnippetHelper.getTriggerBindingTemplates();
+                AddTriggerModel model = createModel(element, namespace, tkncli);
 
-            if (!model.isValid()) {
-                UIHelper.executeInUI(() -> Messages.showErrorDialog(model.getErrorMessage(), "Error"));
-                return;
-            }
-
-            AddTriggerWizard addTriggerWizard = UIHelper.executeInUI(() -> {
-                String titleDialog;
-                if (element instanceof PipelineNode) {
-                    titleDialog = "Add Trigger to Pipeline " + element.getName();
-                } else {
-                    titleDialog = "Add Trigger to Task " + element.getName();
+                if (!model.isValid()) {
+                    UIHelper.executeInUI(() -> Messages.showErrorDialog(model.getErrorMessage(), "Error"));
+                    return;
                 }
-                AddTriggerWizard wizard = new AddTriggerWizard(titleDialog, getEventProject(anActionEvent), model, triggerBindingTemplates);
-                wizard.show();
-                return wizard;
-            });
 
-            if (addTriggerWizard.isOK()) {
-               try {
-                   // take/create all triggerBindings
-                   Map<String, String> triggerBindingsSelected = model.getBindingsSelectedByUser();
+                AddTriggerWizard addTriggerWizard = UIHelper.executeInUI(() -> {
+                    String titleDialog = "Add Trigger to " + ((element instanceof PipelineNode) ? "Pipeline " : "Task ") + element.getName();
+                    AddTriggerWizard wizard = new AddTriggerWizard(titleDialog, getEventProject(anActionEvent), model, triggerBindingTemplates);
+                    wizard.show();
+                    return wizard;
+                });
 
-                   triggerBindingsSelected.keySet().stream().filter(binding -> binding.endsWith(" NEW")).forEach(binding -> {
-                       try {
-                           String bindingBody = triggerBindingsSelected.get(binding);
-                           saveResource(bindingBody, namespace, "triggerbindings", tkncli);
-                           String nameBinding = YAMLHelper.getStringValueFromYAML(bindingBody, new String[] {"metadata", "name"});
-                           notifySuccessOperation("TriggerBinding " + nameBinding);
-                       } catch (IOException e) {
-                           logger.warn(e.getLocalizedMessage());
-                       }
-                   });
+                if (addTriggerWizard.isOK()) {
+                    // take/create all triggerBindings
+                    Map<String, String> triggerBindingsSelected = model.getBindingsSelectedByUser();
 
-                   // get all params from bindings
-                   Set<String> paramsFromBindings = model.extractVariablesFromSelectedBindings();
+                    triggerBindingsSelected.keySet().stream().filter(binding -> binding.endsWith(" NEW")).forEach(binding -> {
+                        try {
+                            String bindingBody = triggerBindingsSelected.get(binding);
+                            saveResource(bindingBody, namespace, "triggerbindings", tkncli);
+                            String nameBinding = YAMLHelper.getStringValueFromYAML(bindingBody, new String[] {"metadata", "name"});
+                            notifySuccessOperation("TriggerBinding " + nameBinding);
+                        } catch (IOException e) {
+                            logger.warn(e.getLocalizedMessage());
+                        }
+                    });
 
-                   String randomString = Utils.getRandomString(6);
-                   // interpolate the variables correctly $variable to $(tt.params.variable)
-                   normalizeVariablesInterpolation(model, paramsFromBindings);
-                   // create the triggerTemplate
-                   String triggerTemplateName = element.getName() + "-template-" + randomString;
-                   ObjectNode run;
-                   if (element instanceof PipelineNode) {
-                       run = YAMLBuilder.createPipelineRun(model);
-                   } else {
-                       run = YAMLBuilder.createTaskRun(model);
-                   }
-                   ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings), Arrays.asList(run));
-                   saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
-                   notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
+                    // get all params from bindings
+                    Set<String> paramsFromBindings = model.extractVariablesFromSelectedBindings();
 
-                   // create the eventListener
-                   String eventListenerName = element.getName() + "-listener-" + randomString;
-                   // TODO we are using the default pipeline serviceAccount but we should allow users to select the one they prefer
-                   ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "pipeline", triggerBindingsSelected.keySet().stream().map(binding -> binding.replace(" NEW", "")).collect(Collectors.toList()), triggerTemplateName);
-                   saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
-                   notifySuccessOperation("EventListener " + eventListenerName);
+                    String randomString = Utils.getRandomString(6);
+                    // interpolate the variables correctly $variable to $(tt.params.variable)
+                    normalizeVariablesInterpolation(model, paramsFromBindings);
+                    // create the triggerTemplate
+                    String triggerTemplateName = element.getName() + "-template-" + randomString;
+                    ObjectNode run = createNode(element, model);
+                    ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings), Arrays.asList(run));
+                    saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
+                    notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
 
-                   TreeHelper.refresh(getEventProject(anActionEvent), (ParentableNode) ((ParentableNode)element.getParent()).getParent());
+                    // create the eventListener
+                    String eventListenerName = element.getName() + "-listener-" + randomString;
+                    // TODO we are using the default pipeline serviceAccount but we should allow users to select the one they prefer
+                    ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "pipeline", triggerBindingsSelected.keySet().stream()
+                            .map(binding -> binding.replace(" NEW", ""))
+                            .collect(Collectors.toList()), triggerTemplateName);
+                    saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
+                    notifySuccessOperation("EventListener " + eventListenerName);
 
-               } catch (IOException e) {
-                   Notification notification = new Notification(NOTIFICATION_ID,
-                           "Error",
-                           "Failed to add a trigger to " + element.getName() + " in namespace " + namespace + "\n" + e.getLocalizedMessage(),
-                           NotificationType.ERROR);
-                   Notifications.Bus.notify(notification);
-                   logger.warn("Error: " + e.getLocalizedMessage());
-               }
+                    TreeHelper.refresh(getEventProject(anActionEvent), (ParentableNode) ((ParentableNode) element.getParent()).getParent());
+                }
+            } catch (IOException e) {
+                Notification notification = new Notification(NOTIFICATION_ID,
+                        "Error",
+                        "Failed to add a trigger to " + element.getName() + " in namespace " + namespace + "\n" + e.getLocalizedMessage(),
+                        NotificationType.ERROR);
+                Notifications.Bus.notify(notification);
+                logger.warn("Error: " + e.getLocalizedMessage());
             }
         });
     }
 
-    protected AddTriggerModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, Map<String, String> triggerBindings) throws IOException {
-        String configuration = "";
+    private ObjectNode createNode(ParentableNode element, AddTriggerModel model) {
+        ObjectNode run;
         if (element instanceof PipelineNode) {
-            configuration = tkncli.getPipelineYAML(namespace, element.getName());
-        } else if (element instanceof TaskNode) {
-            configuration = tkncli.getTaskYAML(namespace, element.getName());
+            run = YAMLBuilder.createPipelineRun(model);
+        } else {
+            run = YAMLBuilder.createTaskRun(model);
         }
+        return run;
+    }
+
+    protected AddTriggerModel createModel(ParentableNode element, String namespace, Tkn tkncli) throws IOException {
+        List<Resource> resources = tkncli.getResources(namespace);
+        List<String> serviceAccounts = tkncli.getServiceAccounts(namespace);
+        List<String> secrets = tkncli.getSecrets(namespace);
+        List<String> configMaps = tkncli.getConfigMaps(namespace);
+        List<String> persistentVolumeClaims = tkncli.getPersistentVolumeClaim(namespace);
+        Map<String, String> triggerBindings = getTriggerBindings(namespace, tkncli);
+        String configuration = getConfiguration(element, namespace, tkncli);
         return new AddTriggerModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
     }
 
-    protected void saveResource(String resourceBody, String namespace, String kind_plural, Tkn tkncli) throws IOException{
-        String name = YAMLHelper.getStringValueFromYAML(resourceBody, new String[] {"metadata", "name"});
-        String apiVersion = YAMLHelper.getStringValueFromYAML(resourceBody, new String[] {"apiVersion"});
-        JsonNode spec = YAMLHelper.getValueFromYAML(resourceBody, new String[] {"spec"});
+    private String getConfiguration(ParentableNode element, String namespace, Tkn tkncli) throws IOException {
+        if (element instanceof PipelineNode) {
+            return tkncli.getPipelineYAML(namespace, element.getName());
+        } else if (element instanceof TaskNode) {
+            return tkncli.getTaskYAML(namespace, element.getName());
+        } else {
+            return null;
+        }
+    }
+
+    protected void saveResource(String resourceBody, String namespace, String kind_plural, Tkn tkncli) throws IOException {
+        String name = YAMLHelper.getStringValueFromYAML(resourceBody, new String[]{"metadata", "name"});
+        String apiVersion = YAMLHelper.getStringValueFromYAML(resourceBody, new String[]{"apiVersion"});
+        JsonNode spec = YAMLHelper.getValueFromYAML(resourceBody, new String[]{"spec"});
         CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(apiVersion, kind_plural);
 
         try {
