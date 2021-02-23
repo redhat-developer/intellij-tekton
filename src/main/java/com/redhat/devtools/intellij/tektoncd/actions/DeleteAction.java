@@ -31,15 +31,14 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.tektoncd.ui.DeleteDialog;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
-import com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils;
 
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import javax.swing.tree.TreePath;
 
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
@@ -60,8 +59,6 @@ public class DeleteAction extends TektonAction {
      */
     public static final int OK_DELETE_RESOURCES_CODE = 2;
 
-    ActionMessage telemetry = TelemetryService.instance().action("delete resource");
-
     public DeleteAction() {
         super(true,
             TaskNode.class,
@@ -79,6 +76,8 @@ public class DeleteAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("delete resource");
         ParentableNode[] elements = Arrays.stream(selected).map(item -> getElement(item)).toArray(ParentableNode[]::new);
         int resultDialog = UIHelper.executeInUI(() -> {
             String name, kind, title, deleteResourcesText, deleteChkText;

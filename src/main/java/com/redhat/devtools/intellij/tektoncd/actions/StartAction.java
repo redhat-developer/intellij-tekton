@@ -21,6 +21,7 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -34,27 +35,36 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.swing.tree.TreePath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class StartAction extends TektonAction {
+
     private static final Logger logger = LoggerFactory.getLogger(StartAction.class);
 
-    public StartAction(Class... filters) { super(filters); }
+    protected ActionMessage telemetry;
 
-    public StartAction() { super(PipelineNode.class, TaskNode.class, ClusterTaskNode.class); }
+    public StartAction(ActionMessage telemetry, Class... filters) {
+        super(filters);
+        this.telemetry = telemetry;
+    }
+
+    public StartAction() {
+        this(TelemetryService.instance().action("start"), PipelineNode.class, TaskNode.class, ClusterTaskNode.class);
+    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -98,12 +108,13 @@ public class StartAction extends TektonAction {
                     executeFollowLogsAction(tkncli, element, namespace, runName);
                     refreshTreeNode(anActionEvent, element);
                 } catch (IOException e) {
+                    telemetry.error(e).send();
                     notification = new Notification(NOTIFICATION_ID,
                             "Error",
                             model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
-                    logger.warn("Error: " + e.getLocalizedMessage());
+                    logger.warn("Error: " + e.getLocalizedMessage(), e);
                 }
             }
         });
@@ -132,12 +143,15 @@ public class StartAction extends TektonAction {
         String configuration = "";
         List<? extends Run> runs = new ArrayList<>();
         if (element instanceof PipelineNode) {
+            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, KIND_PIPELINE);
             configuration = tkncli.getPipelineYAML(namespace, element.getName());
             runs = tkncli.getPipelineRuns(namespace, element.getName());
         } else if (element instanceof TaskNode) {
+            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, KIND_TASK);
             configuration = tkncli.getTaskYAML(namespace, element.getName());
             runs = tkncli.getTaskRuns(namespace, element.getName());
         } else if (element instanceof ClusterTaskNode) {
+            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, KIND_CLUSTERTASK);
             configuration = tkncli.getClusterTaskYAML(element.getName());
         }
         return new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);

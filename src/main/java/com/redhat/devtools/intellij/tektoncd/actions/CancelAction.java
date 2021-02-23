@@ -15,22 +15,25 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.RunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import java.io.IOException;
-import java.util.Arrays;
-import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.tree.TreePath;
+import java.io.IOException;
+import java.util.Arrays;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class CancelAction extends TektonAction {
-    Logger logger = LoggerFactory.getLogger(CancelAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(CancelAction.class);
 
     public CancelAction() { super(RunNode.class); }
 
@@ -55,13 +58,18 @@ public class CancelAction extends TektonAction {
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
+            ActionMessage telemetry = TelemetryService.instance()
+                    .action("cancel");
             try {
                 if (element instanceof PipelineRunNode) {
+                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN).send();
                     tkncli.cancelPipelineRun(namespace, element.getName());
                 } else if (element instanceof TaskRunNode) {
+                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN).send();
                     tkncli.cancelTaskRun(namespace, element.getName());
                 }
             } catch (IOException e) {
+                telemetry.error(e).send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         element.getName() + " in namespace " + namespace + " failed to cancel\n" + e.getLocalizedMessage(),
