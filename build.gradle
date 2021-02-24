@@ -26,6 +26,14 @@ intellij {
     updateSinceUntilBuild false
 }
 
+runIde {
+    systemProperties['com.redhat.devtools.intellij.telemetry.mode'] = 'debug'
+}
+
+runIdeForUiTests {
+    systemProperties['com.redhat.devtools.intellij.telemetry.mode'] = 'debug'
+}
+
 dependencies {
     compile 'io.fabric8:openshift-client:5.0.2'
     compile 'io.fabric8:tekton-client:5.0.2'
