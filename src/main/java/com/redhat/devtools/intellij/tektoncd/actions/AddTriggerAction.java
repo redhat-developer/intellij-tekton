@@ -73,7 +73,7 @@ public class AddTriggerAction extends TektonAction {
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ActionMessage telemetry = TelemetryService.instance()
-                .action("create trigger");
+                .action("add trigger");
         ExecHelper.submit(() -> {
             try {
                 Map<String, String> triggerBindingTemplates = SnippetHelper.getTriggerBindingTemplates();

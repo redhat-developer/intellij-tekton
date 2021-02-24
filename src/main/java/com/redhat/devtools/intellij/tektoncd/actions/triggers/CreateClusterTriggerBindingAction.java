@@ -17,12 +17,10 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
-import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 
 import javax.swing.tree.TreePath;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_NAMESPACE;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class CreateClusterTriggerBindingAction extends TektonAction {
@@ -36,7 +34,7 @@ public class CreateClusterTriggerBindingAction extends TektonAction {
         String content = getSnippet("Tekton: ClusterTriggerBinding");
         ActionMessage telemetry = TelemetryService.instance().action("create cluster trigger binding");
         if (Strings.isNullOrEmpty(content)) {
-            telemetry.error("snippet content empt").send();
+            telemetry.error("snippet content empty").send();
         } else {
             telemetry.send();
             VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newclustertriggerbinding.yaml", content, KIND_CLUSTERTRIGGERBINDINGS, item);
