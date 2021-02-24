@@ -17,7 +17,6 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
-import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 
 import javax.swing.tree.TreePath;
 
@@ -36,7 +35,7 @@ public class CreateTriggerBindingAction extends TektonAction {
         ActionMessage telemetry = TelemetryService.instance()
                 .action("create trigger binding");
 
-        if (!Strings.isNullOrEmpty(content)) {
+        if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty.").send();
         } else {
             telemetry.send();
