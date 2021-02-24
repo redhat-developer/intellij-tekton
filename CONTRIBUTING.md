@@ -18,9 +18,7 @@ There are only a few guidelines that we need contributors to follow.
     ```bash
     $ ./gradlew runIde
     ```
-2. Once the plugin is installed
- 
- and reloaded, there will be a Tekton Tab in the Tool Windows list (left).
+2. Once the plugin is installed and reloaded, there will be a Tekton Tab in the Tool Windows list (left).
 
 
 
