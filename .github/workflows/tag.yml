@@ -20,12 +20,12 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
       - name: Simple conventional changelog
-        uses: lstocchi/simple-conventional-changelog@0.0.5
+        uses: lstocchi/simple-conventional-changelog@0.0.6
         id: changelog
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           current-tag: ${{ steps.get_version.outputs.VERSION }}
-          types-mapping: 'feat:Features,fix:Bug Fixes,docs:Documentation'
+          types-mapping: 'feat:Features,fix:Bug Fixes,docs:Documentation,refactor:Refactoring,chore:Other'
           scopes-mapping: 'UI:UI,Hub:Hub'
       - run: |
           echo '${{ steps.changelog.outputs.changelog }}'
@@ -38,7 +38,7 @@ jobs:
           tag_name: ${{ steps.get_version.outputs.VERSION }}
           release_name: ${{ steps.get_version.outputs.VERSION }}
           body: ${{ steps.changelog.outputs.changelog }}
-      - name: Attach vsix to release
+      - name: Attach zip to release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
