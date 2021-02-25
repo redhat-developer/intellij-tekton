@@ -29,9 +29,11 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_VERSION;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class DeployHelper {
     private static final Logger logger = LoggerFactory.getLogger(DeployHelper.class);
@@ -53,11 +55,12 @@ public class DeployHelper {
                 .property(PROP_RESOURCE_VERSION, model.getApiVersion());
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(model.getKind()) ? "" : namespace;
-            boolean isNewResource = executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
-            telemetry.property("new_resource", (isNewResource ? "new" : "existing")).success().send();
+            boolean isUpdate = executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
+            telemetry.property(PROP_RESOURCE_CRUD, (isUpdate ? "update" : "create")).success()
+                    .send();
         } catch (KubernetesClientException e) {
             String errorMsg = createErrorMessage(model, e);
-            telemetry.error(errorMsg)
+            telemetry.error(anonymizeResource(model.getName(), namespace, errorMsg))
                     .send();
             logger.warn(errorMsg);
             // give a visual notification to user if an error occurs during saving
