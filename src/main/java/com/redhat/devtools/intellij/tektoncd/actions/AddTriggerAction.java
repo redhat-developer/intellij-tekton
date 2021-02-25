@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class AddTriggerAction extends TektonAction {
     private static final Logger logger = LoggerFactory.getLogger(AddTriggerAction.class);
@@ -88,7 +89,8 @@ public class AddTriggerAction extends TektonAction {
                 telemetry.property(TelemetryService.PROP_RESOURCE_KIND, kind);
                 AddTriggerWizard addTriggerWizard = openTriggerBindingWizard(anActionEvent, element, triggerBindingTemplates, model, kind);
                 if (!addTriggerWizard.isOK()) {
-                    telemetry.result("wizard aborted").send();
+                    telemetry.result("wizard aborted")
+                            .send();
                     return;
                 }
                 // take/create all triggerBindings
@@ -114,11 +116,14 @@ public class AddTriggerAction extends TektonAction {
                         .map(binding -> binding.replace(" NEW", ""))
                         .collect(Collectors.toList()), triggerTemplateName);
                 saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
-                telemetry.result("bindings and resources created").send();
+                telemetry.result("bindings and resources created")
+                        .send();
                 notifySuccessOperation("EventListener " + eventListenerName);
                 TreeHelper.refresh(getEventProject(anActionEvent), (ParentableNode) ((ParentableNode) element.getParent()).getParent());
             } catch (IOException e) {
-                telemetry.error(e).send();
+                String errorMessage = "Failed to add a trigger to " + element.getName() + " in namespace " + namespace + "\n" + e.getLocalizedMessage();
+                telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         errorMessage,

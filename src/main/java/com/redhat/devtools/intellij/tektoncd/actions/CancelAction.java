@@ -31,6 +31,7 @@ import java.util.Arrays;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CancelAction extends TektonAction {
     private static final Logger logger = LoggerFactory.getLogger(CancelAction.class);
@@ -69,13 +70,14 @@ public class CancelAction extends TektonAction {
                     tkncli.cancelTaskRun(namespace, element.getName());
                 }
             } catch (IOException e) {
-                telemetry.error(e).send();
+                telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage()))
+                        .send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         element.getName() + " in namespace " + namespace + " failed to cancel\n" + e.getLocalizedMessage(),
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn("Error: " + e.getLocalizedMessage(), e);
+                logger.warn("Error: " + e.getLocalizedMessage());
             }
         });
     }

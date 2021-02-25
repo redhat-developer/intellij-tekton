@@ -28,6 +28,7 @@ import java.io.IOException;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.instance;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class ShowDiagnosticDataAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(ShowDiagnosticDataAction.class);
@@ -50,7 +51,7 @@ public class ShowDiagnosticDataAction extends TektonAction {
                     hasDataToShow = tkncli.getDiagnosticData(namespace, "tekton.dev/taskRun", element.getName());
                 }
                 if (!hasDataToShow) {
-                    telemetry.result("no data to show");
+                    telemetry.result("no data to show").send();
                     UIHelper.executeInUI(() ->
                             Messages.showWarningDialog(
                                     "No data available for " + element.getName() + " in namespace " + namespace + ".",
@@ -58,7 +59,8 @@ public class ShowDiagnosticDataAction extends TektonAction {
                 }
                 telemetry.send();
             } catch (IOException e) {
-                telemetry.error(e).send();
+                telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage()))
+                        .send();
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
                                 "Failed to retrieve data for " + element.getName() + " in namespace " + namespace + ". An error occurred while retrieving them.\n" + e.getLocalizedMessage(),

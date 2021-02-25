@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class FollowLogsAction extends LogsBaseAction {
     private static final Logger logger = LoggerFactory.getLogger(FollowLogsAction.class);
@@ -46,12 +47,12 @@ public class FollowLogsAction extends LogsBaseAction {
                 tkncli.followLogsTaskRun(namespace, resourceName, toEditor);
             }
         } catch (IOException e) {
-            telemetry.error(e).send();
+            telemetry.error(anonymizeResource(resourceName, namespace, e.getMessage())).send();
             UIHelper.executeInUI(() ->
                     Messages.showErrorDialog(
                             "An error occurred while requesting logs for " + resourceName + "\n" + e.getLocalizedMessage(),
                             "Error"));
-            logger.warn("Error: " + e.getLocalizedMessage(), e);
+            logger.warn("Error: " + e.getLocalizedMessage());
         }
     }
 }

@@ -50,6 +50,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class StartAction extends TektonAction {
 
@@ -108,13 +109,14 @@ public class StartAction extends TektonAction {
                     executeFollowLogsAction(tkncli, element, namespace, runName);
                     refreshTreeNode(anActionEvent, element);
                 } catch (IOException e) {
-                    telemetry.error(e).send();
+                    telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage()))
+                            .send();
                     notification = new Notification(NOTIFICATION_ID,
                             "Error",
                             model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
-                    logger.warn("Error: " + e.getLocalizedMessage(), e);
+                    logger.warn("Error: " + e.getLocalizedMessage());
                 }
             }
         });

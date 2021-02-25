@@ -41,6 +41,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class DeleteAction extends TektonAction {
 
@@ -125,7 +126,7 @@ public class DeleteAction extends TektonAction {
                                 .success()
                                 .send();
                     } catch (IOException e) {
-                        telemetry.error(e)
+                        telemetry.error(anonymizeResource(null, namespace, e.getMessage()))
                                 .send();
                         UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
                     }

@@ -32,6 +32,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class VirtualFileHelper {
     private static final Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
@@ -78,9 +79,9 @@ public class VirtualFileHelper {
             FileEditorManager.getInstance(project).openFile(vf, true);
             telemetry.send();
         } catch (IOException e) {
-            telemetry.error(e)
+            telemetry.error(anonymizeResource(name, namespace, e.getMessage()))
                     .send();
-            logger.warn(e.getLocalizedMessage(), e);
+            logger.warn(e.getLocalizedMessage());
         }
     }
 

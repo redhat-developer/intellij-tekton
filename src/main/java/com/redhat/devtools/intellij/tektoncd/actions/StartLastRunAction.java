@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class StartLastRunAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(StartLastRunAction.class);
@@ -68,13 +69,14 @@ public class StartLastRunAction extends TektonAction {
 
                 ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
             } catch (IOException e) {
-                telemetry.error(e).send();
+                telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage()))
+                        .send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         element.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn("Error: " + e.getLocalizedMessage(), e);
+                logger.warn("Error: " + e.getLocalizedMessage());
             }
         });
     }

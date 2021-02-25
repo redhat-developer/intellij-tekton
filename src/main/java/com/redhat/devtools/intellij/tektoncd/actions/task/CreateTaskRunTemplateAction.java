@@ -35,6 +35,7 @@ import java.io.IOException;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateTaskRunTemplateAction extends TektonAction {
 
@@ -53,7 +54,7 @@ public class CreateTaskRunTemplateAction extends TektonAction {
             try {
                 model = getModel(element, namespace, tkncli);
             } catch (IOException e) {
-                telemetry.error(e).send();
+                telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage())).send();
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
                                 "Failed to create TaskRun templace from " + element.getName() + " in namespace " + namespace + "An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
@@ -64,7 +65,7 @@ public class CreateTaskRunTemplateAction extends TektonAction {
 
             if (!model.isValid()) {
                 String errorMessage = "Failed to create a TaskRun templace from " + element.getName() + " in namespace " + namespace + ". The task is not valid.";
-                telemetry.error(errorMessage).send();
+                telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage)).send();
                 UIHelper.executeInUI(() -> Messages.showErrorDialog(errorMessage, "Error"));
                 return;
             }
@@ -75,7 +76,8 @@ public class CreateTaskRunTemplateAction extends TektonAction {
                         VirtualFileHelper.openVirtualFileInEditor(anActionEvent.getProject(), namespace, "generate-taskrun-" + model.getName(), contentTask, KIND_TASKRUN, true));
             } catch (IOException e) {
                 String errorMessage = "Failed to create TaskRun templace from" + element.getName() + " in namespace " + namespace + " \n" + e.getLocalizedMessage();
-                telemetry.error(errorMessage).send();
+                telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
                 notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         errorMessage,
