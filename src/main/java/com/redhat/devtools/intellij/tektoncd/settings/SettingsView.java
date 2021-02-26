@@ -10,9 +10,22 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.settings;
 
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.options.Configurable;
+import com.intellij.openapi.options.ex.Settings;
 import com.intellij.ui.components.JBCheckBox;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.FormBuilder;
+import com.redhat.devtools.intellij.telemetry.ui.preferences.TelemetryConfigurable;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+
+import static com.redhat.devtools.intellij.tektoncd.utils.JBLabelUtils.toStyledHtml;
 
 public class SettingsView {
     private final JPanel myMainPanel;
@@ -27,6 +40,7 @@ public class SettingsView {
                 .addComponent(chkEnableDeleteAllRelatedResourcesAsDefault, 1)
                 .addComponent(chkShowStartWizardWithNoInputs, 1)
                 .addComponent(chkDisplayLogsInEditor, 1)
+                .addComponent(createTelemetryComponent(), 1)
                 .addComponentFillVertically(new JPanel(), 0)
                 .getPanel();
     }
@@ -65,5 +79,40 @@ public class SettingsView {
 
     public void setDisplayLogsInEditor(boolean newStatus) {
         chkDisplayLogsInEditor.setSelected(newStatus);
+    }
+
+    private JComponent createText() {
+        return createTelemetryComponent();
+    }
+
+    public JLabel createTelemetryComponent() {
+        JLabel component = new JBLabel("") {
+            @Override
+            protected HyperlinkListener createHyperlinkListener() {
+                return (event) -> {
+                    if (HyperlinkEvent.EventType.ACTIVATED == event.getEventType()) openTelemetryPreferences();
+                };
+            }
+        }
+                .setCopyable(true)
+                .setAllowAutoWrapping(true);
+        component.setVerticalTextPosition(SwingConstants.TOP);
+        component.setFocusable(false);
+        component.setText(toStyledHtml(
+                "<br/>Help Red Hat improve Tekton Pipelines by sending anonymous usage data."
+                        + " You can enable or disable it in the <a href=\"\">preferences for Red Hat Telemetry</a>."
+                , 70,
+                component));
+        return component;
+    }
+
+    private void openTelemetryPreferences() {
+        Settings allSettings = Settings.KEY.getData(DataManager.getInstance().getDataContext(getPanel()));
+        if (allSettings != null) {
+            final Configurable configurable = allSettings.find(TelemetryConfigurable.ID);
+            if (configurable != null) {
+                allSettings.select(configurable);
+            }
+        }
     }
 }
