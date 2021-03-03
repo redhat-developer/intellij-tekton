@@ -13,6 +13,15 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.7.0</b></p>
+  <p>Tree only shows current active namespace</p>
+  <p><ul>
+  <li>The tree has been refactored to only show the current active namespace. The plugin listens to any change in the kubeconfig file and refresh the tree accordingly if the active namespace/context changes.</li>
+  </ul></p>
+  <p>Enhanced recognition of Tekton Hub's tasks/pipelines</p>
+  <p><ul>
+  <li>When installing tasks/pipelines from the Tekton Hub, they are now saved with labels provided by the hub allowing the plugin to better recognize them.</li>
+  </ul></p>
   <p><b>0.6.0</b></p>
   <p>Enhanced logs</p>
   <p><ul>
