@@ -15,14 +15,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
-import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
@@ -35,28 +31,15 @@ import org.slf4j.LoggerFactory;
 public class DeployHelper {
     private static Logger logger = LoggerFactory.getLogger(DeployHelper.class);
 
-    public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage) throws IOException {
+    public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage, boolean updateLabels) throws IOException {
         DeployModel model = isValid(yaml);
 
-        int resultDialog = UIHelper.executeInUI(() ->
-                Messages.showYesNoDialog(
-                        confirmationMessage,
-                        "Save to cluster",
-                        null
-                ));
+        if (!isSaveConfirmed(confirmationMessage)) {
+            return false;
+        }
 
-        if (resultDialog != Messages.OK) return false;
-
-        Tree tree;
-        TektonTreeStructure treeStructure;
-        Tkn tknCli;
-        try {
-            tree = TreeHelper.getTree(project);
-            treeStructure = (TektonTreeStructure)tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
-            TektonRootNode root = (TektonRootNode) treeStructure.getRootElement();
-            tknCli = root.getTkn();
-        } catch (Exception e) {
-            logger.warn("Error: " + e.getLocalizedMessage(), e);
+        Tkn tknCli = TreeHelper.getTkn(project);
+        if (tknCli == null) {
             return false;
         }
 
@@ -65,16 +48,21 @@ public class DeployHelper {
             if (CRDHelper.isRunResource(model.getKind())) {
                 tknCli.createCustomResource(resourceNamespace, model.getCrdContext(), yaml);
             } else {
-                Map<String, Object> resource = tknCli.getCustomResource(namespace, model.getName(), model.getCrdContext());
+                Map<String, Object> resource = tknCli.getCustomResource(resourceNamespace, model.getName(), model.getCrdContext());
                 if (resource == null) {
                     tknCli.createCustomResource(resourceNamespace, model.getCrdContext(), yaml);
                 } else {
                     JsonNode customResource = JSONHelper.MapToJSON(resource);
+                    JsonNode labels = model.getLabels();
+                    if (updateLabels && labels != null) {
+                        ((ObjectNode) customResource.get("metadata")).set("labels", labels);
+                    }
                     ((ObjectNode) customResource).set("spec", model.getSpec());
                     tknCli.editCustomResource(resourceNamespace, model.getName(), model.getCrdContext(), customResource.toString());
                 }
             }
         } catch (KubernetesClientException e) {
+            logger.warn(e.getLocalizedMessage());
             Status errorStatus = e.getStatus();
             String errorMsg = "An error occurred while saving " + StringUtils.capitalize(model.getKind()) + " " + model.getName() + "\n";;
             if (errorStatus != null && !Strings.isNullOrEmpty(errorStatus.getMessage())) {
@@ -84,6 +72,36 @@ public class DeployHelper {
             throw new IOException(errorMsg + e.getLocalizedMessage());
         }
         return true;
+    }
+
+    public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage) throws IOException {
+        return saveOnCluster(project, namespace, yaml, confirmationMessage, false);
+    }
+
+    public static boolean saveTaskOnClusterFromHub(Project project, String name, String version, boolean overwrite, String confirmationMessage) throws IOException {
+        if (!isSaveConfirmed(confirmationMessage)) {
+            return false;
+        }
+
+        Tkn tknCli = TreeHelper.getTkn(project);
+        if (tknCli == null) {
+            return false;
+        }
+
+        tknCli.installTaskFromHub(name, version, overwrite);
+
+        return true;
+    }
+
+    private static boolean isSaveConfirmed(String confirmationMessage) {
+        int resultDialog = UIHelper.executeInUI(() ->
+                Messages.showYesNoDialog(
+                        confirmationMessage,
+                        "Save to cluster",
+                        null
+                ));
+
+        return resultDialog == Messages.OK;
     }
 
     public static DeployModel isValid(String yaml) throws IOException {
@@ -108,20 +126,22 @@ public class DeployHelper {
         if (spec == null) {
             throw new IOException("Tekton file has not a valid format. Spec field is not found.");
         }
-        return new DeployModel(name, kind, apiVersion, spec, crdContext);
+        JsonNode labels = YAMLHelper.getValueFromYAML(yaml, new String[] {"metadata", "labels"});
+        return new DeployModel(name, kind, apiVersion, spec, labels, crdContext);
     }
 }
 
 class DeployModel {
     private String name, apiVersion, kind;
-    private JsonNode spec;
+    private JsonNode spec, labels;
     private CustomResourceDefinitionContext crdContext;
 
-    public DeployModel(String name, String kind, String apiVersion, JsonNode spec, CustomResourceDefinitionContext crdContext) {
+    public DeployModel(String name, String kind, String apiVersion, JsonNode spec, JsonNode labels, CustomResourceDefinitionContext crdContext) {
         this.name = name;
         this.apiVersion = apiVersion;
         this.kind = kind;
         this.spec = spec;
+        this.labels = labels;
         this.crdContext = crdContext;
     }
 
@@ -139,6 +159,10 @@ class DeployModel {
 
     public JsonNode getSpec() {
         return spec;
+    }
+
+    public JsonNode getLabels() {
+        return labels;
     }
 
     public CustomResourceDefinitionContext getCrdContext() {

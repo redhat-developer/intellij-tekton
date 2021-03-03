@@ -195,9 +195,9 @@ public class HubItem {
             public void mousePressed(MouseEvent e) {
                 String installMode = ((ComboBox)e.getSource()).getSelectedItem().toString();
                 if (installMode.equalsIgnoreCase("install")) {
-                    doInstallAction.accept(self, resource.getLatestVersion().getRawURL().toString());
+                    doInstallAction.accept(self, resource.getLatestVersion().getVersion());
                 } else {
-                    doInstallAsCTAction.accept(self, resource.getLatestVersion().getRawURL().toString());
+                    doInstallAsCTAction.accept(self, resource.getLatestVersion().getVersion());
                 }
             }
 

@@ -681,6 +681,24 @@ public interface Tkn {
      */
     boolean getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException;
 
+    /**
+     * Install task from Tekton Hub
+     * @param task task name
+     * @param version version of the task
+     * @param overwrite if the task is already installed and we want to overwrite that
+     * @throws IOException if communication errored
+     */
+    void installTaskFromHub(String task, String version, boolean overwrite) throws IOException;
+
+    /**
+     * Get the task yaml from Tekton Hub
+     * @param task task name
+     * @param version version of the task
+     * @return the task yaml
+     * @throws IOException if communication errored
+     */
+    String getTaskYAMLFromHub(String task, String version) throws IOException;
+
     public URL getMasterUrl();
 
     public <T> T getClient(Class<T> clazz);
