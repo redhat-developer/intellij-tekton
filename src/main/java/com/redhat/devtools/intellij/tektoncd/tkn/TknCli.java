@@ -36,7 +36,6 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
-import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
@@ -117,12 +116,12 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getNamespaces() throws IOException {
-        if (client.isAdaptable(OpenShiftClient.class)) {
-            return client.adapt(OpenShiftClient.class).projects().list().getItems().stream().map(project -> project.getMetadata().getName()).collect(Collectors.toList());
-        } else {
-            return client.namespaces().list().getItems().stream().map(namespace -> namespace.getMetadata().getName()).collect(Collectors.toList());
+    public String getNamespace() throws IOException {
+        String namespace = client.getNamespace();
+        if (Strings.isNullOrEmpty(namespace)) {
+            namespace = "default";
         }
+        return namespace;
     }
 
     @Override

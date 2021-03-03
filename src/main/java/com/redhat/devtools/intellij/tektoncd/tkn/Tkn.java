@@ -41,12 +41,12 @@ public interface Tkn {
     boolean isTektonTriggersAware();
 
     /**
-     * Return the names of the namespace (projects for OpenShift).
+     * Return the name of the current active namespace (project for OpenShift).
      *
-     * @return the list of namespaces names
+     * @return the active namespace name
      * @throws IOException if communication errored
      */
-    List<String> getNamespaces() throws IOException;
+    String getNamespace() throws IOException;
 
     /**
      * Return the names of the serviceAccounts for a namespace

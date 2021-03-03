@@ -24,6 +24,7 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import io.fabric8.kubernetes.api.model.Config;
 import io.fabric8.kubernetes.api.model.NamedContext;
 import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
@@ -125,6 +126,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                         new ConditionsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
                 if (!tkn.isTektonTriggersAware()) {
+                    watchNodes(generalNodes);
                     return generalNodes;
                 }
                 Object[] triggersNode = new Object[] {
@@ -133,7 +135,9 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                         new ClusterTriggerBindingsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new EventListenersNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
-                return ArrayUtils.addAll(generalNodes, triggersNode);
+                Object[] firstLevelNodes = ArrayUtils.addAll(generalNodes, triggersNode);
+                watchNodes(firstLevelNodes);
+                return firstLevelNodes;
 
             }
             if (element instanceof PipelinesNode) {
@@ -183,6 +187,16 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             }
         }
         return new Object[0];
+    }
+
+    private void watchNodes(Object[] nodes) {
+        for (Object node: nodes) {
+            if (node instanceof ParentableNode) {
+                if (WatchHandler.get().canBeWatched((ParentableNode<?>) node)) {
+                    WatchHandler.get().setWatchByNode((ParentableNode<?>) node);
+                }
+            }
+        }
     }
 
     private Object[] getConditions(ConditionsNode element) {
@@ -246,6 +260,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             Tkn tkn = element.getRoot().getTkn();
             List<TaskRun> taskRuns = tkn.getTaskRuns(element.getNamespace(), task);
             taskRunsNodes = getTaskRuns(element, taskRuns, true);
+            watchNodes(taskRunsNodes);
         } catch (IOException e) {
             taskRunsNodes = new Object[] { new MessageNode(element.getRoot(), element, "Failed to load task runs") };
         }
@@ -269,6 +284,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         try {
             Tkn tkn = element.getRoot().getTkn();
             tkn.getPipelineRuns(element.getNamespace(), pipeline).forEach(pipelinerun -> pipelineRuns.add(new PipelineRunNode(element.getRoot(), element, pipelinerun)));
+            watchNodes(pipelineRuns.toArray());
         } catch (IOException e) {
             pipelineRuns.add(new MessageNode(element.getRoot(), element, "Failed to load pipeline runs"));
         }
@@ -291,6 +307,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         try {
             Tkn tkn = element.getRoot().getTkn();
             tkn.getClusterTasks().forEach(clusterTask -> tasks.add(new ClusterTaskNode(element.getRoot(), element, clusterTask.getMetadata().getName())));
+            watchNodes(tasks.toArray());
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load cluster tasks"));
         }
@@ -302,6 +319,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         try {
             Tkn tkn = element.getRoot().getTkn();
             tkn.getPipelines(element.getParent().getName()).forEach(name -> pipelines.add(new PipelineNode(element.getRoot(), element, name)));
+            watchNodes(pipelines.toArray());
         } catch (IOException e) {
             pipelines.add(new MessageNode(element.getRoot(), element, "Failed to load pipelines"));
         }
@@ -313,6 +331,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         try {
             Tkn tkn = element.getRoot().getTkn();
             tkn.getTasks(element.getParent().getName()).forEach(task -> tasks.add(new TaskNode(element.getRoot(), element, task.getMetadata().getName(), false)));
+            watchNodes(tasks.toArray());
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load tasks"));
         }
@@ -324,7 +343,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         try {
             Tkn tkn = element.getTkn();
             if (tkn.isTektonAware()) {
-                element.getTkn().getNamespaces().forEach(name -> namespaces.add(new NamespaceNode(element, name)));
+                String namespace = element.getTkn().getNamespace();
+                namespaces.add(new NamespaceNode(element, namespace));
             } else {
                 namespaces.add(new MessageNode(element, element, NO_TEKTON));
             }
@@ -483,7 +503,8 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return newContext == null
                 || currentContext == null
                 || !StringUtils.equals(currentContext.getContext().getCluster(), newContext.getContext().getCluster())
-                || !StringUtils.equals(currentContext.getContext().getUser(), newContext.getContext().getUser());
+                || !StringUtils.equals(currentContext.getContext().getUser(), newContext.getContext().getUser())
+                || !StringUtils.equals(currentContext.getContext().getNamespace(), newContext.getContext().getNamespace());
     }
 
     private boolean hasNewToken(NamedContext newContext, Config newConfig, NamedContext currentContext, Config currentConfig) {
@@ -504,6 +525,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     protected void refresh() {
         try {
+            WatchHandler.get().removeAll();
             root.load();
             mutableModelSupport.fireModified(root);
         } catch (Exception e) {

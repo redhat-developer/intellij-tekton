@@ -59,10 +59,11 @@ public class AddTriggerAction extends TektonAction {
     @Override
     public boolean isVisible(Object selected) {
         // if triggers are not installed, don't show this action
-        if (!((ParentableNode)selected).getRoot().getTkn().isTektonTriggersAware()) {
-            return false;
+        if (((ParentableNode)selected).getRoot().getTkn().isTektonTriggersAware() &&
+                (selected instanceof PipelineNode || selected instanceof TaskNode)) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     @Override
