@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.HUB_CATALOG_TAG;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 
@@ -155,7 +156,7 @@ public class HubModel {
      * @return status of install
      * @throws IOException
      */
-    public Constants.InstallStatus installHubItem(String name, String kind, String version) throws IOException {
+    public Constants.InstallStatus installHubItem(String name, String kind, String version, String catalog) throws IOException {
         String confirmationMessage;
         boolean isTask = kind.equalsIgnoreCase(KIND_TASK);
         boolean isClusterTask = kind.equalsIgnoreCase(KIND_CLUSTERTASK);
@@ -178,8 +179,8 @@ public class HubModel {
             ObjectNode yamlObject = YAMLBuilder.convertToObjectNode(yamlFromHub);
             if (yamlObject.has("metadata") &&
                 yamlObject.get("metadata").has("labels") &&
-                !yamlObject.get("metadata").get("labels").has("hub.tekton.dev/catalog")) {
-                ((ObjectNode)yamlObject.get("metadata").get("labels")).put("hub.tekton.dev/catalog", "tekton");
+                !yamlObject.get("metadata").get("labels").has(HUB_CATALOG_TAG)) {
+                ((ObjectNode)yamlObject.get("metadata").get("labels")).put(HUB_CATALOG_TAG, catalog);
             }
             yamlObject.put("kind", kind);
             String yamlUpdated = YAMLBuilder.writeValueAsString(yamlObject);

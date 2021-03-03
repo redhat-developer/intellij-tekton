@@ -28,6 +28,9 @@ import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.HUB_CATALOG_TAG;
+
 public class TektonHubAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(TektonHubAction.class);
 
@@ -40,8 +43,14 @@ public class TektonHubAction extends TektonAction {
             String namespace = element.getNamespace();
             List<String> tasks, clusterTasks;
             try {
-                tasks = tkncli.getTasks(namespace).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
-                clusterTasks = tkncli.getClusterTasks().stream().map(ct -> ct.getMetadata().getName()).collect(Collectors.toList());
+                tasks = tkncli.getTasks(namespace).stream()
+                        .filter(task -> task.getMetadata().getLabels() != null && task.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
+                        .map(task -> task.getMetadata().getName())
+                        .collect(Collectors.toList());
+                clusterTasks = tkncli.getClusterTasks().stream()
+                        .filter(ct -> ct.getMetadata().getLabels() != null && ct.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
+                        .map(ct -> ct.getMetadata().getName())
+                        .collect(Collectors.toList());
             } catch (IOException e) {
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
