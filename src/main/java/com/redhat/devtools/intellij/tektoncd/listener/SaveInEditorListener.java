@@ -21,6 +21,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.treeStructure.Tree;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
@@ -53,7 +54,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         Long currentModificationStamp = document.getModificationStamp();
         if (project == null ||
                 namespace == null ||
-                !isFileToPush(project, document, vf) ||
+                !isFileToPush(project, vf) ||
                 currentModificationStamp.equals(lastModificationStamp)
         ) {
             return true;
@@ -80,7 +81,10 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
 
     private boolean save(Document document, Project project, String namespace) {
         try {
-            return DeployHelper.saveOnCluster(project, namespace, document.getText(), "Do you want to push the changes to the cluster?");
+            String resourceBody = document.getText();
+            String name = YAMLHelper.getStringValueFromYAML(resourceBody, new String[] {"metadata", "name"});
+            String kind = YAMLHelper.getStringValueFromYAML(resourceBody, new String[] {"kind"});
+            return DeployHelper.saveOnCluster(project, namespace, resourceBody, "Push changes for " + kind + " " + name + "?");
         } catch (IOException e) {
             Notification notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);
@@ -89,7 +93,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         }
     }
 
-    private boolean isFileToPush(Project project, Document document, VirtualFile vf) {
+    private boolean isFileToPush(Project project, VirtualFile vf) {
         FileEditor selectedEditor = FileEditorManager.getInstance(project).getSelectedEditor();
         // if file is not the one selected, skip it
         if (selectedEditor == null || !selectedEditor.getFile().equals(vf)) return false;
