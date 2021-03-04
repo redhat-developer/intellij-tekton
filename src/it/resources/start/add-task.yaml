@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: add-task
+  namespace: testns
+spec:
+  params:
+    - description: the first operand
+      name: first
+      type: string
+    - description: the second operand
+      name: second
+      type: string
+  results:
+    - description: the sum of the first and second operand
+      name: sum
+  steps:
+    - args:
+        - echo -n $((${OP1}+${OP2})) | tee $(results.sum.path);
+      command:
+        - /bin/sh
+        - -c
+      env:
+        - name: OP1
+          value: $(params.first)
+        - name: OP2
+          value: $(params.second)
+      image: alpine
+      name: add
+      resources: {}
