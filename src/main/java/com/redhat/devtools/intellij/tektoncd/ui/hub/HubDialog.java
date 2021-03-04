@@ -25,6 +25,7 @@ public class HubDialog extends DialogWrapper {
 
     public HubDialog(Project project, HubModel model) {
         super(project, true);
+        setTitle("Import from Tekton Hub");
         createComponent(model);
         super.init();
     }
