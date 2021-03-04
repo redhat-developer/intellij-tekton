@@ -224,60 +224,17 @@ public abstract class BaseWizard extends DialogWrapper {
     protected JComponent createSouthPanel() {
         myFooterPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
 
-        JPanel buttonPanel = new JPanel();
-
         if (SystemInfo.isMac) {
-            myFooterPanel.add(buttonPanel, BorderLayout.EAST);
-            buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-
-            if (!UIUtil.isUnderDarcula()) {
-                myHelpButton.putClientProperty("JButton.buttonType", "help");
-            }
-
-            int index = 0;
-            if (ApplicationInfo.contextHelpAvailable()) {
-                buttonPanel.add(Box.createHorizontalStrut(5));
-                buttonPanel.add(myHelpButton);
-                TouchbarDataKeys.putDialogButtonDescriptor(myHelpButton, index++).setMainGroup(true);
-            }
-            buttonPanel.add(Box.createHorizontalStrut(5));
-            buttonPanel.add(myCancelButton);
-            TouchbarDataKeys.putDialogButtonDescriptor(myCancelButton, index++).setMainGroup(true);
-
-            if (mySteps.size() > 1) {
-                buttonPanel.add(Box.createHorizontalStrut(5));
-                buttonPanel.add(myPreviousButton);
-                TouchbarDataKeys.putDialogButtonDescriptor(myPreviousButton, index++).setMainGroup(true);
-            }
-            buttonPanel.add(Box.createHorizontalStrut(5));
-            buttonPanel.add(myNextButton);
-            TouchbarDataKeys.putDialogButtonDescriptor(myNextButton, index++).setMainGroup(true).setDefault(true);
+            createFooterMac();
+        } else {
+            createFooter();
         }
-        else {
-            myFooterPanel.add(buttonPanel, BorderLayout.CENTER);
-            GroupLayout layout = new GroupLayout(buttonPanel);
-            buttonPanel.setLayout(layout);
-            layout.setAutoCreateGaps(true);
+        setFooterButtonsListener();
 
-            final GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
-            final GroupLayout.ParallelGroup vGroup = layout.createParallelGroup();
-            final Collection<Component> buttons = new ArrayList<>(5);
-            final boolean helpAvailable = ApplicationInfo.contextHelpAvailable();
+        return myFooterPanel;
+    }
 
-            add(hGroup, vGroup, null, Box.createHorizontalGlue());
-            if (mySteps.size() > 1) {
-                add(hGroup, vGroup, buttons, myPreviousButton);
-            }
-            add(hGroup, vGroup, buttons, myNextButton, myCancelButton);
-            if (helpAvailable) {
-                add(hGroup, vGroup, buttons, myHelpButton);
-            }
-
-            layout.setHorizontalGroup(hGroup);
-            layout.setVerticalGroup(vGroup);
-            layout.linkSize(buttons.toArray(new Component[0]));
-        }
-
+    private void setFooterButtonsListener() {
         myPreviousButton.setEnabled(false);
         myPreviousButton.addActionListener(e -> doPreviousAction());
         myNextButton.addActionListener(e -> {
@@ -302,8 +259,59 @@ public abstract class BaseWizard extends DialogWrapper {
 
         myCancelButton.addActionListener(e -> doCancelAction());
         myHelpButton.addActionListener(e -> helpAction());
+    }
 
-        return myFooterPanel;
+    private void createFooterMac() {
+        JPanel buttonPanel = new JPanel();
+        myFooterPanel.add(buttonPanel, BorderLayout.EAST);
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+
+        if (!UIUtil.isUnderDarcula()) {
+            myHelpButton.putClientProperty("JButton.buttonType", "help");
+        }
+
+        int index = 0;
+        if (ApplicationInfo.contextHelpAvailable()) {
+            add(buttonPanel, myHelpButton, index++, false);
+        }
+        add(buttonPanel, myCancelButton, index++, false);
+
+        if (mySteps.size() > 1) {
+            add(buttonPanel, myPreviousButton, index++, false);
+        }
+        add(buttonPanel, myNextButton, index++, false);
+    }
+
+    private void createFooter() {
+        JPanel buttonPanel = new JPanel();
+        myFooterPanel.add(buttonPanel, BorderLayout.CENTER);
+        GroupLayout layout = new GroupLayout(buttonPanel);
+        buttonPanel.setLayout(layout);
+        layout.setAutoCreateGaps(true);
+
+        final GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup();
+        final GroupLayout.ParallelGroup vGroup = layout.createParallelGroup();
+        final Collection<Component> buttons = new ArrayList<>(5);
+        final boolean helpAvailable = ApplicationInfo.contextHelpAvailable();
+
+        add(hGroup, vGroup, null, Box.createHorizontalGlue());
+        if (mySteps.size() > 1) {
+            add(hGroup, vGroup, buttons, myPreviousButton);
+        }
+        add(hGroup, vGroup, buttons, myNextButton, myCancelButton);
+        if (helpAvailable) {
+            add(hGroup, vGroup, buttons, myHelpButton);
+        }
+
+        layout.setHorizontalGroup(hGroup);
+        layout.setVerticalGroup(vGroup);
+        layout.linkSize(buttons.toArray(new Component[0]));
+    }
+
+    private void add(JPanel panel, JButton button, int index, boolean isDefault) {
+        panel.add(Box.createHorizontalStrut(5));
+        panel.add(button);
+        TouchbarDataKeys.putDialogButtonDescriptor(button, index).setMainGroup(true).setDefault(isDefault);
     }
 
     private void add(final GroupLayout.Group hGroup,
