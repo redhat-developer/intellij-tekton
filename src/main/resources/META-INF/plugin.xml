@@ -9,10 +9,19 @@
       <h2>Overview</h2>
       <p>A plugin for interacting with Tekton Pipelines using a local or remote instance of Kubernetes or OpenShift clusters providing a streamlined developer experience. This extension is currently in Preview Mode.</p>
       <p>To run the instance of a Kubernetes cluster locally, developers can use <a href="https://github.com/kubernetes/minikube">Minikube</a>.</p>
-      <p>To run the instance of an OpenShift cluster locally, developers can use <a href="https://developers.redhat.com/products/crc/download/">CRC</a> / <a href="https://developers.redhat.com/products/cdk/download/">CDK</a> / <a href="https://github.com/minishift/minishift/releases">minishift</a>. Currently all clusters are supported, but with some limitations for OpenShift Online Pro where additional storage might be required to create more than two components.</p>
+      <p>To run the instance of an OpenShift cluster locally, developers can use <a href="https://developers.redhat.com/products/openshift/download">CRC</a> / <a href="https://developers.redhat.com/products/cdk/download/">CDK</a> / <a href="https://github.com/minishift/minishift/releases">minishift</a>. Currently all clusters are supported, but with some limitations for OpenShift Online Pro where additional storage might be required to create more than two components.</p>
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.7.0</b></p>
+  <p>Tree only shows current active namespace</p>
+  <p><ul>
+  <li>The tree has been refactored to only show the current active namespace. The plugin listens to any change in the kubeconfig file and refresh the tree accordingly if the active namespace/context changes.</li>
+  </ul></p>
+  <p>Enhanced recognition of Tekton Hub's tasks/pipelines</p>
+  <p><ul>
+  <li>When installing tasks/pipelines from the Tekton Hub, they are now saved with labels provided by the hub allowing the plugin to better recognize them.</li>
+  </ul></p>
   <p><b>0.6.0</b></p>
   <p>Enhanced logs</p>
   <p><ul>
