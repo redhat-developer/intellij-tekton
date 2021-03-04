@@ -235,14 +235,14 @@ public abstract class BaseWizard extends DialogWrapper {
             }
 
             int index = 0;
-            JPanel leftPanel = new JPanel();
             if (ApplicationInfo.contextHelpAvailable()) {
-                leftPanel.add(myHelpButton);
-                TouchbarDataKeys.putDialogButtonDescriptor(myHelpButton, index++);
+                buttonPanel.add(Box.createHorizontalStrut(5));
+                buttonPanel.add(myHelpButton);
+                TouchbarDataKeys.putDialogButtonDescriptor(myHelpButton, index++).setMainGroup(true);
             }
-            leftPanel.add(myCancelButton);
-            TouchbarDataKeys.putDialogButtonDescriptor(myCancelButton, index++);
-            myFooterPanel.add(leftPanel, BorderLayout.WEST);
+            buttonPanel.add(Box.createHorizontalStrut(5));
+            buttonPanel.add(myCancelButton);
+            TouchbarDataKeys.putDialogButtonDescriptor(myCancelButton, index++).setMainGroup(true);
 
             if (mySteps.size() > 1) {
                 buttonPanel.add(Box.createHorizontalStrut(5));
