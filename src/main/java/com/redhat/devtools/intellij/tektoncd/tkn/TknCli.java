@@ -496,7 +496,9 @@ public class TknCli implements Tkn {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
         } else {
             String fileName = namespace + "-" + KIND_PIPELINERUN + "-" + pipelineRun + ".log";
-            ExecHelper.executeWithUI(envVars, outputToEditor(fileName),command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+            ExecHelper.executeWithUI(envVars,
+                    outputToEditor(fileName, KIND_PIPELINERUN),
+                    command, KIND_PIPELINERUN, "logs", pipelineRun, "-f", "-n", namespace);
         }
     }
 
@@ -506,7 +508,9 @@ public class TknCli implements Tkn {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-n", namespace);
         } else {
             String fileName = namespace + "-" + KIND_TASKRUN + "-" + taskRun + ".log";
-            ExecHelper.executeWithUI(envVars, outputToEditor(fileName),command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+            ExecHelper.executeWithUI(envVars,
+                    outputToEditor(fileName, KIND_TASKRUN),
+                    command, KIND_TASKRUN, "logs", taskRun, "-f", "-n", namespace);
         }
     }
 
@@ -521,7 +525,10 @@ public class TknCli implements Tkn {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
         } else {
             String fileName = namespace + "-" + KIND_PIPELINERUN + "-" + pipelineRun + "-follow.log";
-            ExecHelper.executeWithUI(envVars, openEmptyEditor(fileName), outputToEditor(fileName),command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+            ExecHelper.executeWithUI(envVars,
+                    openEmptyEditor(fileName, KIND_PIPELINERUN),
+                    outputToEditor(fileName, KIND_PIPELINERUN),
+                    command, KIND_PIPELINERUN, "logs", pipelineRun, "-f", "-n", namespace);
         }
     }
 
@@ -531,30 +538,36 @@ public class TknCli implements Tkn {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
         } else {
             String fileName = namespace + "-" + KIND_TASKRUN + "-" + taskRun + "-follow.log";
-            ExecHelper.executeWithUI(envVars, openEmptyEditor(fileName), outputToEditor(fileName),command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+            ExecHelper.executeWithUI(envVars,
+                    openEmptyEditor(fileName, KIND_TASKRUN),
+                    outputToEditor(fileName, KIND_TASKRUN),
+                    command, KIND_TASKRUN, "logs", taskRun, "-f", "-n", namespace);
         }
     }
 
-    private Runnable openEmptyEditor(String fileName) {
+    private Runnable openEmptyEditor(String fileName, String kind) {
         return () -> {
-            ActionMessage telemetry = TelemetryService.instance().action("follow logs: open editor");
             try {
                 VirtualFileHelper.openVirtualFileInEditor(project, fileName, "");
-                telemetry.send();
             } catch (IOException e) {
-                telemetry.error(e).send();
+                TelemetryService.instance().action("follow logs")
+                        .property(TelemetryService.PROP_RESOURCE_KIND, kind)
+                        .error(e)
+                        .send();
                 logger.warn("Could open empty editor for logs: " + e.getLocalizedMessage());
             }
         };
     }
 
-    private Consumer<String> outputToEditor(String fileName) {
+    private Consumer<String> outputToEditor(String fileName, String kind) {
         return (sb) -> ApplicationManager.getApplication().runWriteAction(() -> {
                     try {
                         // called each time a line is added to log: dont send telemetry
                         VirtualFileHelper.openVirtualFileInEditor(project, fileName, sb);
                     } catch (IOException e) {
-                        TelemetryService.instance().action("follow logs: output to editor").error(e)
+                        TelemetryService.instance().action("follow logs")
+                                .property(PROP_RESOURCE_KIND, kind)
+                                .error(e)
                                 .send();
                         logger.warn("Could not output logs to editor: " + e.getLocalizedMessage());
                     }
