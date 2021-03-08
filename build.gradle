@@ -22,7 +22,7 @@ def versionsMap = ['IU-2019.2':'192.5728.98','IU-2019.3':'193.5233.144','IU-2020
 intellij {
     version ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName 'com.redhat.devtools.intellij.tekton'
-    plugins 'terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], '/Users/andredietisheim/Documents/jboss-workspaces/intellij-redhat-telemetry/build/idea-sandbox/plugins/Telemetry by Red Hat'
+    plugins 'terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], 'intellij-redhat-telemetry' //'/Users/andredietisheim/Documents/jboss-workspaces/intellij-redhat-telemetry/build/idea-sandbox/plugins/Telemetry by Red Hat'
     updateSinceUntilBuild false
 }
 
