@@ -29,6 +29,7 @@ import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessa
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class FollowLogsAction extends LogsBaseAction {
+
     private static final Logger logger = LoggerFactory.getLogger(FollowLogsAction.class);
     private static final ActionMessage telemetry = TelemetryService.instance().action("follow logs");
 
@@ -52,7 +53,7 @@ public class FollowLogsAction extends LogsBaseAction {
                     Messages.showErrorDialog(
                             "An error occurred while requesting logs for " + resourceName + "\n" + e.getLocalizedMessage(),
                             "Error"));
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Could not follow logs: " + e.getLocalizedMessage());
         }
     }
 }

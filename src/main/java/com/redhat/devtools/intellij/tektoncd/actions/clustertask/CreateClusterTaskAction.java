@@ -17,13 +17,20 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 
+import java.io.IOException;
+
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateClusterTaskAction extends TektonAction {
+
+    private static final Logger logger = LoggerFactory.getLogger(CreateClusterTaskAction.class);
 
     public CreateClusterTaskAction() { super(ClusterTasksNode.class); }
 
@@ -38,8 +45,15 @@ public class CreateClusterTaskAction extends TektonAction {
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty").send();
         } else {
-            telemetry.send();
-            VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, "newclustertask.yaml", content, KIND_CLUSTERTASKS, item);
+            String name = "newclustertask.yaml";
+            try {
+                VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_CLUSTERTASKS, item);
+                telemetry.send();
+            } catch (IOException e) {
+                telemetry.error(anonymizeResource(name, namespace, e.getMessage()))
+                        .send();
+                logger.warn("Could not create cluster cluster task: " + e.getLocalizedMessage());
+            }
         }
     }
 }

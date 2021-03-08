@@ -17,13 +17,21 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 
+import java.io.IOException;
+
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateTriggerBindingAction extends TektonAction {
+
+    private static final Logger logger = LoggerFactory.getLogger(CreateTriggerBindingAction.class);
+
     public CreateTriggerBindingAction() { super(TriggerBindingsNode.class); }
 
     @Override
@@ -38,8 +46,14 @@ public class CreateTriggerBindingAction extends TektonAction {
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty.").send();
         } else {
-            telemetry.send();
-            VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggerbinding.yaml", content, KIND_TRIGGERBINDINGS, item);
+            String name = namespace + "-newtriggerbinding.yaml";
+            try {
+                VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_TRIGGERBINDINGS, item);
+                telemetry.send();
+            } catch (IOException e) {
+                telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
+                logger.warn("Could not create trigger binding: " + e.getLocalizedMessage());
+            }
         }
     }
 }

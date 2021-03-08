@@ -15,6 +15,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
@@ -41,7 +42,9 @@ public class CreateTaskRunTemplateAction extends TektonAction {
 
     private static final Logger logger = LoggerFactory.getLogger(CreateTaskRunTemplateAction.class);
 
-    public CreateTaskRunTemplateAction() { super(TaskNode.class); }
+    public CreateTaskRunTemplateAction() {
+        super(TaskNode.class);
+    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -72,8 +75,7 @@ public class CreateTaskRunTemplateAction extends TektonAction {
 
             try {
                 String contentTask = new YAMLMapper().writeValueAsString(YAMLBuilder.createTaskRun(model));
-                UIHelper.executeInUI(() ->
-                        VirtualFileHelper.openVirtualFileInEditor(anActionEvent.getProject(), namespace, "generate-taskrun-" + model.getName(), contentTask, KIND_TASKRUN, true));
+                openEditor(anActionEvent.getProject(), namespace, telemetry, model, contentTask);
             } catch (IOException e) {
                 String errorMessage = "Failed to create TaskRun templace from" + element.getName() + " in namespace " + namespace + " \n" + e.getLocalizedMessage();
                 telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage))
@@ -83,9 +85,21 @@ public class CreateTaskRunTemplateAction extends TektonAction {
                         errorMessage,
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn(errorMessage);
             }
+        });
+    }
 
+    private void openEditor(Project project, String namespace, ActionMessage telemetry, TaskConfigurationModel model, String contentTask) {
+        UIHelper.executeInUI(() -> {
+            String name = "generate-taskrun-" + model.getName();
+            try {
+                VirtualFileHelper.openVirtualFileInEditor(project, namespace, name, contentTask, KIND_TASKRUN, true);
+                telemetry.send();
+            } catch (IOException e) {
+                telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
+                logger.warn("Could not create trigger template: " + e.getLocalizedMessage());
+            }
         });
     }
 

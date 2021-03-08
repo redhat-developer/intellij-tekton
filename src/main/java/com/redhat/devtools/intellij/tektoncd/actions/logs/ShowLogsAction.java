@@ -23,14 +23,14 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import java.io.IOException;
 
-import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
-public class ShowLogsAction extends LogsBaseAction {
+public class    ShowLogsAction extends LogsBaseAction {
+
     private static final Logger logger = LoggerFactory.getLogger(ShowLogsAction.class);
     private static final ActionMessage telemetry = TelemetryService.instance()
             .action("show logs");
@@ -64,7 +64,7 @@ public class ShowLogsAction extends LogsBaseAction {
                     Messages.showErrorDialog(
                             "An error occurred while requesting logs for " + resourceName + "\n" + e.getLocalizedMessage(),
                             "Error"));
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Could not show logs: " + e.getLocalizedMessage());
         }
     }
 }

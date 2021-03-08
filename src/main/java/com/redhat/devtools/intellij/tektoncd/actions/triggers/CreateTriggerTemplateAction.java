@@ -18,14 +18,23 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 
+import java.io.IOException;
+
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateTriggerTemplateAction extends TektonAction {
-    public CreateTriggerTemplateAction() { super(TriggerTemplatesNode.class); }
+
+    private static final Logger logger = LoggerFactory.getLogger(CreateTriggerTemplateAction.class);
+
+    public CreateTriggerTemplateAction() {
+        super(TriggerTemplatesNode.class);
+    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -39,7 +48,14 @@ public class CreateTriggerTemplateAction extends TektonAction {
             telemetry.error("snippet content empty").send();
         } else {
             telemetry.send();
-            VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newtriggertemplate.yaml", content, KIND_TRIGGERTEMPLATES, item);
+            String name = namespace + "-newtriggertemplate.yaml";
+            try {
+                VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_TRIGGERTEMPLATES, item);
+                telemetry.send();
+            } catch (IOException e) {
+                telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
+                logger.warn("Could not create trigger template: " + e.getLocalizedMessage());
+            }
         }
     }
 }

@@ -17,14 +17,24 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 
+import java.io.IOException;
+
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateConditionAction extends TektonAction {
-    public CreateConditionAction() { super(ConditionsNode.class); }
+
+    private static final Logger logger = LoggerFactory.getLogger(CreateConditionAction.class);
+
+    public CreateConditionAction() {
+        super(ConditionsNode.class);
+    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -37,8 +47,14 @@ public class CreateConditionAction extends TektonAction {
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty.").send();
         } else {
-            telemetry.send();
-            VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, namespace + "-newcondition.yaml", content, KIND_CONDITIONS, item);
+            String name = namespace + "-newcondition.yaml";
+            try {
+                VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_CONDITIONS, item);
+                telemetry.send();
+            } catch (IOException e) {
+                telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
+                logger.warn("Could not create condition: " + e.getLocalizedMessage());
+            }
         }
     }
 }

@@ -19,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.twelvemonkeys.lang.Platform;
@@ -63,6 +64,8 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
@@ -75,8 +78,13 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEAC
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.*;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class TknCli implements Tkn {
+
+    private static final Logger logger = LoggerFactory.getLogger(TknCli.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
     private String command;
@@ -528,12 +536,29 @@ public class TknCli implements Tkn {
     }
 
     private Runnable openEmptyEditor(String fileName) {
-        return () -> VirtualFileHelper.openVirtualFileInEditor(project, fileName, "", true);
+        return () -> {
+            ActionMessage telemetry = TelemetryService.instance().action("follow logs: open editor");
+            try {
+                VirtualFileHelper.openVirtualFileInEditor(project, fileName, "");
+                telemetry.send();
+            } catch (IOException e) {
+                telemetry.error(e).send();
+                logger.warn("Could open empty editor for logs: " + e.getLocalizedMessage());
+            }
+        };
     }
 
     private Consumer<String> outputToEditor(String fileName) {
-        return (sb) -> ApplicationManager.getApplication().runWriteAction(
-                            () -> VirtualFileHelper.openVirtualFileInEditor(project, fileName, sb, true)
+        return (sb) -> ApplicationManager.getApplication().runWriteAction(() -> {
+                    try {
+                        // called each time a line is added to log: dont send telemetry
+                        VirtualFileHelper.openVirtualFileInEditor(project, fileName, sb);
+                    } catch (IOException e) {
+                        TelemetryService.instance().action("follow logs: output to editor").error(e)
+                                .send();
+                        logger.warn("Could not output logs to editor: " + e.getLocalizedMessage());
+                    }
+                }
         );
     }
 

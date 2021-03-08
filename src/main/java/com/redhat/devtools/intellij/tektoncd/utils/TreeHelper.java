@@ -20,6 +20,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
@@ -35,6 +36,10 @@ import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,8 +71,11 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDIN
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class TreeHelper {
+
+    private static final Logger logger = LoggerFactory.getLogger(TreeHelper.class);
 
     public static Tree getTree(Project project) {
         ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow("Tekton");
@@ -95,49 +103,53 @@ public class TreeHelper {
      *
      * @param node the Tekton tree node
      * @return Pair where 'first' is YAML content and 'second' is Tekton kind
-     * @throws IOException
      */
-    public static Pair<String, String> getYAMLAndKindFromNode(ParentableNode<?> node) throws IOException {
-        String namespace = node.getNamespace();
-        Tkn tkncli = node.getRoot().getTkn();
-        String content = "";
-        String kind = "";
-        if (node instanceof PipelineNode) {
-            content = tkncli.getPipelineYAML(namespace, node.getName());
-            kind = KIND_PIPELINES;
-        } else if (node instanceof ResourceNode) {
-            content = tkncli.getResourceYAML(namespace, node.getName());
-            kind = KIND_RESOURCES;
-        } else if (node instanceof TaskNode) {
-            content = tkncli.getTaskYAML(namespace, node.getName());
-            kind = KIND_TASKS;
-        } else if (node instanceof ClusterTaskNode) {
-            content = tkncli.getClusterTaskYAML(node.getName());
-            kind = KIND_CLUSTERTASKS;
-        } else if (node instanceof ConditionNode) {
-            content = tkncli.getConditionYAML(namespace, node.getName());
-            kind = KIND_CONDITIONS;
-        } else if (node instanceof TriggerTemplateNode) {
-            content = tkncli.getTriggerTemplateYAML(namespace, node.getName());
-            kind = KIND_TRIGGERTEMPLATES;
-        } else if (node instanceof TriggerBindingNode) {
-            content = tkncli.getTriggerBindingYAML(namespace, node.getName());
-            kind = KIND_TRIGGERBINDINGS;
-        } else if (node instanceof ClusterTriggerBindingNode) {
-            content = tkncli.getClusterTriggerBindingYAML(node.getName());
-            kind = KIND_CLUSTERTRIGGERBINDINGS;
-        } else if (node instanceof EventListenerNode) {
-            content = tkncli.getEventListenerYAML(namespace, node.getName());
-            kind = KIND_EVENTLISTENERS;
-        } else if (node instanceof TaskRunNode) {
-            content = tkncli.getTaskRunYAML(namespace, node.getName());
-            kind = KIND_TASKRUN;
-        } else if (node instanceof PipelineRunNode){
-            content = tkncli.getPipelineRunYAML(namespace, node.getName());
-            kind = KIND_PIPELINERUN;
+    public static Pair<String, String> getYAMLAndKindFromNode(ParentableNode<?> node) {
+        Pair<String, String> yamlAndKind = null;
+        try {
+            String namespace = node.getNamespace();
+            Tkn tkncli = node.getRoot().getTkn();
+            String content = "";
+            String kind = "";
+            if (node instanceof PipelineNode) {
+                content = tkncli.getPipelineYAML(namespace, node.getName());
+                kind = KIND_PIPELINES;
+            } else if (node instanceof ResourceNode) {
+                content = tkncli.getResourceYAML(namespace, node.getName());
+                kind = KIND_RESOURCES;
+            } else if (node instanceof TaskNode) {
+                content = tkncli.getTaskYAML(namespace, node.getName());
+                kind = KIND_TASKS;
+            } else if (node instanceof ClusterTaskNode) {
+                content = tkncli.getClusterTaskYAML(node.getName());
+                kind = KIND_CLUSTERTASKS;
+            } else if (node instanceof ConditionNode) {
+                content = tkncli.getConditionYAML(namespace, node.getName());
+                kind = KIND_CONDITIONS;
+            } else if (node instanceof TriggerTemplateNode) {
+                content = tkncli.getTriggerTemplateYAML(namespace, node.getName());
+                kind = KIND_TRIGGERTEMPLATES;
+            } else if (node instanceof TriggerBindingNode) {
+                content = tkncli.getTriggerBindingYAML(namespace, node.getName());
+                kind = KIND_TRIGGERBINDINGS;
+            } else if (node instanceof ClusterTriggerBindingNode) {
+                content = tkncli.getClusterTriggerBindingYAML(node.getName());
+                kind = KIND_CLUSTERTRIGGERBINDINGS;
+            } else if (node instanceof EventListenerNode) {
+                content = tkncli.getEventListenerYAML(namespace, node.getName());
+                kind = KIND_EVENTLISTENERS;
+            } else if (node instanceof TaskRunNode) {
+                content = tkncli.getTaskRunYAML(namespace, node.getName());
+                kind = KIND_TASKRUN;
+            } else if (node instanceof PipelineRunNode) {
+                content = tkncli.getPipelineRunYAML(namespace, node.getName());
+                kind = KIND_PIPELINERUN;
+            }
+            yamlAndKind = Pair.create(content, kind);
+        } catch (IOException e) {
+            UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
         }
-
-        return Pair.create(content, kind);
+        return yamlAndKind;
     }
 
     public static void openTektonResourceInEditor(TreePath path) {
@@ -147,18 +159,23 @@ public class TreeHelper {
 
         Object node = path.getLastPathComponent();
         ParentableNode<? extends ParentableNode<?>> element = StructureTreeAction.getElement(node);
-
-        Pair<String, String> yamlAndKind = null;
-        try {
-            yamlAndKind = getYAMLAndKindFromNode(element);
-        } catch (IOException e) {
-            UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
+        Pair<String, String> yamlAndKind = getYAMLAndKindFromNode(element);
+        if (yamlAndKind == null
+                || yamlAndKind.getFirst().isEmpty()) {
+            return;
         }
-
-        if (yamlAndKind != null && !yamlAndKind.getFirst().isEmpty()) {
-            Project project = element.getRoot().getProject();
-            String namespace = element.getNamespace();
-            VirtualFileHelper.openVirtualFileInEditor(project, namespace, element.getName(), yamlAndKind.getFirst(), yamlAndKind.getSecond(), false);
+        Project project = element.getRoot().getProject();
+        String namespace = element.getNamespace();
+        String name = element.getName();
+        String kind = yamlAndKind.getFirst();
+        TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action("open resource in editor")
+                .property(TelemetryService.PROP_RESOURCE_KIND, kind);
+        try {
+            VirtualFileHelper.openVirtualFileInEditor(project, namespace, name, kind, yamlAndKind.getSecond(), false);
+            telemetry.send();
+        } catch (IOException e) {
+            telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
+            logger.warn("Could not open resource in editor: " + e.getLocalizedMessage());
         }
     }
 
