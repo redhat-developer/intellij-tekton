@@ -62,11 +62,8 @@ public class AddTriggerAction extends TektonAction {
     @Override
     public boolean isVisible(Object selected) {
         // if triggers are not installed, don't show this action
-        if (((ParentableNode)selected).getRoot().getTkn().isTektonTriggersAware() &&
-                (selected instanceof PipelineNode || selected instanceof TaskNode)) {
-            return true;
-        }
-        return false;
+        return (((ParentableNode)selected).getRoot().getTkn().isTektonTriggersAware()
+                && (selected instanceof PipelineNode || selected instanceof TaskNode));
     }
 
     @Override
@@ -95,7 +92,7 @@ public class AddTriggerAction extends TektonAction {
                 }
                 // take/create all triggerBindings
                 Map<String, String> triggerBindingsSelected = model.getBindingsSelectedByUser();
-                saveTriggerBindings(triggerBindingsSelected, namespace, model, tkncli);
+                saveTriggerBindings(triggerBindingsSelected, namespace, tkncli);
 
                 // get all params from bindings
                 Set<String> paramsFromBindings = model.extractVariablesFromSelectedBindings();
@@ -143,7 +140,7 @@ public class AddTriggerAction extends TektonAction {
         });
     }
 
-    private void saveTriggerBindings(Map<String, String> triggerBindingsSelected, String namespace, AddTriggerModel model, Tkn tkncli) {
+    private void saveTriggerBindings(Map<String, String> triggerBindingsSelected, String namespace, Tkn tkncli) {
         triggerBindingsSelected.keySet().stream().filter(binding -> binding.endsWith(" NEW")).forEach(binding -> {
             try {
                 String bindingBody = triggerBindingsSelected.get(binding);
@@ -229,10 +226,9 @@ public class AddTriggerAction extends TektonAction {
 
     private void normalizeVariablesInterpolation(AddTriggerModel model, Set<String> variables) {
         model.getParams().forEach(param -> {
-            if (param.value().startsWith("$")) {
-                if (variables.contains(param.value().substring(1))) {
+            if (param.value().startsWith("$")
+                && (variables.contains(param.value().substring(1)))) {
                     param.setValue("$(tt.params." + param.value().substring(1) + ")");
-                }
             }
         });
     }
