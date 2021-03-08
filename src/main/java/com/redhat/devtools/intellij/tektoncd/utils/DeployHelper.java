@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DeployHelper {
-    private static Logger logger = LoggerFactory.getLogger(DeployHelper.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeployHelper.class);
 
     public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage, boolean updateLabels) throws IOException {
         DeployModel model = isValid(yaml);
@@ -45,31 +45,12 @@ public class DeployHelper {
 
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(model.getKind()) ? "" : namespace;
-            if (CRDHelper.isRunResource(model.getKind())) {
-                tknCli.createCustomResource(resourceNamespace, model.getCrdContext(), yaml);
-            } else {
-                Map<String, Object> resource = tknCli.getCustomResource(resourceNamespace, model.getName(), model.getCrdContext());
-                if (resource == null) {
-                    tknCli.createCustomResource(resourceNamespace, model.getCrdContext(), yaml);
-                } else {
-                    JsonNode customResource = JSONHelper.MapToJSON(resource);
-                    JsonNode labels = model.getLabels();
-                    if (updateLabels && labels != null) {
-                        ((ObjectNode) customResource.get("metadata")).set("labels", labels);
-                    }
-                    ((ObjectNode) customResource).set("spec", model.getSpec());
-                    tknCli.editCustomResource(resourceNamespace, model.getName(), model.getCrdContext(), customResource.toString());
-                }
-            }
+            executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
         } catch (KubernetesClientException e) {
-            logger.warn(e.getLocalizedMessage());
-            Status errorStatus = e.getStatus();
-            String errorMsg = "An error occurred while saving " + StringUtils.capitalize(model.getKind()) + " " + model.getName() + "\n";;
-            if (errorStatus != null && !Strings.isNullOrEmpty(errorStatus.getMessage())) {
-                errorMsg += errorStatus.getMessage() + "\n";
-            }
+            String errorMsg = createErrorMessage(model, e);
+            logger.warn(errorMsg);
             // give a visual notification to user if an error occurs during saving
-            throw new IOException(errorMsg + e.getLocalizedMessage());
+            throw new IOException(errorMsg, e);
         }
         return true;
     }
@@ -102,6 +83,37 @@ public class DeployHelper {
                 ));
 
         return resultDialog == Messages.OK;
+    }
+
+    private static boolean executeTkn(String namespace, String resourceNamespace, String yaml, boolean updateLabels, DeployModel model, Tkn tknCli) throws IOException {
+        boolean newResource = true;
+        if (CRDHelper.isRunResource(model.getKind())) {
+            tknCli.createCustomResource(resourceNamespace, model.getCrdContext(), yaml);
+        } else {
+            Map<String, Object> resource = tknCli.getCustomResource(namespace, model.getName(), model.getCrdContext());
+            if (resource == null) {
+                tknCli.createCustomResource(resourceNamespace, model.getCrdContext(), yaml);
+            } else {
+                JsonNode customResource = JSONHelper.MapToJSON(resource);
+                JsonNode labels = model.getLabels();
+                if (updateLabels && labels != null) {
+                    ((ObjectNode) customResource.get("metadata")).set("labels", labels);
+                }
+                ((ObjectNode) customResource).set("spec", model.getSpec());
+                tknCli.editCustomResource(resourceNamespace, model.getName(), model.getCrdContext(), customResource.toString());
+                newResource = false;
+            }
+        }
+        return newResource;
+    }
+
+    private static String createErrorMessage(DeployModel model, KubernetesClientException e) {
+        Status errorStatus = e.getStatus();
+        String errorMsg = "An error occurred while saving " + StringUtils.capitalize(model.getKind()) + " " + model.getName() + "\n";
+        if (errorStatus != null && !Strings.isNullOrEmpty(errorStatus.getMessage())) {
+            errorMsg += errorStatus.getMessage() + "\n";
+        }
+        return errorMsg;
     }
 
     public static DeployModel isValid(String yaml) throws IOException {
