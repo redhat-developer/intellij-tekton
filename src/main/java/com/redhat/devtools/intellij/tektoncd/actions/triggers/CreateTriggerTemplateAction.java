@@ -47,11 +47,10 @@ public class CreateTriggerTemplateAction extends TektonAction {
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty").send();
         } else {
-            telemetry.send();
             String name = namespace + "-newtriggertemplate.yaml";
             try {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_TRIGGERTEMPLATES, item);
-                telemetry.send();
+                telemetry.success().send();
             } catch (IOException e) {
                 telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
                 logger.warn("Could not create trigger template: " + e.getLocalizedMessage());

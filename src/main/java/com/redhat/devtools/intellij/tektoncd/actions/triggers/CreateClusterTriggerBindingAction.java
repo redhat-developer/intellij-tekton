@@ -46,7 +46,7 @@ public class CreateClusterTriggerBindingAction extends TektonAction {
             String name = namespace + "-newclustertriggerbinding.yaml";
             try {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_CLUSTERTRIGGERBINDINGS, item);
-                telemetry.send();
+                telemetry.success().send();
             } catch (IOException e) {
                 telemetry.error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();

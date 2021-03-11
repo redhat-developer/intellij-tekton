@@ -47,7 +47,7 @@ public class CreateTaskAction extends TektonAction {
             String name = namespace + "-newtask.yaml";
             try {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_TASKS, item);
-                telemetry.send();
+                telemetry.success().send();
             } catch (IOException e) {
                 telemetry.error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();

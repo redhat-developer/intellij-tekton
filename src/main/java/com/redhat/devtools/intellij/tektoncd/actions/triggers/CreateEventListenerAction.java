@@ -49,7 +49,7 @@ public class CreateEventListenerAction extends TektonAction {
             String name = namespace + "-neweventlistener.yaml";
             try {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_EVENTLISTENERS, item);
-                telemetry.send();
+                telemetry.success().send();
             } catch (IOException e) {
                 telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
                 logger.warn("Could not create event listener: " + e.getLocalizedMessage());
