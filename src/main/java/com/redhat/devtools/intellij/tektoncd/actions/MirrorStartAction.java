@@ -27,7 +27,7 @@ public class MirrorStartAction extends StartAction {
     public MirrorStartAction() { super(PipelineRunNode.class, TaskRunNode.class); }
 
     @Override
-    protected StartResourceModel getModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
+    protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "", runConfiguration = "";
         List<? extends Run> runs = new ArrayList<>();
         if (element instanceof PipelineRunNode) {
@@ -41,7 +41,6 @@ public class MirrorStartAction extends StartAction {
             configuration = tkncli.getTaskYAML(namespace, task);
             runs = tkncli.getTaskRuns(namespace, task);
         }
-
         StartResourceModel model = new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
         model.adaptsToRun(runConfiguration);
         return model;
