@@ -35,8 +35,10 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import retrofit.http.HEAD;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
@@ -56,15 +58,14 @@ public class StartAction extends TektonAction {
 
     private static final Logger logger = LoggerFactory.getLogger(StartAction.class);
 
-    protected ActionMessage telemetry;
+    protected final ActionMessage telemetry = TelemetryService.instance().action("start");
 
-    public StartAction(ActionMessage telemetry, Class... filters) {
+    public StartAction(Class... filters) {
         super(filters);
-        this.telemetry = telemetry;
     }
 
     public StartAction() {
-        this(TelemetryService.instance().action("start"), PipelineNode.class, TaskNode.class, ClusterTaskNode.class);
+        this(PipelineNode.class, TaskNode.class, ClusterTaskNode.class);
     }
 
     @Override
@@ -105,15 +106,17 @@ public class StartAction extends TektonAction {
                     Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
                     Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
                     String runPrefixName = model.getRunPrefixName();
+                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, model.getKind());
                     String runName = start(tkncli, namespace, model, serviceAccount, taskServiceAccount, params, workspaces, inputResources, outputResources, runPrefixName);
                     executeFollowLogsAction(tkncli, element, namespace, runName);
+                    telemetry.success().send();
                     refreshTreeNode(anActionEvent, element);
                 } catch (IOException e) {
-                    telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage()))
-                            .send();
+                    String errorMessage = model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage();
+                    telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage)).send();
                     notification = new Notification(NOTIFICATION_ID,
                             "Error",
-                            model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
+                            errorMessage,
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
                     logger.warn("Error: " + e.getLocalizedMessage());
