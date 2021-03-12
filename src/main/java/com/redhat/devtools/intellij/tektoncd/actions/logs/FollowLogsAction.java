@@ -39,11 +39,13 @@ public class FollowLogsAction extends LogsBaseAction {
             if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {
                 telemetry
                         .property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN)
+                        .success()
                         .send();
                 tkncli.followLogsPipelineRun(namespace, resourceName, toEditor);
             } else if (TaskNode.class.equals(nodeClass) || TaskRunNode.class.equals(nodeClass)) {
                 telemetry
                         .property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN)
+                        .success()
                         .send();
                 tkncli.followLogsTaskRun(namespace, resourceName, toEditor);
             }
