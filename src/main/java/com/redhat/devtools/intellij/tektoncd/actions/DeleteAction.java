@@ -77,8 +77,7 @@ public class DeleteAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("delete resource");
+        ActionMessage telemetry = TelemetryService.instance().action("delete resource");
         ParentableNode[] elements = Arrays.stream(selected).map(item -> getElement(item)).toArray(ParentableNode[]::new);
         int resultDialog = UIHelper.executeInUI(() -> {
             String name, kind, title, deleteResourcesText, deleteChkText;

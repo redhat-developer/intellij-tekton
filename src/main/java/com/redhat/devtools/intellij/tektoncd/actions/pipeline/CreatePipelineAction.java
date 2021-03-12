@@ -39,12 +39,12 @@ public class CreatePipelineAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create pipeline");
         PipelinesNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: Pipeline");
 
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("create pipeline");
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty").send();
         } else {

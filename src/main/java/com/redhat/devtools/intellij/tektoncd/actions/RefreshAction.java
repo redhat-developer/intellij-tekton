@@ -28,8 +28,12 @@ import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 
 import javax.swing.tree.TreePath;
+
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.*;
 
 public class RefreshAction extends StructureTreeAction {
     public RefreshAction() {
@@ -39,9 +43,10 @@ public class RefreshAction extends StructureTreeAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
-        TelemetryService.instance().action("refresh").send();
+        ActionMessage telemetry = instance().action("refresh");
         selected = StructureTreeAction.getElement(selected);
         TektonTreeStructure structure = (TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY);
         structure.fireModified(selected);
+        telemetry.property(PROP_RESOURCE_KIND, selected.getClass().getSimpleName()).send();
     }
 }

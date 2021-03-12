@@ -56,11 +56,10 @@ public class CancelAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance().action("cancel");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
-            ActionMessage telemetry = TelemetryService.instance()
-                    .action("cancel");
             try {
                 if (element instanceof PipelineRunNode) {
                     telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN).send();
@@ -70,8 +69,7 @@ public class CancelAction extends TektonAction {
                     tkncli.cancelTaskRun(namespace, element.getName());
                 }
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage()))
-                        .send();
+                telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage())).send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         element.getName() + " in namespace " + namespace + " failed to cancel\n" + e.getLocalizedMessage(),

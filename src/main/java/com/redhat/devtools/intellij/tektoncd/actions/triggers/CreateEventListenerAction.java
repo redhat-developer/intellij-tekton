@@ -37,11 +37,11 @@ public class CreateEventListenerAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create event listener");
         EventListenersNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: EventListener");
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("create event listener");
 
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty").send();

@@ -38,12 +38,11 @@ public class CreateResourceAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create resource");
         ResourcesNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: PipelineResource");
-
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("create resource");
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty").send();
         } else {

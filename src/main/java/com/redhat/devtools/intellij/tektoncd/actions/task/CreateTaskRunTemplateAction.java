@@ -48,9 +48,9 @@ public class CreateTaskRunTemplateAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance().action("create task run");
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
-        ActionMessage telemetry = TelemetryService.instance().action("create task run");
         ExecHelper.submit(() -> {
             Notification notification;
             TaskConfigurationModel model;

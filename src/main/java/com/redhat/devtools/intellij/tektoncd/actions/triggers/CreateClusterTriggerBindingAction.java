@@ -36,10 +36,11 @@ public class CreateClusterTriggerBindingAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create cluster trigger binding");
         ClusterTriggerBindingsNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: ClusterTriggerBinding");
-        ActionMessage telemetry = TelemetryService.instance().action("create cluster trigger binding");
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty").send();
         } else {

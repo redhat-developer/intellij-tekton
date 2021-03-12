@@ -32,30 +32,23 @@ import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.an
 public class    ShowLogsAction extends LogsBaseAction {
 
     private static final Logger logger = LoggerFactory.getLogger(ShowLogsAction.class);
-    private static final ActionMessage telemetry = TelemetryService.instance()
-            .action("show logs");
-    
+
     public ShowLogsAction() {
         super(EventListenerNode.class);
     }
 
     public void actionPerformed(String namespace, String resourceName, Class nodeClass, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance().action("show logs");
         try {
             boolean toEditor = SettingsState.getInstance().displayLogsInEditor;
             if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {
-                telemetry
-                        .property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN)
-                        .send();
+                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN).send();
                 tkncli.showLogsPipelineRun(namespace, resourceName, toEditor);
             } else if (TaskNode.class.equals(nodeClass) || TaskRunNode.class.equals(nodeClass)) {
-                telemetry
-                        .property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN)
-                        .send();
+                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN).send();
                 tkncli.showLogsTaskRun(namespace, resourceName, toEditor);
             } else if (EventListenerNode.class.equals(nodeClass)) {
-                telemetry
-                        .property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_EVENTLISTENER)
-                        .send();
+                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_EVENTLISTENER).send();
                 tkncli.showLogsEventListener(namespace, resourceName);
             }
         } catch (IOException e) {

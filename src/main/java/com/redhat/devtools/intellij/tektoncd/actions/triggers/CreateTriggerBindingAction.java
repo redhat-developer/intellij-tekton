@@ -36,12 +36,11 @@ public class CreateTriggerBindingAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create trigger binding");
         TriggerBindingsNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: TriggerBinding");
-
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("create trigger binding");
 
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty.").send();

@@ -36,11 +36,11 @@ public class CreateTaskAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance()
+                .action("create task");
         TasksNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: Task");
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("create task");
         if (Strings.isNullOrEmpty(content)) {
             telemetry.error("snippet content empty").send();
         } else {

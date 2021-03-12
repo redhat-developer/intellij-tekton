@@ -31,22 +31,16 @@ import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.an
 public class FollowLogsAction extends LogsBaseAction {
 
     private static final Logger logger = LoggerFactory.getLogger(FollowLogsAction.class);
-    private static final ActionMessage telemetry = TelemetryService.instance().action("follow logs");
 
     public void actionPerformed(String namespace, String resourceName, Class nodeClass, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance().action("follow logs");
         try {
             boolean toEditor = SettingsState.getInstance().displayLogsInEditor;
             if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {
-                telemetry
-                        .property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN)
-                        .success()
-                        .send();
+                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN).send();
                 tkncli.followLogsPipelineRun(namespace, resourceName, toEditor);
             } else if (TaskNode.class.equals(nodeClass) || TaskRunNode.class.equals(nodeClass)) {
-                telemetry
-                        .property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN)
-                        .success()
-                        .send();
+                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN).send();
                 tkncli.followLogsTaskRun(namespace, resourceName, toEditor);
             }
         } catch (IOException e) {

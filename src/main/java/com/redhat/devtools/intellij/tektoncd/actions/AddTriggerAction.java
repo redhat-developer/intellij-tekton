@@ -68,10 +68,9 @@ public class AddTriggerAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance().action("add trigger");
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("add trigger");
         ExecHelper.submit(() -> {
             try {
                 Map<String, String> triggerBindingTemplates = SnippetHelper.getTriggerBindingTemplates();
