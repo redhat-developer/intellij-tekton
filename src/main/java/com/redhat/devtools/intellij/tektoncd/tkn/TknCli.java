@@ -548,11 +548,12 @@ public class TknCli implements Tkn {
             try {
                 VirtualFileHelper.openVirtualFileInEditor(project, fileName, "");
             } catch (IOException e) {
+                String errorMessage = "Could open empty editor for logs: " + e.getLocalizedMessage();
                 TelemetryService.instance().action("follow logs")
                         .property(TelemetryService.PROP_RESOURCE_KIND, kind)
-                        .error(e)
+                        .error(errorMessage)
                         .send();
-                logger.warn("Could open empty editor for logs: " + e.getLocalizedMessage());
+                logger.warn(errorMessage);
             }
         };
     }
@@ -563,11 +564,12 @@ public class TknCli implements Tkn {
                         // called each time a line is added to log: dont send telemetry
                         VirtualFileHelper.openVirtualFileInEditor(project, fileName, sb);
                     } catch (IOException e) {
+                        String errorMessage = "Could not output logs to editor: " + e.getLocalizedMessage();
                         TelemetryService.instance().action("follow logs")
                                 .property(PROP_RESOURCE_KIND, kind)
-                                .error(e)
+                                .error(errorMessage)
                                 .send();
-                        logger.warn("Could not output logs to editor: " + e.getLocalizedMessage());
+                        logger.warn(errorMessage);
                     }
                 }
         );

@@ -14,7 +14,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
@@ -28,20 +30,32 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.*;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.*;
+
 public abstract class LogsBaseAction extends TektonAction {
-    Logger logger = LoggerFactory.getLogger(LogsBaseAction.class);
 
-    public LogsBaseAction() { super(RunNode.class, TaskNode.class, PipelineNode.class); }
+    private static final Logger logger = LoggerFactory.getLogger(LogsBaseAction.class);
 
-    public LogsBaseAction(Class clazz) {
+    protected final ActionMessage telemetry;
+
+    public LogsBaseAction(String telemetryName) {
+        super(RunNode.class, TaskNode.class, PipelineNode.class);
+        this.telemetry = TelemetryService.instance().action(telemetryName);
+    }
+
+    public LogsBaseAction(Class clazz, String telemetryName) {
         super(RunNode.class, TaskNode.class, PipelineNode.class, clazz);
+        this.telemetry = TelemetryService.instance().action(telemetryName);
     }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        telemetry.started();
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
@@ -56,8 +70,10 @@ public abstract class LogsBaseAction extends TektonAction {
 
     private String pickResourceName(String namespace, ParentableNode selected, String action, Tkn tkncli) {
         if (PipelineNode.class.equals(selected.getClass())) {
+            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINE);
             return this.pickPipelineRunByPipeline(namespace, selected.getName(), action, tkncli);
         } else if (TaskNode.class.equals(selected.getClass())) {
+            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASK);
             return this.pickTaskRunByTask(namespace, selected.getName(), action, tkncli);
         }
         return selected.getName();
@@ -68,16 +84,24 @@ public abstract class LogsBaseAction extends TektonAction {
         try {
             List<PipelineRun> pipelineRuns = tkncli.getPipelineRuns(namespace, name);
             if (pipelineRuns == null || pipelineRuns.isEmpty()) {
-                UIHelper.executeInUI(() -> Messages.showWarningDialog("Pipeline " + name + "doesn't have any pipelineRun to be selected", actionName));
+                String errorMessage = "Pipeline " + name + "doesn't have any pipelineRun to be selected";
+                telemetry.error(anonymizeResource(name, namespace, errorMessage));
+                UIHelper.executeInUI(() -> {
+                    telemetry.error(errorMessage).send();
+                    Messages.showWarningDialog(errorMessage, actionName);
+                });
                 return null;
             }
             pipelineRunsNames = pipelineRuns.stream().map(Run::getName).collect(Collectors.toList());
         } catch (IOException e) {
-            UIHelper.executeInUI(() ->
-                    Messages.showErrorDialog(
-                            "An error occurred while requesting logs for " + name + "\n" + e.getLocalizedMessage(),
-                            "Error"));
-            logger.warn("Error: " + e.getLocalizedMessage(), e);
+            String errorMessage = "An error occurred while requesting logs for " + name + "\n" + e.getLocalizedMessage();
+            telemetry.error(anonymizeResource(name, namespace, errorMessage)).send();
+            UIHelper.executeInUI(() -> {
+                Messages.showErrorDialog(
+                        errorMessage,
+                        "Error");
+            });
+            logger.warn("Error: " + errorMessage, e);
             return null;
         }
 

@@ -37,7 +37,6 @@ public class MirrorStartAction extends StartAction {
 
     @Override
     protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
-        telemetry.started();
         String configuration = "", runConfiguration = "";
         List<? extends Run> runs = new ArrayList<>();
         if (element instanceof PipelineRunNode) {
