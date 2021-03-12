@@ -25,6 +25,7 @@ import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import com.redhat.devtools.intellij.tektoncd.utils.NotificationHelper;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
@@ -107,7 +108,7 @@ public class HubMarketplaceTab extends HubDialogTab {
         for (HubItem item: items) {
             Consumer<HubItem> consumer = resource -> updateDetailsPanel(resource);
             JPanel itemAsPanel = item.createPanel(model, consumer, getInstallCallback(), getInstallAsClusterTaskCallback());
-            itemAsPanel.addMouseListener(new MouseListener() {
+            itemAsPanel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     String old = model.getSelectedHubItem();
@@ -123,18 +124,6 @@ public class HubMarketplaceTab extends HubDialogTab {
                         updateDetailsPanel(item);
                     }
                 }
-
-                @Override
-                public void mousePressed(MouseEvent e) {  }
-
-                @Override
-                public void mouseReleased(MouseEvent e) { }
-
-                @Override
-                public void mouseEntered(MouseEvent e) { }
-
-                @Override
-                public void mouseExited(MouseEvent e) { }
             });
             innerContentPanel.add(itemAsPanel);
         }
