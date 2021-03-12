@@ -25,10 +25,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+
 public class MirrorStartAction extends StartAction {
 
+    protected final ActionMessage telemetry = TelemetryService.instance().action("mirror start");
+
     public MirrorStartAction() {
-        super(TelemetryService.instance().action("mirror start"), PipelineRunNode.class, TaskRunNode.class);
+        super(PipelineRunNode.class, TaskRunNode.class);
     }
 
     @Override
@@ -36,13 +40,11 @@ public class MirrorStartAction extends StartAction {
         String configuration = "", runConfiguration = "";
         List<? extends Run> runs = new ArrayList<>();
         if (element instanceof PipelineRunNode) {
-            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN);
             runConfiguration = tkncli.getPipelineRunYAML(namespace, element.getName());
             String pipeline = YAMLHelper.getStringValueFromYAML(runConfiguration, new String[] {"metadata", "labels", "tekton.dev/pipeline"});
             configuration = tkncli.getPipelineYAML(namespace, pipeline);
             runs = tkncli.getPipelineRuns(namespace, pipeline);
         } else if (element instanceof TaskRunNode) {
-            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN);
             runConfiguration = tkncli.getTaskRunYAML(namespace, element.getName());
             String task = YAMLHelper.getStringValueFromYAML(runConfiguration, new String[] {"metadata", "labels", "tekton.dev/task"});
             configuration = tkncli.getTaskYAML(namespace, task);

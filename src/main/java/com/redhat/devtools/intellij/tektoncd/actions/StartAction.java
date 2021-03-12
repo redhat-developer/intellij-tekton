@@ -35,17 +35,16 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import retrofit.http.HEAD;
-
-import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.swing.tree.TreePath;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
@@ -55,18 +54,13 @@ import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessa
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class StartAction extends TektonAction {
-
     private static final Logger logger = LoggerFactory.getLogger(StartAction.class);
 
     protected final ActionMessage telemetry = TelemetryService.instance().action("start");
 
-    public StartAction(Class... filters) {
-        super(filters);
-    }
+    public StartAction(Class... filters) { super(filters); }
 
-    public StartAction() {
-        this(PipelineNode.class, TaskNode.class, ClusterTaskNode.class);
-    }
+    public StartAction() { super(PipelineNode.class, TaskNode.class, ClusterTaskNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
@@ -82,9 +76,9 @@ public class StartAction extends TektonAction {
             }
 
             boolean hasNoInputs = model.getParams().isEmpty()
-                                    && model.getInputResources().isEmpty()
-                                    && model.getOutputResources().isEmpty()
-                                    && model.getWorkspaces().isEmpty();
+                    && model.getInputResources().isEmpty()
+                    && model.getOutputResources().isEmpty()
+                    && model.getWorkspaces().isEmpty();
             boolean showWizard = SettingsState.getInstance().showStartWizardWithNoInputs || !hasNoInputs;
 
             StartWizard startWizard = null;
@@ -109,14 +103,16 @@ public class StartAction extends TektonAction {
                     telemetry.property(TelemetryService.PROP_RESOURCE_KIND, model.getKind());
                     String runName = start(tkncli, namespace, model, serviceAccount, taskServiceAccount, params, workspaces, inputResources, outputResources, runPrefixName);
                     executeFollowLogsAction(tkncli, element, namespace, runName);
-                    telemetry.success().send();
                     refreshTreeNode(anActionEvent, element);
+                    telemetry
+                            .property(TelemetryService.PROP_RESOURCE_KIND, model.getKind())
+                            .send();
                 } catch (IOException e) {
-                    String errorMessage = model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage();
-                    telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage)).send();
+                    telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage()))
+                            .send();
                     notification = new Notification(NOTIFICATION_ID,
                             "Error",
-                            errorMessage,
+                            model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
                     logger.warn("Error: " + e.getLocalizedMessage());
