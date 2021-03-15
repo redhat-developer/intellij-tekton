@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CancelAction extends TektonAction {
@@ -56,7 +56,7 @@ public class CancelAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action("cancel");
+        ActionMessageBuilder telemetry = TelemetryService.instance().action("cancel");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
@@ -69,7 +69,9 @@ public class CancelAction extends TektonAction {
                     tkncli.cancelTaskRun(namespace, element.getName());
                 }
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage())).send();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, e.getMessage()))
+                        .send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         element.getName() + " in namespace " + namespace + " failed to cancel\n" + e.getLocalizedMessage(),

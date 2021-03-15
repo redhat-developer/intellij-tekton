@@ -27,7 +27,7 @@ import javax.swing.tree.TreePath;
 import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateResourceAction extends TektonAction {
@@ -38,20 +38,24 @@ public class CreateResourceAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance()
+        ActionMessageBuilder telemetry = TelemetryService.instance()
                 .action("create resource");
         ResourcesNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: PipelineResource");
         if (Strings.isNullOrEmpty(content)) {
-            telemetry.error("snippet content empty").send();
+            telemetry
+                    .error("snippet content empty")
+                    .send();
         } else {
             String name = namespace + "-newresource.yaml";
             try {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_RESOURCES, item);
                 telemetry.success().send();
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
+                telemetry
+                        .error(anonymizeResource(name, namespace, e.getMessage()))
+                        .send();
                 logger.warn("Could not create resource: " + e.getLocalizedMessage());
             }
         }

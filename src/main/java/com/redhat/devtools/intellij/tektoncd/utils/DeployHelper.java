@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_VERSION;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class DeployHelper {
@@ -50,7 +50,7 @@ public class DeployHelper {
             return false;
         }
 
-        ActionMessage telemetry = TelemetryService.instance().action("save to cluster")
+        ActionMessageBuilder telemetry = TelemetryService.instance().action("save to cluster")
                 .property(PROP_RESOURCE_KIND, model.getKind())
                 .property(PROP_RESOURCE_VERSION, model.getApiVersion());
         try {
@@ -60,7 +60,8 @@ public class DeployHelper {
                     .send();
         } catch (KubernetesClientException e) {
             String errorMsg = createErrorMessage(model, e);
-            telemetry.error(anonymizeResource(model.getName(), namespace, errorMsg))
+            telemetry
+                    .error(anonymizeResource(model.getName(), namespace, errorMsg))
                     .send();
             logger.warn(errorMsg);
             // give a visual notification to user if an error occurs during saving

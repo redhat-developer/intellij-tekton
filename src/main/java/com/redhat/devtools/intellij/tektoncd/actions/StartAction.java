@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
@@ -50,13 +49,13 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class StartAction extends TektonAction {
     private static final Logger logger = LoggerFactory.getLogger(StartAction.class);
 
-    protected final ActionMessage telemetry = TelemetryService.instance().action("start");
+    protected ActionMessageBuilder telemetry;
 
     public StartAction(Class... filters) { super(filters); }
 
@@ -64,14 +63,18 @@ public class StartAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        telemetry.started();
+        this.telemetry = createTelemetry();
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
             Notification notification;
             StartResourceModel model = createModel(tkncli, element, namespace);
             if (model == null) return;
+            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, model.getKind());
             if (!model.isValid()) {
+                telemetry
+                        .error(model.getErrorMessage())
+                        .send();
                 UIHelper.executeInUI(() -> Messages.showErrorDialog(model.getErrorMessage(), "Error"));
                 return;
             }
@@ -101,19 +104,18 @@ public class StartAction extends TektonAction {
                     Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
                     Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
                     String runPrefixName = model.getRunPrefixName();
-                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, model.getKind());
                     String runName = start(tkncli, namespace, model, serviceAccount, taskServiceAccount, params, workspaces, inputResources, outputResources, runPrefixName);
-                    executeFollowLogsAction(tkncli, element, namespace, runName);
+                    FollowLogsAction.run(namespace, runName, element.getClass(), tkncli);
                     refreshTreeNode(anActionEvent, element);
-                    telemetry
-                            .property(TelemetryService.PROP_RESOURCE_KIND, model.getKind())
-                            .send();
+                    telemetry.send();
                 } catch (IOException e) {
-                    telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage()))
+                    String errorMessage = model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage();
+                    telemetry
+                            .error(anonymizeResource(element.getName(), namespace, errorMessage))
                             .send();
                     notification = new Notification(NOTIFICATION_ID,
                             "Error",
-                            model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
+                            errorMessage,
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
                     logger.warn("Error: " + e.getLocalizedMessage());
@@ -167,13 +169,6 @@ public class StartAction extends TektonAction {
         ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(nodeToRefresh);
     }
 
-    private void executeFollowLogsAction(Tkn tkncli, ParentableNode element, String namespace, String runName) {
-        if(runName != null) {
-            FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
-            followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
-        }
-    }
-
     private String start(Tkn tkncli, String namespace, StartResourceModel model, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, String> params, Map<String, Workspace> workspaces, Map<String, String> inputResources, Map<String, String> outputResources, String runPrefixName) throws IOException {
         String runName = null;
         if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
@@ -184,5 +179,9 @@ public class StartAction extends TektonAction {
             runName = tkncli.startClusterTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
         }
         return runName;
+    }
+
+    protected ActionMessageBuilder createTelemetry() {
+         return TelemetryService.instance().action("start");
     }
 }

@@ -25,8 +25,10 @@ import javax.swing.tree.TreePath;
 
 import java.io.IOException;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateEventListenerAction extends TektonAction {
@@ -37,21 +39,26 @@ public class CreateEventListenerAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("create event listener");
+        ActionMessageBuilder telemetry = TelemetryService.instance()
+                .action("create event listener")
+                .property(PROP_RESOURCE_KIND, KIND_EVENTLISTENERS);
         EventListenersNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: EventListener");
 
         if (Strings.isNullOrEmpty(content)) {
-            telemetry.error("snippet content empty").send();
+            telemetry
+                    .error("snippet content empty")
+                    .send();
         } else {
             String name = namespace + "-neweventlistener.yaml";
             try {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_EVENTLISTENERS, item);
-                telemetry.success().send();
+                telemetry.send();
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
+                telemetry
+                        .error(anonymizeResource(name, namespace, e.getMessage()))
+                        .send();
                 logger.warn("Could not create event listener: " + e.getLocalizedMessage());
             }
         }

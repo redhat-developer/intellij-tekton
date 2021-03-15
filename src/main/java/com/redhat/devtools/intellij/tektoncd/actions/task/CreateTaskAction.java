@@ -24,8 +24,10 @@ import javax.swing.tree.TreePath;
 
 import java.io.IOException;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateTaskAction extends TektonAction {
@@ -36,20 +38,24 @@ public class CreateTaskAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("create task");
+        ActionMessageBuilder telemetry = TelemetryService.instance()
+                .action("create task")
+                .property(PROP_RESOURCE_KIND, KIND_TASKS);
         TasksNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: Task");
         if (Strings.isNullOrEmpty(content)) {
-            telemetry.error("snippet content empty").send();
+            telemetry
+                    .error("snippet content empty")
+                    .send();
         } else {
             String name = namespace + "-newtask.yaml";
             try {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_TASKS, item);
-                telemetry.success().send();
+                telemetry.send();
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(name, namespace, e.getMessage()))
+                telemetry
+                        .error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();
                 logger.warn(e.getLocalizedMessage());
             }

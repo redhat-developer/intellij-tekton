@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class AddTriggerAction extends TektonAction {
@@ -68,7 +68,7 @@ public class AddTriggerAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action("add trigger");
+        ActionMessageBuilder telemetry = TelemetryService.instance().action("add trigger");
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
@@ -118,7 +118,8 @@ public class AddTriggerAction extends TektonAction {
                 TreeHelper.refresh(getEventProject(anActionEvent), (ParentableNode) ((ParentableNode) element.getParent()).getParent());
             } catch (IOException e) {
                 String errorMessage = "Failed to add a trigger to " + element.getName() + " in namespace " + namespace + "\n" + e.getLocalizedMessage();
-                telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage))
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
                         .send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",

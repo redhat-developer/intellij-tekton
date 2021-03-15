@@ -25,7 +25,8 @@ import javax.swing.tree.TreePath;
 import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateClusterTaskAction extends TektonAction {
@@ -36,21 +37,24 @@ public class CreateClusterTaskAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("create cluster task");
+        ActionMessageBuilder telemetry = instance().action("create cluster task")
+                .property(PROP_RESOURCE_KIND, KIND_CLUSTERTASKS);
         ClusterTasksNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: ClusterTask");
 
         if (Strings.isNullOrEmpty(content)) {
-            telemetry.error("snippet content empty").send();
+            telemetry
+                    .error("snippet content empty")
+                    .send();
         } else {
             String name = "newclustertask.yaml";
             try {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_CLUSTERTASKS, item);
                 telemetry.success().send();
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(name, namespace, e.getMessage()))
+                telemetry
+                        .error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();
                 logger.warn("Could not create cluster cluster task: " + e.getLocalizedMessage());
             }

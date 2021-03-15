@@ -35,7 +35,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateTaskRunTemplateAction extends TektonAction {
@@ -48,7 +48,7 @@ public class CreateTaskRunTemplateAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action("create task run");
+        ActionMessageBuilder telemetry = TelemetryService.instance().action("create task run");
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
@@ -57,18 +57,24 @@ public class CreateTaskRunTemplateAction extends TektonAction {
             try {
                 model = getModel(element, namespace, tkncli);
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage())).send();
-                UIHelper.executeInUI(() ->
-                        Messages.showErrorDialog(
-                                "Failed to create TaskRun templace from " + element.getName() + " in namespace " + namespace + "An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
-                                "Error"));
+                String errorMessage = "Failed to create TaskRun templace from " + element.getName() + " in namespace " + namespace + "An error occurred while retrieving information.\n" + e.getLocalizedMessage();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
+                UIHelper.executeInUI(() -> {
+                    Messages.showErrorDialog(
+                            errorMessage,
+                            "Error");
+                });
                 logger.warn("Error: " + e.getLocalizedMessage());
                 return;
             }
 
             if (!model.isValid()) {
                 String errorMessage = "Failed to create a TaskRun templace from " + element.getName() + " in namespace " + namespace + ". The task is not valid.";
-                telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage)).send();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
                 UIHelper.executeInUI(() -> Messages.showErrorDialog(errorMessage, "Error"));
                 return;
             }
@@ -78,7 +84,8 @@ public class CreateTaskRunTemplateAction extends TektonAction {
                 openEditor(anActionEvent.getProject(), namespace, telemetry, model, contentTask);
             } catch (IOException e) {
                 String errorMessage = "Failed to create TaskRun templace from" + element.getName() + " in namespace " + namespace + " \n" + e.getLocalizedMessage();
-                telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage))
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
                         .send();
                 notification = new Notification(NOTIFICATION_ID,
                         "Error",
@@ -90,14 +97,16 @@ public class CreateTaskRunTemplateAction extends TektonAction {
         });
     }
 
-    private void openEditor(Project project, String namespace, ActionMessage telemetry, TaskConfigurationModel model, String contentTask) {
+    private void openEditor(Project project, String namespace, ActionMessageBuilder telemetry, TaskConfigurationModel model, String contentTask) {
         UIHelper.executeInUI(() -> {
             String name = "generate-taskrun-" + model.getName();
             try {
                 VirtualFileHelper.openVirtualFileInEditor(project, namespace, name, contentTask, KIND_TASKRUN, true);
                 telemetry.send();
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
+                telemetry
+                        .error(anonymizeResource(name, namespace, e.getMessage()))
+                        .send();
                 logger.warn("Could not create trigger template: " + e.getLocalizedMessage());
             }
         });

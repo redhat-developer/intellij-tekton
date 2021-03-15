@@ -12,7 +12,9 @@ package com.redhat.devtools.intellij.tektoncd.actions.logs;
 
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
@@ -21,9 +23,11 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import java.io.IOException;
 
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.*;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class ShowLogsAction extends LogsBaseAction {
@@ -31,27 +35,38 @@ public class ShowLogsAction extends LogsBaseAction {
     private static final Logger logger = LoggerFactory.getLogger(ShowLogsAction.class);
 
     public ShowLogsAction() {
-        super(EventListenerNode.class, "show logs");
+        super(EventListenerNode.class);
     }
 
-    public void actionPerformed(String namespace, String resourceName, Class nodeClass, Tkn tkncli) {
+    protected void doActionPerformed(String namespace, String resourceName, Class nodeClass, Tkn tkncli) {
         try {
             boolean toEditor = SettingsState.getInstance().displayLogsInEditor;
             if (PipelineNode.class.equals(nodeClass) || PipelineRunNode.class.equals(nodeClass)) {
+                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, KIND_PIPELINERUN);
                 tkncli.showLogsPipelineRun(namespace, resourceName, toEditor);
             } else if (TaskNode.class.equals(nodeClass) || TaskRunNode.class.equals(nodeClass)) {
+                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, KIND_TASKRUN);
                 tkncli.showLogsTaskRun(namespace, resourceName, toEditor);
             } else if (EventListenerNode.class.equals(nodeClass)) {
+                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, KIND_EVENTLISTENER);
                 tkncli.showLogsEventListener(namespace, resourceName);
             }
+            telemetry.send();
         } catch (IOException e) {
             String errorMessage = "Could not show logs for " + resourceName + "\n" + e.getLocalizedMessage();
-            telemetry.error(anonymizeResource(resourceName, namespace, errorMessage)).send();
+            telemetry
+                    .error(anonymizeResource(resourceName, namespace, errorMessage))
+                    .send();
             UIHelper.executeInUI(() ->
                     Messages.showErrorDialog(
                             errorMessage,
                             "Error"));
             logger.warn(errorMessage);
         }
+    }
+
+    @Override
+    protected TelemetryMessageBuilder.ActionMessageBuilder createTelemetry() {
+        return TelemetryService.instance().action("show logs");
     }
 }

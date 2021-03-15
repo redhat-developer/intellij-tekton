@@ -13,9 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
@@ -29,39 +27,38 @@ import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import java.io.IOException;
 import javax.swing.tree.TreePath;
 
-import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.*;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class StartLastRunAction extends TektonAction {
 
     private static final Logger logger = LoggerFactory.getLogger(StartLastRunAction.class);
 
-    private final TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action("start last run");
+    private ActionMessageBuilder telemetry;
 
     public StartLastRunAction() { super(PipelineNode.class, TaskNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        telemetry = TelemetryService.instance().action("start last run");
         ExecHelper.submit(() -> {
             ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
             String namespace = element.getParent().getParent().getName();
-            Project project = element.getRoot().getProject();
             try {
                 String runName = startRun(tkncli, element, namespace);
-                if (runName != null) {
-                    telemetry.result("executed follow logs action");
-                    executeFollowLogsAction(tkncli, element, namespace, runName);
-                }
+                FollowLogsAction.run(namespace, runName, element.getClass(), tkncli);
                 ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
                 telemetry.send();
             } catch (IOException e) {
                 String errorMessage = element.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage();
-                telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage)).send();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         errorMessage,
@@ -82,11 +79,6 @@ public class StartLastRunAction extends TektonAction {
             runName = tkncli.startLastTask(namespace, element.getName());
         }
         return runName;
-    }
-
-    private void executeFollowLogsAction(Tkn tkncli, ParentableNode<? extends ParentableNode<NamespaceNode>> element, String namespace, String runName) {
-        FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
-        followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
     }
 
 }

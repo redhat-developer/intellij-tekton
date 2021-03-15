@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.HUB_CATALOG_TAG;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class TektonHubAction extends TektonAction {
@@ -42,7 +42,7 @@ public class TektonHubAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action("tekton hub");
+        ActionMessageBuilder telemetry = TelemetryService.instance().action("tekton hub");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
@@ -67,7 +67,9 @@ public class TektonHubAction extends TektonAction {
                 });
             } catch (IOException e) {
                 String errorMessage = "Failed to retrieve data for " + element.getName() + " in namespace " + namespace + ". An error occurred while retrieving them.\n" + e.getLocalizedMessage();
-                telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage)).send();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(
                                 errorMessage,

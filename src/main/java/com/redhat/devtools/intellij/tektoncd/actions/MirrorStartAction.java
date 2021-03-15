@@ -11,7 +11,6 @@
 package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
-import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
@@ -25,11 +24,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 
 public class MirrorStartAction extends StartAction {
-
-    protected final ActionMessage telemetry = TelemetryService.instance().action("mirror start");
 
     public MirrorStartAction() {
         super(PipelineRunNode.class, TaskRunNode.class);
@@ -54,4 +51,10 @@ public class MirrorStartAction extends StartAction {
         model.adaptsToRun(runConfiguration);
         return model;
     }
+
+    @Override
+    protected ActionMessageBuilder createTelemetry() {
+        return TelemetryService.instance().action("mirror start");
+    }
+
 }

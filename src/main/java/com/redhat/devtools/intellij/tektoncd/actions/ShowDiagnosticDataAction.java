@@ -27,7 +27,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.instance;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class ShowDiagnosticDataAction extends TektonAction {
@@ -37,7 +37,7 @@ public class ShowDiagnosticDataAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = instance().action("show diagnostic data");
+        ActionMessageBuilder telemetry = instance().action("show diagnostic data");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
@@ -52,16 +52,21 @@ public class ShowDiagnosticDataAction extends TektonAction {
                 }
                 if (!hasDataToShow) {
                     String errorMessage = "No data available for " + element.getName() + " in namespace " + namespace + ".";
-                    telemetry.error(anonymizeResource(element.getName(), namespace, errorMessage)).send();
+                    telemetry
+                            .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                            .send();
                     UIHelper.executeInUI(() ->
                             Messages.showWarningDialog(
                                     "No data available for " + element.getName() + " in namespace " + namespace + ".",
                                     "Diagnostic Data"));
                 } else {
-                    telemetry.success().send();
+                    telemetry
+                            .success()
+                            .send();
                 }
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(element.getName(), namespace, e.getMessage()))
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, e.getMessage()))
                         .send();
                 UIHelper.executeInUI(() ->
                         Messages.showErrorDialog(

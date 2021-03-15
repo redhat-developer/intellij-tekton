@@ -25,7 +25,9 @@ import javax.swing.tree.TreePath;
 import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateClusterTriggerBindingAction extends TektonAction {
@@ -36,20 +38,24 @@ public class CreateClusterTriggerBindingAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance()
-                .action("create cluster trigger binding");
+        ActionMessageBuilder telemetry = TelemetryService.instance()
+                .action("create cluster trigger binding")
+                .property(PROP_RESOURCE_KIND, KIND_CLUSTERTRIGGERBINDINGS);
         ClusterTriggerBindingsNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: ClusterTriggerBinding");
         if (Strings.isNullOrEmpty(content)) {
-            telemetry.error("snippet content empty").send();
+            telemetry
+                    .error("snippet content empty")
+                    .send();
         } else {
             String name = namespace + "-newclustertriggerbinding.yaml";
             try {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_CLUSTERTRIGGERBINDINGS, item);
                 telemetry.success().send();
             } catch (IOException e) {
-                telemetry.error(anonymizeResource(name, namespace, e.getMessage()))
+                telemetry
+                        .error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();
                 logger.warn("Could not create cluster cluster trigger: " + e.getLocalizedMessage());
             }

@@ -169,13 +169,15 @@ public class TreeHelper {
         String name = element.getName();
         String content = yamlAndKind.getFirst();
         String kind = yamlAndKind.getSecond();
-        TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action("open resource in editor")
+        TelemetryMessageBuilder.ActionMessageBuilder telemetry = TelemetryService.instance().action("open resource in editor")
                 .property(TelemetryService.PROP_RESOURCE_KIND, yamlAndKind.second);
         try {
             VirtualFileHelper.openVirtualFileInEditor(project, namespace, name, content, kind, false);
             telemetry.send();
         } catch (IOException e) {
-            telemetry.error(anonymizeResource(name, namespace, e.getMessage())).send();
+            telemetry
+                    .error(anonymizeResource(name, namespace, e.getMessage()))
+                    .send();
             logger.warn("Could not open resource in editor: " + e.getLocalizedMessage());
         }
     }
