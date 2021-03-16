@@ -67,7 +67,6 @@ public class StartAction extends TektonAction {
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
-            Notification notification;
             StartResourceModel model = createModel(tkncli, element, namespace);
             if (model == null) return;
             telemetry.property(TelemetryService.PROP_RESOURCE_KIND, model.getKind());
@@ -117,7 +116,7 @@ public class StartAction extends TektonAction {
                 telemetry
                         .error(anonymizeResource(element.getName(), namespace, errorMessage))
                         .send();
-                notification = new Notification(NOTIFICATION_ID,
+                Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         errorMessage,
                         NotificationType.ERROR);
@@ -137,11 +136,16 @@ public class StartAction extends TektonAction {
             List<String> persistentVolumeClaims = tkncli.getPersistentVolumeClaim(namespace);
             model = createModel(element, namespace, tkncli, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
         } catch (IOException e) {
-            UIHelper.executeInUI(() ->
-                    Messages.showErrorDialog(
-                            element.getName() + " in namespace " + namespace + " failed to start. An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
-                            "Error"));
-            logger.warn("Error: " + e.getLocalizedMessage());
+            String errorMessage = element.getName() + " in namespace " + namespace + " failed to start. An error occurred while retrieving information.\n" + e.getLocalizedMessage();
+            UIHelper.executeInUI(() -> {
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
+                Messages.showErrorDialog(
+                        errorMessage,
+                        "Error");
+            });
+            logger.warn("Error: " + errorMessage);
         }
         return model;
     }
