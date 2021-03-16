@@ -85,41 +85,44 @@ public class StartAction extends TektonAction {
                     && model.getWorkspaces().isEmpty();
             boolean showWizard = SettingsState.getInstance().showStartWizardWithNoInputs || !hasNoInputs;
 
-            StartWizard startWizard = null;
             if (showWizard) {
-                startWizard = UIHelper.executeInUI(() -> {
-                    String titleDialog = ((element instanceof PipelineNode)? "Pipeline " : "Task ") + element.getName();
+                StartWizard startWizard = UIHelper.executeInUI(() -> {
+                    String titleDialog = ((element instanceof PipelineNode) ? "Pipeline " : "Task ") + element.getName();
                     StartWizard wizard = new StartWizard(titleDialog, element, getEventProject(anActionEvent), model);
                     wizard.show();
                     return wizard;
                 });
+                if (startWizard != null && !startWizard.isOK()) {
+                    telemetry
+                            .result("wizard aborted")
+                            .send();
+                    return;
+                }
             }
 
-            if (!showWizard || (startWizard != null && startWizard.isOK())) {
-                try {
-                    String serviceAccount = model.getServiceAccount();
-                    Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
-                    Map<String, String> params = model.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param.value()));
-                    Map<String, Workspace> workspaces = model.getWorkspaces();
-                    Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
-                    Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
-                    String runPrefixName = model.getRunPrefixName();
-                    String runName = start(tkncli, namespace, model, serviceAccount, taskServiceAccount, params, workspaces, inputResources, outputResources, runPrefixName);
-                    FollowLogsAction.run(namespace, runName, element.getClass(), tkncli);
-                    refreshTreeNode(anActionEvent, element);
-                    telemetry.send();
-                } catch (IOException e) {
-                    String errorMessage = model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage();
-                    telemetry
-                            .error(anonymizeResource(element.getName(), namespace, errorMessage))
-                            .send();
-                    notification = new Notification(NOTIFICATION_ID,
-                            "Error",
-                            errorMessage,
-                            NotificationType.ERROR);
-                    Notifications.Bus.notify(notification);
-                    logger.warn("Error: " + e.getLocalizedMessage());
-                }
+            try {
+                String serviceAccount = model.getServiceAccount();
+                Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
+                Map<String, String> params = model.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param.value()));
+                Map<String, Workspace> workspaces = model.getWorkspaces();
+                Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
+                Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
+                String runPrefixName = model.getRunPrefixName();
+                String runName = start(tkncli, namespace, model, serviceAccount, taskServiceAccount, params, workspaces, inputResources, outputResources, runPrefixName);
+                FollowLogsAction.run(namespace, runName, element.getClass(), tkncli);
+                refreshTreeNode(anActionEvent, element);
+                telemetry.send();
+            } catch (IOException e) {
+                String errorMessage = model.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
+                notification = new Notification(NOTIFICATION_ID,
+                        "Error",
+                        errorMessage,
+                        NotificationType.ERROR);
+                Notifications.Bus.notify(notification);
+                logger.warn("Error: " + e.getLocalizedMessage());
             }
         });
     }
