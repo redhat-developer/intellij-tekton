@@ -17,7 +17,7 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
-import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +40,7 @@ public class CreateTriggerTemplateAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessageBuilder telemetry = TelemetryService.instance()
+        ActionMessage telemetry = TelemetryService.instance()
                 .action("create trigger template")
                 .property(PROP_RESOURCE_KIND, KIND_TRIGGERTEMPLATES);
         TriggerTemplatesNode item = getElement(selected);

@@ -26,7 +26,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateClusterTaskAction extends TektonAction {
@@ -37,7 +37,7 @@ public class CreateClusterTaskAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessageBuilder telemetry = instance().action("create cluster task")
+        ActionMessage telemetry = instance().action("create cluster task")
                 .property(PROP_RESOURCE_KIND, KIND_CLUSTERTASKS);
         ClusterTasksNode item = getElement(selected);
         String namespace = item.getParent().getName();

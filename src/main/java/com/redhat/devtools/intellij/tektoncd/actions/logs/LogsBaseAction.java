@@ -34,14 +34,14 @@ import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public abstract class LogsBaseAction extends TektonAction {
 
     private static final Logger logger = LoggerFactory.getLogger(LogsBaseAction.class);
 
-    protected ActionMessageBuilder telemetry;
+    protected ActionMessage telemetry;
 
     public LogsBaseAction() {
         super(RunNode.class, TaskNode.class, PipelineNode.class);
@@ -154,5 +154,5 @@ public abstract class LogsBaseAction extends TektonAction {
 
     }
 
-    protected abstract ActionMessageBuilder createTelemetry();
+    protected abstract ActionMessage createTelemetry();
 }

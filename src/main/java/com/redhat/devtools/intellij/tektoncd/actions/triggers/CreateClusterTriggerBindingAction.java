@@ -27,7 +27,7 @@ import java.io.IOException;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateClusterTriggerBindingAction extends TektonAction {
@@ -38,7 +38,7 @@ public class CreateClusterTriggerBindingAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessageBuilder telemetry = TelemetryService.instance()
+        ActionMessage telemetry = TelemetryService.instance()
                 .action("create cluster trigger binding")
                 .property(PROP_RESOURCE_KIND, KIND_CLUSTERTRIGGERBINDINGS);
         ClusterTriggerBindingsNode item = getElement(selected);

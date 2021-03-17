@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class MirrorStartAction extends StartAction {
 
@@ -53,7 +53,7 @@ public class MirrorStartAction extends StartAction {
     }
 
     @Override
-    protected ActionMessageBuilder createTelemetry() {
+    protected ActionMessage createTelemetry() {
         return TelemetryService.instance().action("mirror start");
     }
 

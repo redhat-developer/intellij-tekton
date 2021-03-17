@@ -39,7 +39,7 @@ public class StartLastRunAction extends TektonAction {
 
     private static final Logger logger = LoggerFactory.getLogger(StartLastRunAction.class);
 
-    private ActionMessageBuilder telemetry;
+    private ActionMessage telemetry;
 
     public StartLastRunAction() { super(PipelineNode.class, TaskNode.class); }
 

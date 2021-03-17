@@ -41,7 +41,7 @@ public class RefreshAction extends StructureTreeAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
-        ActionMessageBuilder telemetry = instance().action("refresh");
+        ActionMessage telemetry = instance().action("refresh");
         selected = StructureTreeAction.getElement(selected);
         TektonTreeStructure structure = (TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY);
         structure.fireModified(selected);

@@ -27,7 +27,7 @@ import javax.swing.tree.TreePath;
 import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateResourceAction extends TektonAction {
@@ -38,7 +38,7 @@ public class CreateResourceAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessageBuilder telemetry = TelemetryService.instance()
+        ActionMessage telemetry = TelemetryService.instance()
                 .action("create resource");
         ResourcesNode item = getElement(selected);
         String namespace = item.getParent().getName();

@@ -35,7 +35,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateTaskRunTemplateAction extends TektonAction {
@@ -48,7 +48,7 @@ public class CreateTaskRunTemplateAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessageBuilder telemetry = TelemetryService.instance().action("create task run");
+        ActionMessage telemetry = TelemetryService.instance().action("create task run");
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
@@ -97,7 +97,7 @@ public class CreateTaskRunTemplateAction extends TektonAction {
         });
     }
 
-    private void openEditor(Project project, String namespace, ActionMessageBuilder telemetry, TaskConfigurationModel model, String contentTask) {
+    private void openEditor(Project project, String namespace, ActionMessage telemetry, TaskConfigurationModel model, String contentTask) {
         UIHelper.executeInUI(() -> {
             String name = "generate-taskrun-" + model.getName();
             try {

@@ -49,13 +49,13 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessageBuilder;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class StartAction extends TektonAction {
     private static final Logger logger = LoggerFactory.getLogger(StartAction.class);
 
-    protected ActionMessageBuilder telemetry;
+    protected ActionMessage telemetry;
 
     public StartAction(Class... filters) { super(filters); }
 
@@ -188,7 +188,7 @@ public class StartAction extends TektonAction {
         return runName;
     }
 
-    protected ActionMessageBuilder createTelemetry() {
+    protected ActionMessage createTelemetry() {
          return TelemetryService.instance().action("start");
     }
 }

@@ -76,7 +76,7 @@ public class FollowLogsAction extends LogsBaseAction {
     }
 
     @Override
-    protected TelemetryMessageBuilder.ActionMessageBuilder createTelemetry() {
+    protected TelemetryMessageBuilder.ActionMessage createTelemetry() {
         return TelemetryService.instance().action("follow logs");
     }
 }
