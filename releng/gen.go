@@ -94,6 +94,8 @@ func dump(v interface{}, apiVersion string, kind string) {
 
 func main() {
 	os.Create("index.properties")
+	os.Mkdir("tekton.dev", os.ModePerm)
+	os.Mkdir("triggers.tekton.dev", os.ModePerm)
 	dump(&v1alpha1.Pipeline{}, "tekton.dev/v1alpha1", "Pipeline")
 	dump(&v1alpha1.PipelineList{}, "tekton.dev/v1alpha1", "PipelineList")
 	dump(&v1alpha1.PipelineRun{}, "tekton.dev/v1alpha1", "PipelineRun")
