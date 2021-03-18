@@ -469,6 +469,11 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "CustomResource": {
+      "properties": {},
+      "additionalProperties": false,
+      "type": "object"
+    },
     "DownwardAPIProjection": {
       "properties": {
         "items": {
@@ -2201,6 +2206,10 @@
         "kubernetesResource": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/KubernetesResource"
+        },
+        "customResource": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/CustomResource"
         }
       },
       "additionalProperties": false,
@@ -2554,9 +2563,6 @@
     },
     "TriggerSpecTemplate": {
       "properties": {
-        "name": {
-          "type": "string"
-        },
         "ref": {
           "type": "string"
         },
