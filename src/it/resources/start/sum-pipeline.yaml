@@ -1,0 +1,45 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: sum-three-pipeline
+  namespace: testns
+spec:
+  params:
+    - description: the first operando
+      name: first
+      type: string
+    - description: the second operand
+      name: second
+      type: string
+    - description: the third operando
+      name: third
+      type: string
+  results:
+    - description: the sum of all three operands
+      name: sum
+      value: $(tasks.second-add.results.sum)
+    - description: the sum of first two operands
+      name: partial-sum
+      value: $(tasks.first-add.results.sum)
+    - description: the sum of everything
+      name: all-sum
+      value: $(tasks.second-add.results.sum)-$(tasks.first-add.results.sum)
+  tasks:
+    - name: first-add
+      params:
+        - name: first
+          value: $(params.first)
+        - name: second
+          value: $(params.second)
+      taskRef:
+        kind: Task
+        name: add-task
+    - name: second-add
+      params:
+        - name: first
+          value: $(tasks.first-add.results.sum)
+        - name: second
+          value: $(params.third)
+      taskRef:
+        kind: Task
+        name: add-task
