@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.actions.condition;
 import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
-import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
@@ -24,6 +23,7 @@ import javax.swing.tree.TreePath;
 
 import java.io.IOException;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
@@ -40,7 +40,7 @@ public class CreateConditionAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = instance().action("create condition")
-                .property(PROP_RESOURCE_KIND, KIND_CONDITIONS);
+                .property(PROP_RESOURCE_KIND, KIND_CONDITION);
         ConditionsNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: Condition");

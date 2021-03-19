@@ -56,7 +56,7 @@ public class DeployHelper {
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(model.getKind()) ? "" : namespace;
             boolean isNewResource = executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
-            telemetry.property(PROP_RESOURCE_CRUD, (isNewResource ? "create" : "update")).success()
+            telemetry.property(PROP_RESOURCE_CRUD, (isNewResource ? "create" : "update"))
                     .send();
         } catch (KubernetesClientException e) {
             String errorMsg = createErrorMessage(model, e);

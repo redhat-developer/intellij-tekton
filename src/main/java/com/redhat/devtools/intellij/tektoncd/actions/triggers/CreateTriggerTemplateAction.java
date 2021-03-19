@@ -25,7 +25,7 @@ import javax.swing.tree.TreePath;
 
 import java.io.IOException;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
@@ -42,7 +42,7 @@ public class CreateTriggerTemplateAction extends TektonAction {
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
                 .action("create trigger template")
-                .property(PROP_RESOURCE_KIND, KIND_TRIGGERTEMPLATES);
+                .property(PROP_RESOURCE_KIND, KIND_TRIGGERTEMPLATE);
         TriggerTemplatesNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: TriggerTemplate");

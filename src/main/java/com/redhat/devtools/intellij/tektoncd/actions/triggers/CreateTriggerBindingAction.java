@@ -24,7 +24,7 @@ import javax.swing.tree.TreePath;
 
 import java.io.IOException;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
@@ -40,7 +40,7 @@ public class CreateTriggerBindingAction extends TektonAction {
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
                 .action("create trigger binding")
-                .property(PROP_RESOURCE_KIND, KIND_TRIGGERBINDINGS);
+                .property(PROP_RESOURCE_KIND, KIND_TRIGGERBINDING);
         TriggerBindingsNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: TriggerBinding");
