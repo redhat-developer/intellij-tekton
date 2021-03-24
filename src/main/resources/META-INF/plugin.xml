@@ -164,6 +164,7 @@
     <localInspection language="yaml" bundle="messages.YAMLBundle" displayName="Tekton Final Tasks inspector"
                      level="WARNING" groupKey="inspections.group.name" enabledByDefault="true"
                      implementationClass="com.redhat.devtools.intellij.tektoncd.inspector.FinallyReferencesInspector"/>
+    <nonProjectFileWritingAccessExtension implementation="com.redhat.devtools.intellij.tektoncd.ui.editors.ResourceEditingPolicy" />
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
