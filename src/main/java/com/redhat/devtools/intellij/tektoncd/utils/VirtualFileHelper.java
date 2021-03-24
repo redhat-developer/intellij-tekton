@@ -9,7 +9,6 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.redhat.devtools.intellij.common.editor.AllowNonProjectEditing;
-import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import java.io.File;
 import java.io.IOException;
@@ -53,26 +52,17 @@ public class VirtualFileHelper {
     }
 
     public static void createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode) throws IOException {
-            createAndOpenVirtualFile(project, namespace, name, content, kind, targetNode, KIND_PIPELINERUN.equals(kind) || KIND_TASKRUN.equals(kind));
+        createAndOpenVirtualFile(project, namespace, name, content, kind, targetNode, KIND_PIPELINERUN.equals(kind) || KIND_TASKRUN.equals(kind));
     }
 
-    public static void  createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode, boolean isReadOnly) {
-        ActionMessage telemetry = TelemetryService.instance().action("open editor")
-                .property(PROP_RESOURCE_KIND, kind);
-        try {
-            VirtualFile vf = createVirtualFile(name, content, isReadOnly);
-            vf.putUserData(AllowNonProjectEditing.ALLOW_NON_PROJECT_EDITING, true);
-            vf.putUserData(PROJECT, project);
-            if (!kind.isEmpty()) vf.putUserData(KIND_PLURAL, kind);
-            if (!namespace.isEmpty()) vf.putUserData(NAMESPACE, namespace);
-            if (targetNode != null) vf.putUserData(TARGET_NODE, targetNode);
-            FileEditorManager.getInstance(project).openFile(vf, true);
-            telemetry.send();
-        } catch (IOException e) {
-            telemetry.error(anonymizeResource(name, namespace, e.getMessage()))
-                    .send();
-            logger.warn(e.getLocalizedMessage());
-        }
+    public static void  createAndOpenVirtualFile(Project project, String namespace, String name, String content, String kind, ParentableNode<?> targetNode, boolean isReadOnly) throws IOException {
+        VirtualFile vf = createVirtualFile(name, content, isReadOnly);
+        vf.putUserData(AllowNonProjectEditing.ALLOW_NON_PROJECT_EDITING, true);
+        vf.putUserData(PROJECT, project);
+        if (!kind.isEmpty()) vf.putUserData(KIND_PLURAL, kind);
+        if (!namespace.isEmpty()) vf.putUserData(NAMESPACE, namespace);
+        if (targetNode != null) vf.putUserData(TARGET_NODE, targetNode);
+        FileEditorManager.getInstance(project).openFile(vf, true);
     }
 
     private static VirtualFile createVirtualFile(String name, String content, boolean isReadOnly) throws IOException {
