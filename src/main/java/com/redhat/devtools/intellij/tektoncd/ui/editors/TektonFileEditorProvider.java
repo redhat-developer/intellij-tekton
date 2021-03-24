@@ -50,9 +50,9 @@ public class TektonFileEditorProvider implements FileEditorProvider, DumbAware {
     private GraphUpdater getGraphUpdater(KubernetesTypeInfo typeInfo) {
         GraphUpdater updater = null;
         if (typeInfo.getApiGroup().startsWith("tekton.dev") && "Pipeline".equals(typeInfo.getKind())) {
-            return new PipelineGraphUpdater();
+            updater =  new PipelineGraphUpdater();
         } else if (typeInfo.getApiGroup().startsWith("tekton.dev") && "PipelineRun".equals(typeInfo.getKind())) {
-            return new PipelineRunGraphUpdater();
+            updater = new PipelineRunGraphUpdater();
         }
         return updater;
     }
