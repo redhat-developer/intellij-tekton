@@ -1,0 +1,21 @@
+name: Generate Draft
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Simple conventional changelog
+        uses: lstocchi/simple-conventional-changelog@0.0.9
+        id: changelog
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          types-mapping: 'feat:Features,fix:Bug Fixes,docs:Documentation'
+          scopes-mapping: 'UI:UI,Hub:Hub'
+      - run: |
+          echo '${{ steps.changelog.outputs.changelog }}' > draft-changelog.md
+      - uses: actions/upload-artifact@v2
+        with:
+          name: draft-changelog
+          path: draft-changelog.md
