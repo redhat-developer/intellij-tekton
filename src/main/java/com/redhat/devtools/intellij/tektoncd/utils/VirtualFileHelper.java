@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
+import com.redhat.devtools.intellij.common.editor.AllowNonProjectEditing;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import java.io.File;
 import java.io.IOException;
@@ -64,6 +65,7 @@ public class VirtualFileHelper {
             } else {
                 vf = createTempFile(name, content);
             }
+            vf.putUserData(AllowNonProjectEditing.ALLOW_NON_PROJECT_EDITING, true);
             vf.putUserData(PROJECT, project);
             if (!kind.isEmpty()) vf.putUserData(KIND_PLURAL, kind);
             if (!namespace.isEmpty()) vf.putUserData(NAMESPACE, namespace);
