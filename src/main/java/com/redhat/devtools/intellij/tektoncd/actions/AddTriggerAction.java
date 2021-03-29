@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
@@ -68,7 +69,7 @@ public class AddTriggerAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action("add trigger");
+        ActionMessage telemetry = instance().action("add trigger");
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
@@ -82,10 +83,10 @@ public class AddTriggerAction extends TektonAction {
                 }
 
                 String kind = (element instanceof PipelineNode) ? "Pipeline " : "Task ";
-                telemetry.property(TelemetryService.PROP_RESOURCE_KIND, kind);
+                telemetry.property(PROP_RESOURCE_KIND, kind);
                 AddTriggerWizard addTriggerWizard = openTriggerBindingWizard(anActionEvent, element, triggerBindingTemplates, model, kind);
                 if (!addTriggerWizard.isOK()) {
-                    telemetry.result("wizard aborted")
+                    telemetry.result(VALUE_ABORTED)
                             .send();
                     return;
                 }

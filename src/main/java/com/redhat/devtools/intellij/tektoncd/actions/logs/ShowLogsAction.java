@@ -61,7 +61,7 @@ public class ShowLogsAction extends LogsBaseAction {
                     Messages.showErrorDialog(
                             errorMessage,
                             "Error"));
-            logger.warn(errorMessage);
+            logger.warn(errorMessage, e);
         }
     }
 

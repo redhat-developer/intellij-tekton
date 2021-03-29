@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
@@ -30,8 +31,8 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 
 import javax.swing.tree.TreePath;
 
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.*;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
 public class RefreshAction extends StructureTreeAction {
     public RefreshAction() {
@@ -41,7 +42,7 @@ public class RefreshAction extends StructureTreeAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
-        ActionMessage telemetry = instance().action("refresh");
+        ActionMessage telemetry = TelemetryService.instance().action("refresh");
         selected = StructureTreeAction.getElement(selected);
         TektonTreeStructure structure = (TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY);
         structure.fireModified(selected);

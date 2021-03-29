@@ -56,7 +56,7 @@ public class CreateResourceAction extends TektonAction {
                 telemetry
                         .error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();
-                logger.warn("Could not create resource: " + e.getLocalizedMessage());
+                logger.warn("Could not create resource: " + e.getLocalizedMessage(), e);
             }
         }
     }

@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_VERSION;
@@ -43,12 +44,12 @@ public class DeployHelper {
     private DeployHelper() {}
 
     public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage, boolean updateLabels) throws IOException {
-        ActionMessage telemetry = TelemetryService.instance().action("save to cluster");
+        ActionMessage telemetry = instance().action("save to cluster");
 
         DeployModel model = createModel(yaml, telemetry);
 
         if (!isSaveConfirmed(confirmationMessage)) {
-            telemetry.result("save aborted")
+            telemetry.result(VALUE_ABORTED)
                     .send();
             return false;
         }

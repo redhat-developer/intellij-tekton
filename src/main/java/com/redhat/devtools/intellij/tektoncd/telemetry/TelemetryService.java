@@ -20,6 +20,7 @@ public class TelemetryService {
     public static final String PROP_RESOURCE_CRUD = "resource_crud";
     public static final String VALUE_RESOURCE_CRUD_CREATE = "create";
     public static final String VALUE_RESOURCE_CRUD_UPDATE = "update";
+    public static final String VALUE_ABORTED = "aborted";
     public static final String PROP_RESOURCE_RELATED = "resource_related";
 
     private static final TelemetryService INSTANCE = new TelemetryService();

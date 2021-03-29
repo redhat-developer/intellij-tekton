@@ -57,7 +57,7 @@ public class CreateTaskAction extends TektonAction {
                 telemetry
                         .error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();
-                logger.warn(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage(), e);
             }
         }
     }

@@ -14,4 +14,3 @@
 * resource kind
 * resource schema version
 * creation/update of a resource
-* namespace supports triggers

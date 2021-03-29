@@ -73,7 +73,7 @@ public class TektonAction extends StructureTreeAction {
         try {
             content = SnippetHelper.getBody(snippet);
         } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
         return content;
     }

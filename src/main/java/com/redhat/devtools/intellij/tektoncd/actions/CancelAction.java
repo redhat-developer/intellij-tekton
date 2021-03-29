@@ -62,11 +62,11 @@ public class CancelAction extends TektonAction {
             String namespace = element.getNamespace();
             try {
                 if (element instanceof PipelineRunNode) {
-                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN).send();
                     tkncli.cancelPipelineRun(namespace, element.getName());
+                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN).send();
                 } else if (element instanceof TaskRunNode) {
-                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN).send();
                     tkncli.cancelTaskRun(namespace, element.getName());
+                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN).send();
                 }
             } catch (IOException e) {
                 telemetry
@@ -77,7 +77,7 @@ public class CancelAction extends TektonAction {
                         element.getName() + " in namespace " + namespace + " failed to cancel\n" + e.getLocalizedMessage(),
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
             }
         });
     }

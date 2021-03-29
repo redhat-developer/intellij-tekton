@@ -49,6 +49,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
@@ -69,7 +70,7 @@ public class StartAction extends TektonAction {
         ExecHelper.submit(() -> {
             StartResourceModel model = createModel(tkncli, element, namespace);
             if (model == null) return;
-            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, model.getKind());
+            telemetry.property(PROP_RESOURCE_KIND, model.getKind());
             if (!model.isValid()) {
                 telemetry
                         .error(model.getErrorMessage())
@@ -93,7 +94,7 @@ public class StartAction extends TektonAction {
                 });
                 if (startWizard != null && !startWizard.isOK()) {
                     telemetry
-                            .result("wizard aborted")
+                            .result(VALUE_ABORTED)
                             .send();
                     return;
                 }
@@ -154,15 +155,15 @@ public class StartAction extends TektonAction {
         String configuration = "";
         List<? extends Run> runs = new ArrayList<>();
         if (element instanceof PipelineNode) {
-            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, KIND_PIPELINE);
+            telemetry.property(PROP_RESOURCE_KIND, KIND_PIPELINE);
             configuration = tkncli.getPipelineYAML(namespace, element.getName());
             runs = tkncli.getPipelineRuns(namespace, element.getName());
         } else if (element instanceof TaskNode) {
-            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, KIND_TASK);
+            telemetry.property(PROP_RESOURCE_KIND, KIND_TASK);
             configuration = tkncli.getTaskYAML(namespace, element.getName());
             runs = tkncli.getTaskRuns(namespace, element.getName());
         } else if (element instanceof ClusterTaskNode) {
-            telemetry.property(TelemetryService.PROP_RESOURCE_KIND, KIND_CLUSTERTASK);
+            telemetry.property(PROP_RESOURCE_KIND, KIND_CLUSTERTASK);
             configuration = tkncli.getClusterTaskYAML(element.getName());
         }
         return new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
@@ -189,6 +190,6 @@ public class StartAction extends TektonAction {
     }
 
     protected ActionMessage createTelemetry() {
-         return TelemetryService.instance().action("start");
+         return instance().action("start");
     }
 }

@@ -71,7 +71,7 @@ public class FollowLogsAction extends LogsBaseAction {
                     Messages.showErrorDialog(
                             "An error occurred while requesting logs for " + resourceName + "\n" + e.getLocalizedMessage(),
                             "Error"));
-            logger.warn("Could not follow logs: " + e.getLocalizedMessage());
+            logger.warn("Could not follow logs: " + e.getLocalizedMessage(), e);
         }
     }
 
