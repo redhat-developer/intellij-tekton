@@ -143,7 +143,7 @@ public class FindTaskRefPanelBuilder {
     private TreeSelectionListener getTreeSelectionListener(Project project) {
         return e -> {
             LabelAndIconDescriptor node = getLastSelectedNode();
-            if (node.getElement() instanceof RefUsage) {
+            if (node != null && node.getElement() instanceof RefUsage) {
                 fillEditorPanel(project, (RefUsage) node.getElement());
             } else {
                 fillEditorPanelWithMessage();
@@ -157,7 +157,7 @@ public class FindTaskRefPanelBuilder {
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     LabelAndIconDescriptor node = getLastSelectedNode();
-                    if (node.getElement() instanceof RefUsage) {
+                    if (node != null && node.getElement() instanceof RefUsage) {
                         getContextMenu(project).show(e.getComponent(), e.getX(), e.getY());
                     }
                 }
@@ -179,7 +179,7 @@ public class FindTaskRefPanelBuilder {
     private ActionListener getJumpSourceAction(Project project) {
         return e -> {
             LabelAndIconDescriptor node = getLastSelectedNode();
-            if (node.getElement() instanceof RefUsage) {
+            if (node != null && node.getElement() instanceof RefUsage) {
                 RefUsage ref = (RefUsage) node.getElement();
                 try {
                     VirtualFile vf = TektonVirtualFileManager.getInstance(project).findResource(ref.getNamespace(), ref.getKind(), ref.getName());
@@ -194,8 +194,11 @@ public class FindTaskRefPanelBuilder {
 
     private LabelAndIconDescriptor getLastSelectedNode() {
         Object selection = tree.getLastSelectedPathComponent();
-        DefaultMutableTreeNode defaultMutableTreeNode = (DefaultMutableTreeNode)selection;
-        return (LabelAndIconDescriptor) defaultMutableTreeNode.getUserObject();
+        if (selection == null || !(selection instanceof DefaultMutableTreeNode)) {
+            return null;
+        }
+        Object userObject = ((DefaultMutableTreeNode)selection).getUserObject();
+        return userObject == null ? null : (LabelAndIconDescriptor) userObject;
     }
 
     private JComponent buildEditorPanel() {

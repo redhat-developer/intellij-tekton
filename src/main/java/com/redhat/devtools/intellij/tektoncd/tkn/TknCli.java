@@ -288,7 +288,7 @@ public class TknCli implements Tkn {
 
     @Override
     public  List<RefUsage> findTaskUsages(String kind, String resource) throws IOException {
-        String jsonPathExpr = "jsonpath=\"{range .items[*]}{@.metadata.name}|{range .spec.tasks[*]}{.taskRef.kind},{.taskRef.name}|{end}{end}\"";
+        String jsonPathExpr = "jsonpath=\\\"{range .items[*]}{@.metadata.name}|{range .spec.tasks[*]}{.taskRef.kind},{.taskRef.name}|{end}{end}\\\"";
         String result = ExecHelper.execute(command, envVars, "pipeline", "ls", "-n", getNamespace(), "-o", jsonPathExpr);
         String[] resultSplitted = result.replace("\"", "").split("\\|");
         List<RefUsage> usages = new ArrayList<>();
