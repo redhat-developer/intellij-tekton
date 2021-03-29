@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd;
+package com.redhat.devtools.intellij.tektoncd.ui.toolwindow;
 
 import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ide.util.treeView.NodeRenderer;
@@ -25,6 +25,7 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
+import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.listener.TreeDoubleClickListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TreePopupMenuListener;
 import com.redhat.devtools.intellij.tektoncd.tree.MutableTektonModelSynchronizer;

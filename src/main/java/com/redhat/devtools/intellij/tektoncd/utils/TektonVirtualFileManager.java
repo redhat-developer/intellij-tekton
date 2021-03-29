@@ -17,12 +17,10 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import gnu.trove.THashMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 import java.io.IOException;
 import java.util.Map;
-
-import io.fabric8.kubernetes.client.WatcherException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,7 +118,7 @@ public class TektonVirtualFileManager {
         } else if (kind.equalsIgnoreCase(KIND_PIPELINERUN)){
             content = tkncli.getPipelineRunYAML(namespace, resourceName);
         }
-        return new LightVirtualFile(resourceName, content);
+        return new LightVirtualFile(resourceName + ".yaml", content);
     }
 
     private String getId(String namespace, String kind, String resourceName) {

@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
@@ -83,7 +84,9 @@ public class WatchHandler {
         }
 
         try {
-            if (kind.equalsIgnoreCase(KIND_TASK)) {
+            if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
+                watch = tkn.watchPipeline(namespace, resourceName, watcher);
+            } else if (kind.equalsIgnoreCase(KIND_TASK)) {
                 watch = tkn.watchTask(namespace, resourceName, watcher);
             }
             wn = new WatchNodes(watch);

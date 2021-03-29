@@ -21,6 +21,7 @@ import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.twelvemonkeys.lang.Platform;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -60,6 +61,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -76,6 +78,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PREFIXNAME;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_DIAG;
@@ -281,6 +284,33 @@ public class TknCli implements Tkn {
     @Override
     public String getEventListenerYAML(String namespace, String eventListener) throws IOException {
         return ExecHelper.execute(command, envVars, "eventlistener", "describe", eventListener, "-n", namespace, "-o", "yaml");
+    }
+
+    @Override
+    public  List<RefUsage> findTaskUsages(String kind, String resource) throws IOException {
+        String jsonPathExpr = "jsonpath=\"{range .items[*]}{@.metadata.name}|{range .spec.tasks[*]}{.taskRef.kind},{.taskRef.name}|{end}{end}\"";
+        String result = ExecHelper.execute(command, envVars, "pipeline", "ls", "-n", getNamespace(), "-o", jsonPathExpr);
+        String[] resultSplitted = result.replace("\"", "").split("\\|");
+        List<RefUsage> usages = new ArrayList<>();
+        String pipeline = "";
+        for (String item: resultSplitted) {
+            if (!item.contains(",")) {
+                pipeline = item;
+                continue;
+            }
+
+            String[] kindName = item.split(",");
+            if (kindName.length == 2 && kindName[0].equalsIgnoreCase(kind) && kindName[1].equalsIgnoreCase(resource) && !pipeline.isEmpty()) {
+                String finalPipeline = pipeline;
+                Optional<RefUsage> refUsage = usages.stream().filter(ref -> ref.getKind().equals(KIND_PIPELINE) && ref.getName().equals(finalPipeline)).findFirst();
+                if (refUsage.isPresent()) {
+                    refUsage.get().incremetOccurrence();
+                } else {
+                    usages.add(new RefUsage(getNamespace(), pipeline, KIND_PIPELINE));
+                }
+            }
+        }
+        return usages;
     }
 
     @Override
@@ -594,6 +624,15 @@ public class TknCli implements Tkn {
     @Override
     public void cancelTaskRun(String namespace, String taskRun) throws IOException {
         ExecHelper.execute(command, "taskrun", "cancel", taskRun, "-n", namespace);
+    }
+
+    @Override
+    public Watch watchPipeline(String namespace, String pipeline, Watcher<Pipeline> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1beta1().pipelines().inNamespace(namespace).withName(pipeline).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override

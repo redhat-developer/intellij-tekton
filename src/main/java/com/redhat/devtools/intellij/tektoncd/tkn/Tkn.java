@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
@@ -260,6 +261,16 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     String getEventListenerYAML(String namespace, String eventListener) throws IOException;
+
+    /**
+     * Return all pipelines where the task is used
+     *
+     * @param kind the kind of task (task or clustertask)
+     * @param task the name of the task
+     * @return list of pipelines where the task is used
+     * @throws IOException if communication errored
+     */
+    List<RefUsage> findTaskUsages(String kind, String task) throws IOException;
 
     /**
      * Delete a list of pipelines
@@ -549,6 +560,17 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     void cancelTaskRun(String namespace, String taskRun) throws IOException;
+
+    /**
+     * Set a watch on Pipeline resource
+     *
+     * @param namespace the namespace to use
+     * @param pipeline the name of the pipeline
+     * @param watcher the watcher to call when a new event is received
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchPipeline(String namespace, String pipeline, Watcher<Pipeline> watcher) throws IOException;
 
     /**
      * Set a watch on Pipeline resources
