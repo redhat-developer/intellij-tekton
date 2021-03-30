@@ -20,7 +20,6 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
-import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -49,7 +48,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_ABORTED;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 

@@ -25,7 +25,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 

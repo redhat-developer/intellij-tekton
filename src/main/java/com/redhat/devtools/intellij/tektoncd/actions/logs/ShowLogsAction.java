@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.actions.logs;
 
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
-import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -27,7 +26,9 @@ import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuild
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.*;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class ShowLogsAction extends LogsBaseAction {

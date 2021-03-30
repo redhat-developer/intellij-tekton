@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.*;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class StartLastRunAction extends TektonAction {

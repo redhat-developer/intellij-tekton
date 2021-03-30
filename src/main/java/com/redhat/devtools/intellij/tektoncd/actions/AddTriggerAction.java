@@ -51,7 +51,8 @@ import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_ABORTED;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
@@ -69,7 +70,7 @@ public class AddTriggerAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = instance().action("add trigger");
+        ActionMessage telemetry = TelemetryService.instance().action("add trigger");
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
