@@ -32,6 +32,7 @@ import java.util.Arrays;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
 
 public class CancelAction extends TektonAction {
     private static final Logger logger = LoggerFactory.getLogger(CancelAction.class);
@@ -56,7 +57,7 @@ public class CancelAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action("cancel");
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_ACTION + ": cancel");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();

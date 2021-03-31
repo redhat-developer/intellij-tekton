@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
 
 public class MirrorStartAction extends StartAction {
 
@@ -54,7 +55,7 @@ public class MirrorStartAction extends StartAction {
 
     @Override
     protected ActionMessage createTelemetry() {
-        return TelemetryService.instance().action("mirror start");
+        return TelemetryService.instance().action(NAME_PREFIX_ACTION + ": mirror start");
     }
 
 }

@@ -31,6 +31,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 
 import javax.swing.tree.TreePath;
 
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 
@@ -42,7 +43,7 @@ public class RefreshAction extends StructureTreeAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
-        ActionMessage telemetry = TelemetryService.instance().action("refresh");
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_ACTION + ": refresh");
         selected = StructureTreeAction.getElement(selected);
         TektonTreeStructure structure = (TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY);
         structure.fireModified(selected);

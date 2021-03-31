@@ -12,8 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.actions.resource;
 
 import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.ui.Messages;
-import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -29,6 +27,7 @@ import java.io.IOException;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
 
 public class CreateResourceAction extends TektonAction {
 
@@ -39,7 +38,7 @@ public class CreateResourceAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
-                .action("create resource");
+                .action(NAME_PREFIX_ACTION + ": create resource");
         ResourcesNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: PipelineResource");
