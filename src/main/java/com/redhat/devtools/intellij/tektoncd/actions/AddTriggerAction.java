@@ -128,7 +128,7 @@ public class AddTriggerAction extends TektonAction {
                         errorMessage,
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn(errorMessage);
+                logger.warn(errorMessage, e);
             }
         });
     }
@@ -150,7 +150,7 @@ public class AddTriggerAction extends TektonAction {
                 String nameBinding = YAMLHelper.getStringValueFromYAML(bindingBody, new String[] {"metadata", "name"});
                 notifySuccessOperation("TriggerBinding " + nameBinding);
             } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage(), e);
             }
         });
     }
@@ -219,7 +219,7 @@ public class AddTriggerAction extends TektonAction {
                 String bindingAsYAML = YAMLBuilder.writeValueAsString(binding);
                 triggerBindingsOnCluster.put(((Map<String, Object>)binding.get("metadata")).get("name").toString(), bindingAsYAML);
             } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage(), e);
             }
         });
 

@@ -72,7 +72,7 @@ public class ShowDiagnosticDataAction extends TektonAction {
                         Messages.showErrorDialog(
                                 "Failed to retrieve data for " + element.getName() + " in namespace " + namespace + ". An error occurred while retrieving them.\n" + e.getLocalizedMessage(),
                                 "Error"));
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
                 return;
             }
         });

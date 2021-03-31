@@ -66,7 +66,7 @@ public class CreateTaskRunTemplateAction extends TektonAction {
                             errorMessage,
                             "Error");
                 });
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
                 return;
             }
 
@@ -92,7 +92,7 @@ public class CreateTaskRunTemplateAction extends TektonAction {
                         errorMessage,
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn(errorMessage);
+                logger.warn(errorMessage, e);
             }
         });
     }
@@ -107,7 +107,7 @@ public class CreateTaskRunTemplateAction extends TektonAction {
                 telemetry
                         .error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();
-                logger.warn("Could not create trigger template: " + e.getLocalizedMessage());
+                logger.warn("Could not create trigger template: " + e.getLocalizedMessage(), e);
             }
         });
     }

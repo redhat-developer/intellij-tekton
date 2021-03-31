@@ -77,7 +77,7 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
             result.addAllElements(lookups);
             result.stopHere();
         } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
     }
 
@@ -484,7 +484,7 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
                         .withInsertHandler(new VariableCompletionAutoInsertHandler(lookup, insertOffset)));
             });
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
         return lookups;
     }
@@ -506,7 +506,7 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
                 }
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
 
         return actualName;

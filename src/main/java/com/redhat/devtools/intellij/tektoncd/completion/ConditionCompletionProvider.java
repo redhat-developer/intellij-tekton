@@ -51,7 +51,7 @@ public class ConditionCompletionProvider extends CompletionProvider<CompletionPa
                                                                     .withInsertHandler(new ConditionAutoInsertHandler()))
                             .collect(Collectors.toList());
         } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
         return lookups;
     }

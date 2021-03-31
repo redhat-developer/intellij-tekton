@@ -58,7 +58,7 @@ public class CreateTriggerBindingAction extends TektonAction {
                 telemetry
                         .error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();
-                logger.warn("Could not create trigger binding: " + e.getLocalizedMessage());
+                logger.warn("Could not create trigger binding: " + e.getLocalizedMessage(), e);
             }
         }
     }

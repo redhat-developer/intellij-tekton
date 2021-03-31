@@ -74,7 +74,7 @@ public class TektonHubAction extends TektonAction {
                         Messages.showErrorDialog(
                                 errorMessage,
                                 "Error"));
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
             }
         });
 

@@ -43,7 +43,7 @@ public class TriggerBindingConfigurationModel extends ConfigurationModel {
                 }
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
     }
 

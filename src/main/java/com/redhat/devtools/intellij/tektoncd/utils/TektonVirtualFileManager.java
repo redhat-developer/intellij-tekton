@@ -81,7 +81,7 @@ public class TektonVirtualFileManager {
                             VirtualFile file = tvfm.getResourceRemotely(namespace, kind, resourceName);
                             tektonFiles.put(id, file);
                         } catch (IOException e) {
-                            logger.warn(e.getLocalizedMessage());
+                            logger.warn(e.getLocalizedMessage(), e);
                         }
                     }
                     case DELETED: {

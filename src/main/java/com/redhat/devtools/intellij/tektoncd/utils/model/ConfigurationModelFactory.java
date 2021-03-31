@@ -39,7 +39,7 @@ public class ConfigurationModelFactory {
                 }
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
 
         return null;

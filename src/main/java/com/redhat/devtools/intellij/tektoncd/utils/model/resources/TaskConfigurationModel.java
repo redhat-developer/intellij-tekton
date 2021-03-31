@@ -44,7 +44,7 @@ public class TaskConfigurationModel extends ResourceConfigurationModel {
                 outputs.addAll(getOutputs(outputsNode));
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
         return outputs;
     }

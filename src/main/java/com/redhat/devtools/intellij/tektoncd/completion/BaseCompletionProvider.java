@@ -52,7 +52,7 @@ public abstract class BaseCompletionProvider extends CompletionProvider<Completi
                     taskPosition = StreamSupport.stream(tasksNodeUntilSelected.get("tasks").spliterator(), true).count();
                 }
             } catch (IOException e) {
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
             }
 
             // get all tasks node found in the pipeline and add valid options to lookup list
@@ -71,7 +71,7 @@ public abstract class BaseCompletionProvider extends CompletionProvider<Completi
                 }
             }
         } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
 
         return tasks;

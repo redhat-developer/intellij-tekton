@@ -70,7 +70,7 @@ public class DeployHelper {
             String errorMsg = createErrorMessage(model, e);
             telemetry.error(anonymizeResource(model.getName(), namespace, errorMsg))
                     .send();
-            logger.warn(errorMsg);
+            logger.warn(errorMsg, e);
             // give a visual notification to user if an error occurs during saving
             throw new IOException(errorMsg, e);
         }

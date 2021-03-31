@@ -73,7 +73,7 @@ public class HubModel {
                 Resources resources = resApi.resourceList(500);
                 completableFuture.complete(resources.getData().stream().map(resource -> new HubItem(resource)).collect(Collectors.toList()));
             } catch (ApiException e) {
-                logger.warn(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage(), e);
             }
         });
         return completableFuture;
@@ -83,10 +83,8 @@ public class HubModel {
         if (allHubItems.isEmpty()) {
             try {
                 allHubItems = retrieveAllHubItems().get();
-            } catch (InterruptedException e) {
-                logger.warn(e.getLocalizedMessage());
-            } catch (ExecutionException e) {
-                logger.warn(e.getLocalizedMessage());
+            } catch (InterruptedException | ExecutionException e) {
+                logger.warn(e.getLocalizedMessage(), e);
             }
         }
 

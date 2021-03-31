@@ -42,7 +42,7 @@ public abstract class RunConfigurationModel extends ConfigurationModel {
                 }
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
 
         return parameters;
@@ -62,7 +62,7 @@ public abstract class RunConfigurationModel extends ConfigurationModel {
                 }
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
 
         return taskServiceAccounts;
@@ -89,7 +89,7 @@ public abstract class RunConfigurationModel extends ConfigurationModel {
                 }
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
 
         return resources;
@@ -115,7 +115,7 @@ public abstract class RunConfigurationModel extends ConfigurationModel {
                 }
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
         return workspaces;
     }

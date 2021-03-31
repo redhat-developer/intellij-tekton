@@ -553,7 +553,7 @@ public class TknCli implements Tkn {
                         .property(TelemetryService.PROP_RESOURCE_KIND, kind)
                         .error(errorMessage)
                         .send();
-                logger.warn(errorMessage);
+                logger.warn(errorMessage, e);
             }
         };
     }
@@ -569,7 +569,7 @@ public class TknCli implements Tkn {
                                 .property(PROP_RESOURCE_KIND, kind)
                                 .error(errorMessage)
                                 .send();
-                        logger.warn(errorMessage);
+                        logger.warn(errorMessage, e);
                     }
                 }
         );

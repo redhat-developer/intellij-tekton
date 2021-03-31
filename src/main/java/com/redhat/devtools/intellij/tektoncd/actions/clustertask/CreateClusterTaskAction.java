@@ -54,10 +54,11 @@ public class CreateClusterTaskAction extends TektonAction {
                 VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_CLUSTERTASKS, item);
                 telemetry.success().send();
             } catch (IOException e) {
+                String errorMessage = "Could not create cluster cluster task: " + e.getLocalizedMessage();
                 telemetry
-                        .error(anonymizeResource(name, namespace, e.getMessage()))
+                        .error(anonymizeResource(name, namespace, errorMessage))
                         .send();
-                logger.warn("Could not create cluster cluster task: " + e.getLocalizedMessage());
+                logger.warn(errorMessage, e);
             }
         }
     }

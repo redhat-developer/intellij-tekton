@@ -44,7 +44,7 @@ public abstract class ResourceConfigurationModel extends ConfigurationModel {
                 inputs.addAll(getInputsFromNode(inputsNode, ""));
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
 
         return inputs;
@@ -60,7 +60,7 @@ public abstract class ResourceConfigurationModel extends ConfigurationModel {
                 inputs.addAll(getInputsFromNode(paramsNode, FLAG_PARAMETER));
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
 
         return inputs;
@@ -79,7 +79,7 @@ public abstract class ResourceConfigurationModel extends ConfigurationModel {
                 }
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
         return workspaces;
     }
@@ -106,7 +106,7 @@ public abstract class ResourceConfigurationModel extends ConfigurationModel {
                         result.add(i);
                     }
                 } catch (Exception e) {
-                    logger.warn(e.getLocalizedMessage());
+                    logger.warn(e.getLocalizedMessage(), e);
                 }
             }
         }

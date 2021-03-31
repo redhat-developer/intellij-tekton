@@ -64,7 +64,7 @@ public class StartLastRunAction extends TektonAction {
                         errorMessage,
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
             }
         });
     }

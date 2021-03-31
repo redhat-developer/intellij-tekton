@@ -60,7 +60,7 @@ public class CreateTriggerTemplateAction extends TektonAction {
                 telemetry
                         .error(anonymizeResource(name, namespace, e.getMessage()))
                         .send();
-                logger.warn("Could not create trigger template: " + e.getLocalizedMessage());
+                logger.warn("Could not create trigger template: " + e.getLocalizedMessage(), e);
             }
         }
     }

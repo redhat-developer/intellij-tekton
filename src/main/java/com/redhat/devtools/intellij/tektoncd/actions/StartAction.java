@@ -123,7 +123,7 @@ public class StartAction extends TektonAction {
                         errorMessage,
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
             }
         });
     }
@@ -147,7 +147,7 @@ public class StartAction extends TektonAction {
                         errorMessage,
                         "Error");
             });
-            logger.warn("Error: " + errorMessage);
+            logger.warn("Error: " + errorMessage, e);
         }
         return model;
     }

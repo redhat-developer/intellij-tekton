@@ -175,10 +175,11 @@ public class TreeHelper {
             VirtualFileHelper.openVirtualFileInEditor(project, namespace, name, content, kind, false);
             telemetry.send();
         } catch (IOException e) {
+            String errorMessage = "Could not open resource in editor: " + e.getLocalizedMessage();
             telemetry
-                    .error(anonymizeResource(name, namespace, e.getMessage()))
+                    .error(anonymizeResource(name, namespace, errorMessage))
                     .send();
-            logger.warn("Could not open resource in editor: " + e.getLocalizedMessage());
+            logger.warn(errorMessage, e);
         }
     }
 

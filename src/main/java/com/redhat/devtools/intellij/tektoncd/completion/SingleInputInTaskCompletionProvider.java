@@ -124,7 +124,7 @@ public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider 
                 }
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
         return Collections.emptyList();
     }
@@ -216,7 +216,7 @@ public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider 
                     taskPosition = StreamSupport.stream(tasksNodeUntilSelected.get("tasks").spliterator(), true).count();
                 }
             } catch (IOException e) {
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
             }
 
             // get all tasks node found in the pipeline and add valid options to lookup list
@@ -237,7 +237,7 @@ public class SingleInputInTaskCompletionProvider extends BaseCompletionProvider 
                 }
             }
         } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
 
         return null;
