@@ -52,9 +52,9 @@ public class ShowDiagnosticDataAction extends TektonAction {
                     hasDataToShow = tkncli.getDiagnosticData(namespace, "tekton.dev/taskRun", element.getName());
                 }
                 if (!hasDataToShow) {
-                    String errorMessage = "No data available for " + element.getName() + " in namespace " + namespace + ".";
+                    String message = "No data available for " + element.getName() + " in namespace " + namespace + ".";
                     telemetry
-                            .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                            .result(anonymizeResource(element.getName(), namespace, message))
                             .send();
                     UIHelper.executeInUI(() ->
                             Messages.showWarningDialog(
