@@ -49,7 +49,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_START_STOP;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_ABORTED;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
@@ -179,10 +179,20 @@ public class StartAction extends TektonAction {
         ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(nodeToRefresh);
     }
 
-    private String start(Tkn tkncli, String namespace, StartResourceModel model, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, String> params, Map<String, Workspace> workspaces, Map<String, String> inputResources, Map<String, String> outputResources, String runPrefixName) throws IOException {
+    private String start(Tkn tkncli,
+                         String namespace,
+                         StartResourceModel model,
+                         String serviceAccount,
+                         Map<String, String> taskServiceAccount,
+                         Map<String, String> params,
+                         Map<String, Workspace> workspaces,
+                         Map<String, String> inputResources,
+                         Map<String, String> outputResources,
+                         String runPrefixName) throws IOException {
         String runName = null;
         if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
-            runName = tkncli.startPipeline(namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
+            runName = tkncli.startPipeline(
+                    namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
         } else if (model.getKind().equalsIgnoreCase(KIND_TASK)) {
             runName = tkncli.startTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
         } else if (model.getKind().equalsIgnoreCase(KIND_CLUSTERTASK)) {
@@ -192,6 +202,6 @@ public class StartAction extends TektonAction {
     }
 
     protected ActionMessage createTelemetry() {
-         return TelemetryService.instance().action(NAME_PREFIX_ACTION + ": start");
+         return TelemetryService.instance().action(NAME_PREFIX_START_STOP + ": start");
     }
 }

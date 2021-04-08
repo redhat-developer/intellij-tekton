@@ -26,7 +26,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
@@ -40,7 +40,7 @@ public class CreateEventListenerAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
-                .action(NAME_PREFIX_ACTION + ": create event listener")
+                .action(NAME_PREFIX_CRUD + ": create event listener")
                 .property(PROP_RESOURCE_KIND, KIND_EVENTLISTENER);
         EventListenersNode item = getElement(selected);
         String namespace = item.getParent().getName();

@@ -27,8 +27,8 @@ import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuild
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_DIAG;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
 
 public class FollowLogsAction extends LogsBaseAction {
 
@@ -78,6 +78,6 @@ public class FollowLogsAction extends LogsBaseAction {
 
     @Override
     protected TelemetryMessageBuilder.ActionMessage createTelemetry() {
-        return TelemetryService.instance().action(NAME_PREFIX_ACTION + ": follow logs");
+        return TelemetryService.instance().action(NAME_PREFIX_DIAG + ": follow logs");
     }
 }

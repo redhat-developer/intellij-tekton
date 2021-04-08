@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 
 public class DeleteAction extends TektonAction {
 
@@ -78,7 +78,7 @@ public class DeleteAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_ACTION + ": delete resource");
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + ": delete resource");
         ParentableNode[] elements = Arrays.stream(selected).map(item -> getElement(item)).toArray(ParentableNode[]::new);
         int resultDialog = UIHelper.executeInUI(() -> {
             String name, kind, title, deleteResourcesText, deleteChkText;

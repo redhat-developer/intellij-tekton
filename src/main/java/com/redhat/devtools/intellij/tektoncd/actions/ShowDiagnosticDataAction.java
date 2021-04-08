@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.tree.TreePath;
 import java.io.IOException;
 
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_DIAG;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.instance;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
@@ -38,7 +38,7 @@ public class ShowDiagnosticDataAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = instance().action(NAME_PREFIX_ACTION + ": show diagnostic data");
+        ActionMessage telemetry = instance().action(NAME_PREFIX_DIAG + ": show diagnostic data");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();

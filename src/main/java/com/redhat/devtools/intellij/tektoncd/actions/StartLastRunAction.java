@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_START_STOP;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
@@ -46,7 +46,7 @@ public class StartLastRunAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        telemetry = TelemetryService.instance().action(NAME_PREFIX_ACTION + ": start last run");
+        telemetry = TelemetryService.instance().action(NAME_PREFIX_START_STOP + ": start last run");
         ExecHelper.submit(() -> {
             ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
             String namespace = element.getParent().getParent().getName();

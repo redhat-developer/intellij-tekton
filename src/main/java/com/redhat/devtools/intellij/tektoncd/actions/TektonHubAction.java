@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import static com.redhat.devtools.intellij.tektoncd.Constants.HUB_CATALOG_TAG;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 
 public class TektonHubAction extends TektonAction {
     Logger logger = LoggerFactory.getLogger(TektonHubAction.class);
@@ -43,7 +43,7 @@ public class TektonHubAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_ACTION + ": tekton hub");
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + ": tekton hub");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();

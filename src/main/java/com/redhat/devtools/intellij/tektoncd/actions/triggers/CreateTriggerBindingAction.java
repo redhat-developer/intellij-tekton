@@ -26,7 +26,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
@@ -40,7 +40,7 @@ public class CreateTriggerBindingAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
-                .action(NAME_PREFIX_ACTION + ": create trigger binding")
+                .action(NAME_PREFIX_CRUD + ": create trigger binding")
                 .property(PROP_RESOURCE_KIND, KIND_TRIGGERBINDING);
         TriggerBindingsNode item = getElement(selected);
         String namespace = item.getParent().getName();

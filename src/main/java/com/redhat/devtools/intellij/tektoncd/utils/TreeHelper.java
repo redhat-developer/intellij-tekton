@@ -71,7 +71,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDIN
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class TreeHelper {
@@ -170,7 +170,7 @@ public class TreeHelper {
         String name = element.getName();
         String content = yamlAndKind.getFirst();
         String kind = yamlAndKind.getSecond();
-        TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_ACTION + ": open resource in editor")
+        TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + ": open resource in editor")
                 .property(TelemetryService.PROP_RESOURCE_KIND, yamlAndKind.second);
         try {
             VirtualFileHelper.openVirtualFileInEditor(project, namespace, name, content, kind, false);

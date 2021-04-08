@@ -27,7 +27,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
@@ -42,7 +42,7 @@ public class CreateTriggerTemplateAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
-                .action(NAME_PREFIX_ACTION + ": create trigger template")
+                .action(NAME_PREFIX_CRUD + ": create trigger template")
                 .property(PROP_RESOURCE_KIND, KIND_TRIGGERTEMPLATE);
         TriggerTemplatesNode item = getElement(selected);
         String namespace = item.getParent().getName();

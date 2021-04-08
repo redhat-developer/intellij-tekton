@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_DIAG;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class ShowLogsAction extends LogsBaseAction {
@@ -69,6 +69,6 @@ public class ShowLogsAction extends LogsBaseAction {
 
     @Override
     protected TelemetryMessageBuilder.ActionMessage createTelemetry() {
-        return TelemetryService.instance().action(NAME_PREFIX_ACTION + ": show logs");
+        return TelemetryService.instance().action(NAME_PREFIX_DIAG + ": show logs");
     }
 }

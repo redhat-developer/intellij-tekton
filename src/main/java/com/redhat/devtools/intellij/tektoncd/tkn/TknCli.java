@@ -78,7 +78,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEAC
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_ACTION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_DIAG;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 
 public class TknCli implements Tkn {
@@ -550,7 +550,7 @@ public class TknCli implements Tkn {
                 VirtualFileHelper.openVirtualFileInEditor(project, fileName, "");
             } catch (IOException e) {
                 String errorMessage = "Could open empty editor for logs: " + e.getLocalizedMessage();
-                TelemetryService.instance().action(NAME_PREFIX_ACTION + ": follow logs in editor")
+                TelemetryService.instance().action(NAME_PREFIX_DIAG + ": follow logs in editor")
                         .property(TelemetryService.PROP_RESOURCE_KIND, kind)
                         .error(errorMessage)
                         .send();
@@ -566,7 +566,7 @@ public class TknCli implements Tkn {
                         VirtualFileHelper.openVirtualFileInEditor(project, fileName, sb);
                     } catch (IOException e) {
                         String errorMessage = "Could not output logs to editor: " + e.getLocalizedMessage();
-                        TelemetryService.instance().action(NAME_PREFIX_ACTION + ": output logs in editor")
+                        TelemetryService.instance().action(NAME_PREFIX_DIAG + ": output logs in editor")
                                 .property(PROP_RESOURCE_KIND, kind)
                                 .error(errorMessage)
                                 .send();

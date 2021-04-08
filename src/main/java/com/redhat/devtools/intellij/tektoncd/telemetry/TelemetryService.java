@@ -15,7 +15,10 @@ import com.redhat.devtools.intellij.telemetry.core.util.Lazy;
 
 public class TelemetryService {
 
-    public static final String NAME_PREFIX_ACTION = "action: ";
+    public static final String NAME_PREFIX_CRUD = "crud-";
+    public static final String NAME_PREFIX_DIAG = "diag-";
+    public static final String NAME_PREFIX_START_STOP = "start_stop-";
+    public static final String NAME_PREFIX_MISC = "misc-";
     public static final String PROP_RESOURCE_KIND = "resource_kind";
     public static final String PROP_RESOURCE_VERSION = "resource_version";
     public static final String PROP_RESOURCE_CRUD = "resource_crud";
