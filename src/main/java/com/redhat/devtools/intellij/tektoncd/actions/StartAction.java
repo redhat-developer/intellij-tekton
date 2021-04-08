@@ -202,6 +202,6 @@ public class StartAction extends TektonAction {
     }
 
     protected ActionMessage createTelemetry() {
-         return TelemetryService.instance().action(NAME_PREFIX_START_STOP + ": start");
+         return TelemetryService.instance().action(NAME_PREFIX_START_STOP + "start");
     }
 }

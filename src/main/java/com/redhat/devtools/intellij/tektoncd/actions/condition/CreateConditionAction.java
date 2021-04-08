@@ -41,7 +41,7 @@ public class CreateConditionAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + ": create condition")
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "create condition")
                 .property(PROP_RESOURCE_KIND, KIND_CONDITION);
         ConditionsNode item = getElement(selected);
         String namespace = item.getParent().getName();

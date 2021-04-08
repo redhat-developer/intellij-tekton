@@ -39,7 +39,7 @@ public class CreateClusterTaskAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + ": create cluster task")
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "create cluster task")
                 .property(PROP_RESOURCE_KIND, KIND_CLUSTERTASK);
         ClusterTasksNode item = getElement(selected);
         String namespace = item.getParent().getName();

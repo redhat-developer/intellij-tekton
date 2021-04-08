@@ -40,7 +40,7 @@ public class CreateTriggerBindingAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
-                .action(NAME_PREFIX_CRUD + ": create trigger binding")
+                .action(NAME_PREFIX_CRUD + "create trigger binding")
                 .property(PROP_RESOURCE_KIND, KIND_TRIGGERBINDING);
         TriggerBindingsNode item = getElement(selected);
         String namespace = item.getParent().getName();

@@ -46,7 +46,7 @@ public class StartLastRunAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        telemetry = TelemetryService.instance().action(NAME_PREFIX_START_STOP + ": start last run");
+        telemetry = TelemetryService.instance().action(NAME_PREFIX_START_STOP + "start last run");
         ExecHelper.submit(() -> {
             ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
             String namespace = element.getParent().getParent().getName();

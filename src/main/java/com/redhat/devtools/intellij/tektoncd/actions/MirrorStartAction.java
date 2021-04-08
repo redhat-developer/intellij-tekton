@@ -55,7 +55,7 @@ public class MirrorStartAction extends StartAction {
 
     @Override
     protected ActionMessage createTelemetry() {
-        return TelemetryService.instance().action(NAME_PREFIX_START_STOP + ": mirror start");
+        return TelemetryService.instance().action(NAME_PREFIX_START_STOP + "mirror start");
     }
 
 }

@@ -45,7 +45,7 @@ public class DeployHelper {
     private DeployHelper() {}
 
     public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage, boolean updateLabels) throws IOException {
-        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + ": save to cluster");
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "save to cluster");
 
         DeployModel model = createModel(yaml, telemetry);
 

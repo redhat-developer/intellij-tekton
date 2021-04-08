@@ -38,7 +38,7 @@ public class CreateResourceAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
-                .action(NAME_PREFIX_CRUD + ": create resource");
+                .action(NAME_PREFIX_CRUD + "create resource");
         ResourcesNode item = getElement(selected);
         String namespace = item.getParent().getName();
         String content = getSnippet("Tekton: PipelineResource");

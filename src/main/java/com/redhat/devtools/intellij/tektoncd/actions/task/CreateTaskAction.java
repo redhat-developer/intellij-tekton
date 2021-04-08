@@ -40,7 +40,7 @@ public class CreateTaskAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
-                .action(NAME_PREFIX_CRUD + ": create task")
+                .action(NAME_PREFIX_CRUD + "create task")
                 .property(PROP_RESOURCE_KIND, KIND_TASK);
         TasksNode item = getElement(selected);
         String namespace = item.getParent().getName();

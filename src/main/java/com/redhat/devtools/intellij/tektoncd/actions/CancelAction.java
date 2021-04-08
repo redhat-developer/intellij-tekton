@@ -57,7 +57,7 @@ public class CancelAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_START_STOP + ": cancel");
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_START_STOP + "cancel");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();

@@ -69,6 +69,6 @@ public class ShowLogsAction extends LogsBaseAction {
 
     @Override
     protected TelemetryMessageBuilder.ActionMessage createTelemetry() {
-        return TelemetryService.instance().action(NAME_PREFIX_DIAG + ": show logs");
+        return TelemetryService.instance().action(NAME_PREFIX_DIAG + "show logs");
     }
 }

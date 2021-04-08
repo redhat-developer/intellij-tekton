@@ -38,7 +38,7 @@ public class ShowDiagnosticDataAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = instance().action(NAME_PREFIX_DIAG + ": show diagnostic data");
+        ActionMessage telemetry = instance().action(NAME_PREFIX_DIAG + "show diagnostic data");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();

@@ -42,7 +42,7 @@ public class CreateTriggerTemplateAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance()
-                .action(NAME_PREFIX_CRUD + ": create trigger template")
+                .action(NAME_PREFIX_CRUD + "create trigger template")
                 .property(PROP_RESOURCE_KIND, KIND_TRIGGERTEMPLATE);
         TriggerTemplatesNode item = getElement(selected);
         String namespace = item.getParent().getName();
