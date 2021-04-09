@@ -186,6 +186,9 @@
                      level="WARNING" groupKey="inspections.group.name" enabledByDefault="true"
                      implementationClass="com.redhat.devtools.intellij.tektoncd.inspector.FinallyReferencesInspector"/>
     <nonProjectFileWritingAccessExtension implementation="com.redhat.devtools.intellij.common.editor.AllowNonProjectEditing" />
+    <intentionAction>
+      <className>com.redhat.devtools.intellij.tektoncd.actions.intention.InlineToRefTaskAction</className>
+    </intentionAction>
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
