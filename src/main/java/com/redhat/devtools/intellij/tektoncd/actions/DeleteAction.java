@@ -44,6 +44,11 @@ import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessa
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+
 public class DeleteAction extends TektonAction {
 
     /**
@@ -81,7 +86,7 @@ public class DeleteAction extends TektonAction {
         ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "delete resource");
         ParentableNode[] elements = Arrays.stream(selected).map(item -> getElement(item)).toArray(ParentableNode[]::new);
         int resultDialog = UIHelper.executeInUI(() -> {
-            String name, kind, title, deleteResourcesText, deleteChkText;
+            String name, kind, title, deleteChkText = "";
             String dialogText = "Are you sure you want to delete ";
 
             if (elements.length == 1) {
@@ -89,23 +94,20 @@ public class DeleteAction extends TektonAction {
                 kind = elements[0].getClass().getSimpleName().toLowerCase().replace("node", "");
                 title = "Delete " + name;
                 dialogText += kind + " " + name + " ?";
-                deleteResourcesText = "The " + kind + " may also have some related resources (" + kind + "Runs).";
-                deleteChkText = "Yes, delete the " + kind + " and its related resources";
+                if (kind.equalsIgnoreCase(KIND_PIPELINE) || kind.equalsIgnoreCase(KIND_TASK) || kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+                    deleteChkText = "Also delete its related resources (" + kind + "Runs)";
+                }
             } else {
                 title = "Delete multiple items";
                 dialogText += "the following items?\n";
                 for (ParentableNode element: elements) {
                     dialogText += element.getName() + "\n";
                 }
-                deleteResourcesText = "These items may also have some related resources (PipelineRuns, TaskRuns..).";
-                deleteChkText = "Yes, delete all items and their related resources";
+                deleteChkText = "Also delete their related resources (PipelineRuns, TaskRuns..)";
             }
-            deleteResourcesText += " Do you wish to delete them all as well?";
 
-
-            DeleteDialog delDialog = new DeleteDialog(null, title, dialogText, deleteResourcesText, deleteChkText);
+            DeleteDialog delDialog = new DeleteDialog(null, title, dialogText, deleteChkText);
             delDialog.show();
-
 
             if (delDialog.isOK()) {
                 return delDialog.hasToDeleteResources() ? OK_DELETE_RESOURCES_CODE : OK_DELETE_CODE;
