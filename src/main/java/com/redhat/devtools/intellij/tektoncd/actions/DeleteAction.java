@@ -33,26 +33,19 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.tektoncd.ui.DeleteDialog;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
-
-import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.swing.tree.TreePath;
 
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
-
-
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
-
-
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 
 public class DeleteAction extends TektonAction {
 
@@ -98,7 +91,7 @@ public class DeleteAction extends TektonAction {
                 delDialog.show();
 
                 if (delDialog.isOK()) {
-                    return delDialog.hasToDeleteResources() ? OK_DELETE_RESOURCES_CODE : OK_DELETE_CODE;
+                    return delDialog.hasToDeleteRelatedResources() ? OK_DELETE_RESOURCES_CODE : OK_DELETE_CODE;
                 }
 
                 return CANCEL_CODE;
@@ -155,25 +148,19 @@ public class DeleteAction extends TektonAction {
         return sb.toString();
     }
 
-    private String getDeleteRelatedResourcesText(ParentableNode[] elements) {
-        String deleteResourcesText;
-        if (elements.length == 1) {
-            String kind = elements[0].getClass().getSimpleName().toLowerCase().replace("node", "");
-            deleteResourcesText = "The " + kind + " may also have some related resources (" + kind + "Runs).";
-        } else {
-            deleteResourcesText = "These items may also have some related resources (PipelineRuns, TaskRuns..).";
-        }
-        deleteResourcesText += " Do you wish to delete them all as well?";
-        return deleteResourcesText;
-    }
-
     private String getDeleteChkText(ParentableNode[] elements) {
         if (elements.length == 1) {
             String kind = elements[0].getClass().getSimpleName().toLowerCase().replace("node", "");
-            return "Yes, delete the " + kind + " and its related resources";
+            return mayHaveRelatedResource(elements[0]) ? "Also delete its related resources (" + kind + "Runs)" : "";
         } else {
-            return "Yes, delete all items and their related resources";
+            return "Also delete their related resources (PipelineRuns, TaskRuns..)";
         }
+    }
+
+    private boolean mayHaveRelatedResource(ParentableNode element) {
+        return element instanceof PipelineNode
+                || element instanceof TaskNode
+                || element instanceof ClusterTaskNode;
     }
 
     private String getUsagesAsText(Tkn tkn, String kind, String name) {
