@@ -21,6 +21,7 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
@@ -50,6 +51,11 @@ import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_ABORTED;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class AddTriggerAction extends TektonAction {
     private static final Logger logger = LoggerFactory.getLogger(AddTriggerAction.class);
@@ -59,15 +65,13 @@ public class AddTriggerAction extends TektonAction {
     @Override
     public boolean isVisible(Object selected) {
         // if triggers are not installed, don't show this action
-        if (((ParentableNode)selected).getRoot().getTkn().isTektonTriggersAware() &&
-                (selected instanceof PipelineNode || selected instanceof TaskNode)) {
-            return true;
-        }
-        return false;
+        return (((ParentableNode)selected).getRoot().getTkn().isTektonTriggersAware()
+                && (selected instanceof PipelineNode || selected instanceof TaskNode));
     }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "add trigger");
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
@@ -81,13 +85,16 @@ public class AddTriggerAction extends TektonAction {
                 }
 
                 String kind = (element instanceof PipelineNode) ? "Pipeline " : "Task ";
+                telemetry.property(PROP_RESOURCE_KIND, kind);
                 AddTriggerWizard addTriggerWizard = openTriggerBindingWizard(anActionEvent, element, triggerBindingTemplates, model, kind);
                 if (!addTriggerWizard.isOK()) {
+                    telemetry.result(VALUE_ABORTED)
+                            .send();
                     return;
                 }
                 // take/create all triggerBindings
                 Map<String, String> triggerBindingsSelected = model.getBindingsSelectedByUser();
-                saveTriggerBindings(triggerBindingsSelected, namespace, model, tkncli);
+                saveTriggerBindings(triggerBindingsSelected, namespace, tkncli);
 
                 // get all params from bindings
                 Set<String> paramsFromBindings = model.extractVariablesFromSelectedBindings();
@@ -108,16 +115,21 @@ public class AddTriggerAction extends TektonAction {
                         .map(binding -> binding.replace(" NEW", ""))
                         .collect(Collectors.toList()), triggerTemplateName);
                 saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
+                telemetry.result("bindings and resources created")
+                        .send();
                 notifySuccessOperation("EventListener " + eventListenerName);
                 TreeHelper.refresh(getEventProject(anActionEvent), (ParentableNode) ((ParentableNode) element.getParent()).getParent());
             } catch (IOException e) {
                 String errorMessage = "Failed to add a trigger to " + element.getName() + " in namespace " + namespace + "\n" + e.getLocalizedMessage();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         errorMessage,
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn(errorMessage);
+                logger.warn(errorMessage, e);
             }
         });
     }
@@ -131,7 +143,7 @@ public class AddTriggerAction extends TektonAction {
         });
     }
 
-    private void saveTriggerBindings(Map<String, String> triggerBindingsSelected, String namespace, AddTriggerModel model, Tkn tkncli) {
+    private void saveTriggerBindings(Map<String, String> triggerBindingsSelected, String namespace, Tkn tkncli) {
         triggerBindingsSelected.keySet().stream().filter(binding -> binding.endsWith(" NEW")).forEach(binding -> {
             try {
                 String bindingBody = triggerBindingsSelected.get(binding);
@@ -139,7 +151,7 @@ public class AddTriggerAction extends TektonAction {
                 String nameBinding = YAMLHelper.getStringValueFromYAML(bindingBody, new String[] {"metadata", "name"});
                 notifySuccessOperation("TriggerBinding " + nameBinding);
             } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage(), e);
             }
         });
     }
@@ -208,7 +220,7 @@ public class AddTriggerAction extends TektonAction {
                 String bindingAsYAML = YAMLBuilder.writeValueAsString(binding);
                 triggerBindingsOnCluster.put(((Map<String, Object>)binding.get("metadata")).get("name").toString(), bindingAsYAML);
             } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage(), e);
             }
         });
 
@@ -217,10 +229,9 @@ public class AddTriggerAction extends TektonAction {
 
     private void normalizeVariablesInterpolation(AddTriggerModel model, Set<String> variables) {
         model.getParams().forEach(param -> {
-            if (param.value().startsWith("$")) {
-                if (variables.contains(param.value().substring(1))) {
+            if (param.value().startsWith("$")
+                && (variables.contains(param.value().substring(1)))) {
                     param.setValue("$(tt.params." + param.value().substring(1) + ")");
-                }
             }
         });
     }

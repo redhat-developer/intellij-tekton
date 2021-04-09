@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -18,13 +19,19 @@ import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_START_STOP;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+
 public class MirrorStartAction extends StartAction {
 
-    public MirrorStartAction() { super(PipelineRunNode.class, TaskRunNode.class); }
+    public MirrorStartAction() {
+        super(PipelineRunNode.class, TaskRunNode.class);
+    }
 
     @Override
     protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
@@ -45,4 +52,10 @@ public class MirrorStartAction extends StartAction {
         model.adaptsToRun(runConfiguration);
         return model;
     }
+
+    @Override
+    protected ActionMessage createTelemetry() {
+        return TelemetryService.instance().action(NAME_PREFIX_START_STOP + "mirror start");
+    }
+
 }

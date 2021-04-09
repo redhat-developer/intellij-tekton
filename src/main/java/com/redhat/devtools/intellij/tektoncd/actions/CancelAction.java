@@ -15,22 +15,27 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.RunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import java.io.IOException;
-import java.util.Arrays;
-import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.tree.TreePath;
+import java.io.IOException;
+import java.util.Arrays;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_START_STOP;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CancelAction extends TektonAction {
-    Logger logger = LoggerFactory.getLogger(CancelAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(CancelAction.class);
 
     public CancelAction() { super(RunNode.class); }
 
@@ -52,16 +57,22 @@ public class CancelAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_START_STOP + "cancel");
         ExecHelper.submit(() -> {
             ParentableNode element = getElement(selected);
             String namespace = element.getNamespace();
             try {
                 if (element instanceof PipelineRunNode) {
                     tkncli.cancelPipelineRun(namespace, element.getName());
+                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_PIPELINERUN).send();
                 } else if (element instanceof TaskRunNode) {
                     tkncli.cancelTaskRun(namespace, element.getName());
+                    telemetry.property(TelemetryService.PROP_RESOURCE_KIND, Constants.KIND_TASKRUN).send();
                 }
             } catch (IOException e) {
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, e.getMessage()))
+                        .send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
                         element.getName() + " in namespace " + namespace + " failed to cancel\n" + e.getLocalizedMessage(),

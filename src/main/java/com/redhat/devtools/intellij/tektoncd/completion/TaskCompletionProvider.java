@@ -64,7 +64,7 @@ public class TaskCompletionProvider extends CompletionProvider<CompletionParamet
                     .collect(Collectors.toList()));
             lookups.sort(Comparator.comparing(item -> ((HasMetadata) item.getObject()).getMetadata().getName()));
         } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
         return lookups;
     }

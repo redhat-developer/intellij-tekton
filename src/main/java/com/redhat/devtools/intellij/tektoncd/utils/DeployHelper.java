@@ -18,6 +18,7 @@ import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -28,27 +29,49 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_CRUD;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_VERSION;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_ABORTED;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_RESOURCE_CRUD_CREATE;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_RESOURCE_CRUD_UPDATE;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
+
 public class DeployHelper {
     private static final Logger logger = LoggerFactory.getLogger(DeployHelper.class);
 
+    private DeployHelper() {}
+
     public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage, boolean updateLabels) throws IOException {
-        DeployModel model = isValid(yaml);
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "save to cluster");
+
+        DeployModel model = createModel(yaml, telemetry);
 
         if (!isSaveConfirmed(confirmationMessage)) {
+            telemetry.result(VALUE_ABORTED)
+                    .send();
             return false;
         }
 
         Tkn tknCli = TreeHelper.getTkn(project);
         if (tknCli == null) {
+            telemetry.error("tkn not found")
+                    .send();
             return false;
         }
 
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(model.getKind()) ? "" : namespace;
-            executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
+            boolean isNewResource = executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
+            telemetry.property(PROP_RESOURCE_CRUD, (isNewResource ? VALUE_RESOURCE_CRUD_CREATE : VALUE_RESOURCE_CRUD_UPDATE))
+                    .send();
         } catch (KubernetesClientException e) {
             String errorMsg = createErrorMessage(model, e);
-            logger.warn(errorMsg);
+            telemetry.error(anonymizeResource(model.getName(), namespace, errorMsg))
+                    .send();
+            logger.warn(errorMsg, e);
             // give a visual notification to user if an error occurs during saving
             throw new IOException(errorMsg, e);
         }
@@ -116,30 +139,39 @@ public class DeployHelper {
         return errorMsg;
     }
 
-    public static DeployModel isValid(String yaml) throws IOException {
-        String name = YAMLHelper.getStringValueFromYAML(yaml, new String[] {"metadata", "name"});
-        String generateName = YAMLHelper.getStringValueFromYAML(yaml, new String[] {"metadata", "generateName"});
-        if (Strings.isNullOrEmpty(name) && Strings.isNullOrEmpty(generateName)) {
-            throw new IOException("Tekton file has not a valid format. Name field is not valid or found.");
+    private static DeployModel createModel(String yaml, ActionMessage telemetry) throws IOException {
+        try {
+            String name = YAMLHelper.getStringValueFromYAML(yaml, new String[]{"metadata", "name"});
+            String generateName = YAMLHelper.getStringValueFromYAML(yaml, new String[]{"metadata", "generateName"});
+            if (Strings.isNullOrEmpty(name) && Strings.isNullOrEmpty(generateName)) {
+                throw new IOException("Tekton file has not a valid format. Name field is not valid or found.");
+            }
+            String apiVersion = YAMLHelper.getStringValueFromYAML(yaml, new String[]{"apiVersion"});
+            if (Strings.isNullOrEmpty(apiVersion)) {
+                throw new IOException("Tekton file has not a valid format. ApiVersion field is not found.");
+            }
+            String kind = YAMLHelper.getStringValueFromYAML(yaml, new String[]{"kind"});
+            if (Strings.isNullOrEmpty(kind)) {
+                throw new IOException("Tekton file has not a valid format. Kind field is not found.");
+            }
+            CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(apiVersion, TreeHelper.getPluralKind(kind));
+            if (crdContext == null) {
+                throw new IOException("Tekton file has not a valid format. ApiVersion field contains an invalid value.");
+            }
+            JsonNode spec = YAMLHelper.getValueFromYAML(yaml, new String[]{"spec"});
+            if (spec == null) {
+                throw new IOException("Tekton file has not a valid format. Spec field is not found.");
+            }
+            JsonNode labels = YAMLHelper.getValueFromYAML(yaml, new String[]{"metadata", "labels"});
+            DeployModel model = new DeployModel(name, kind, apiVersion, spec, labels, crdContext);
+            telemetry.property(PROP_RESOURCE_KIND, model.getKind())
+                    .property(PROP_RESOURCE_VERSION, model.getApiVersion());
+            return model;
+        } catch (IOException e) {
+            telemetry.error(e)
+                    .send();
+            throw e;
         }
-        String apiVersion = YAMLHelper.getStringValueFromYAML(yaml, new String[] {"apiVersion"});
-        if (Strings.isNullOrEmpty(apiVersion)) {
-            throw new IOException("Tekton file has not a valid format. ApiVersion field is not found.");
-        }
-        String kind = YAMLHelper.getStringValueFromYAML(yaml, new String[] {"kind"});
-        if (Strings.isNullOrEmpty(kind)) {
-            throw new IOException("Tekton file has not a valid format. Kind field is not found.");
-        }
-        CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(apiVersion, TreeHelper.getPluralKind(kind));
-        if (crdContext == null) {
-            throw new IOException("Tekton file has not a valid format. ApiVersion field contains an invalid value.");
-        }
-        JsonNode spec = YAMLHelper.getValueFromYAML(yaml, new String[] {"spec"});
-        if (spec == null) {
-            throw new IOException("Tekton file has not a valid format. Spec field is not found.");
-        }
-        JsonNode labels = YAMLHelper.getValueFromYAML(yaml, new String[] {"metadata", "labels"});
-        return new DeployModel(name, kind, apiVersion, spec, labels, crdContext);
     }
 }
 

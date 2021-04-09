@@ -19,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.twelvemonkeys.lang.Platform;
@@ -63,6 +64,8 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
@@ -75,8 +78,12 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEAC
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_DIAG;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 
 public class TknCli implements Tkn {
+
+    private static final Logger logger = LoggerFactory.getLogger(TknCli.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
     private String command;
@@ -488,7 +495,9 @@ public class TknCli implements Tkn {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-n", namespace);
         } else {
             String fileName = namespace + "-" + KIND_PIPELINERUN + "-" + pipelineRun + ".log";
-            ExecHelper.executeWithUI(envVars, outputToEditor(fileName),command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+            ExecHelper.executeWithUI(envVars,
+                    outputToEditor(fileName, KIND_PIPELINERUN),
+                    command, KIND_PIPELINERUN, "logs", pipelineRun, "-f", "-n", namespace);
         }
     }
 
@@ -498,7 +507,9 @@ public class TknCli implements Tkn {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-n", namespace);
         } else {
             String fileName = namespace + "-" + KIND_TASKRUN + "-" + taskRun + ".log";
-            ExecHelper.executeWithUI(envVars, outputToEditor(fileName),command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+            ExecHelper.executeWithUI(envVars,
+                    outputToEditor(fileName, KIND_TASKRUN),
+                    command, KIND_TASKRUN, "logs", taskRun, "-f", "-n", namespace);
         }
     }
 
@@ -513,7 +524,10 @@ public class TknCli implements Tkn {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE,false, envVars, command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
         } else {
             String fileName = namespace + "-" + KIND_PIPELINERUN + "-" + pipelineRun + "-follow.log";
-            ExecHelper.executeWithUI(envVars, openEmptyEditor(fileName), outputToEditor(fileName),command, "pipelinerun", "logs", pipelineRun, "-f", "-n", namespace);
+            ExecHelper.executeWithUI(envVars,
+                    openEmptyEditor(fileName, KIND_PIPELINERUN),
+                    outputToEditor(fileName, KIND_PIPELINERUN),
+                    command, KIND_PIPELINERUN, "logs", pipelineRun, "-f", "-n", namespace);
         }
     }
 
@@ -523,17 +537,42 @@ public class TknCli implements Tkn {
             ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
         } else {
             String fileName = namespace + "-" + KIND_TASKRUN + "-" + taskRun + "-follow.log";
-            ExecHelper.executeWithUI(envVars, openEmptyEditor(fileName), outputToEditor(fileName),command, "taskrun", "logs", taskRun, "-f", "-n", namespace);
+            ExecHelper.executeWithUI(envVars,
+                    openEmptyEditor(fileName, KIND_TASKRUN),
+                    outputToEditor(fileName, KIND_TASKRUN),
+                    command, KIND_TASKRUN, "logs", taskRun, "-f", "-n", namespace);
         }
     }
 
-    private Runnable openEmptyEditor(String fileName) {
-        return () -> VirtualFileHelper.openVirtualFileInEditor(project, fileName, "", true);
+    private Runnable openEmptyEditor(String fileName, String kind) {
+        return () -> {
+            try {
+                VirtualFileHelper.openVirtualFileInEditor(project, fileName, "");
+            } catch (IOException e) {
+                String errorMessage = "Could open empty editor for logs: " + e.getLocalizedMessage();
+                TelemetryService.instance().action(NAME_PREFIX_DIAG + "follow logs in editor")
+                        .property(TelemetryService.PROP_RESOURCE_KIND, kind)
+                        .error(errorMessage)
+                        .send();
+                logger.warn(errorMessage, e);
+            }
+        };
     }
 
-    private Consumer<String> outputToEditor(String fileName) {
-        return (sb) -> ApplicationManager.getApplication().runWriteAction(
-                            () -> VirtualFileHelper.openVirtualFileInEditor(project, fileName, sb, true)
+    private Consumer<String> outputToEditor(String fileName, String kind) {
+        return (sb) -> ApplicationManager.getApplication().runWriteAction(() -> {
+                    try {
+                        // called each time a line is added to log: dont send telemetry
+                        VirtualFileHelper.openVirtualFileInEditor(project, fileName, sb);
+                    } catch (IOException e) {
+                        String errorMessage = "Could not output logs to editor: " + e.getLocalizedMessage();
+                        TelemetryService.instance().action(NAME_PREFIX_DIAG + "output logs in editor")
+                                .property(PROP_RESOURCE_KIND, kind)
+                                .error(errorMessage)
+                                .send();
+                        logger.warn(errorMessage, e);
+                    }
+                }
         );
     }
 

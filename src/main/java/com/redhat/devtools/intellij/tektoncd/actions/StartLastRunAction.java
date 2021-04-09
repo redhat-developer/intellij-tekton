@@ -13,12 +13,11 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.NamespaceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
@@ -27,45 +26,60 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import java.io.IOException;
 import javax.swing.tree.TreePath;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_START_STOP;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class StartLastRunAction extends TektonAction {
-    Logger logger = LoggerFactory.getLogger(StartLastRunAction.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(StartLastRunAction.class);
+
+    private ActionMessage telemetry;
 
     public StartLastRunAction() { super(PipelineNode.class, TaskNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        telemetry = TelemetryService.instance().action(NAME_PREFIX_START_STOP + "start last run");
         ExecHelper.submit(() -> {
             ParentableNode<? extends ParentableNode<NamespaceNode>> element = getElement(selected);
             String namespace = element.getParent().getParent().getName();
-            Project project = element.getRoot().getProject();
             try {
-                String runName = null;
-                if (element instanceof PipelineNode) {
-                    runName = tkncli.startLastPipeline(namespace, element.getName());
-                } else if (element instanceof TaskNode) {
-                    runName = tkncli.startLastTask(namespace, element.getName());
-                }
-                if (runName != null) {
-                    FollowLogsAction followLogsAction = (FollowLogsAction) ActionManager.getInstance().getAction("FollowLogsAction");
-                    followLogsAction.actionPerformed(namespace, runName, element.getClass(), tkncli);
-                }
-
+                String runName = startRun(tkncli, element, namespace);
+                FollowLogsAction.run(namespace, runName, element.getClass(), tkncli);
                 ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(element);
+                telemetry.send();
             } catch (IOException e) {
+                String errorMessage = element.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
                 Notification notification = new Notification(NOTIFICATION_ID,
                         "Error",
-                        element.getName() + " in namespace " + namespace + " failed to start\n" + e.getLocalizedMessage(),
+                        errorMessage,
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
                 logger.warn("Error: " + e.getLocalizedMessage(), e);
             }
         });
+    }
+
+    private String startRun(Tkn tkncli, ParentableNode<? extends ParentableNode<NamespaceNode>> element, String namespace) throws IOException {
+        String runName = null;
+        if (element instanceof PipelineNode) {
+            telemetry.property(PROP_RESOURCE_KIND, Constants.KIND_PIPELINE);
+            runName = tkncli.startLastPipeline(namespace, element.getName());
+        } else if (element instanceof TaskNode) {
+            telemetry.property(PROP_RESOURCE_KIND, Constants.KIND_TASK);
+            runName = tkncli.startLastTask(namespace, element.getName());
+        }
+        return runName;
     }
 
 }

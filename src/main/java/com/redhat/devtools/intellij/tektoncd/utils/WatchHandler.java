@@ -88,7 +88,7 @@ public class WatchHandler {
             }
             wn = new WatchNodes(watch);
         } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
 
         if (wn != null) {
@@ -154,7 +154,7 @@ public class WatchHandler {
             }
             wn = new WatchNodes(watch, element);
         } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
 
         if (wn != null) {

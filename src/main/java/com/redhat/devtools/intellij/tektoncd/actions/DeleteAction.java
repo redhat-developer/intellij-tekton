@@ -14,6 +14,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
@@ -30,13 +31,18 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.tektoncd.ui.DeleteDialog;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
+
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import javax.swing.tree.TreePath;
+
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 
 public class DeleteAction extends TektonAction {
 
@@ -72,6 +78,7 @@ public class DeleteAction extends TektonAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath[] path, Object[] selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "delete resource");
         ParentableNode[] elements = Arrays.stream(selected).map(item -> getElement(item)).toArray(ParentableNode[]::new);
         int resultDialog = UIHelper.executeInUI(() -> {
             String name, kind, title, deleteResourcesText, deleteChkText;
@@ -106,7 +113,6 @@ public class DeleteAction extends TektonAction {
 
             return CANCEL_CODE;
         });
-
         CompletableFuture.runAsync(() -> {
             if (resultDialog != CANCEL_CODE) {
                 String namespace = elements[0].getNamespace();
@@ -114,37 +120,48 @@ public class DeleteAction extends TektonAction {
                 Map<Class, List<ParentableNode>> resourcesByClass = TreeHelper.getResourcesByClass(elements);
                 for(Class type: resourcesByClass.keySet()) {
                     try {
-                        List<String> resources = resourcesByClass.get(type).stream().map(x -> x.getName()).collect(Collectors.toList());
-                        if (type.equals(PipelineNode.class)) {
-                            tkncli.deletePipelines(namespace, resources, deleteRelatedResources);
-                        } else if (type.equals(PipelineRunNode.class)) {
-                            tkncli.deletePipelineRuns(namespace, resources);
-                        } else if (type.equals(ResourceNode.class)) {
-                            tkncli.deleteResources(namespace, resources);
-                        } else if (type.equals(TaskNode.class)) {
-                            tkncli.deleteTasks(namespace, resources, deleteRelatedResources);
-                        } else if (type.equals(ClusterTaskNode.class)) {
-                            tkncli.deleteClusterTasks(resources, deleteRelatedResources);
-                        } else if (type.equals(TaskRunNode.class)) {
-                            tkncli.deleteTaskRuns(namespace, resources);
-                        } else if (type.equals(ConditionNode.class)) {
-                            tkncli.deleteConditions(namespace, resources);
-                        } else if (type.equals(TriggerTemplateNode.class)) {
-                            tkncli.deleteTriggerTemplates(namespace, resources);
-                        } else if (type.equals(TriggerBindingNode.class)) {
-                            tkncli.deleteTriggerBindings(namespace, resources);
-                        } else if (type.equals(ClusterTriggerBindingNode.class)) {
-                            tkncli.deleteClusterTriggerBindings(resources);
-                        } else if (type.equals(EventListenerNode.class)) {
-                            tkncli.deleteEventListeners(namespace, resources);
-                        }
+                        deleteResources(type, resourcesByClass, namespace, deleteRelatedResources, tkncli);
                         ((TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(resourcesByClass.get(type).get(0).getParent());
+                        telemetry.property(TelemetryService.PROP_RESOURCE_KIND, type.getSimpleName())
+                                .property(TelemetryService.PROP_RESOURCE_RELATED, String.valueOf(deleteRelatedResources))
+                                .success()
+                                .send();
                     } catch (IOException e) {
+                        telemetry
+                                .error(anonymizeResource(null, namespace, e.getMessage()))
+                                .send();
                         UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
                     }
                 }
             }
         });
 
+    }
+
+    private void deleteResources(Class type, Map<Class, List<ParentableNode>> resourcesByClass, String namespace, boolean deleteRelatedResources, Tkn tkncli) throws IOException {
+        List<String> resources = resourcesByClass.get(type).stream().map(x -> x.getName()).collect(Collectors.toList());
+        if (type.equals(PipelineNode.class)) {
+            tkncli.deletePipelines(namespace, resources, deleteRelatedResources);
+        } else if (type.equals(PipelineRunNode.class)) {
+            tkncli.deletePipelineRuns(namespace, resources);
+        } else if (type.equals(ResourceNode.class)) {
+            tkncli.deleteResources(namespace, resources);
+        } else if (type.equals(TaskNode.class)) {
+            tkncli.deleteTasks(namespace, resources, deleteRelatedResources);
+        } else if (type.equals(ClusterTaskNode.class)) {
+            tkncli.deleteClusterTasks(resources, deleteRelatedResources);
+        } else if (type.equals(TaskRunNode.class)) {
+            tkncli.deleteTaskRuns(namespace, resources);
+        } else if (type.equals(ConditionNode.class)) {
+            tkncli.deleteConditions(namespace, resources);
+        } else if (type.equals(TriggerTemplateNode.class)) {
+            tkncli.deleteTriggerTemplates(namespace, resources);
+        } else if (type.equals(TriggerBindingNode.class)) {
+            tkncli.deleteTriggerBindings(namespace, resources);
+        } else if (type.equals(ClusterTriggerBindingNode.class)) {
+            tkncli.deleteClusterTriggerBindings(resources);
+        } else if (type.equals(EventListenerNode.class)) {
+            tkncli.deleteEventListeners(namespace, resources);
+        }
     }
 }

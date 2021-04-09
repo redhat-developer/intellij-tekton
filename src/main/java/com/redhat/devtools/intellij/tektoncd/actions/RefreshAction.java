@@ -13,9 +13,10 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.tektoncd.Constants;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenersNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunsNode;
@@ -30,6 +31,10 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
 
 import javax.swing.tree.TreePath;
 
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_MISC;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+
 public class RefreshAction extends StructureTreeAction {
     public RefreshAction() {
         super(PipelinesNode.class, TasksNode.class, ClusterTasksNode.class, ResourcesNode.class, PipelineNode.class, TaskNode.class, PipelineRunsNode.class, TaskRunsNode.class, ConditionsNode.class,
@@ -38,8 +43,13 @@ public class RefreshAction extends StructureTreeAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected) {
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_MISC + "refresh");
         selected = StructureTreeAction.getElement(selected);
         TektonTreeStructure structure = (TektonTreeStructure) getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY);
         structure.fireModified(selected);
+        telemetry
+                .property(PROP_RESOURCE_KIND, selected.getClass().getSimpleName())
+                .send();
     }
+
 }

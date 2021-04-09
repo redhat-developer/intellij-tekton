@@ -12,7 +12,10 @@ package com.redhat.devtools.intellij.tektoncd.settings;
 
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.util.ui.FormBuilder;
+
 import javax.swing.JPanel;
+
+import static com.redhat.devtools.intellij.telemetry.ui.preferences.TelemetryPreferencesUtils.createTelemetryComponent;
 
 public class SettingsView {
     private final JPanel myMainPanel;
@@ -22,11 +25,12 @@ public class SettingsView {
     private final JBCheckBox chkDisplayLogsInEditor = new JBCheckBox("Show logs in text editor");
 
     public SettingsView() {
-        myMainPanel = FormBuilder.createFormBuilder()
+        this.myMainPanel = FormBuilder.createFormBuilder()
                 .addComponent(chkDisplayPipelineRunResultAsNotification, 1)
                 .addComponent(chkEnableDeleteAllRelatedResourcesAsDefault, 1)
                 .addComponent(chkShowStartWizardWithNoInputs, 1)
                 .addComponent(chkDisplayLogsInEditor, 1)
+                .addComponent(createTelemetryComponent("Tekton Pipelines", this::getPanel), 1)
                 .addComponentFillVertically(new JPanel(), 0)
                 .getPanel();
     }
@@ -66,4 +70,5 @@ public class SettingsView {
     public void setDisplayLogsInEditor(boolean newStatus) {
         chkDisplayLogsInEditor.setSelected(newStatus);
     }
+
 }

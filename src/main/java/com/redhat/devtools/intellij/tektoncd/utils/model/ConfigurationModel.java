@@ -41,7 +41,7 @@ public abstract class ConfigurationModel {
                 this.namespace = YAMLHelper.getStringValueFromYAML(configuration, new String[]{"metadata", "namespace"});
             }
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
     }
 

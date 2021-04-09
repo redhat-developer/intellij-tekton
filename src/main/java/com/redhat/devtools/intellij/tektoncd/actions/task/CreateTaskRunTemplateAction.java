@@ -15,33 +15,41 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
+import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
-import java.io.IOException;
-import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.tree.TreePath;
+import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
+import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateTaskRunTemplateAction extends TektonAction {
 
     private static final Logger logger = LoggerFactory.getLogger(CreateTaskRunTemplateAction.class);
 
-    public CreateTaskRunTemplateAction() { super(TaskNode.class); }
+    public CreateTaskRunTemplateAction() {
+        super(TaskNode.class);
+    }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+        ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "create task run");
         ParentableNode element = getElement(selected);
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
@@ -50,32 +58,58 @@ public class CreateTaskRunTemplateAction extends TektonAction {
             try {
                 model = getModel(element, namespace, tkncli);
             } catch (IOException e) {
-                UIHelper.executeInUI(() ->
-                        Messages.showErrorDialog(
-                                "Failed to create TaskRun templace from " + element.getName() + " in namespace " + namespace + "An error occurred while retrieving information.\n" + e.getLocalizedMessage(),
-                                "Error"));
-                logger.warn("Error: " + e.getLocalizedMessage());
+                String errorMessage = "Failed to create TaskRun templace from " + element.getName() + " in namespace " + namespace + "An error occurred while retrieving information.\n" + e.getLocalizedMessage();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
+                UIHelper.executeInUI(() -> {
+                    Messages.showErrorDialog(
+                            errorMessage,
+                            "Error");
+                });
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
                 return;
             }
 
             if (!model.isValid()) {
-                UIHelper.executeInUI(() -> Messages.showErrorDialog("Failed to create a TaskRun templace from " + element.getName() + " in namespace " + namespace + ". The task is not valid.", "Error"));
+                String errorMessage = "Failed to create a TaskRun templace from " + element.getName() + " in namespace " + namespace + ". The task is not valid.";
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
+                UIHelper.executeInUI(() -> Messages.showErrorDialog(errorMessage, "Error"));
                 return;
             }
 
             try {
                 String contentTask = new YAMLMapper().writeValueAsString(YAMLBuilder.createTaskRun(model));
-                UIHelper.executeInUI(() ->
-                        VirtualFileHelper.openVirtualFileInEditor(anActionEvent.getProject(), namespace, "generate-taskrun-" + model.getName(), contentTask, KIND_TASKRUN, true));
+                openEditor(anActionEvent.getProject(), namespace, telemetry, model, contentTask);
             } catch (IOException e) {
+                String errorMessage = "Failed to create TaskRun templace from" + element.getName() + " in namespace " + namespace + " \n" + e.getLocalizedMessage();
+                telemetry
+                        .error(anonymizeResource(element.getName(), namespace, errorMessage))
+                        .send();
                 notification = new Notification(NOTIFICATION_ID,
                         "Error",
-                        "Failed to create TaskRun templace from" + element.getName() + " in namespace " + namespace + " \n" + e.getLocalizedMessage(),
+                        errorMessage,
                         NotificationType.ERROR);
                 Notifications.Bus.notify(notification);
-                logger.warn("Error: " + e.getLocalizedMessage());
+                logger.warn(errorMessage, e);
             }
+        });
+    }
 
+    private void openEditor(Project project, String namespace, ActionMessage telemetry, TaskConfigurationModel model, String contentTask) {
+        UIHelper.executeInUI(() -> {
+            String name = "generate-taskrun-" + model.getName();
+            try {
+                VirtualFileHelper.openVirtualFileInEditor(project, namespace, name, contentTask, KIND_TASKRUN, true);
+                telemetry.send();
+            } catch (IOException e) {
+                telemetry
+                        .error(anonymizeResource(name, namespace, e.getMessage()))
+                        .send();
+                logger.warn("Could not create trigger template: " + e.getLocalizedMessage(), e);
+            }
         });
     }
 
