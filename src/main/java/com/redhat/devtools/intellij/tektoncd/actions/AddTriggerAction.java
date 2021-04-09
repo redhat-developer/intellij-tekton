@@ -27,6 +27,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
@@ -65,7 +66,8 @@ public class AddTriggerAction extends TektonAction {
     @Override
     public boolean isVisible(Object selected) {
         // if triggers are not installed, don't show this action
-        return (((ParentableNode)selected).getRoot().getTkn().isTektonTriggersAware()
+        return (!(selected instanceof TektonRootNode)
+                && ((ParentableNode)selected).getRoot().getTkn().isTektonTriggersAware()
                 && (selected instanceof PipelineNode || selected instanceof TaskNode));
     }
 

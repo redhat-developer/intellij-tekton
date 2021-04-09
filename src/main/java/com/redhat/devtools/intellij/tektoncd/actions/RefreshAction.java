@@ -25,6 +25,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplatesNode;
@@ -37,7 +38,7 @@ import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessa
 
 public class RefreshAction extends StructureTreeAction {
     public RefreshAction() {
-        super(PipelinesNode.class, TasksNode.class, ClusterTasksNode.class, ResourcesNode.class, PipelineNode.class, TaskNode.class, PipelineRunsNode.class, TaskRunsNode.class, ConditionsNode.class,
+        super(TektonRootNode.class, PipelinesNode.class, TasksNode.class, ClusterTasksNode.class, ResourcesNode.class, PipelineNode.class, TaskNode.class, PipelineRunsNode.class, TaskRunsNode.class, ConditionsNode.class,
                 TriggerTemplatesNode.class, TriggerBindingsNode.class, ClusterTriggerBindingsNode.class, EventListenersNode.class);
     }
 
