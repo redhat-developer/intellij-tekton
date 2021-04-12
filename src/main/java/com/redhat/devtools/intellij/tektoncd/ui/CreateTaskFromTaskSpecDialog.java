@@ -39,15 +39,12 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
     private GridBagConstraints gridBagConstraints;
     private JTextField txtName;
     private ButtonGroup group;
-    private String name, kind;
 
     public CreateTaskFromTaskSpecDialog() {
         super(null, null, false, DialogWrapper.IdeModalityType.IDE);
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagConstraints = new GridBagConstraints();
         this.myContentPanel = new JPanel(gridBagLayout);
-        this.name = "";
-        this.kind = "";
 
         setTitle("Create Task from TaskSpec");
         fillContainer();
@@ -65,8 +62,6 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        //this.name = txtName.getText();
-        //setKind();
         super.doOKAction();
     }
 
@@ -74,19 +69,7 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
         return txtName.getText();
     }
 
-    public void setKind() {
-        for (Enumeration<AbstractButton> buttons = group.getElements(); buttons.hasMoreElements();) {
-            AbstractButton button = buttons.nextElement();
-
-            if (button.isSelected()) {
-                this.kind = button.getText();
-                return;
-            }
-        }
-    }
-
     public String getKind() {
-        //return this.kind;
         for (Enumeration<AbstractButton> buttons = group.getElements(); buttons.hasMoreElements();) {
             AbstractButton button = buttons.nextElement();
 

@@ -92,18 +92,25 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
     private String createUpdatedTextWithTaskRef(String documentText, String taskSpec, String task, String kind) throws IOException {
         int indexTaskSpec = documentText.indexOf(taskSpec) - 1;
         int whiteSpaceForTaskRefIndentation = indexTaskSpec - documentText.substring(0, indexTaskSpec).lastIndexOf("\n");
-        String taskRefIndentationPlaceholder = String.format("%" + whiteSpaceForTaskRefIndentation + "s", " ");
-        return documentText.replace(taskSpec, createTaskRefBlock(task, kind, taskRefIndentationPlaceholder));
+        return documentText.replace(taskSpec, createTaskRefBlock(task, kind, getIndentationPlaceholder(whiteSpaceForTaskRefIndentation)));
     }
 
     private String createTaskYAMLFromTaskSpec(String taskSpecText, String name, String kind) throws IOException {
-        String bodyOfTaskToBeCreated = taskSpecText.replace("taskSpec:\n", "");
-        int whiteSpacesForIndentation = bodyOfTaskToBeCreated.indexOf(bodyOfTaskToBeCreated.replaceAll("^\\s+", ""));
-        String whiteSpacesPlaceholder = String.format("%" + whiteSpacesForIndentation + "s", " ");
-        bodyOfTaskToBeCreated = bodyOfTaskToBeCreated.replace(whiteSpacesPlaceholder, "").replaceAll("\n" + whiteSpacesPlaceholder, "\n");
-        ObjectNode taskToSave = YAMLBuilder.convertToObjectNode(bodyOfTaskToBeCreated);
+        ObjectNode taskToSave = createTaskBody(taskSpecText);
         taskToSave = YAMLBuilder.createTask(name, kind, taskToSave);
         return YAMLBuilder.writeValueAsString(taskToSave);
+    }
+
+    private ObjectNode createTaskBody(String taskSpecText) throws IOException {
+        String bodyOfTaskToBeCreated = taskSpecText.replace("taskSpec:\n", "");
+        int whiteSpacesForIndentation = bodyOfTaskToBeCreated.indexOf(bodyOfTaskToBeCreated.replaceAll("^\\s+", ""));
+        String whiteSpacesPlaceholder = getIndentationPlaceholder(whiteSpacesForIndentation);
+        bodyOfTaskToBeCreated = bodyOfTaskToBeCreated.replace(whiteSpacesPlaceholder, "").replaceAll("\n" + whiteSpacesPlaceholder, "\n");
+        return YAMLBuilder.convertToObjectNode(bodyOfTaskToBeCreated);
+    }
+
+    private String getIndentationPlaceholder(int size) {
+        return String.format("%" + size + "s", " ");
     }
 
     private String createTaskRefBlock(String name, String kind, String whiteSpacesPlaceholder) throws IOException {
