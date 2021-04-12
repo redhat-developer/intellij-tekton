@@ -27,7 +27,6 @@ import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
-import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -116,9 +115,6 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        if (element == null) {
-            return false;
-        }
         PsiElement taskSpec = getTaskSpecElement(element);
         if (taskSpec == null) {
             return false;
@@ -166,7 +162,7 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
     }
 
     @Override
-    public @NotNull @Nls(capitalization = Nls.Capitalization.Sentence) String getFamilyName() {
+    public @NotNull String getFamilyName() {
         return NOTIFICATION_ID;
     }
 

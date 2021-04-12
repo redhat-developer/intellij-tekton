@@ -413,6 +413,22 @@ public class YAMLBuilderTest extends BaseTest {
     }
 
     @Test
+    public void CreateTask_TaskSpecHasParamsField_ObjectNodeRepresentingTask() throws IOException {
+        String taskSpec = load(RESOURCE_PATH + "taskSpec3.yaml");
+        ObjectNode taskToSave = YAMLBuilder.convertToObjectNode(taskSpec);
+        ObjectNode resultingTask = YAMLBuilder.createTask("test", "ClusterTask", taskToSave);
+        assertEquals("tekton.dev/v1beta1", resultingTask.get("apiVersion").asText());
+        assertEquals("ClusterTask", resultingTask.get("kind").asText());
+        assertEquals("test", resultingTask.get("metadata").get("name").asText());
+        assertTrue(resultingTask.get("spec").get("params").get(0).has("name"));
+        assertEquals("x", resultingTask.get("spec").get("params").get(0).get("name").asText());
+        assertTrue(resultingTask.get("spec").get("steps").get(0).has("image"));
+        assertEquals("fedora", resultingTask.get("spec").get("steps").get(0).get("image").asText());
+        assertTrue(resultingTask.get("spec").get("steps").get(0).has("name"));
+        assertEquals("echo", resultingTask.get("spec").get("steps").get(0).get("name").asText());
+    }
+
+    @Test
     public void CreateTaskRef_ObjectNodeRepresentingTaskRef() {
         ObjectNode resultingTaskRef = YAMLBuilder.createTaskRef("test", "kind");
         assertEquals("kind", resultingTaskRef.get("taskRef").get("kind").asText());
