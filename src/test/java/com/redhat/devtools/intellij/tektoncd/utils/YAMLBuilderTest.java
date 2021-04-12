@@ -27,6 +27,8 @@ import static org.junit.Assert.assertTrue;
 
 public class YAMLBuilderTest extends BaseTest {
 
+    private static final String RESOURCE_PATH = "utils/yamlBuilder/";
+
     /////////////////////////////////////////////////////////
     ///             CREATE PIPELINERUN
     /////////////////////////////////////////////////////////
@@ -380,5 +382,40 @@ public class YAMLBuilderTest extends BaseTest {
         assertEquals(eventListenerNode.get("spec").get("triggers").get(0).get("bindings").get(2).get("ref").asText(), "binding3");
         assertTrue(eventListenerNode.get("spec").get("triggers").get(0).has("template"));
         assertEquals(eventListenerNode.get("spec").get("triggers").get(0).get("template").get("name").asText(), "triggerTemplate");
+    }
+
+    @Test
+    public void CreateTask_TaskSpecHasMetadataField_ObjectNodeRepresentingTask() throws IOException {
+        String taskSpec = load(RESOURCE_PATH + "taskSpec1.yaml");
+        ObjectNode taskToSave = YAMLBuilder.convertToObjectNode(taskSpec);
+        ObjectNode resultingTask = YAMLBuilder.createTask("test", "Task", taskToSave);
+        assertEquals("tekton.dev/v1beta1", resultingTask.get("apiVersion").asText());
+        assertEquals("Task", resultingTask.get("kind").asText());
+        assertEquals("test", resultingTask.get("metadata").get("name").asText());
+        assertTrue(resultingTask.get("spec").get("steps").get(0).has("image"));
+        assertEquals("fedora", resultingTask.get("spec").get("steps").get(0).get("image").asText());
+        assertTrue(resultingTask.get("spec").get("steps").get(0).has("name"));
+        assertEquals("echo", resultingTask.get("spec").get("steps").get(0).get("name").asText());
+    }
+
+    @Test
+    public void CreateTask_TaskSpecHasNotMetadataField_ObjectNodeRepresentingTask() throws IOException {
+        String taskSpec = load(RESOURCE_PATH + "taskSpec2.yaml");
+        ObjectNode taskToSave = YAMLBuilder.convertToObjectNode(taskSpec);
+        ObjectNode resultingTask = YAMLBuilder.createTask("test", "Task", taskToSave);
+        assertEquals("tekton.dev/v1beta1", resultingTask.get("apiVersion").asText());
+        assertEquals("Task", resultingTask.get("kind").asText());
+        assertEquals("test", resultingTask.get("metadata").get("name").asText());
+        assertTrue(resultingTask.get("spec").get("steps").get(0).has("image"));
+        assertEquals("fedora", resultingTask.get("spec").get("steps").get(0).get("image").asText());
+        assertTrue(resultingTask.get("spec").get("steps").get(0).has("name"));
+        assertEquals("echo", resultingTask.get("spec").get("steps").get(0).get("name").asText());
+    }
+
+    @Test
+    public void CreateTaskRef_ObjectNodeRepresentingTaskRef() {
+        ObjectNode resultingTaskRef = YAMLBuilder.createTaskRef("test", "kind");
+        assertEquals("kind", resultingTaskRef.get("taskRef").get("kind").asText());
+        assertEquals("test", resultingTaskRef.get("taskRef").get("name").asText());
     }
 }

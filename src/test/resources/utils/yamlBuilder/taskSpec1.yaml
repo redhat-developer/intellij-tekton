@@ -1,0 +1,10 @@
+metadata:
+  labels:
+    app: example
+steps:
+  - image: fedora
+    name: echo
+    resources: {}
+    script: |
+      #!/usr/bin/env bash
+      echo "Good Morning!"

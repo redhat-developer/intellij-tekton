@@ -182,7 +182,7 @@ public class HubModel {
             }
             yamlObject.put("kind", kind);
             String yamlUpdated = YAMLBuilder.writeValueAsString(yamlObject);
-            if (DeployHelper.saveOnCluster(project, namespace, yamlUpdated, confirmationMessage, true)) {
+            if (DeployHelper.saveOnCluster(project, yamlUpdated, confirmationMessage, true, false)) {
                 if (!clusterTaskAlreadyOnCluster) {
                     clusterTasksInstalled.add(name);
                     return Constants.InstallStatus.INSTALLED;

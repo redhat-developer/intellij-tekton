@@ -61,7 +61,7 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         }
 
         vf.putUserData(LAST_MODIFICATION_STAMP, currentModificationStamp);
-        if (save(document, project, namespace)) {
+        if (save(document, project)) {
             try {
                 Tree tree = TreeHelper.getTree(project);
                 TektonTreeStructure treeStructure = (TektonTreeStructure) tree.getClientProperty(Constants.STRUCTURE_PROPERTY);
@@ -79,12 +79,12 @@ public class SaveInEditorListener extends FileDocumentSynchronizationVetoer {
         return false;
     }
 
-    private boolean save(Document document, Project project, String namespace) {
+    private boolean save(Document document, Project project) {
         try {
             String resourceBody = document.getText();
             String name = YAMLHelper.getStringValueFromYAML(resourceBody, new String[] {"metadata", "name"});
             String kind = YAMLHelper.getStringValueFromYAML(resourceBody, new String[] {"kind"});
-            return DeployHelper.saveOnCluster(project, namespace, resourceBody, "Push changes for " + kind + " " + name + "?");
+            return DeployHelper.saveOnCluster(project, resourceBody, "Push changes for " + kind + " " + name + "?");
         } catch (IOException e) {
             Notification notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
             Notifications.Bus.notify(notification);

@@ -187,7 +187,7 @@
                      implementationClass="com.redhat.devtools.intellij.tektoncd.inspector.FinallyReferencesInspector"/>
     <nonProjectFileWritingAccessExtension implementation="com.redhat.devtools.intellij.common.editor.AllowNonProjectEditing" />
     <intentionAction>
-      <className>com.redhat.devtools.intellij.tektoncd.actions.intention.InlineToRefTaskAction</className>
+      <className>com.redhat.devtools.intellij.tektoncd.intention.TaskSpecToTaskRefAction</className>
     </intentionAction>
   </extensions>
   <actions>
