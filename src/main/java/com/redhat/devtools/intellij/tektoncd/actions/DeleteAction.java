@@ -180,7 +180,7 @@ public class DeleteAction extends TektonAction {
             List<RefUsage> usages = tkn.findTaskUsages(kind, name);
             return usages.size();
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
             return 0;
         }
     }

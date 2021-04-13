@@ -225,7 +225,7 @@ public class FindTaskRefPanelBuilder {
             PsiAwareTextEditorImpl editor = new PsiAwareTextEditorImpl(project, vf, TextEditorProvider.getInstance());
             updateEditorPanel(new JBScrollPane(editor.getComponent()));
         } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
     }
 

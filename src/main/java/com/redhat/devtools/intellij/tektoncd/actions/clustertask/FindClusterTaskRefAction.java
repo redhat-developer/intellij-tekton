@@ -43,7 +43,7 @@ public class FindClusterTaskRefAction extends TektonAction {
                 List<RefUsage> usages = tkncli.findTaskUsages(KIND_CLUSTERTASK, element.getName());
                 UIHelper.executeInUI(() -> FindTaskRefPanelBuilder.instance().build(anActionEvent.getProject(), KIND_CLUSTERTASK, element.getName(), usages));
             } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage(), e);
             }
         });
     }

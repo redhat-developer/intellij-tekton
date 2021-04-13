@@ -52,7 +52,7 @@ public class FindTaskRefAction extends TektonAction {
                 telemetry
                         .error(anonymizeResource(null, element.getNamespace(), e.getMessage()))
                         .send();
-                logger.warn(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage(), e);
             }
         });
     }
