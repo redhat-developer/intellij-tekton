@@ -31,18 +31,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class DeleteDialog extends DialogWrapper{
-    private JCheckBox deleteResourcesChb;
+    private JCheckBox deleteRelatedResourcesChb;
     private JPanel myContentPanel;
     private JLabel deleteText;
     private GridBagConstraints gridBagConstraints;
-    private boolean deleteResources;
+    private boolean deleteRelatedResources;
 
     public DeleteDialog(Component parent, String title, String mainDeleteText, String deleteChkText) {
         super(null, parent, false, DialogWrapper.IdeModalityType.IDE);
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagConstraints = new GridBagConstraints();
         this.myContentPanel = new JPanel(gridBagLayout);
-        this.deleteResources = false;
+        this.deleteRelatedResources = false;
 
         setTitle(title);
         fillContainer(mainDeleteText, deleteChkText);
@@ -59,12 +59,12 @@ public class DeleteDialog extends DialogWrapper{
 
     @Override
     protected void doOKAction() {
-        this.deleteResources = deleteResourcesChb.isSelected();
+        this.deleteRelatedResources = deleteRelatedResourcesChb != null ? deleteRelatedResourcesChb.isSelected() : false;
         super.doOKAction();
     }
 
-    public boolean hasToDeleteResources() {
-        return this.deleteResources;
+    public boolean hasToDeleteRelatedResources() {
+        return this.deleteRelatedResources;
     }
 
     @Nullable
@@ -95,9 +95,9 @@ public class DeleteDialog extends DialogWrapper{
         }
 
         if (!deleteChkText.isEmpty()) {
-            deleteResourcesChb = new JCheckBox(deleteChkText);
-            deleteResourcesChb.setSelected(SettingsState.getInstance().enableDeleteAllRelatedResourcesAsDefault);
-            addComponent(deleteResourcesChb, new EmptyBorder(5, 10, 10, 10), null, 0, 4, GridBagConstraints.NORTHWEST);
+            deleteRelatedResourcesChb = new JCheckBox(deleteChkText);
+            deleteRelatedResourcesChb.setSelected(SettingsState.getInstance().enableDeleteAllRelatedResourcesAsDefault);
+            addComponent(deleteRelatedResourcesChb, new EmptyBorder(5, 10, 10, 10), null, 0, 4, GridBagConstraints.NORTHWEST);
         }
     }
 

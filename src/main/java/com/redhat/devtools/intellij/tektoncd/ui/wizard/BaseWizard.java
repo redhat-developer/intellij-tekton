@@ -54,6 +54,8 @@ import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BLUE;
@@ -63,6 +65,7 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_1
 
 public abstract class BaseWizard extends DialogWrapper {
 
+    private static final Logger logger = LoggerFactory.getLogger(BaseWizard.class);
     private String myTitle;
     protected List<BaseStep> mySteps;
     private int myCurrentStep;
@@ -481,7 +484,7 @@ public abstract class BaseWizard extends DialogWrapper {
         try {
             preview = new YAMLMapper().writeValueAsString(YAMLBuilder.createRun(model));
         } catch (IOException e) {
-            //logger.warn("Error: " + e.getLocalizedMessage());
+            logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
         previewTextArea.setText(preview);
     }

@@ -96,7 +96,7 @@ public class HubModel {
         try {
             resApi.resourceQueryAsync(query, kinds, tags, null, null, callback);
         } catch (ApiException e) {
-            logger.warn(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage(), e);
         }
     }
 
