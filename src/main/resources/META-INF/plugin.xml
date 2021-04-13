@@ -13,6 +13,19 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.8.0</b></p>
+  <p>Find Task references</p>
+  <p><ul>
+  <li>It is possible to find all references of a task within the cluster. During a deletion the user is also informed if a task is used somewhere to prevent possible errors.</li>
+  </ul></p>
+  <p>Telemetry data collection</p>
+  <p><ul>
+  <li>The plugin collects anonymous usage data, if enabled, and sends it to Red Hat servers to help improve our products and services.</li>
+  </ul></p>
+  <p>Refresh from the root</p>
+  <p><ul>
+  <li>The refresh action have been extended to work on the root to allow refreshing the full tree easier.</li>
+  </ul></p>
   <p><b>0.7.0</b></p>
   <p>Tree only shows current active namespace</p>
   <p><ul>
