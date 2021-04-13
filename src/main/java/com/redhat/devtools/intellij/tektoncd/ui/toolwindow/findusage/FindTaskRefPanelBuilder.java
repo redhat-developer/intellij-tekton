@@ -185,7 +185,7 @@ public class FindTaskRefPanelBuilder {
                     VirtualFile vf = TektonVirtualFileManager.getInstance(project).findResource(ref.getNamespace(), ref.getKind(), ref.getName());
                     VirtualFileHelper.openVirtualFileInEditor(project, ref.getNamespace(), ref.getName(), ((LightVirtualFile) vf).getContent().toString(), ref.getKind(), false);
                 } catch (IOException ex) {
-                    logger.warn(ex.getLocalizedMessage());
+                    logger.warn(ex.getLocalizedMessage(), e);
                 }
 
             }
