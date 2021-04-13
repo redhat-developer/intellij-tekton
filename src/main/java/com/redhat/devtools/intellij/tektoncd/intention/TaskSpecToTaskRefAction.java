@@ -68,7 +68,7 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
                     UIHelper.executeInUI(() -> setDocumentText(editor, textWithTaskRef));
                 }
             } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage(), e);
             }
         });
     }
