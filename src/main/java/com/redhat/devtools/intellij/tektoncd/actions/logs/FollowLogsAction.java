@@ -34,7 +34,7 @@ public class FollowLogsAction extends LogsBaseAction {
 
     private static final Logger logger = LoggerFactory.getLogger(FollowLogsAction.class);
 
-    public static final String ID = "FollowLogsAction";
+    public static final String ID = "com.redhat.devtools.intellij.tektoncd.action.FollowLogsAction";
 
     public static void run(String namespace, String resourceName, Class nodeClass, Tkn tknCli) {
         if (namespace == null
