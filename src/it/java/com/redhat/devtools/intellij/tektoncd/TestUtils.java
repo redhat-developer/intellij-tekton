@@ -53,4 +53,8 @@ public class TestUtils {
     public static JsonNode getSpecFromResource(String resourceBody) throws IOException {
         return YAMLHelper.getValueFromYAML(resourceBody, new String[] {"spec"});
     }
+
+    public static String getValueFromResource(String resourceBody, String[] path) throws IOException {
+        return YAMLHelper.getStringValueFromYAML(resourceBody, path);
+    }
 }
