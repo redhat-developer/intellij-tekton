@@ -531,7 +531,6 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             TknCliFactory.getInstance().resetTkn();
             mutableModelSupport.fireModified(root);
         } catch (Exception e) {
-            String t = e.getLocalizedMessage();
         }
     }
 }
