@@ -24,6 +24,7 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import io.fabric8.kubernetes.api.model.Config;
 import io.fabric8.kubernetes.api.model.NamedContext;
@@ -526,9 +527,11 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
     protected void refresh() {
         try {
             WatchHandler.get().removeAll();
-            root.load();
+            initialized.set(false);
+            TknCliFactory.getInstance().resetTkn();
             mutableModelSupport.fireModified(root);
         } catch (Exception e) {
+            String t = e.getLocalizedMessage();
         }
     }
 }

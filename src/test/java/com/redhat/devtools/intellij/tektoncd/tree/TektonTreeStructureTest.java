@@ -11,18 +11,29 @@
 package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.intellij.openapi.project.Project;
+import com.redhat.devtools.intellij.common.utils.ConfigWatcher;
 import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
+import io.fabric8.kubernetes.api.model.AuthInfo;
+import io.fabric8.kubernetes.api.model.Cluster;
+import io.fabric8.kubernetes.api.model.Config;
+import io.fabric8.kubernetes.api.model.Context;
+import io.fabric8.kubernetes.api.model.NamedAuthInfo;
+import io.fabric8.kubernetes.api.model.NamedCluster;
+import io.fabric8.kubernetes.api.model.NamedContext;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.internal.util.reflection.FieldSetter;
 
 
@@ -30,7 +41,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class TektonTreeStructureTest {
@@ -45,6 +59,10 @@ public class TektonTreeStructureTest {
     private ObjectMeta metadata2;
     private ObjectMeta metadata3;
 
+    private TknCliFactory tknCliFactory;
+    private ConfigWatcher configWatcher;
+    private Config config;
+
     @Before
     public void before() throws Exception {
         this.project = mock(Project.class);
@@ -54,6 +72,12 @@ public class TektonTreeStructureTest {
         when(root.getTkn()).thenReturn(tkn);
         this.parent = new NamespaceNode(root, "parent");
         FieldSetter.setField(structure, TektonTreeStructure.class.getDeclaredField("root"), root);
+
+        config = createConfig("cluster", "namespace", "token", "user");
+        FieldSetter.setField(structure, TektonTreeStructure.class.getDeclaredField("config"), config);
+
+        this.configWatcher = mock(ConfigWatcher.class);
+        this.tknCliFactory = mock(TknCliFactory.class);
 
         this.metadata1 = new ObjectMeta();
         this.metadata1.setName("test1");
@@ -375,5 +399,96 @@ public class TektonTreeStructureTest {
         assertEquals(((ParentableNode) taskruns[0]).getName(), "test1");
         assertEquals(((ParentableNode) taskruns[1]).getName(), "test2");
         assertEquals(((ParentableNode) taskruns[2]).getName(), "test3");
+    }
+
+    @Test
+    public void OnUpdate_ConfigIsNotChanged_NoRefresh() {
+        try(MockedStatic<TknCliFactory> tknCliFactoryMockedStatic = mockStatic(TknCliFactory.class)) {
+            tknCliFactoryMockedStatic.when(() -> TknCliFactory.getInstance()).thenReturn(tknCliFactory);
+            structure.onUpdate(configWatcher, config);
+            verify(structure, times(0)).refresh();
+        }
+    }
+
+    @Test
+    public void OnUpdate_ClusterHasBeenChanged_Refresh() {
+        Config newConfig = createConfig("changed", "namespace", "token", "user");
+
+        try(MockedStatic<TknCliFactory> tknCliFactoryMockedStatic = mockStatic(TknCliFactory.class)) {
+            tknCliFactoryMockedStatic.when(() -> TknCliFactory.getInstance()).thenReturn(tknCliFactory);
+            structure.onUpdate(configWatcher, newConfig);
+            verify(structure, times(1)).refresh();
+        }
+    }
+
+    @Test
+    public void OnUpdate_UserHasBeenChanged_Refresh() {
+        Config newConfig = createConfig("cluster", "namespace", "token", "changed");
+
+        try(MockedStatic<TknCliFactory> tknCliFactoryMockedStatic = mockStatic(TknCliFactory.class)) {
+            tknCliFactoryMockedStatic.when(() -> TknCliFactory.getInstance()).thenReturn(tknCliFactory);
+            structure.onUpdate(configWatcher, newConfig);
+            verify(structure, times(1)).refresh();
+        }
+    }
+
+    @Test
+    public void OnUpdate_NamespaceHasBeenChanged_Refresh() {
+        Config newConfig = createConfig("cluster", "changed", "token", "user");
+
+        try(MockedStatic<TknCliFactory> tknCliFactoryMockedStatic = mockStatic(TknCliFactory.class)) {
+            tknCliFactoryMockedStatic.when(() -> TknCliFactory.getInstance()).thenReturn(tknCliFactory);
+            structure.onUpdate(configWatcher, newConfig);
+            verify(structure, times(1)).refresh();
+        }
+    }
+
+    @Test
+    public void OnUpdate_TokenHasBeenChanged_Refresh() {
+        Config newConfig = createConfig("cluster", "namespace", "changed", "user");
+
+        try(MockedStatic<TknCliFactory> tknCliFactoryMockedStatic = mockStatic(TknCliFactory.class)) {
+            tknCliFactoryMockedStatic.when(() -> TknCliFactory.getInstance()).thenReturn(tknCliFactory);
+            structure.onUpdate(configWatcher, newConfig);
+            verify(structure, times(1)).refresh();
+        }
+    }
+
+    private Config createConfig(String nameCluster, String namespace, String token, String user) {
+        Config config = new Config();
+        config.setApiVersion("v1");
+        config.setKind("Config");
+
+        Cluster cluster = new Cluster();
+        cluster.setServer("server");
+
+        NamedCluster namedCluster = new NamedCluster();
+        namedCluster.setCluster(cluster);
+        namedCluster.setName(nameCluster);
+
+        config.setClusters(Arrays.asList(namedCluster));
+
+        Context context = new Context();
+        context.setNamespace(namespace);
+        context.setCluster(nameCluster);
+        context.setUser(user);
+
+        NamedContext namedContext = new NamedContext();
+        namedContext.setName("test");
+        namedContext.setContext(context);
+
+        config.setContexts(Arrays.asList(namedContext));
+
+        AuthInfo authInfo = new AuthInfo();
+        authInfo.setToken(token);
+
+        NamedAuthInfo namedAuthInfo = new NamedAuthInfo();
+        namedAuthInfo.setName(user);
+        namedAuthInfo.setUser(authInfo);
+
+        config.setUsers(Arrays.asList(namedAuthInfo));
+        config.setCurrentContext("test");
+
+        return config;
     }
 }
