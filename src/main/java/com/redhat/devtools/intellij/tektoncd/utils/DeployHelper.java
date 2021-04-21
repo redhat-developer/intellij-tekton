@@ -45,16 +45,10 @@ public class DeployHelper {
 
     private DeployHelper() {}
 
-    public static boolean saveOnCluster(Project project, String yaml, String confirmationMessage, boolean updateLabels, boolean skipConfirmatioDialog) throws IOException {
+    public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage, boolean updateLabels, boolean skipConfirmatioDialog) throws IOException {
         ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "save to cluster");
 
         DeployModel model = createModel(yaml, telemetry);
-
-        if (!skipConfirmatioDialog && !isSaveConfirmed(confirmationMessage)) {
-            telemetry.result(VALUE_ABORTED)
-                    .send();
-            return false;
-        }
 
         Tkn tknCli = TreeHelper.getTkn(project);
         if (tknCli == null) {
@@ -63,7 +57,20 @@ public class DeployHelper {
             return false;
         }
 
-        String namespace = tknCli.getNamespace();
+        if (namespace.isEmpty()) {
+            namespace = getNamespace(tknCli, model);
+        }
+
+        if (confirmationMessage.isEmpty()) {
+            confirmationMessage = getDefaultConfirmationMessage(namespace, model.getName(), model.getKind());
+        }
+
+        if (!skipConfirmatioDialog && !isSaveConfirmed(confirmationMessage)) {
+            telemetry.result(VALUE_ABORTED)
+                    .send();
+            return false;
+        }
+
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(model.getKind()) ? "" : namespace;
             boolean isNewResource = executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
@@ -81,11 +88,15 @@ public class DeployHelper {
     }
 
     public static boolean saveOnCluster(Project project, String yaml, String confirmationMessage) throws IOException {
-        return saveOnCluster(project, yaml, confirmationMessage, false, false);
+        return saveOnCluster(project, "", yaml, confirmationMessage, false, false);
     }
 
     public static boolean saveOnCluster(Project project, String yaml, boolean skipConfirmationDialog) throws IOException {
-        return saveOnCluster(project, yaml, "", false, skipConfirmationDialog);
+        return saveOnCluster(project, "", yaml, "", false, skipConfirmationDialog);
+    }
+
+    public static boolean saveOnCluster(Project project, String yaml) throws IOException {
+        return saveOnCluster(project, "", yaml, "", false, false);
     }
 
     public static boolean saveTaskOnClusterFromHub(Project project, String name, String version, boolean overwrite, String confirmationMessage) throws IOException {
@@ -177,8 +188,9 @@ public class DeployHelper {
             if (spec == null) {
                 throw new IOException("Tekton file has not a valid format. Spec field is not found.");
             }
+            String namespace = YAMLHelper.getStringValueFromYAML(yaml, new String[]{"metadata", "namespace"});
             JsonNode labels = YAMLHelper.getValueFromYAML(yaml, new String[]{"metadata", "labels"});
-            DeployModel model = new DeployModel(name, kind, apiVersion, spec, labels, crdContext);
+            DeployModel model = new DeployModel(namespace, name, kind, apiVersion, spec, labels, crdContext);
             telemetry.property(PROP_RESOURCE_KIND, model.getKind())
                     .property(PROP_RESOURCE_VERSION, model.getApiVersion());
             return model;
@@ -188,43 +200,16 @@ public class DeployHelper {
             throw e;
         }
     }
-}
 
-class DeployModel {
-    private String name, apiVersion, kind;
-    private JsonNode spec, labels;
-    private CustomResourceDefinitionContext crdContext;
-
-    public DeployModel(String name, String kind, String apiVersion, JsonNode spec, JsonNode labels, CustomResourceDefinitionContext crdContext) {
-        this.name = name;
-        this.apiVersion = apiVersion;
-        this.kind = kind;
-        this.spec = spec;
-        this.labels = labels;
-        this.crdContext = crdContext;
+    private static String getNamespace(Tkn tkn, DeployModel model) throws IOException {
+        String namespace = model.getNamespace();
+        if (Strings.isNullOrEmpty(namespace)) {
+            return tkn.getNamespace();
+        }
+        return namespace;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getApiVersion() {
-        return apiVersion;
-    }
-
-    public String getKind() {
-        return kind;
-    }
-
-    public JsonNode getSpec() {
-        return spec;
-    }
-
-    public JsonNode getLabels() {
-        return labels;
-    }
-
-    public CustomResourceDefinitionContext getCrdContext() {
-        return crdContext;
+    private static String getDefaultConfirmationMessage(String namespace, String name, String kind) {
+        return "Push changes for " + kind + " " + name + " in namespace " + namespace + "?";
     }
 }
