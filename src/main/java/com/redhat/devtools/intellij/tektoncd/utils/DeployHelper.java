@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
@@ -100,6 +101,15 @@ public class DeployHelper {
         tknCli.installTaskFromHub(name, version, overwrite);
 
         return true;
+    }
+
+    public static boolean existsResource(Project project, String name, CustomResourceDefinitionContext crdContext) throws IOException {
+        Tkn tknCli = TreeHelper.getTkn(project);
+        if (tknCli == null) {
+            return false;
+        }
+        Map<String, Object> resource = tknCli.getCustomResource(tknCli.getNamespace(), name, crdContext);
+        return resource != null;
     }
 
     private static boolean isSaveConfirmed(String confirmationMessage) {

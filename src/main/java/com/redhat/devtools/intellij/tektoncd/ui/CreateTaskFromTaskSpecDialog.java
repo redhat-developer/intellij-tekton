@@ -10,12 +10,19 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
+import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.IOException;
 import java.util.Enumeration;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -32,29 +39,35 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.APIVERSION_BETA;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_10;
 
 public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
+    private Project project;
     private JPanel myContentPanel;
     private GridBagConstraints gridBagConstraints;
     private JTextField txtName;
     private ButtonGroup group;
+    private JLabel lblError;
 
-    public CreateTaskFromTaskSpecDialog() {
+    public CreateTaskFromTaskSpecDialog(Project project) {
         super(null, null, false, DialogWrapper.IdeModalityType.IDE);
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagConstraints = new GridBagConstraints();
         this.myContentPanel = new JPanel(gridBagLayout);
+        this.project = project;
 
         setTitle("Create Task from TaskSpec");
         fillContainer();
         setOKButtonText("Create");
         myOKAction.setEnabled(false);
         init();
+        lblError.setVisible(false);
     }
 
     public static void main(String[] args) {
-        CreateTaskFromTaskSpecDialog dialog = new CreateTaskFromTaskSpecDialog();
+        CreateTaskFromTaskSpecDialog dialog = new CreateTaskFromTaskSpecDialog(null);
         dialog.pack();
         dialog.show();
         System.exit(0);
@@ -62,7 +75,24 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        super.doOKAction();
+        if (existsTask()) {
+            lblError.setText("A " + getKind().toLowerCase() + " with this name already exists. Please change it and try again.");
+            lblError.setVisible(true);
+        } else {
+            super.doOKAction();
+        }
+    }
+
+    private boolean existsTask() {
+        CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(APIVERSION_BETA, TreeHelper.getPluralKind(getKind()));
+        if (crdContext == null) {
+            return false;
+        }
+        try {
+            return DeployHelper.existsResource(this.project, getName(), crdContext);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public String getName() {
@@ -85,17 +115,27 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
     protected JComponent createCenterPanel() {
         final JPanel panel = new JPanel(new BorderLayout());
         panel.add(myContentPanel, BorderLayout.CENTER);
+        panel.setPreferredSize(new Dimension(430, 150));
         return panel;
+    }
+
+    @Override
+    public @Nullable JComponent getPreferredFocusedComponent() {
+        return txtName;
     }
 
     private void fillContainer() {
         JLabel lnlName = new JLabel("Name:");
-        myContentPanel.add(lnlName);
         addComponent(lnlName, new EmptyBorder(10, 10, 5, 0), null, 0, 1, GridBagConstraints.NORTHWEST);
 
         txtName = new JTextField("");
         addListener(txtName);
         addComponent(txtName, null, ROW_DIMENSION, 0, 2, GridBagConstraints.NORTHWEST);
+
+        lblError = new JLabel("");
+        lblError.setForeground(Color.red);
+        lblError.setFont(TIMES_PLAIN_10);
+        addComponent(lblError, new EmptyBorder(3, 10, 5, 0), null, 0, 3, GridBagConstraints.NORTHWEST);
 
         JRadioButton option1 = new JRadioButton("Task");
         option1.setSelected(true);
@@ -107,7 +147,7 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
         radioButtonsPanel.add(new JLabel("Save as "));
         radioButtonsPanel.add(option1);
         radioButtonsPanel.add(option2);
-        addComponent(radioButtonsPanel, new EmptyBorder(10, 10, 5, 0), null, 0, 3, GridBagConstraints.NORTHWEST);
+        addComponent(radioButtonsPanel, new EmptyBorder(10, 10, 5, 0), null, 0, 4, GridBagConstraints.NORTHWEST);
     }
 
     private void addListener(JTextField txtValueParam) {
@@ -128,6 +168,7 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
             }
 
             public void update() {
+                lblError.setVisible(false);
                 myOKAction.setEnabled(!txtValueParam.getText().isEmpty());
             }
         });

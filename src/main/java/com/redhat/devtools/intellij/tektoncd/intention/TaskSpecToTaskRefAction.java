@@ -12,10 +12,12 @@ package com.redhat.devtools.intellij.tektoncd.intention;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
@@ -48,18 +50,21 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
         if (taskSpec == null) {
             return;
         }
-
+        String taskSpecText = taskSpec.getContext().getText();
+        if (taskSpecText.isEmpty()) {
+            return;
+        }
         ExecHelper.submit(() -> {
-            CreateTaskFromTaskSpecDialog dialog = createTaskFromTaskSpecDialog();
+            CreateTaskFromTaskSpecDialog dialog = createTaskFromTaskSpecDialog(project);
             if (!dialog.isOK()) {
                 return;
             }
             String name = dialog.getName();
             String kind = dialog.getKind();
-            String taskSpecText = getTaskSpecText(taskSpec);
-            if (name.isEmpty() || kind.isEmpty() || taskSpecText.isEmpty()) {
+            if (name.isEmpty() || kind.isEmpty()) {
                 return;
             }
+
             try {
                 String taskToSave = createTaskYAMLFromTaskSpec(taskSpecText, name, kind);
                 boolean isCreated = DeployHelper.saveOnCluster(project, taskToSave, true);
@@ -69,21 +74,19 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
                 }
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage(), e);
+                Notification notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
+                Notifications.Bus.notify(notification);
             }
         });
-    }
-
-    private String getTaskSpecText(PsiElement taskSpec) {
-        return ApplicationManager.getApplication().runReadAction((Computable<String>)() -> taskSpec.getContext().getText());
     }
 
     private void setDocumentText(Editor editor, String text) {
         ApplicationManager.getApplication().runWriteAction(() -> editor.getDocument().setText(text));
     }
 
-    private CreateTaskFromTaskSpecDialog createTaskFromTaskSpecDialog() {
+    private CreateTaskFromTaskSpecDialog createTaskFromTaskSpecDialog(Project project) {
         return UIHelper.executeInUI(() -> {
-            CreateTaskFromTaskSpecDialog ctdialog = new CreateTaskFromTaskSpecDialog();
+            CreateTaskFromTaskSpecDialog ctdialog = new CreateTaskFromTaskSpecDialog(project);
             ctdialog.show();
             return ctdialog;
         });
