@@ -5,7 +5,7 @@
   <vendor email="developers@redhat.com" url="http://www.redhat.com">Red-Hat</vendor>
 
   <description><![CDATA[
-      <img src="https://raw.githubusercontent.com/redhat-developer/intellij-tekton/master/src/main/resources/images/tekton.png" width="32" height="32"/>
+      <img src="https://raw.githubusercontent.com/redhat-developer/intellij-tekton/main/src/main/resources/images/tekton.png" width="32" height="32"/>
       <h2>Overview</h2>
       <p>A plugin for interacting with Tekton Pipelines using a local or remote instance of Kubernetes or OpenShift clusters providing a streamlined developer experience. This extension is currently in Preview Mode.</p>
       <p>To run the instance of a Kubernetes cluster locally, developers can use <a href="https://github.com/kubernetes/minikube">Minikube</a>.</p>
