@@ -78,6 +78,7 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
         if (existsTask()) {
             lblError.setText("A " + getKind().toLowerCase() + " with this name already exists. Please change it and try again.");
             lblError.setVisible(true);
+            myOKAction.setEnabled(false);
         } else {
             super.doOKAction();
         }
