@@ -64,7 +64,7 @@ public class TektonSaveInEditorListener extends SaveInEditorListener {
     }
 
     protected boolean isFileToPush(Project project, VirtualFile vf) {
-        if (vf == null || vf.getUserData(KIND_PLURAL) == null || !vf.getUserData(KIND_PLURAL).isEmpty()) {
+        if (vf == null || vf.getUserData(KIND_PLURAL) == null || vf.getUserData(KIND_PLURAL).isEmpty()) {
             return false;
         }
         return super.isFileToPush(project, vf);
