@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.listener;
 
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -18,7 +17,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
-import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.FixtureBaseTest;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
@@ -39,7 +37,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class TektonSaveInEditorListenerTest extends FixtureBaseTest {
 
@@ -50,17 +47,6 @@ public class TektonSaveInEditorListenerTest extends FixtureBaseTest {
     public void setUp() throws Exception {
         super.setUp();
         tektonSaveInEditorListener = new TektonSaveInEditorListener();
-    }
-
-    @Test
-    public void Notify_ValidDocument_SendNotification() throws IOException {
-        Document document = createDocument();
-        Application application = mock(Application.class);
-        when(application.isUnitTestMode()).thenReturn(true);
-        try (MockedStatic<YAMLHelper> yamlHelperMockedStatic = mockStatic(YAMLHelper.class)) {
-            tektonSaveInEditorListener.notify(document);
-            yamlHelperMockedStatic.verify(times(2), () -> YAMLHelper.getStringValueFromYAML(anyString(), any()));
-        }
     }
 
     @Test

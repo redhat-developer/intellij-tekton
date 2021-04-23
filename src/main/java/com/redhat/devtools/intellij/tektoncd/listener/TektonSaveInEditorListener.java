@@ -17,7 +17,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.redhat.devtools.intellij.common.editor.SaveInEditorListener;
-import com.redhat.devtools.intellij.common.utils.YAMLHelper;
+import com.redhat.devtools.intellij.common.model.GenericResource;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
@@ -35,9 +35,8 @@ public class TektonSaveInEditorListener extends SaveInEditorListener {
     @Override
     protected void notify(Document document) {
         try {
-            String kind = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] { "kind" });
-            String name = YAMLHelper.getStringValueFromYAML(document.getText(), new String[] { "metadata", "name" });
-            Notification notification = new Notification(NOTIFICATION_ID, "Save Successful", kind + " " + name + " has been saved!", NotificationType.INFORMATION);
+            GenericResource resource = DeployHelper.getResource(document.getText());
+            Notification notification = new Notification(NOTIFICATION_ID, "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION);
             Notifications.Bus.notify(notification);
         } catch (IOException e) {
             logger.warn(e.getLocalizedMessage());

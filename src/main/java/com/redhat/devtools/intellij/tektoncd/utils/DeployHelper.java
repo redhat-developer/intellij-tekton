@@ -165,13 +165,18 @@ public class DeployHelper {
         return errorMsg;
     }
 
+    public static GenericResource getResource(String yaml) throws IOException {
+        return getResource(yaml, null);
+    }
+
     private static GenericResource getResource(String yaml, ActionMessage telemetry) throws IOException {
         try {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             return mapper.readValue(yaml, GenericResource.class);
         } catch (IOException e) {
-            telemetry.error(e)
-                    .send();
+            if (telemetry != null) {
+                telemetry.error(e).send();
+            }
             throw e;
         }
     }
