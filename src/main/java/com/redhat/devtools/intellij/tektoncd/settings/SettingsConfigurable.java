@@ -21,7 +21,7 @@ public class SettingsConfigurable  implements Configurable {
     private SettingsView mySettingsView;
 
     @Override
-    public @Nls(capitalization = Nls.Capitalization.Title) String getDisplayName() {
+    public @Nls String getDisplayName() {
         return "Tekton Pipelines by Red Hat";
     }
 

@@ -526,8 +526,9 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
     protected void refresh() {
         try {
             WatchHandler.get().removeAll();
-            root.load();
-            mutableModelSupport.fireModified(root);
+            root.load().whenComplete((tkn, err) ->
+                    mutableModelSupport.fireModified(root)
+            );
         } catch (Exception e) {
         }
     }
