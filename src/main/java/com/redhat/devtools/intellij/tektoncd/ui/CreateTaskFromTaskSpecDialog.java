@@ -12,6 +12,8 @@ package com.redhat.devtools.intellij.tektoncd.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
@@ -24,6 +26,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
@@ -41,7 +45,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.APIVERSION_BETA;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_10;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_12;
 
 public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
     private Project project;
@@ -50,6 +54,7 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
     private JTextField txtName;
     private ButtonGroup group;
     private JLabel lblError;
+    private ScheduledFuture<?> scheduler;
 
     public CreateTaskFromTaskSpecDialog(Project project) {
         super(null, null, false, DialogWrapper.IdeModalityType.IDE);
@@ -63,6 +68,7 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
         setOKButtonText("Create");
         myOKAction.setEnabled(false);
         init();
+        lblError.setText("<html>A " + getKind().toLowerCase() + " with this name already exists.<br>By saving it the existing resource will be overwritten.</html>");
         lblError.setVisible(false);
     }
 
@@ -75,16 +81,13 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        if (existsTask()) {
-            lblError.setText("A " + getKind().toLowerCase() + " with this name already exists. Please change it and try again.");
-            lblError.setVisible(true);
-            myOKAction.setEnabled(false);
-        } else {
-            super.doOKAction();
-        }
+        super.doOKAction();
     }
 
     private boolean existsTask() {
+        if (getName().isEmpty()) {
+            return false;
+        }
         CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(APIVERSION_BETA, TreeHelper.getPluralKind(getKind()));
         if (crdContext == null) {
             return false;
@@ -135,12 +138,14 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
 
         lblError = new JLabel("");
         lblError.setForeground(Color.red);
-        lblError.setFont(TIMES_PLAIN_10);
+        lblError.setFont(TIMES_PLAIN_12);
         addComponent(lblError, new EmptyBorder(3, 10, 5, 0), null, 0, 3, GridBagConstraints.NORTHWEST);
 
         JRadioButton option1 = new JRadioButton("Task");
         option1.setSelected(true);
+        addRadioBtnListener(option1);
         JRadioButton option2 = new JRadioButton("ClusterTask");
+        addRadioBtnListener(option2);
         group = new ButtonGroup();
         group.add(option1);
         group.add(option2);
@@ -149,6 +154,12 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
         radioButtonsPanel.add(option1);
         radioButtonsPanel.add(option2);
         addComponent(radioButtonsPanel, new EmptyBorder(10, 10, 5, 0), null, 0, 4, GridBagConstraints.NORTHWEST);
+    }
+
+    private void addRadioBtnListener(JRadioButton radioButton) {
+        radioButton.addActionListener(e -> {
+            checkInput();
+        });
     }
 
     private void addListener(JTextField txtValueParam) {
@@ -169,10 +180,23 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
             }
 
             public void update() {
-                lblError.setVisible(false);
                 myOKAction.setEnabled(!txtValueParam.getText().isEmpty());
+                checkInput();
             }
         });
+    }
+
+    private void checkInput() {
+        if (scheduler != null && !scheduler.isCancelled() && !scheduler.isDone()) {
+            scheduler.cancel(true);
+        }
+        scheduler = ExecHelper.executeAfter(() -> {
+            if (existsTask()) {
+                UIHelper.executeInUI(() -> lblError.setVisible(true));
+            } else {
+                UIHelper.executeInUI(() -> lblError.setVisible(false));
+            }
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
     private JComponent addComponent(@NotNull JComponent component, Border border, Dimension preferredSize, @NotNull int col, @NotNull int row, @NotNull int anchor) {

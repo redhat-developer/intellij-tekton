@@ -26,6 +26,8 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.ui.CreateTaskFromTaskSpecDialog;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
@@ -56,27 +58,33 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
         }
         ExecHelper.submit(() -> {
             CreateTaskFromTaskSpecDialog dialog = createTaskFromTaskSpecDialog(project);
-            if (!dialog.isOK()) {
-                return;
-            }
-            String name = dialog.getName();
-            String kind = dialog.getKind();
-            if (name.isEmpty() || kind.isEmpty()) {
-                return;
-            }
+            dialog.getWindow().addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    super.windowClosed(e);
+                    if (!dialog.isOK()) {
+                        return;
+                    }
+                    String name = dialog.getName();
+                    String kind = dialog.getKind();
+                    if (name.isEmpty() || kind.isEmpty()) {
+                        return;
+                    }
 
-            try {
-                String taskToSave = createTaskYAMLFromTaskSpec(taskSpecText, name, kind);
-                boolean isCreated = DeployHelper.saveOnCluster(project, taskToSave, true);
-                if (isCreated) {
-                    String textWithTaskRef = createUpdatedTextWithTaskRef(editor.getDocument().getText(), taskSpecText, name, kind);
-                    UIHelper.executeInUI(() -> setDocumentText(editor, textWithTaskRef));
+                    try {
+                        String taskToSave = createTaskYAMLFromTaskSpec(taskSpecText, name, kind);
+                        boolean isCreated = DeployHelper.saveOnCluster(project, taskToSave, true);
+                        if (isCreated) {
+                            String textWithTaskRef = createUpdatedTextWithTaskRef(editor.getDocument().getText(), taskSpecText, name, kind);
+                            UIHelper.executeInUI(() -> setDocumentText(editor, textWithTaskRef));
+                        }
+                    } catch (IOException ex) {
+                        logger.warn(ex.getLocalizedMessage(), ex);
+                        Notification notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + ex.getLocalizedMessage(), NotificationType.ERROR);
+                        Notifications.Bus.notify(notification);
+                    }
                 }
-            } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage(), e);
-                Notification notification = new Notification(NOTIFICATION_ID, "Error", "An error occurred while saving \n" + e.getLocalizedMessage(), NotificationType.ERROR);
-                Notifications.Bus.notify(notification);
-            }
+            });
         });
     }
 
@@ -87,6 +95,7 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
     private CreateTaskFromTaskSpecDialog createTaskFromTaskSpecDialog(Project project) {
         return UIHelper.executeInUI(() -> {
             CreateTaskFromTaskSpecDialog ctdialog = new CreateTaskFromTaskSpecDialog(project);
+            ctdialog.setModal(false);
             ctdialog.show();
             return ctdialog;
         });
