@@ -94,7 +94,7 @@ public class HubModel {
     public void search(String query, List<String> kinds, List<String> tags, ApiCallback<Resources> callback) {
         ResourceApi resApi = new ResourceApi();
         try {
-            resApi.resourceQueryAsync(query, kinds, null, tags, null, null, callback);
+            resApi.resourceQueryAsync(query, null, kinds, tags, null, null, callback);
         } catch (ApiException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
@@ -182,7 +182,7 @@ public class HubModel {
             }
             yamlObject.put("kind", kind);
             String yamlUpdated = YAMLBuilder.writeValueAsString(yamlObject);
-            if (DeployHelper.saveOnCluster(project, namespace, yamlUpdated, confirmationMessage, true)) {
+            if (DeployHelper.saveOnCluster(project, yamlUpdated, confirmationMessage, true, false)) {
                 if (!clusterTaskAlreadyOnCluster) {
                     clusterTasksInstalled.add(name);
                     return Constants.InstallStatus.INSTALLED;

@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -401,6 +402,32 @@ public class YAMLBuilder {
         rootNode.set("spec", specNode);
 
         return rootNode;
+    }
+
+    public static ObjectNode createTask(String name, String kind, ObjectNode taskSpec) {
+        JsonNode metadataNode = taskSpec.remove("metadata");
+        if (metadataNode == null) {
+            metadataNode = YAML_MAPPER.createObjectNode();
+        }
+        if (!metadataNode.has("name")) {
+            ((ObjectNode) metadataNode).put("name", name);
+        }
+
+        ObjectNode task = YAML_MAPPER.createObjectNode();
+        task.put("apiVersion", "tekton.dev/v1beta1");
+        task.put("kind", kind);
+        task.set("metadata", metadataNode);
+        task.set("spec", taskSpec);
+        return task;
+    }
+
+    public static ObjectNode createTaskRef(String name, String kind) {
+        ObjectNode taskRef = YAML_MAPPER.createObjectNode();
+        ObjectNode metadataTaskRef = YAML_MAPPER.createObjectNode();
+        metadataTaskRef.put("name", name);
+        metadataTaskRef.put("kind", kind);
+        taskRef.set("taskRef", metadataTaskRef);
+        return taskRef;
     }
 
     public static String writeValueAsString(ObjectNode rootNode) throws IOException {

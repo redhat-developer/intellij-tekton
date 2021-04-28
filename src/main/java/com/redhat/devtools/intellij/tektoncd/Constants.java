@@ -18,6 +18,7 @@ public class Constants {
     public static final Key<String> NAMESPACE = Key.create("com.redhat.devtools.intellij.tektoncd.tekton.namespace");
     public static final Key<String> KIND_PLURAL = Key.create("com.redhat.devtools.intellij.tektoncd.tekton.plural");
     public static final Key<ParentableNode> TARGET_NODE = Key.create("com.redhat.devtools.intellij.tektoncd.tekton.targetnode");
+    public static final String APIVERSION_BETA = "tekton.dev/v1beta1";
 
     public static final String KIND_CLUSTERTASKS = "clustertasks";
     public static final String KIND_PIPELINES = "pipelines";

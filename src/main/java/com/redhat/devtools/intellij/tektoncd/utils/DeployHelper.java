@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
@@ -44,12 +45,12 @@ public class DeployHelper {
 
     private DeployHelper() {}
 
-    public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage, boolean updateLabels) throws IOException {
+    public static boolean saveOnCluster(Project project, String yaml, String confirmationMessage, boolean updateLabels, boolean skipConfirmatioDialog) throws IOException {
         ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "save to cluster");
 
         DeployModel model = createModel(yaml, telemetry);
 
-        if (!isSaveConfirmed(confirmationMessage)) {
+        if (!skipConfirmatioDialog && !isSaveConfirmed(confirmationMessage)) {
             telemetry.result(VALUE_ABORTED)
                     .send();
             return false;
@@ -62,6 +63,7 @@ public class DeployHelper {
             return false;
         }
 
+        String namespace = tknCli.getNamespace();
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(model.getKind()) ? "" : namespace;
             boolean isNewResource = executeTkn(namespace, resourceNamespace, yaml, updateLabels, model, tknCli);
@@ -78,8 +80,12 @@ public class DeployHelper {
         return true;
     }
 
-    public static boolean saveOnCluster(Project project, String namespace, String yaml, String confirmationMessage) throws IOException {
-        return saveOnCluster(project, namespace, yaml, confirmationMessage, false);
+    public static boolean saveOnCluster(Project project, String yaml, String confirmationMessage) throws IOException {
+        return saveOnCluster(project, yaml, confirmationMessage, false, false);
+    }
+
+    public static boolean saveOnCluster(Project project, String yaml, boolean skipConfirmationDialog) throws IOException {
+        return saveOnCluster(project, yaml, "", false, skipConfirmationDialog);
     }
 
     public static boolean saveTaskOnClusterFromHub(Project project, String name, String version, boolean overwrite, String confirmationMessage) throws IOException {
@@ -95,6 +101,15 @@ public class DeployHelper {
         tknCli.installTaskFromHub(name, version, overwrite);
 
         return true;
+    }
+
+    public static boolean existsResource(Project project, String name, CustomResourceDefinitionContext crdContext) throws IOException {
+        Tkn tknCli = TreeHelper.getTkn(project);
+        if (tknCli == null) {
+            return false;
+        }
+        Map<String, Object> resource = tknCli.getCustomResource(tknCli.getNamespace(), name, crdContext);
+        return resource != null;
     }
 
     private static boolean isSaveConfirmed(String confirmationMessage) {
