@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.TestUtils;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import io.fabric8.tekton.client.TektonClient;
 import java.io.IOException;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -106,10 +108,10 @@ public class TknCliPipelineTest extends TknCliTest {
         List<String> pipelines = tkn.getPipelines(NAMESPACE);
         assertTrue(pipelines.contains(PIPELINE_NAME));
         // start pipeline and verify taskrun and pipelinerun has been created
-        Map<String, String> params = new HashMap<>();
-        params.put("first", "1");
-        params.put("second", "2");
-        params.put("third", "3");
+        Map<String, Input> params = new HashMap<>();
+        params.put("first", new Input("name", "string", Input.Kind.PARAMETER, "value", Optional.empty(), Optional.empty()));
+        params.put("second", new Input("name2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
+        params.put("third", new Input("name3", "string", Input.Kind.PARAMETER, "value3", Optional.empty(), Optional.empty()));
         tkn.startPipeline(NAMESPACE, PIPELINE_NAME, params, Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
         io.fabric8.tekton.pipeline.v1beta1.PipelineRun pRun = tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE)
                 .waitUntilCondition(pipelineRun -> pipelineRun.getMetadata().getName() != null && pipelineRun.getMetadata().getName().startsWith(PIPELINE_NAME), 10, TimeUnit.MINUTES);
