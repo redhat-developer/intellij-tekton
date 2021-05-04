@@ -191,8 +191,7 @@ public class StartAction extends TektonAction {
                          String runPrefixName) throws IOException {
         String runName = null;
         if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
-            runName = tkncli.startPipeline(
-                    namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
+            runName = tkncli.startPipeline(namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
         } else if (model.getKind().equalsIgnoreCase(KIND_TASK)) {
             runName = tkncli.startTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
         } else if (model.getKind().equalsIgnoreCase(KIND_CLUSTERTASK)) {

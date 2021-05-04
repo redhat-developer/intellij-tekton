@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn.component.field;
 
+import java.util.Collections;
 import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
@@ -40,9 +41,14 @@ public class Workspace {
     private Map<String, String> items;
 
     public Workspace(String name, Kind kind, String resource) {
+        this(name, kind, resource, Collections.emptyMap());
+    }
+
+    public Workspace(String name, Kind kind, String resource, Map<String, String> items) {
         this.name = name;
         this.kind = kind;
         this.resource = resource;
+        this.items = items;
     }
 
     public String getName() {

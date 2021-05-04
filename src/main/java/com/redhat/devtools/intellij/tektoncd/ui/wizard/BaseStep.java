@@ -146,10 +146,15 @@ public abstract class BaseStep implements Step, Disposable {
         gridBagLayout.columnWeights = new double[]{0, 1};
     }
 
-    protected JComponent addComponent(@NotNull JComponent component, Font font, Border border, Dimension preferredSize, @NotNull GridBagConstraints gridBagConstraints) {
+    protected JComponent setComponentStyle(@NotNull JComponent component, Font font, Border border, Dimension preferredSize) {
         if (font != null) component.setFont(font);
         if (border != null) component.setBorder(border);
         if (preferredSize != null) component.setPreferredSize(preferredSize);
+        return component;
+    }
+
+    protected JComponent addComponent(@NotNull JComponent component, Font font, Border border, Dimension preferredSize, @NotNull GridBagConstraints gridBagConstraints) {
+        component = setComponentStyle(component, font, border, preferredSize);
         contentPanel.add(component, gridBagConstraints);
         return component;
     }
