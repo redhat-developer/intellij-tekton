@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.ui.DocumentAdapter;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import java.awt.BorderLayout;
@@ -37,6 +38,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.DocumentEvent;
 import javax.swing.text.NumberFormatter;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,6 +47,7 @@ import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspac
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.EMPTYDIR;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.PVC;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.SECRET;
+import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.VCT;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BORDER_LABEL_NAME;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_TOP_35;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.NO_BORDER;
@@ -52,10 +55,12 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SH
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION_ERROR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_10;
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_12;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_14;
 
 public class WorkspacesStep extends BaseStep {
-    Map<String, JPanel> workspacePanelMapper;
+    private Map<String, JPanel> workspacePanelMapper;
+    private JLabel lblErrorText;
 
 
     public WorkspacesStep(ActionToRunModel model) {
@@ -66,14 +71,15 @@ public class WorkspacesStep extends BaseStep {
     public boolean isComplete() {
         boolean isComplete = model.getWorkspaces().values().stream().allMatch(workspace -> workspace != null);
         if (!isComplete) {
-            final int[] row = {1};
+            //final int[] row = {1};
             workspacePanelMapper.entrySet().forEach(entry -> {
-                String workspace = entry.getKey();
+                String workspaceName = entry.getKey();
                 JPanel panel = entry.getValue();
                 JComboBox cmbWorkspaceTypes = (JComboBox) Arrays.stream(panel.getComponents()).filter(component -> component.getName() != null && component.getName().equals("cmbWorkspaceTypes")).findFirst().get();
                 if (!isValid(cmbWorkspaceTypes)) {
                     //add error message
                     cmbWorkspaceTypes.setBorder(RED_BORDER_SHOW_ERROR);
+                    return;
                 }
                 Workspace.Kind kind = (Workspace.Kind) cmbWorkspaceTypes.getSelectedItem();
                 if (kind == PVC) {
@@ -84,43 +90,23 @@ public class WorkspacesStep extends BaseStep {
                                 .filter(component -> component.getName() != null && component.getName().equals("newPVCNamePanel")).findFirst().get();
                         JTextField namePVC = (JTextField) Arrays.stream(newPVCNamePanel.getComponents())
                                 .filter(component -> component.getName() != null && component.getName().equals("txtNameNewPVC")).findFirst().get();
-                        JPanel accessModePanel = (JPanel) Arrays.stream(panel.getComponents())
-                                .filter(component -> component.getName() != null && component.getName().equals("accessModePanel")).findFirst().get();
-                        JComboBox accessModePVC = (JComboBox) Arrays.stream(accessModePanel.getComponents())
-                                .filter(component -> component.getName() != null && component.getName().equals("cmbAccessMode")).findFirst().get();
-                        JPanel sizePanel = (JPanel) Arrays.stream(panel.getComponents())
-                                .filter(component -> component.getName() != null && component.getName().equals("sizePanel")).findFirst().get();
-                        JSpinner sizeSpinner = (JSpinner) Arrays.stream(sizePanel.getComponents()).filter(component -> component.getName() != null && component.getName().equals("txtSize")).findFirst().get();
-                        JComboBox sizeUnit = (JComboBox) Arrays.stream(sizePanel.getComponents()).filter(component -> component.getName() != null && component.getName().equals("cmbSizeMeasureUnit")).findFirst().get();
 
-                        String name = namePVC.getText();
-                        if (name.isEmpty()) {
+                        String nameNewPVC = namePVC.getText();
+                        if (nameNewPVC.isEmpty()) {
                             namePVC.setBorder(RED_BORDER_SHOW_ERROR);
+                        } else {
+                            namePVC.setBorder(NO_BORDER);
                         }
-                        String accessMode = accessModePVC.getSelectedItem().toString();
-                        if (accessMode.isEmpty()) {
-                            accessModePVC.setBorder(RED_BORDER_SHOW_ERROR);
-                        }
-                        String size = ((JSpinner.NumberEditor)sizeSpinner.getEditor()).getTextField().getText();
-                        if (size.isEmpty() || size.equals("0")) {
-                            sizeSpinner.setBorder(RED_BORDER_SHOW_ERROR);
-                        }
-                        String unit = sizeUnit.getSelectedItem().toString();
-                        if (unit.isEmpty()) {
-                            sizeUnit.setBorder(RED_BORDER_SHOW_ERROR);
-                        }
-                        if (!name.isEmpty() && !accessMode.isEmpty() && !size.isEmpty() && !unit.isEmpty()) {
-                            Map<String, String> values = new HashMap<>();
-                            values.put("accessMode", accessMode);
-                            values.put("size", size);
-                            values.put("unit", unit);
-                            Workspace workspace1 = new Workspace(name, PVC, "", values);
-                            model.getWorkspaces().put(workspace, workspace1);
-                        }
+
+                        saveNewVolume(workspaceName, nameNewPVC, PVC, panel);
+                    } else if (valueSelected.equals("Create new VolumeClaimTemplate")) {
+                        saveNewVolume(workspaceName, workspaceName + "-vct", VCT, panel);
                     }
                 }
 
             });
+
+
             /*cmbsWorkspaceTypes.stream().forEach(cmb -> {
                 if (!isValid(cmb)) {
                     cmb.setBorder(RED_BORDER_SHOW_ERROR);
@@ -133,7 +119,40 @@ public class WorkspacesStep extends BaseStep {
                 row[0] += 3;
             });*/
         }
+        isComplete = model.getWorkspaces().values().stream().allMatch(workspace -> workspace != null);
+        changeErrorTextVisibility(!isComplete);
         return isComplete;
+    }
+
+    private void saveNewVolume(String workspaceName, String name, Workspace.Kind kind, JPanel panel) {
+        JPanel accessModePanel = (JPanel) Arrays.stream(panel.getComponents())
+                .filter(component -> component.getName() != null && component.getName().equals("accessModePanel")).findFirst().get();
+        JComboBox accessModePVC = (JComboBox) Arrays.stream(accessModePanel.getComponents())
+                .filter(component -> component.getName() != null && component.getName().equals("cmbAccessMode")).findFirst().get();
+        JPanel sizePanel = (JPanel) Arrays.stream(panel.getComponents())
+                .filter(component -> component.getName() != null && component.getName().equals("sizePanel")).findFirst().get();
+        JSpinner sizeSpinner = (JSpinner) Arrays.stream(sizePanel.getComponents()).filter(component -> component.getName() != null && component.getName().equals("txtSize")).findFirst().get();
+        JComboBox sizeUnit = (JComboBox) Arrays.stream(sizePanel.getComponents()).filter(component -> component.getName() != null && component.getName().equals("cmbSizeMeasureUnit")).findFirst().get();
+
+        boolean isNewItemFormValid = kind == VCT || (kind == PVC && !name.isEmpty());
+        String size = ((JSpinner.NumberEditor)sizeSpinner.getEditor()).getTextField().getText();
+        if (size.isEmpty() || size.equals("0")) {
+            sizeSpinner.setBorder(RED_BORDER_SHOW_ERROR);
+            isNewItemFormValid = false;
+        } else {
+            sizeSpinner.setBorder(NO_BORDER);
+        }
+        if (!isNewItemFormValid) {
+            return;
+        }
+
+        Map<String, String> values = new HashMap<>();
+        values.put("name", name);
+        values.put("accessMode", accessModePVC.getSelectedItem().toString());
+        values.put("size", size);
+        values.put("unit", sizeUnit.getSelectedItem().toString());
+        Workspace workspace = new Workspace(workspaceName, kind, "", values);
+        model.getWorkspaces().put(workspaceName, workspace);
     }
 
     @Override
@@ -143,7 +162,12 @@ public class WorkspacesStep extends BaseStep {
 
     public void setContent() {
         workspacePanelMapper = new HashMap<>();
-        final int[] row = {0};
+        final int[] row = {1};
+
+        lblErrorText = new JLabel("Please fill all fields to proceed.");
+        lblErrorText.setForeground(Color.red);
+        addComponent(lblErrorText, TIMES_PLAIN_12, BORDER_LABEL_NAME, ROW_DIMENSION_ERROR, 0, 0, GridBagConstraints.PAGE_START);
+        changeErrorTextVisibility(false);
 
         model.getWorkspaces().keySet().forEach(workspaceName -> {
             int innerPanelRow = 0;
@@ -182,6 +206,16 @@ public class WorkspacesStep extends BaseStep {
             lblNewPVCName.setName("lblNameNewPVC");
             JTextField txtNewPVCName = new JTextField("");
             txtNewPVCName.setName("txtNameNewPVC");
+            txtNewPVCName.getDocument().addDocumentListener(new DocumentAdapter() {
+                @Override
+                protected void textChanged(@NotNull DocumentEvent e) {
+                    txtNewPVCName.setBorder(NO_BORDER);
+                    changeErrorTextVisibility(false);
+                    if (txtNewPVCName.getText().isEmpty()) {
+                        updateWorkspaceModel(workspaceName, PVC, null);
+                    }
+                }
+            });
             JPanel newPVCNamePanel = createCompoundComponentAsPanel("newPVCNamePanel", lblNewPVCName, txtNewPVCName, null);
             addComponent(newPVCNamePanel, workspacePanel, workspacePanelConstraint,null, NO_BORDER, ROW_DIMENSION, 0, innerPanelRow, GridBagConstraints.NORTH);
             innerPanelRow += 1;
@@ -204,12 +238,19 @@ public class WorkspacesStep extends BaseStep {
             txtSize.setName("txtSize");
             txtSize.setEditor(new JSpinner.NumberEditor(txtSize, "#"));
             JTextField textField = ((JSpinner.NumberEditor)txtSize.getEditor()).getTextField();
+            textField.addPropertyChangeListener(evt -> {
+                txtSize.setBorder(NO_BORDER);
+                changeErrorTextVisibility(false);
+                if (textField.getText().equals("0")) {
+                    updateWorkspaceModel(workspaceName, PVC, null);
+                }
+            });
             ((NumberFormatter)((JFormattedTextField) textField).getFormatter()).setAllowsInvalid(false);
             JComboBox cmbSizeMeasureUnit = new JComboBox();
             cmbSizeMeasureUnit.setName("cmbSizeMeasureUnit");
-            cmbSizeMeasureUnit.addItem("MB");
-            cmbSizeMeasureUnit.addItem("GB");
-            cmbSizeMeasureUnit.addItem("TB");
+            cmbSizeMeasureUnit.addItem("Mi");
+            cmbSizeMeasureUnit.addItem("Gi");
+            cmbSizeMeasureUnit.addItem("Ti");
             JPanel sizePanel = createCompoundComponentAsPanel("sizePanel", lblSize, txtSize, cmbSizeMeasureUnit);
             addComponent(sizePanel, workspacePanel, workspacePanelConstraint,null, NO_BORDER, ROW_DIMENSION, 0, innerPanelRow, GridBagConstraints.NORTH);
 
@@ -274,6 +315,10 @@ public class WorkspacesStep extends BaseStep {
                 });
     }
 
+    private void changeErrorTextVisibility(boolean visible) {
+        lblErrorText.setVisible(visible);
+    }
+
     private void hidePVCAndVCTComponents(JPanel parent) {
         changeNewPVCComponentsVisibility(parent, false);
     }
@@ -290,10 +335,8 @@ public class WorkspacesStep extends BaseStep {
                 updateWorkspaceModel(workspace, kindSelected, resource);
                 // reset error graphics if error occurred earlier
                 if (isValid(cmbWorkspaceTypes)) {
-                    cmbWorkspaceTypes.setBorder(cmbWorkspaceTypeValues.getBorder());
-                    if (errorFieldsByRow.containsKey(row)) {
-                        deleteComponent(errorFieldsByRow.get(row));
-                    }
+                    changeErrorTextVisibility(false);
+                    cmbWorkspaceTypes.setBorder(NO_BORDER);
                 }
                 fireStateChanged();
             }
@@ -301,15 +344,19 @@ public class WorkspacesStep extends BaseStep {
 
         cmbWorkspaceTypeValues.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == 1) {
+                changeErrorTextVisibility(false);
                 // when wsCB combo box value changes, wsTypesCB combo box is filled with all possible options
                 String itemSelected = itemEvent.getItem().toString();
                 hidePVCAndVCTComponents(parent);
                 if (itemSelected.equals("Create new VolumeClaimTemplate")) {
                     changeNewVCTComponentsVisibility(parent, true);
+                    updateWorkspaceModel(workspace, PVC, null);
                 } else if (itemSelected.equals("Create new PVC")) {
                     changeNewPVCComponentsVisibility(parent, true);
+                    updateWorkspaceModel(workspace, PVC, null);
+                } else {
+                    updateWorkspaceModel(workspace, (Workspace.Kind) cmbWorkspaceTypes.getSelectedItem(), itemEvent.getItem().toString());
                 }
-                updateWorkspaceModel(workspace, (Workspace.Kind) cmbWorkspaceTypes.getSelectedItem(), itemEvent.getItem().toString());
                 fireStateChanged();
             }
         });
@@ -361,10 +408,11 @@ public class WorkspacesStep extends BaseStep {
     }
 
     private boolean isValid(JComboBox component) {
-        if (!component.isVisible() || component.getSelectedIndex() == 0) return false;
+        if (!component.isVisible() || component.getSelectedItem().toString().isEmpty()) return false;
         Workspace.Kind kind = (Workspace.Kind) component.getSelectedItem();
+        if (kind == PVC || kind == EMPTYDIR) return true;
         List<String> resourcesByKind = getResources(kind);
-        if (kind != EMPTYDIR && resourcesByKind.size() == 0) return false;
+        if (resourcesByKind.size() == 0) return false;
         return true;
     }
 

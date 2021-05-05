@@ -10,13 +10,16 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
@@ -33,14 +36,16 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +111,7 @@ public class StartAction extends TektonAction {
                 String serviceAccount = model.getServiceAccount();
                 Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
                 Map<String, String> params = model.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param.value()));
+                createVCT(model.getWorkspaces());
                 Map<String, Workspace> workspaces = model.getWorkspaces();
                 Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
                 Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
@@ -198,6 +204,41 @@ public class StartAction extends TektonAction {
             runName = tkncli.startClusterTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
         }
         return runName;
+    }
+
+    private void createVCT(Map<String, Workspace> workspaces) {
+        AtomicInteger cont = new AtomicInteger();
+        workspaces.entrySet().forEach(entry -> {
+            Workspace workspace = entry.getValue();
+            if (workspace.getKind() == Workspace.Kind.VCT) {
+                Map<String, String> items = workspace.getItems();
+                String name = items.get("name");
+                String accessMode = items.get("accessMode");
+                String size = items.get("size");
+                String unit = items.get("unit");
+                ObjectNode newVCT = YAMLBuilder.createVCT(name, "ReadWriteMany", size, unit);
+                try {
+                    VirtualFile vf = VirtualFileHelper.createVirtualFile("vct-" + cont + ".yaml", YAMLHelper.JSONToYAML(newVCT), false);
+                    workspace.getItems().put("file", vf.getPath());
+                    cont.getAndIncrement();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void createNewVolume(Map<String, Workspace> workspaces) {
+        workspaces.entrySet().forEach(entry -> {
+            Workspace workspace = entry.getValue();
+            if (workspace.getKind() == Workspace.Kind.PVC && workspace.getResource().isEmpty()) {
+                Map<String, String> items = workspace.getItems();
+                String accessMode = items.get("accessMode");
+                String size = items.get("size");
+                String unit = items.get("unit");
+                ObjectNode newPVC = YAMLBuilder.createPVC(entry.getKey(), accessMode, size, unit);
+            }
+        });
     }
 
     protected ActionMessage createTelemetry() {

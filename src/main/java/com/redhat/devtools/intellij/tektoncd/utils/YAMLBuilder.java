@@ -421,6 +421,37 @@ public class YAMLBuilder {
         return task;
     }
 
+    public static ObjectNode createPVC(String name, String accessMode, String size, String unit) {
+        ObjectNode pvc = createVCT(name, accessMode, size, unit);
+        pvc.put("apiVersion", "v1");
+        pvc.put("kind", "PersistentVolumeClaim");
+        return pvc;
+    }
+
+    public static ObjectNode createVCT(String name, String accessMode, String size, String unit) {
+        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
+        metadataNode.put("name", name);
+
+        ObjectNode spec = YAML_MAPPER.createObjectNode();
+
+        ObjectNode requests = YAML_MAPPER.createObjectNode();
+        ObjectNode resources = YAML_MAPPER.createObjectNode();
+        requests.put("storage", size + unit);
+        resources.set("requests", requests);
+
+        ArrayNode accessModes = YAML_MAPPER.createArrayNode();
+        accessModes.add(accessMode);
+
+        spec.set("resources", resources);
+        spec.put("volumeMode", "Filesystem");
+        spec.set("accessModes", accessModes);
+
+        ObjectNode vct = YAML_MAPPER.createObjectNode();
+        vct.set("metadata", metadataNode);
+        vct.set("spec", spec);
+        return vct;
+    }
+
     public static ObjectNode createTaskRef(String name, String kind) {
         ObjectNode taskRef = YAML_MAPPER.createObjectNode();
         ObjectNode metadataTaskRef = YAML_MAPPER.createObjectNode();

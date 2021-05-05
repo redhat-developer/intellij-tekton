@@ -513,6 +513,8 @@ public class TknCli implements Tkn {
                     args.add("name=" + item.getName() + ",secret=" + item.getResource());
                 } else if (item.getKind() == Workspace.Kind.EMPTYDIR) {
                     args.add("name=" + item.getName() + ",emptyDir=");
+                } else if (item.getKind() == Workspace.Kind.VCT) {
+                    args.add("name=" + item.getName() + ",volumeClaimTemplateFile=" + item.getItems().get("file"));
                 }
             });
         }
