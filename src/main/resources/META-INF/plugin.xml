@@ -170,8 +170,8 @@
                              displayName="Tekton Pipelines by Red Hat"/>
     <applicationService id="com.redhat.devtools.intellij.tektoncd.settings.SettingsState"
                         serviceImplementation="com.redhat.devtools.intellij.tektoncd.settings.SettingsState"/>
-    <fileDocumentSynchronizationVetoer id="com.redhat.devtools.intellij.tektoncd.listener.SaveInEditorListener"
-                                       implementation="com.redhat.devtools.intellij.tektoncd.listener.SaveInEditorListener" order="first" />
+    <fileDocumentSynchronizationVetoer id="com.redhat.devtools.intellij.tektoncd.listener.TektonSaveInEditorListener"
+                                       implementation="com.redhat.devtools.intellij.tektoncd.listener.TektonSaveInEditorListener" order="first" />
     <completion.contributor id="com.redhat.devtools.intellij.tektoncd.completion.DictionaryContributor"
                             language="any" implementationClass="com.redhat.devtools.intellij.tektoncd.completion.DictionaryContributor"/>
     <toolWindow id="Tekton" anchor="left" factoryClass="com.redhat.devtools.intellij.tektoncd.ui.toolwindow.WindowToolFactory" icon="/images/cluster.png"/>

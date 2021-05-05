@@ -1,0 +1,10 @@
+apiVersion: invalid/v1beta1
+kind: Pipeline
+metadata:
+  name: foo
+  namespace: tekton
+spec:
+  tasks:
+    - name: step1
+      taskRef:
+        name: task1

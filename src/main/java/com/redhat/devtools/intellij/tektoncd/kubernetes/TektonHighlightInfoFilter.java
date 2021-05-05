@@ -10,33 +10,14 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.kubernetes;
 
-import com.intellij.codeInsight.daemon.impl.HighlightInfo;
-import com.intellij.codeInsight.daemon.impl.HighlightInfoFilter;
 import com.intellij.psi.PsiFile;
-import com.redhat.devtools.intellij.tektoncd.validation.KubernetesTypeInfo;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.redhat.devtools.intellij.common.kubernetes.KubernetesHighlightInfoFilter;
+import com.redhat.devtools.intellij.common.validation.KubernetesTypeInfo;
 
-import java.util.regex.Pattern;
-
-public class TektonHighlightInfoFilter implements HighlightInfoFilter {
-    /*
-     * as there is no way to find the originating plugin from an highlight info, we are looking at the
-     * tooltip that relates to the inspection tool that generated it.
-     */
-    private static final Pattern TOOLTIP_REGEXP = Pattern.compile(".*href=\"#inspection\\/Kubernetes.*\".*");
-
+public class TektonHighlightInfoFilter extends KubernetesHighlightInfoFilter {
     @Override
-    public boolean accept(@NotNull HighlightInfo highlightInfo, @Nullable PsiFile file) {
-        return !isKubernetesHighlight(highlightInfo) || !isTektonFile(file);
-    }
-
-    private boolean isTektonFile(PsiFile file) {
+    public boolean isCustomFile(PsiFile file) {
         KubernetesTypeInfo info = KubernetesTypeInfo.extractMeta(file);
         return info.getApiGroup().startsWith("tekton.dev") || info.getApiGroup().startsWith("triggers.tekton.dev");
-    }
-
-    private boolean isKubernetesHighlight(HighlightInfo highlightInfo) {
-        return highlightInfo.getToolTip() != null && TOOLTIP_REGEXP.matcher(highlightInfo.getToolTip()).matches();
     }
 }

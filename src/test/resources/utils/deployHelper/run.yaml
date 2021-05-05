@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: conditional-pr
+spec:
+  pipelineRef:
+    name: conditional-pipeline
+  serviceAccountName: 'default'
+  resources:
+    - name: source-repo
+      resourceRef:
+        name: pipeline-git

@@ -22,12 +22,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 
-
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -36,7 +37,7 @@ import static org.mockito.Mockito.when;
 
 public class DeployHelperTest extends FixtureBaseTest {
 
-    private static final String RESOURCE_PATH = "utils/deployhelper/";
+    private static final String RESOURCE_PATH = "utils/deployHelper/";
     private String pipeline_yaml;
     private TknCli tkn;
 
@@ -48,39 +49,13 @@ public class DeployHelperTest extends FixtureBaseTest {
         pipeline_yaml = load(RESOURCE_PATH + "pipeline.yaml");
     }
 
-
     @Test
-    public void SaveOnCluster_InvalidYamlMissingKind_Throw() throws IOException {
-        String yaml = load(RESOURCE_PATH + "missingkind_pipeline.yaml");
-        assertIsCorrectErrorWhenInvalidYaml(yaml, "Tekton file has not a valid format. Kind field is not found.");
-    }
-
-    @Test
-    public void SaveOnCluster_InvalidYamlMissingName_Throw() throws IOException {
-        String yaml = load(RESOURCE_PATH + "missingname_pipeline.yaml");
-        assertIsCorrectErrorWhenInvalidYaml(yaml, "Tekton file has not a valid format. Name field is not valid or found.");
-    }
-
-    @Test
-    public void SaveOnCluster_InvalidYamlMissingApiVersion_Throw() throws IOException {
-        String yaml = load(RESOURCE_PATH + "missingapiversion_pipeline.yaml");
-        assertIsCorrectErrorWhenInvalidYaml(yaml, "Tekton file has not a valid format. ApiVersion field is not found.");
-    }
-
-    @Test
-    public void SaveOnCluster_InvalidYamlInvalidApiVersion_Throw() throws IOException {
-        String yaml = load(RESOURCE_PATH + "missingcrd_pipeline.yaml");
-        assertIsCorrectErrorWhenInvalidYaml(yaml, "Tekton file has not a valid format. ApiVersion field contains an invalid value.");
-    }
-
-    private void assertIsCorrectErrorWhenInvalidYaml(String yaml, String expectedError) {
-        try (MockedStatic<TreeHelper> theMock = mockStatic(TreeHelper.class)) {
-            theMock.when(() -> TreeHelper.getTkn(any())).thenReturn(null);
-            try {
-                DeployHelper.saveOnCluster(null, yaml, "", false, true);
-            } catch (IOException e) {
-                assertEquals(expectedError, e.getLocalizedMessage());
-            }
+    public void SaveOnCluster_CannotRetrieveTkn_False() throws IOException {
+        String yaml = load(RESOURCE_PATH + "pipeline.yaml");
+        try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
+            treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(null);
+            boolean result = DeployHelper.saveOnCluster(project, "namespace", yaml, "message", false, false);
+            assertFalse(result);
         }
     }
 
@@ -93,14 +68,33 @@ public class DeployHelperTest extends FixtureBaseTest {
     }
 
     @Test
-    public void SaveOnCluster_SaveIsNotConfirmedByUser_False() {
-        try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
-            uiHelperMockedStatic.when(() -> UIHelper.executeInUI(any(Supplier.class))).thenReturn(Messages.CANCEL);
-            boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, false);
-            assertFalse(returningValue);
-            uiHelperMockedStatic.verify(times(1), () -> UIHelper.executeInUI(any(Supplier.class)));
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void SaveOnCluster_SaveIsNotConfirmedByUser_False() throws IOException {
+        when(tkn.getNamespace()).thenReturn("namespace");
+        try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
+            try (MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
+                uiHelperMockedStatic.when(() -> UIHelper.executeInUI(any(Supplier.class))).thenReturn(Messages.CANCEL);
+                treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
+                boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, false);
+                assertFalse(returningValue);
+                uiHelperMockedStatic.verify(times(1), () -> UIHelper.executeInUI(any(Supplier.class)));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Test
+    public void SaveOnCluster_NamespaceIsEmptyAndResourceIsNotClusterScoped_ActiveNamespaceIsUsed() throws IOException {
+        String yaml = load(RESOURCE_PATH + "pipeline.yaml");
+        when(tkn.getNamespace()).thenReturn("namespace");
+        try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
+            try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
+                uiHelperMockedStatic.when(() -> UIHelper.executeInUI(any(Supplier.class))).thenReturn(Messages.NO);
+                treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
+                boolean result = DeployHelper.saveOnCluster(project, "", yaml, "message", false, false);
+                verify(tkn, times(1)).getNamespace();
+                assertFalse(result);
+            }
         }
     }
 
@@ -160,5 +154,71 @@ public class DeployHelperTest extends FixtureBaseTest {
                 verify(tkn).editCustomResource(anyString(), anyString(), any(), anyString());
             }
         } catch (IOException e) { }
+    }
+
+    @Test
+    public void SaveOnCluster_ResourceHasAnInvalidApiVersion_Throws() throws IOException {
+        String yaml = load(RESOURCE_PATH + "pipeline_invalid_apiversion.yaml");
+        try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
+            try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
+                treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
+                uiHelperMockedStatic.when(() -> UIHelper.executeInUI(any(Supplier.class))).thenReturn(Messages.OK);
+                try {
+                    DeployHelper.saveOnCluster(project, "namespace", yaml, "message", false, false);
+                } catch (IOException e) {
+                    assertEquals("Tekton file has not a valid format. ApiVersion field contains an invalid value.", e.getLocalizedMessage());
+                }
+            }
+        }
+    }
+
+    @Test
+    public void SaveOnCluster_ResourceIsRun_CreateNew() throws IOException {
+        String yaml = load(RESOURCE_PATH + "run.yaml");
+        try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
+            try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
+                treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
+                treeHelperMockedStatic.when(() -> TreeHelper.getPluralKind(anyString())).thenReturn(KIND_PIPELINERUNS);
+                uiHelperMockedStatic.when(() -> UIHelper.executeInUI(any(Supplier.class))).thenReturn(Messages.OK);
+                boolean result = DeployHelper.saveOnCluster(project, "namespace", yaml, "message", false, false);
+                verify(tkn, times(1)).createCustomResource(anyString(), any(), anyString());
+                assertTrue(result);
+            }
+        }
+    }
+
+    @Test
+    public void SaveOnCluster_ResourceNotExists_CreateNew() throws IOException {
+        String yaml = load(RESOURCE_PATH + "pipeline.yaml");
+        when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(null);
+        try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
+            try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
+                treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
+                treeHelperMockedStatic.when(() -> TreeHelper.getPluralKind(anyString())).thenReturn(KIND_PIPELINERUNS);
+                uiHelperMockedStatic.when(() -> UIHelper.executeInUI(any(Supplier.class))).thenReturn(Messages.OK);
+                boolean result = DeployHelper.saveOnCluster(project, "namespace", yaml, "message", false, false);
+                verify(tkn, times(1)).createCustomResource(anyString(), any(), anyString());
+                assertTrue(result);
+            }
+        }
+    }
+
+    @Test
+    public void SaveOnCluster_ResourceExists_UpdateExisting() throws IOException {
+        String yaml = load(RESOURCE_PATH + "pipeline.yaml");
+        Map<String, Object> resourceAsMap = new HashMap<>();
+        resourceAsMap.put("spec", null);
+        when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(resourceAsMap);
+        try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
+            try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
+                treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
+                treeHelperMockedStatic.when(() -> TreeHelper.getPluralKind(anyString())).thenReturn(KIND_PIPELINERUNS);
+                uiHelperMockedStatic.when(() -> UIHelper.executeInUI(any(Supplier.class))).thenReturn(Messages.OK);
+                boolean result = DeployHelper.saveOnCluster(project, "namespace", yaml, "message", false, false);
+                verify(tkn, times(0)).createCustomResource(anyString(), any(), anyString());
+                verify(tkn, times(1)).editCustomResource(anyString(), anyString(), any(), anyString());
+                assertTrue(result);
+            }
+        }
     }
 }

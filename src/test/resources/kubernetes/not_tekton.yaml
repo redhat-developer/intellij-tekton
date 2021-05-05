@@ -1,0 +1,14 @@
+apiVersion: serving.knative.dev/v1 # Current version of Knative
+kind: Service
+metadata:
+  name: "add service name"
+  namespace: "$namespace"
+spec:
+  template:
+    spec:
+      containers:
+        - image: "add image url" # Reference to the image of the app
+          name: "first"
+          env:
+            - name: TARGET # The environment variable printed out by the sample app
+              value: "Sample"

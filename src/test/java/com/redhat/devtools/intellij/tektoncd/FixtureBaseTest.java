@@ -23,6 +23,7 @@ public class FixtureBaseTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
         TestFixtureBuilder<IdeaProjectTestFixture> fixtureBuilder = factory.createLightFixtureBuilder();
         IdeaProjectTestFixture fixture = fixtureBuilder.getFixture();

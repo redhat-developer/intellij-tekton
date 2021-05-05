@@ -26,8 +26,8 @@ import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.tektoncd.Constants;
-import com.redhat.devtools.intellij.tektoncd.listener.TreeDoubleClickListener;
-import com.redhat.devtools.intellij.tektoncd.listener.TreePopupMenuListener;
+import com.redhat.devtools.intellij.tektoncd.listener.TektonTreeDoubleClickListener;
+import com.redhat.devtools.intellij.tektoncd.listener.TektonTreePopupMenuListener;
 import com.redhat.devtools.intellij.tektoncd.tree.MutableTektonModelSynchronizer;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import java.lang.reflect.Constructor;
@@ -48,9 +48,9 @@ public class WindowToolFactory implements ToolWindowFactory {
             tree.setCellRenderer(new NodeRenderer());
             ActionManager actionManager = ActionManager.getInstance();
             ActionGroup group = (ActionGroup)actionManager.getAction("com.redhat.devtools.intellij.tektoncd.tree");
-            PopupHandler.installPopupHandler(tree, group, ActionPlaces.UNKNOWN, actionManager, new TreePopupMenuListener());
+            PopupHandler.installPopupHandler(tree, group, ActionPlaces.UNKNOWN, actionManager, new TektonTreePopupMenuListener());
             toolWindow.getContentManager().addContent(contentFactory.createContent(new JBScrollPane(tree), "", false));
-            new TreeDoubleClickListener(tree);
+            new TektonTreeDoubleClickListener(tree);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             throw new RuntimeException((e));
         }
