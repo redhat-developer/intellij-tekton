@@ -76,7 +76,6 @@ public class WorkspacesStep extends BaseStep {
     public boolean isComplete() {
         boolean isComplete = model.getWorkspaces().values().stream().allMatch(workspace -> workspace != null);
         if (!isComplete) {
-            //final int[] row = {1};
             workspacePanelMapper.entrySet().forEach(entry -> {
                 String workspaceName = entry.getKey();
                 JPanel panel = entry.getValue();

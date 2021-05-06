@@ -212,8 +212,8 @@ public class StartAction extends TektonAction {
         for(Map.Entry<String, Workspace> entry: workspaces.entrySet()) {
             Workspace workspace = entry.getValue();
             if (workspace.getKind() == Workspace.Kind.PVC && workspace.getResource().isEmpty()) {
-                createNewPVC(workspace.getItems(), tkn);
-                workspace.setResource(entry.getKey());
+                String name = createNewPVC(workspace.getItems(), tkn);
+                workspace.setResource(name);
             } else if(workspace.getKind() == Workspace.Kind.VCT) {
                 VirtualFile vf = createVCT(workspace.getItems(), counter);
                 workspace.getItems().put("file", vf.getPath());
@@ -222,8 +222,10 @@ public class StartAction extends TektonAction {
         }
     }
 
-    private void createNewPVC(Map<String, String> items, Tkn tkn) throws IOException {
-        tkn.createPVC(items.get("name"), items.get("accessMode"), items.get("size"), items.get("unit"));
+    private String createNewPVC(Map<String, String> items, Tkn tkn) throws IOException {
+        String name = items.get("name");
+        tkn.createPVC(name, items.get("accessMode"), items.get("size"), items.get("unit"));
+        return name;
     }
 
     private VirtualFile createVCT(Map<String, String> items, int counter) throws IOException {
