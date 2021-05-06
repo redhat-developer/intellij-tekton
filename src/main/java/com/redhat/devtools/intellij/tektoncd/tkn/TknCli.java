@@ -24,10 +24,15 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.twelvemonkeys.lang.Platform;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimSpec;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
 import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.PodStatus;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetCondition;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetList;
@@ -59,6 +64,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -430,6 +436,28 @@ public class TknCli implements Tkn {
             client.customResource(crdContext).create(objectAsString);
         } else {
             client.customResource(crdContext).create(namespace, objectAsString);
+        }
+    }
+
+    @Override
+    public void createPVC(String name, String accessMode, String size, String unit) throws IOException {
+        PersistentVolumeClaim claim = new PersistentVolumeClaim();
+        ObjectMeta metadata = new ObjectMeta();
+        metadata.setName(name);
+        claim.setMetadata(metadata);
+        PersistentVolumeClaimSpec spec = new PersistentVolumeClaimSpec();
+        spec.setAccessModes(Arrays.asList(accessMode));
+        spec.setVolumeMode("Filesystem");
+        ResourceRequirements resourceRequirements = new ResourceRequirements();
+        Map<String, Quantity> requests = new HashMap<>();
+        requests.put("storage", new Quantity(size, unit));
+        resourceRequirements.setRequests(requests);
+        spec.setResources(resourceRequirements);
+        claim.setSpec(spec);
+        try {
+            client.persistentVolumeClaims().create(claim);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
         }
     }
 

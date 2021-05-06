@@ -413,6 +413,17 @@ public interface Tkn {
     void createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
 
     /**
+     * Create a PVC
+     *
+     * @param name PVC name
+     * @param accessMode PVC accessMode
+     * @param size PVC size
+     * @param unit PVC size format (MB, GB or TB)
+     * @throws IOException if communication errored
+     */
+    void createPVC(String name, String accessMode, String size, String unit) throws IOException;
+
+    /**
      * Start the execution of a pipeline
      *
      * @param namespace the namespace of the pipeline

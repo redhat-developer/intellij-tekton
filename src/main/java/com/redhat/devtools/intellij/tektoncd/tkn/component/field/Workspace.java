@@ -64,6 +64,10 @@ public class Workspace {
         return resource;
     }
 
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
     public String getSubPath() {
         return subPath;
     }

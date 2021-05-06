@@ -12,11 +12,13 @@ package com.redhat.devtools.intellij.tektoncd.ui.wizard;
 
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.util.Pair;
 import com.intellij.ui.DocumentAdapter;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -31,14 +33,17 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.text.NumberFormatter;
 import org.jetbrains.annotations.NotNull;
 
@@ -105,19 +110,6 @@ public class WorkspacesStep extends BaseStep {
                 }
 
             });
-
-
-            /*cmbsWorkspaceTypes.stream().forEach(cmb -> {
-                if (!isValid(cmb)) {
-                    cmb.setBorder(RED_BORDER_SHOW_ERROR);
-                    JLabel lblErrorText = new JLabel("Please select a value.");
-                    lblErrorText.setForeground(Color.red);
-                    addComponent(lblErrorText, TIMES_PLAIN_10, MARGIN_TOP_35, ROW_DIMENSION_ERROR, 0, row[0], GridBagConstraints.PAGE_END);
-                    errorFieldsByRow.put(row[0], lblErrorText);
-                    lblErrorText.setEnabled(true);
-                }
-                row[0] += 3;
-            });*/
         }
         isComplete = model.getWorkspaces().values().stream().allMatch(workspace -> workspace != null);
         changeErrorTextVisibility(!isComplete);
@@ -148,9 +140,9 @@ public class WorkspacesStep extends BaseStep {
 
         Map<String, String> values = new HashMap<>();
         values.put("name", name);
-        values.put("accessMode", accessModePVC.getSelectedItem().toString());
+        values.put("accessMode", ((Pair)accessModePVC.getSelectedItem()).getSecond().toString());
         values.put("size", size);
-        values.put("unit", sizeUnit.getSelectedItem().toString());
+        values.put("unit", ((Pair)sizeUnit.getSelectedItem()).getSecond().toString());
         Workspace workspace = new Workspace(workspaceName, kind, "", values);
         model.getWorkspaces().put(workspaceName, workspace);
     }
@@ -223,10 +215,11 @@ public class WorkspacesStep extends BaseStep {
             JLabel lblAccessMode = new JLabel("<html><span style=\\\"font-family:serif;font-size:9px;font-weight:bold;\\\">Mode:</span>   </html");
             lblAccessMode.setName("lblAccessMode");
             JComboBox cmbAccessMode = new JComboBox();
+            cmbAccessMode.setRenderer(getBasicComboBoxRenderer());
             cmbAccessMode.setName("cmbAccessMode");
-            cmbAccessMode.addItem("Single User (RWO)");
-            cmbAccessMode.addItem("Shared Access (RWX)");
-            cmbAccessMode.addItem("Read Only (ROX)");
+            cmbAccessMode.addItem(Pair.create("Single User (RWO)", "ReadWriteOnce"));
+            cmbAccessMode.addItem(Pair.create("Shared Access (RWX)", "ReadWriteMany"));
+            cmbAccessMode.addItem(Pair.create("Read Only (ROX)", "ReadOnlyMany"));
             JPanel accessModePanel = createCompoundComponentAsPanel("accessModePanel", lblAccessMode, cmbAccessMode, null);
             addComponent(accessModePanel, workspacePanel, workspacePanelConstraint,null, NO_BORDER, ROW_DIMENSION, 0, innerPanelRow, GridBagConstraints.NORTH);
             innerPanelRow += 1;
@@ -247,10 +240,11 @@ public class WorkspacesStep extends BaseStep {
             });
             ((NumberFormatter)((JFormattedTextField) textField).getFormatter()).setAllowsInvalid(false);
             JComboBox cmbSizeMeasureUnit = new JComboBox();
+            cmbSizeMeasureUnit.setRenderer(getBasicComboBoxRenderer());
             cmbSizeMeasureUnit.setName("cmbSizeMeasureUnit");
-            cmbSizeMeasureUnit.addItem("Mi");
-            cmbSizeMeasureUnit.addItem("Gi");
-            cmbSizeMeasureUnit.addItem("Ti");
+            cmbSizeMeasureUnit.addItem(Pair.create("MiB", "Mi"));
+            cmbSizeMeasureUnit.addItem(Pair.create("GiB", "Gi"));
+            cmbSizeMeasureUnit.addItem(Pair.create("TiB", "Ti"));
             JPanel sizePanel = createCompoundComponentAsPanel("sizePanel", lblSize, txtSize, cmbSizeMeasureUnit);
             addComponent(sizePanel, workspacePanel, workspacePanelConstraint,null, NO_BORDER, ROW_DIMENSION, 0, innerPanelRow, GridBagConstraints.NORTH);
 
@@ -261,6 +255,23 @@ public class WorkspacesStep extends BaseStep {
             row[0] += 1;
         });
 
+    }
+
+    private ListCellRenderer getBasicComboBoxRenderer() {
+        return new BasicComboBoxRenderer()
+        {
+            public Component getListCellRendererComponent(
+                    JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+            {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Pair)
+                {
+                    Pair pair = (Pair)value;
+                    setText(pair.getFirst().toString());
+                }
+                return this;
+            }
+        };
     }
 
     private JPanel createCompoundComponentAsPanel(String id, JComponent leftComponent, JComponent centerComponent, JComponent rightComponent) {

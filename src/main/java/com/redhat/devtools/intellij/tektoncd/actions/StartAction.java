@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
@@ -111,7 +110,7 @@ public class StartAction extends TektonAction {
                 String serviceAccount = model.getServiceAccount();
                 Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
                 Map<String, String> params = model.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param.value()));
-                createVCT(model.getWorkspaces());
+                createNewVolumes(model.getWorkspaces(), tkncli);
                 Map<String, Workspace> workspaces = model.getWorkspaces();
                 Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
                 Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
@@ -206,40 +205,32 @@ public class StartAction extends TektonAction {
         return runName;
     }
 
-    private void createVCT(Map<String, Workspace> workspaces) {
-        AtomicInteger cont = new AtomicInteger();
-        workspaces.entrySet().forEach(entry -> {
-            Workspace workspace = entry.getValue();
-            if (workspace.getKind() == Workspace.Kind.VCT) {
-                Map<String, String> items = workspace.getItems();
-                String name = items.get("name");
-                String accessMode = items.get("accessMode");
-                String size = items.get("size");
-                String unit = items.get("unit");
-                ObjectNode newVCT = YAMLBuilder.createVCT(name, "ReadWriteMany", size, unit);
-                try {
-                    VirtualFile vf = VirtualFileHelper.createVirtualFile("vct-" + cont + ".yaml", YAMLHelper.JSONToYAML(newVCT), false);
-                    workspace.getItems().put("file", vf.getPath());
-                    cont.getAndIncrement();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
 
-    private void createNewVolume(Map<String, Workspace> workspaces) {
-        workspaces.entrySet().forEach(entry -> {
+
+    private void createNewVolumes(Map<String, Workspace> workspaces, Tkn tkn) throws IOException{
+        int counter = 0;
+        for(Map.Entry<String, Workspace> entry: workspaces.entrySet()) {
             Workspace workspace = entry.getValue();
             if (workspace.getKind() == Workspace.Kind.PVC && workspace.getResource().isEmpty()) {
-                Map<String, String> items = workspace.getItems();
-                String accessMode = items.get("accessMode");
-                String size = items.get("size");
-                String unit = items.get("unit");
-                ObjectNode newPVC = YAMLBuilder.createPVC(entry.getKey(), accessMode, size, unit);
+                createNewPVC(workspace.getItems(), tkn);
+                workspace.setResource(entry.getKey());
+            } else if(workspace.getKind() == Workspace.Kind.VCT) {
+                VirtualFile vf = createVCT(workspace.getItems(), counter);
+                workspace.getItems().put("file", vf.getPath());
+                counter++;
             }
-        });
+        }
     }
+
+    private void createNewPVC(Map<String, String> items, Tkn tkn) throws IOException {
+        tkn.createPVC(items.get("name"), items.get("accessMode"), items.get("size"), items.get("unit"));
+    }
+
+    private VirtualFile createVCT(Map<String, String> items, int counter) throws IOException {
+        ObjectNode newVCT = YAMLBuilder.createVCT(items.get("name"), items.get("accessMode"), items.get("size"), items.get("unit"));
+        return VirtualFileHelper.createVirtualFile("vct-" + counter + ".yaml", YAMLHelper.JSONToYAML(newVCT), false);
+    }
+
 
     protected ActionMessage createTelemetry() {
          return TelemetryService.instance().action(NAME_PREFIX_START_STOP + "start");

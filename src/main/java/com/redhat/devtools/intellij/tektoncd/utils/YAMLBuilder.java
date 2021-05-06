@@ -421,13 +421,6 @@ public class YAMLBuilder {
         return task;
     }
 
-    public static ObjectNode createPVC(String name, String accessMode, String size, String unit) {
-        ObjectNode pvc = createVCT(name, accessMode, size, unit);
-        pvc.put("apiVersion", "v1");
-        pvc.put("kind", "PersistentVolumeClaim");
-        return pvc;
-    }
-
     public static ObjectNode createVCT(String name, String accessMode, String size, String unit) {
         ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
         metadataNode.put("name", name);
