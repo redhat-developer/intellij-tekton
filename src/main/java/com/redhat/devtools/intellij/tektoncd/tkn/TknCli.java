@@ -457,7 +457,7 @@ public class TknCli implements Tkn {
         try {
             client.persistentVolumeClaims().create(claim);
         } catch (KubernetesClientException e) {
-            throw new IOException(e);
+            throw new IOException(e.getLocalizedMessage(), e);
         }
     }
 
