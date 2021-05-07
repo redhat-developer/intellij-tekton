@@ -1,0 +1,14 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: app-deploy
+spec:
+  params:
+    - name: p1
+      default: value1
+  tasks:
+    - name: foo
+      taskRef:
+        apiVersion: example.com/v1
+        kind: MyTask
+        name: foo
