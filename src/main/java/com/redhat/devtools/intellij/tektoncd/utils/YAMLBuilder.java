@@ -264,7 +264,7 @@ public class YAMLBuilder {
         } else if (model instanceof TaskConfigurationModel) {
             Map<String, Workspace> workspaces = new HashMap<>();
             ((TaskConfigurationModel)model).getWorkspaces().stream().forEach(workspaceName -> {
-                Workspace workspace = new Workspace(workspaceName,  Workspace.Kind.EMPTYDIR, null);
+                Workspace workspace = new Workspace(workspaceName,  Workspace.Kind.EMPTYDIR, "");
                 workspaces.put(workspaceName, workspace);
             });
             spec = createTaskRunSpec(model.getName(),

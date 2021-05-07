@@ -13,15 +13,15 @@ package com.redhat.devtools.intellij.tektoncd.tkn.component.field;
 import java.util.Collections;
 import java.util.Map;
 
+
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EMPTYDIR;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PVC;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_SECRET;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_VCT;
 
 public class Workspace {
 
-    public enum Kind { PVC(KIND_PVC), SECRET(KIND_SECRET), CONFIGMAP(KIND_CONFIGMAP), EMPTYDIR(KIND_EMPTYDIR), VCT(KIND_VCT);
+    public enum Kind { PVC(KIND_PVC), SECRET(KIND_SECRET), CONFIGMAP(KIND_CONFIGMAP), EMPTYDIR(KIND_EMPTYDIR);
 
         private String kind;
 

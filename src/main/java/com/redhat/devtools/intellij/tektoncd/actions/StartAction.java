@@ -211,13 +211,15 @@ public class StartAction extends TektonAction {
         int counter = 0;
         for(Map.Entry<String, Workspace> entry: workspaces.entrySet()) {
             Workspace workspace = entry.getValue();
-            if (workspace.getKind() == Workspace.Kind.PVC && workspace.getResource().isEmpty()) {
-                String name = createNewPVC(workspace.getItems(), tkn);
-                workspace.setResource(name);
-            } else if(workspace.getKind() == Workspace.Kind.VCT) {
-                VirtualFile vf = createVCT(workspace.getItems(), counter);
-                workspace.getItems().put("file", vf.getPath());
-                counter++;
+            if (workspace.getKind() == Workspace.Kind.PVC) {
+                if (!workspace.getResource().isEmpty()) {
+                    String name = createNewPVC(workspace.getItems(), tkn);
+                    workspace.setResource(name);
+                } else {
+                    VirtualFile vf = createVCT(workspace.getItems(), counter);
+                    workspace.getItems().put("file", vf.getPath());
+                    counter++;
+                }
             }
         }
     }

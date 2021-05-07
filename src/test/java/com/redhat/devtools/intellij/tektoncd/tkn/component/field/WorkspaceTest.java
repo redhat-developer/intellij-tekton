@@ -19,7 +19,6 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EMPTYDIR;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PVC;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_SECRET;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_VCT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -39,9 +38,9 @@ public class WorkspaceTest {
     public void Constructor_WithItems_Workspace() {
         Map<String, String> items = new HashMap<>();
         items.put("test", "value");
-        Workspace workspace = new Workspace("name", Workspace.Kind.VCT, "resource", items);
+        Workspace workspace = new Workspace("name", Workspace.Kind.PVC, "resource", items);
         assertEquals("name", workspace.getName());
-        assertEquals(Workspace.Kind.VCT, workspace.getKind());
+        assertEquals(Workspace.Kind.PVC, workspace.getKind());
         assertEquals("resource", workspace.getResource());
         assertFalse(workspace.getItems().isEmpty());
         assertTrue(workspace.getItems().containsKey("test"));
@@ -74,12 +73,5 @@ public class WorkspaceTest {
         Workspace workspace = new Workspace("name", Workspace.Kind.EMPTYDIR, "resource");
         assertEquals(Workspace.Kind.EMPTYDIR, workspace.getKind());
         assertEquals(KIND_EMPTYDIR, workspace.getKind().toString());
-    }
-
-    @Test
-    public void Constructor_WorkspaceWithVCT_VCTKind() {
-        Workspace workspace = new Workspace("name", Workspace.Kind.VCT, "resource");
-        assertEquals(Workspace.Kind.VCT, workspace.getKind());
-        assertEquals(KIND_VCT, workspace.getKind().toString());
     }
 }

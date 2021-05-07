@@ -442,20 +442,29 @@ public class TknCli implements Tkn {
     @Override
     public void createPVC(String name, String accessMode, String size, String unit) throws IOException {
         PersistentVolumeClaim claim = new PersistentVolumeClaim();
+
         ObjectMeta metadata = new ObjectMeta();
         metadata.setName(name);
-        claim.setMetadata(metadata);
-        PersistentVolumeClaimSpec spec = new PersistentVolumeClaimSpec();
-        spec.setAccessModes(Arrays.asList(accessMode));
-        spec.setVolumeMode("Filesystem");
+
         ResourceRequirements resourceRequirements = new ResourceRequirements();
         Map<String, Quantity> requests = new HashMap<>();
         requests.put("storage", new Quantity(size, unit));
         resourceRequirements.setRequests(requests);
+
+        PersistentVolumeClaimSpec spec = new PersistentVolumeClaimSpec();
+        spec.setAccessModes(Arrays.asList(accessMode));
+        spec.setVolumeMode("Filesystem");
         spec.setResources(resourceRequirements);
+
+        claim.setMetadata(metadata);
         claim.setSpec(spec);
+
+        createPVC(claim);
+    }
+
+    private void createPVC(PersistentVolumeClaim persistentVolumeClaim) throws IOException {
         try {
-            client.persistentVolumeClaims().create(claim);
+            client.persistentVolumeClaims().create(persistentVolumeClaim);
         } catch (KubernetesClientException e) {
             throw new IOException(e.getLocalizedMessage(), e);
         }
@@ -534,15 +543,17 @@ public class TknCli implements Tkn {
             argMap.values().stream().forEach(item -> {
                 args.add(FLAG_WORKSPACE);
                 if (item.getKind() == Workspace.Kind.PVC) {
-                    args.add("name=" + item.getName() + ",claimName=" + item.getResource());
+                    if (item.getItems() != null && item.getItems().containsKey("file")) {
+                        args.add("name=" + item.getName() + ",volumeClaimTemplateFile=" + item.getItems().get("file"));
+                    } else {
+                        args.add("name=" + item.getName() + ",claimName=" + item.getResource());
+                    }
                 } else if (item.getKind() == Workspace.Kind.CONFIGMAP) {
                     args.add("name=" + item.getName() + ",config=" + item.getResource());
                 } else if (item.getKind() == Workspace.Kind.SECRET) {
                     args.add("name=" + item.getName() + ",secret=" + item.getResource());
                 } else if (item.getKind() == Workspace.Kind.EMPTYDIR) {
                     args.add("name=" + item.getName() + ",emptyDir=");
-                } else if (item.getKind() == Workspace.Kind.VCT) {
-                    args.add("name=" + item.getName() + ",volumeClaimTemplateFile=" + item.getItems().get("file"));
                 }
             });
         }

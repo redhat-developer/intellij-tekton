@@ -10,7 +10,10 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.intellij.openapi.util.Pair;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Utils {
 
@@ -20,5 +23,21 @@ public class Utils {
             return uuid.substring(0, length);
         }
         return uuid;
+    }
+
+    /**
+     * Extract the digits and format from a unique string (e.g 10Mi -> Pair(10, Mi))
+     * @param value string representing a size
+     * @return a pair having as first value the digits and as second value the format
+     */
+    public static Pair<String, String> getDigitsAndFormatAsPair(String value) {
+        Pattern p = Pattern.compile("[0-9]+");
+        Matcher m = p.matcher(value);
+        if (m.find()) {
+            String size = m.group();
+            String format = value.replace(size, "");
+            return Pair.create(size, format);
+        }
+        return Pair.empty();
     }
 }
