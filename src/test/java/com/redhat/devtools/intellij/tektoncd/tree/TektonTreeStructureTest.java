@@ -26,6 +26,7 @@ import io.fabric8.kubernetes.api.model.NamedContext;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,6 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
-import org.mockito.internal.util.reflection.FieldSetter;
 
 
 import static org.junit.Assert.assertEquals;
@@ -71,10 +71,14 @@ public class TektonTreeStructureTest {
         this.tkn = mock(Tkn.class);
         when(root.getTkn()).thenReturn(tkn);
         this.parent = new NamespaceNode(root, "parent");
-        FieldSetter.setField(structure, TektonTreeStructure.class.getDeclaredField("root"), root);
+        Field rootField = TektonTreeStructure.class.getDeclaredField("root");
+        rootField.setAccessible(true);
+        rootField.set(structure, root);
 
         config = createConfig("cluster", "namespace", "token", "user");
-        FieldSetter.setField(structure, TektonTreeStructure.class.getDeclaredField("config"), config);
+        Field configField = TektonTreeStructure.class.getDeclaredField("config");
+        configField.setAccessible(true);
+        configField.set(structure, config);
 
         this.configWatcher = mock(ConfigWatcher.class);
         this.tknCliFactory = mock(TknCliFactory.class);

@@ -23,6 +23,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +31,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
-import org.mockito.internal.util.reflection.FieldSetter;
 
 
 import static org.junit.Assert.assertNull;
@@ -56,9 +56,15 @@ public class TknCliTest {
         this.tkn = mock(TknCli.class, org.mockito.Mockito.CALLS_REAL_METHODS);
         this.kubernetesClient = mock(KubernetesClient.class);
 
-        FieldSetter.setField(tkn, TknCli.class.getDeclaredField("client"), this.kubernetesClient);
-        FieldSetter.setField(tkn, TknCli.class.getDeclaredField("command"), "command");
-        FieldSetter.setField(tkn, TknCli.class.getDeclaredField("envVars"), Collections.emptyMap());
+        Field clientField = TknCli.class.getDeclaredField("client");
+        clientField.setAccessible(true);
+        clientField.set(tkn, kubernetesClient);
+        Field commandField = TknCli.class.getDeclaredField("command");
+        commandField.setAccessible(true);
+        commandField.set(tkn, "command");
+        Field envField = TknCli.class.getDeclaredField("envVars");
+        envField.setAccessible(true);
+        envField.set(tkn, Collections.emptyMap());
 
     }
 
