@@ -238,9 +238,9 @@ public class WorkspacesStep extends BaseStep {
 
             JComboBox cmbNewVolumeSizeMeasureUnit = createCustomCombo("cmbSizeMeasureUnit",
                     getBasicComboBoxRenderer(),
-                    Pair.create("MiB", "Mi"),
-                    Pair.create("GiB", "Gi"),
-                    Pair.create("TiB", "Ti"));
+                    Pair.create("MB", "Mi"),
+                    Pair.create("GB", "Gi"),
+                    Pair.create("TB", "Ti"));
             setDefaultValueInCmbWithPairs(workspace, cmbNewVolumeSizeMeasureUnit, "unit");
             JPanel panelNewVolumeSize = createCompoundComponentAsPanel("sizePanel", lblNewVolumeSize, spinnerNewVolumeSize, cmbNewVolumeSizeMeasureUnit);
             addComponent(panelNewVolumeSize, panelWrapperWorkspace, workspacePanelConstraint,null, NO_BORDER, ROW_DIMENSION, 0, innerPanelRow, GridBagConstraints.NORTH);
@@ -377,7 +377,7 @@ public class WorkspacesStep extends BaseStep {
                 // reset error graphics if error occurred earlier
                 if (isValid(cmbWorkspaceTypes)) {
                     changeErrorTextVisibility(false);
-                    cmbWorkspaceTypes.setBorder(NO_BORDER);
+                    cmbWorkspaceTypes.setBorder(new JComboBox().getBorder());
                 }
                 fireStateChanged();
             }
@@ -445,7 +445,7 @@ public class WorkspacesStep extends BaseStep {
 
         List<String> items = getResources(kind);
 
-        if (items.isEmpty() && kind.equals(PVC)) {
+        if (items.isEmpty() && !kind.equals(PVC)) {
             // show message no resource exists for this type
             JLabel lblErrorText = new JLabel("There are no resources for this type in the cluster. Please select a different type.");
             lblErrorText.setForeground(Color.red);
