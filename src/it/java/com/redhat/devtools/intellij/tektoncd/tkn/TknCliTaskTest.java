@@ -11,13 +11,14 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.TestUtils;
+import io.fabric8.tekton.client.TektonClient;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.Test;
 
@@ -72,16 +73,15 @@ public class TknCliTaskTest extends TknCliTest {
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // verify taskrun has been created
-        Thread.sleep(500); // adding a bit delay to allow run to be created
-        List<TaskRun> taskruns = tkn.getTaskRuns(NAMESPACE, TASK_NAME);
-        assertTrue(taskruns.stream().anyMatch(run -> run.getName().equals(TASK_RUN_NAME)));
+        tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
+                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().equals(TASK_RUN_NAME), 1, TimeUnit.HOURS);
         tkn.cancelTaskRun(NAMESPACE, TASK_RUN_NAME);
         // clean up and verify cleaning succeed
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);
         tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertFalse(tasks.contains(TASK_NAME));
-        taskruns = tkn.getTaskRuns(NAMESPACE, TASK_NAME);
-        assertTrue(taskruns.stream().noneMatch(run -> run.getName().equals(TASK_RUN_NAME)));
+        List<TaskRun> taskRuns = tkn.getTaskRuns(NAMESPACE, TASK_NAME);
+        assertTrue(taskRuns.stream().noneMatch(run -> run.getName().equals(TASK_RUN_NAME)));
 
     }
 
@@ -99,11 +99,9 @@ public class TknCliTaskTest extends TknCliTest {
         params.put("first", "1");
         params.put("second", "2");
         tkn.startTask(NAMESPACE, TASK_NAME, params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
-        Thread.sleep(2000); // adding a bit delay to allow run to be created
-        List<TaskRun> taskRuns = tkn.getTaskRuns(NAMESPACE, TASK_NAME);
-        Optional<TaskRun> tRun = taskRuns.stream().filter(run -> run.getName().startsWith(TASK_NAME)).findFirst();
-        assertTrue(tRun.isPresent());
-        tkn.cancelTaskRun(NAMESPACE, tRun.get().getName());
+        io.fabric8.tekton.pipeline.v1beta1.TaskRun tRun = tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
+                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().startsWith(TASK_NAME), 1, TimeUnit.HOURS);
+        tkn.cancelTaskRun(NAMESPACE, tRun.getMetadata().getName());
         // clean up
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);
     }
