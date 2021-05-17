@@ -74,7 +74,7 @@ public class TknCliTaskTest extends TknCliTest {
         assertTrue(tasks.contains(TASK_NAME));
         // verify taskrun has been created
         tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
-                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().equals(TASK_RUN_NAME), 1, TimeUnit.HOURS);
+                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().equals(TASK_RUN_NAME), 10, TimeUnit.MINUTES);
         tkn.cancelTaskRun(NAMESPACE, TASK_RUN_NAME);
         // clean up and verify cleaning succeed
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);
@@ -100,7 +100,7 @@ public class TknCliTaskTest extends TknCliTest {
         params.put("second", "2");
         tkn.startTask(NAMESPACE, TASK_NAME, params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
         io.fabric8.tekton.pipeline.v1beta1.TaskRun tRun = tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
-                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().startsWith(TASK_NAME), 1, TimeUnit.HOURS);
+                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().startsWith(TASK_NAME), 10, TimeUnit.MINUTES);
         tkn.cancelTaskRun(NAMESPACE, tRun.getMetadata().getName());
         // clean up
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);

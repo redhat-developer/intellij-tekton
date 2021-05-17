@@ -80,7 +80,7 @@ public class TknCliPipelineTest extends TknCliTest {
         assertTrue(pipelines.contains(PIPELINE_NAME));
         // verify pipelinerun has been created
         tkn.getClient(TektonClient.class).v1beta1().pipelineRuns()
-                .waitUntilCondition(pipelineRun -> pipelineRun.getMetadata().getName() != null && pipelineRun.getMetadata().getName().equals(PIPELINE_RUN_NAME), 1, TimeUnit.HOURS);
+                .waitUntilCondition(pipelineRun -> pipelineRun.getMetadata().getName() != null && pipelineRun.getMetadata().getName().equals(PIPELINE_RUN_NAME), 10, TimeUnit.MINUTES);
         tkn.cancelPipelineRun(NAMESPACE, PIPELINE_RUN_NAME);
         // clean up and verify cleaning succeed
         tkn.deletePipelines(NAMESPACE, Arrays.asList(PIPELINE_NAME), true);
@@ -112,9 +112,9 @@ public class TknCliPipelineTest extends TknCliTest {
         params.put("third", "3");
         tkn.startPipeline(NAMESPACE, PIPELINE_NAME, params, Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
         io.fabric8.tekton.pipeline.v1beta1.PipelineRun pRun = tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE)
-                .waitUntilCondition(pipelineRun -> pipelineRun.getMetadata().getName() != null && pipelineRun.getMetadata().getName().startsWith(PIPELINE_NAME), 1, TimeUnit.HOURS);
+                .waitUntilCondition(pipelineRun -> pipelineRun.getMetadata().getName() != null && pipelineRun.getMetadata().getName().startsWith(PIPELINE_NAME), 10, TimeUnit.MINUTES);
         tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
-                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().startsWith(PIPELINE_NAME), 1, TimeUnit.HOURS);
+                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().startsWith(PIPELINE_NAME), 10, TimeUnit.MINUTES);
         tkn.cancelPipelineRun(NAMESPACE, pRun.getMetadata().getName());
         // clean up
         tkn.deletePipelines(NAMESPACE, Arrays.asList(PIPELINE_NAME), true);
