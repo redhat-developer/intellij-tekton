@@ -935,6 +935,21 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "HostAlias": {
+      "properties": {
+        "ip": {
+          "type": "string"
+        },
+        "hostnames": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "HostPathVolumeSource": {
       "required": [
         "path"
@@ -2851,7 +2866,8 @@
     },
     "Sidecar": {
       "required": [
-        "name"
+        "name",
+        "Workspaces"
       ],
       "properties": {
         "name": {
@@ -2943,6 +2959,12 @@
         },
         "script": {
           "type": "string"
+        },
+        "Workspaces": {
+          "items": {
+            "$ref": "#/definitions/WorkspaceUsage"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -3117,6 +3139,13 @@
         "timeout": {
           "pattern": "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
           "type": "string"
+        },
+        "workspaces": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/WorkspaceUsage"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -3487,6 +3516,13 @@
           },
           "type": "array"
         },
+        "hostAliases": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/HostAlias"
+          },
+          "type": "array"
+        },
         "hostNetwork": {
           "type": "boolean"
         }
@@ -3845,6 +3881,22 @@
           "type": "string"
         },
         "subPath": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "WorkspaceUsage": {
+      "required": [
+        "name",
+        "mountPath"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mountPath": {
           "type": "string"
         }
       },
