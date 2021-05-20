@@ -12,7 +12,18 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimList;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimSpec;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ResourceRequirements;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.dsl.MixedOperation;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,7 +31,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
-import org.mockito.internal.util.reflection.FieldSetter;
 
 
 import static org.junit.Assert.assertNull;
@@ -32,17 +42,29 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class TknCliTest {
 
     private Tkn tkn;
+    private KubernetesClient kubernetesClient;
 
     @Before
     public void before() throws Exception {
         this.tkn = mock(TknCli.class, org.mockito.Mockito.CALLS_REAL_METHODS);
+        this.kubernetesClient = mock(KubernetesClient.class);
 
-        FieldSetter.setField(tkn, TknCli.class.getDeclaredField("command"), "command");
-        FieldSetter.setField(tkn, TknCli.class.getDeclaredField("envVars"), Collections.emptyMap());
+        Field clientField = TknCli.class.getDeclaredField("client");
+        clientField.setAccessible(true);
+        clientField.set(tkn, kubernetesClient);
+        Field commandField = TknCli.class.getDeclaredField("command");
+        commandField.setAccessible(true);
+        commandField.set(tkn, "command");
+        Field envField = TknCli.class.getDeclaredField("envVars");
+        envField.setAccessible(true);
+        envField.set(tkn, Collections.emptyMap());
 
     }
 
@@ -536,4 +558,44 @@ public class TknCliTest {
         exec.close();
         assertNull(output);
     }
+
+    @Test
+    public void CreatePVC_CreateSucceed_Nothing() throws IOException {
+        PersistentVolumeClaim claim = createPVC("name", "mode", "1", "unit");
+        MixedOperation<PersistentVolumeClaim, PersistentVolumeClaimList, Resource<PersistentVolumeClaim>> mixedOperation = mock(MixedOperation.class);
+        when(kubernetesClient.persistentVolumeClaims()).thenReturn(mixedOperation);
+        when(mixedOperation.create(any(PersistentVolumeClaim.class))).thenReturn(claim);
+        tkn.createPVC("name", "mode", "1", "unit");
+        verify(mixedOperation, times(1)).create(claim);
+    }
+
+    private PersistentVolumeClaim createPVC(String name, String accessMode, String size, String unit) {
+        PersistentVolumeClaim claim = new PersistentVolumeClaim();
+        ObjectMeta metadata = new ObjectMeta();
+        metadata.setName(name);
+        claim.setMetadata(metadata);
+        PersistentVolumeClaimSpec spec = new PersistentVolumeClaimSpec();
+        spec.setAccessModes(Arrays.asList(accessMode));
+        spec.setVolumeMode("Filesystem");
+        ResourceRequirements resourceRequirements = new ResourceRequirements();
+        Map<String, Quantity> requests = new HashMap<>();
+        requests.put("storage", new Quantity(size, unit));
+        resourceRequirements.setRequests(requests);
+        spec.setResources(resourceRequirements);
+        claim.setSpec(spec);
+        return claim;
+    }
+
+    @Test
+    public void CreatePVC_CreateFails_Throws() {
+        MixedOperation<PersistentVolumeClaim, PersistentVolumeClaimList, Resource<PersistentVolumeClaim>> mixedOperation = mock(MixedOperation.class);
+        when(kubernetesClient.persistentVolumeClaims()).thenReturn(mixedOperation);
+        when(mixedOperation.create(any(PersistentVolumeClaim.class))).thenThrow(new KubernetesClientException("error"));
+        try {
+            tkn.createPVC("name", "mode", "size", "unit");
+        } catch (IOException e) {
+            assertEquals("error", e.getLocalizedMessage());
+        }
+    }
+
 }

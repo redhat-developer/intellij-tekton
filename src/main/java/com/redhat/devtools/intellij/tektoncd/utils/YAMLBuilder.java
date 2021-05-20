@@ -264,7 +264,7 @@ public class YAMLBuilder {
         } else if (model instanceof TaskConfigurationModel) {
             Map<String, Workspace> workspaces = new HashMap<>();
             ((TaskConfigurationModel)model).getWorkspaces().stream().forEach(workspaceName -> {
-                Workspace workspace = new Workspace(workspaceName,  Workspace.Kind.EMPTYDIR, null);
+                Workspace workspace = new Workspace(workspaceName,  Workspace.Kind.EMPTYDIR, "");
                 workspaces.put(workspaceName, workspace);
             });
             spec = createTaskRunSpec(model.getName(),
@@ -419,6 +419,30 @@ public class YAMLBuilder {
         task.set("metadata", metadataNode);
         task.set("spec", taskSpec);
         return task;
+    }
+
+    public static ObjectNode createVCT(String name, String accessMode, String size, String unit) {
+        ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
+        metadataNode.put("name", name);
+
+        ObjectNode spec = YAML_MAPPER.createObjectNode();
+
+        ObjectNode requests = YAML_MAPPER.createObjectNode();
+        ObjectNode resources = YAML_MAPPER.createObjectNode();
+        requests.put("storage", size + unit);
+        resources.set("requests", requests);
+
+        ArrayNode accessModes = YAML_MAPPER.createArrayNode();
+        accessModes.add(accessMode);
+
+        spec.set("resources", resources);
+        spec.put("volumeMode", "Filesystem");
+        spec.set("accessModes", accessModes);
+
+        ObjectNode vct = YAML_MAPPER.createObjectNode();
+        vct.set("metadata", metadataNode);
+        vct.set("spec", spec);
+        return vct;
     }
 
     public static ObjectNode createTaskRef(String name, String kind) {

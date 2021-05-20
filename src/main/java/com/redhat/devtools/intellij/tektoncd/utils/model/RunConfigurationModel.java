@@ -11,8 +11,10 @@
 package com.redhat.devtools.intellij.tektoncd.utils.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.redhat.devtools.intellij.tektoncd.utils.Utils;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -100,24 +102,53 @@ public abstract class RunConfigurationModel extends ConfigurationModel {
         try {
             JsonNode workspacesNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "workspaces"});
             if (workspacesNode != null) {
-                for(JsonNode item : workspacesNode) {
-                    if (!item.has("name")) continue;
-                    String name = item.get("name").asText();
-                    Workspace.Kind kind = item.has("persistentVolumeClaim") ? Workspace.Kind.PVC :
-                                          item.has("configMap") ? Workspace.Kind.CONFIGMAP :
-                                          item.has("secret") ? Workspace.Kind.SECRET :
+                for(JsonNode workspaceNode : workspacesNode) {
+                    if (!workspaceNode.has("name")) continue;
+                    String name = workspaceNode.get("name").asText();
+                    Workspace.Kind kind = workspaceNode.has("persistentVolumeClaim") || workspaceNode.has("volumeClaimTemplate") ? Workspace.Kind.PVC :
+                                          workspaceNode.has("configMap") ? Workspace.Kind.CONFIGMAP :
+                                          workspaceNode.has("secret") ? Workspace.Kind.SECRET :
                                           Workspace.Kind.EMPTYDIR;
-                    String resource = kind.equals(Workspace.Kind.PVC) ? item.get("persistentVolumeClaim").get("claimName").asText() :
-                                      kind.equals(Workspace.Kind.CONFIGMAP) ? item.get("configMap").get("name").asText() :
-                                      kind.equals(Workspace.Kind.SECRET) ? item.get("secret").get("secretName").asText() :
-                                        null;
-                    workspaces.put(name, new Workspace(name, kind, resource));
+                    String resource = kind.equals(Workspace.Kind.PVC) ? workspaceNode.has("persistentVolumeClaim")
+                                                    ? workspaceNode.get("persistentVolumeClaim").get("claimName").asText()
+                                                    : ""
+                                    : kind.equals(Workspace.Kind.CONFIGMAP) ? workspaceNode.get("configMap").get("name").asText()
+                                    : kind.equals(Workspace.Kind.SECRET) ? workspaceNode.get("secret").get("secretName").asText()
+                                    : "";
+                    Map<String, String> values = extractValuesFromVCTNode(workspaceNode);
+                    workspaces.put(name, new Workspace(name, kind, resource, values));
                 }
             }
         } catch (IOException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
         return workspaces;
+    }
+
+    private Map<String, String> extractValuesFromVCTNode(JsonNode workspaceNode) {
+        Map<String, String> values = new HashMap<>();
+        if (workspaceNode.has("volumeClaimTemplate")) {
+            values.put("type", "volumeClaimTemplate");
+            JsonNode vctNode = workspaceNode.get("volumeClaimTemplate");
+            if (vctNode.has("metadata") && vctNode.get("metadata").has("name")) {
+                values.put("name", vctNode.get("metadata").get("name").asText());
+            }
+            if (vctNode.has("spec")) {
+                JsonNode vctSpecNode = vctNode.get("spec");
+                if (vctSpecNode.has("accessModes")) {
+                    values.put("accessMode", vctSpecNode.get("accessModes").get(0).asText());
+                }
+                if (vctSpecNode.has("resources")
+                        && vctSpecNode.get("resources").has("requests")
+                        && vctSpecNode.get("resources").get("requests").has("storage")) {
+                    Pair<String, String> sizeFormatPair = Utils.getDigitsAndFormatAsPair(vctSpecNode.get("resources").get("requests").get("storage").asText());
+                    values.put("size", sizeFormatPair.getFirst());
+                    values.put("unit", sizeFormatPair.getSecond());
+
+                }
+            }
+        }
+        return values;
     }
 
     public Map<String, String> getParameters() {

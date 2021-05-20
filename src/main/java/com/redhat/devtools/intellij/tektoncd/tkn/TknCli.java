@@ -24,10 +24,15 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.twelvemonkeys.lang.Platform;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimSpec;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
 import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.PodStatus;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetCondition;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetList;
@@ -59,6 +64,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -434,6 +440,37 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public void createPVC(String name, String accessMode, String size, String unit) throws IOException {
+        PersistentVolumeClaim claim = new PersistentVolumeClaim();
+
+        ObjectMeta metadata = new ObjectMeta();
+        metadata.setName(name);
+
+        ResourceRequirements resourceRequirements = new ResourceRequirements();
+        Map<String, Quantity> requests = new HashMap<>();
+        requests.put("storage", new Quantity(size, unit));
+        resourceRequirements.setRequests(requests);
+
+        PersistentVolumeClaimSpec spec = new PersistentVolumeClaimSpec();
+        spec.setAccessModes(Arrays.asList(accessMode));
+        spec.setVolumeMode("Filesystem");
+        spec.setResources(resourceRequirements);
+
+        claim.setMetadata(metadata);
+        claim.setSpec(spec);
+
+        createPVC(claim);
+    }
+
+    private void createPVC(PersistentVolumeClaim persistentVolumeClaim) throws IOException {
+        try {
+            client.persistentVolumeClaims().create(persistentVolumeClaim);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    @Override
     public String startPipeline(String namespace, String pipeline, Map<String, String> parameters, Map<String, String> resources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("pipeline", "start", pipeline, "-n", namespace));
         if (!serviceAccount.isEmpty()) {
@@ -506,7 +543,11 @@ public class TknCli implements Tkn {
             argMap.values().stream().forEach(item -> {
                 args.add(FLAG_WORKSPACE);
                 if (item.getKind() == Workspace.Kind.PVC) {
-                    args.add("name=" + item.getName() + ",claimName=" + item.getResource());
+                    if (item.getItems() != null && item.getItems().containsKey("file")) {
+                        args.add("name=" + item.getName() + ",volumeClaimTemplateFile=" + item.getItems().get("file"));
+                    } else {
+                        args.add("name=" + item.getName() + ",claimName=" + item.getResource());
+                    }
                 } else if (item.getKind() == Workspace.Kind.CONFIGMAP) {
                     args.add("name=" + item.getName() + ",config=" + item.getResource());
                 } else if (item.getKind() == Workspace.Kind.SECRET) {

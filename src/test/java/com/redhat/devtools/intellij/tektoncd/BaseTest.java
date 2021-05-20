@@ -11,31 +11,56 @@
 package com.redhat.devtools.intellij.tektoncd;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCli;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class BaseTest {
 
     protected Project project;
     protected Tkn tkn;
+    protected Tree tree;
+    protected TektonTreeStructure tektonTreeStructure;
+    protected TreeSelectionModel model;
+    protected TreePath path;
     protected ParentableNode parentableNode;
     protected TektonRootNode tektonRootNode;
+    protected PipelineNode pipelineNode;
 
     @Before
     public void setUp() throws Exception {
         project = mock(Project.class);
         tkn = mock(TknCli.class);
+        tree = mock(Tree.class);
+        tektonTreeStructure = mock(TektonTreeStructure.class);
+        model = mock(TreeSelectionModel.class);
+        path = mock(TreePath.class);
         parentableNode = mock(ParentableNode.class);
         tektonRootNode = mock(TektonRootNode.class);
+        pipelineNode = mock(PipelineNode.class);
+
+
+        when(path.getLastPathComponent()).thenReturn(parentableNode);
+        when(model.getSelectionPath()).thenReturn(path);
+        when(model.getSelectionPaths()).thenReturn(new TreePath[] {path});
+        when(tree.getSelectionModel()).thenReturn(model);
+        when(tektonTreeStructure.getRootElement()).thenReturn(tektonRootNode);
+        when(tektonRootNode.getTkn()).thenReturn(tkn);
+        when(tree.getClientProperty(Constants.STRUCTURE_PROPERTY)).thenReturn(tektonTreeStructure);
     }
 
     protected String load(String name) throws IOException {

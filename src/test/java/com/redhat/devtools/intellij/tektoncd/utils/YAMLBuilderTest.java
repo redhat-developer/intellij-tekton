@@ -434,4 +434,21 @@ public class YAMLBuilderTest extends BaseTest {
         assertEquals("kind", resultingTaskRef.get("taskRef").get("kind").asText());
         assertEquals("test", resultingTaskRef.get("taskRef").get("name").asText());
     }
+
+    @Test
+    public void CreateVCT_ObjectNodeRepresentingVolumeClaimTemplate() {
+        ObjectNode vct = YAMLBuilder.createVCT("vct", "mode", "1", "MiB");
+        assertTrue(vct.has("metadata"));
+        assertTrue(vct.get("metadata").has("name"));
+        assertEquals("vct", vct.get("metadata").get("name").asText());
+        assertTrue(vct.has("spec"));
+        assertTrue(vct.get("spec").has("resources"));
+        assertTrue(vct.get("spec").get("resources").has("requests"));
+        assertTrue(vct.get("spec").get("resources").get("requests").has("storage"));
+        assertEquals("1MiB", vct.get("spec").get("resources").get("requests").get("storage").asText());
+        assertTrue(vct.get("spec").has("volumeMode"));
+        assertEquals("Filesystem", vct.get("spec").get("volumeMode").asText());
+        assertTrue(vct.get("spec").has("accessModes"));
+        assertEquals("mode", vct.get("spec").get("accessModes").get(0).asText());
+    }
 }

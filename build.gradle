@@ -39,7 +39,7 @@ dependencies {
     compile 'io.fabric8:openshift-client:5.0.2'
     compile 'io.fabric8:tekton-client:5.0.2'
     compile 'com.redhat.devtools.intellij:intellij-common:1.1.0'
-    testCompile 'org.mockito:mockito-inline:3.4.6'
+    testCompile 'org.mockito:mockito-inline:3.8.0'
     compile 'com.github.graphstream:gs-core:dev-SNAPSHOT'
     compile 'com.github.graphstream:gs-ui-swing:dev-SNAPSHOT'
     compile 'com.github.graphstream:gs-algo:dev-SNAPSHOT'

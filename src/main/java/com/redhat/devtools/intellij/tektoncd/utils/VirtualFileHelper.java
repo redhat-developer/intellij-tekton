@@ -62,7 +62,7 @@ public class VirtualFileHelper {
         FileEditorManager.getInstance(project).openFile(vf, true);
     }
 
-    private static VirtualFile createVirtualFile(String name, String content, boolean isReadOnly) throws IOException {
+    public static VirtualFile createVirtualFile(String name, String content, boolean isReadOnly) throws IOException {
         VirtualFile vf;
         if (isReadOnly) {
             vf = new LightVirtualFile(name, content);
