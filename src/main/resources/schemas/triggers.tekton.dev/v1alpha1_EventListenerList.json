@@ -2577,11 +2577,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "TriggerResourceTemplate": {
-      "properties": {},
-      "additionalProperties": false,
-      "type": "object"
-    },
     "TriggerSpecBinding": {
       "properties": {
         "name": {
@@ -2630,8 +2625,9 @@
         },
         "resourcetemplates": {
           "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/TriggerResourceTemplate"
+            "properties": {},
+            "additionalProperties": true,
+            "type": "object"
           },
           "type": "array"
         }
