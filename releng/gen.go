@@ -44,6 +44,12 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 			Format: "data-time",
 		}
 	}
+	if (i == reflect.TypeOf(triggers.TriggerResourceTemplate{})) {
+		return &jsonschema.Type{
+			Type: "object",
+			AdditionalProperties: []byte("true"),
+			Properties: orderedmap.New()}
+	}
 	if (i == reflect.TypeOf(knative.VolatileTime{})) {
 		return &jsonschema.Type{
 			Type: "string",
