@@ -11,6 +11,7 @@ import (
 	triggers "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
 	knative "knative.dev/pkg/apis"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"os"
 	"encoding/json"
 	"reflect"
@@ -43,6 +44,12 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 			Type: "string",
 			Format: "data-time",
 		}
+	}
+	if (i == reflect.TypeOf(runtime.RawExtension{})) {
+		return &jsonschema.Type{
+			Type: "object",
+			AdditionalProperties: []byte("true"),
+			Properties: orderedmap.New()}
 	}
 	if (i == reflect.TypeOf(knative.VolatileTime{})) {
 		return &jsonschema.Type{
