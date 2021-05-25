@@ -17,6 +17,23 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
 
+### VolumeClaimTemplate support
+
+When start a task or pipeline, it is now possible to specifiy a VolumeClaimTemplate. Also, if a PersistentVolumeClaim is chosen and needs to be created, it can be done from within the wizard.
+
+![](images/0.9.0/tekton1.gif)
+
+### Refactor inline tasks as reusable tasks from the editor
+
+It is now possible to save an inline task from a pipeline as a task or cluster task from within the pipeline editor. The inline task is saved to the cluster and replaced in the pipeline definition by a task reference.
+
+![](images/0.9.0/tekton2.gif)
+
+
+## Previous releases
+
+## 0.8.0
+
 ### Find Task references
 
 It is possible to find all references of a task within the cluster. During a deletion the user is also informed if a task is used somewhere to prevent possible errors. 
@@ -32,8 +49,6 @@ The plugin collects anonymous usage data, if enabled, and sends it to Red Hat se
 ### Refresh from the root
 
 The refresh action have been extended to work on the root to allow refreshing the full tree easier.
-
-## Previous releases
 
 ## 0.7.0
 ### Tree only shows current active namespace
