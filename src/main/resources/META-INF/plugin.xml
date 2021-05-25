@@ -2,7 +2,7 @@
   <id>com.redhat.devtools.intellij.tekton</id>
   <name>Tekton Pipelines by Red Hat</name>
   <version>1.0</version>
-  <vendor email="developers@redhat.com" url="http://www.redhat.com">Red-Hat</vendor>
+  <vendor email="developers@redhat.com" url="https://www.redhat.com">Red-Hat</vendor>
 
   <description><![CDATA[
       <img src="https://raw.githubusercontent.com/redhat-developer/intellij-tekton/main/src/main/resources/images/tekton.png" width="32" height="32"/>
@@ -13,6 +13,17 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.9.0</b></p>
+  <p>VolumeClaimTemplate support</p>
+  <p><ul>
+  <li>When start a task or pipeline, it is now possible to specifiy a VolumeClaimTemplate. Also, if a PersistentVolumeClaim is chosen and needs to be created, it can be done from within the wizard.</li>
+  </ul></p>
+  <p>Refactor inline tasks as reusable tasks from the editor</p>
+  <p><ul>
+  <li>It is now possible to save an inline task from a pipeline as a task or cluster task from within the pipeline editor. The inline task is saved to the cluster and replaced in the pipeline definition by a task reference.</li>
+  </ul></p>
+  <p>Switch to tkn 0.17.2</p>
+  <p>Schemas for validation and code assist have been updated to Tekton Pipeline 0.24.1 and Tekton Triggers 0.14.0</p>
   <p><b>0.8.0</b></p>
   <p>Find Task references</p>
   <p><ul>
