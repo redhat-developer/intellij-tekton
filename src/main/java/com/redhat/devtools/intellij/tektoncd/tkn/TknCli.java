@@ -16,6 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.redhat.devtools.intellij.common.kubernetes.ClusterHelper;
+import com.redhat.devtools.intellij.common.kubernetes.ClusterInfo;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
@@ -23,6 +25,7 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import com.twelvemonkeys.lang.Platform;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
@@ -87,7 +90,10 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.IS_OPENSHIFT;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.KUBERNETES_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_DIAG;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.OPENSHIFT_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 
 public class TknCli implements Tkn {
@@ -110,6 +116,20 @@ public class TknCli implements Tkn {
             this.envVars = NetworkUtils.buildEnvironmentVariables(client.getMasterUrl().toString());
         } catch (URISyntaxException e) {
             this.envVars = Collections.emptyMap();
+        }
+        reportTelemetry();
+    }
+
+    private void reportTelemetry() {
+        TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action(TelemetryService.NAME_PREFIX_MISC + "login");
+        try {
+            ClusterInfo info = ClusterHelper.getClusterInfo(client);
+            telemetry.property(KUBERNETES_VERSION, info.getKubernetesVersion());
+            telemetry.property(IS_OPENSHIFT, Boolean.toString(info.isOpenshift()));
+            telemetry.property(OPENSHIFT_VERSION, info.getOpenshiftVersion());
+            telemetry.send();
+        } catch (RuntimeException e) {
+            telemetry.error(e).send();
         }
     }
 
