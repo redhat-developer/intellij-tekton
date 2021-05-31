@@ -143,26 +143,16 @@ public class HubDetailsPageComponent extends MultiPanel {
         myNameComponent = new JLabel();
         myNameComponent.setFont(myNameComponent.getFont().deriveFont(Font.BOLD, 25));
 
+        Border mainBorder = new MatteBorder(1, 1, 1, 0, JBUI.CurrentTheme.Link.linkColor());
+        Border secondaryBorder = new EmptyBorder(3, 3, 3, 3);
         if (model.getIsTaskView()) {
-            mainInstallBtn = new JLabel("Install as Task", SwingConstants.CENTER);
-            secondaryInstallBtn = new JLabel("Install as ClusterTask");
-            mainInstallBtn.setPreferredSize(new Dimension(120, 30));
+            mainInstallBtn = createLabel("Install as Task", new Dimension(120, 30), mainBorder);
+            secondaryInstallBtn = createLabel("Install as ClusterTask", null, secondaryBorder);
         } else {
-            mainInstallBtn = new JLabel("Install as ClusterTask", SwingConstants.CENTER);
-            secondaryInstallBtn = new JLabel("Install as Task");
-            mainInstallBtn.setPreferredSize(new Dimension(150, 30));
+            mainInstallBtn = createLabel("Install as ClusterTask", new Dimension(150, 30), mainBorder);
+            secondaryInstallBtn = createLabel("Install as Task", null, secondaryBorder);
         }
 
-        mainInstallBtn.setForeground(JBUI.CurrentTheme.Link.linkColor());
-
-        mainInstallBtn.setBorder(new MatteBorder(1, 1, 1, 0, JBUI.CurrentTheme.Link.linkColor()));
-        mainInstallBtn.setOpaque(true);
-        mainInstallBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        secondaryInstallBtn.setBorder(new EmptyBorder(3, 3, 3, 3));
-        secondaryInstallBtn.setForeground(JBUI.CurrentTheme.Link.linkColor());
-        secondaryInstallBtn.setOpaque(true);
-        secondaryInstallBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         JPopupMenu popup = new JPopupMenu();
         popup.add(secondaryInstallBtn);
 
@@ -268,6 +258,20 @@ public class HubDetailsPageComponent extends MultiPanel {
         editorPanel.setMaximumSize(new Dimension(600, Integer.MAX_VALUE));
         editorPanel.addHyperlinkListener(BrowserHyperlinkListener.INSTANCE);
         return editorPanel;
+    }
+
+    private JLabel createLabel(String text, Dimension dimension, Border border) {
+        JLabel label = new JLabel(text, SwingConstants.CENTER);
+        if (dimension != null) {
+            label.setPreferredSize(dimension);
+        }
+        label.setForeground(JBUI.CurrentTheme.Link.linkColor());
+        if (border != null) {
+            label.setBorder(border);
+        }
+        label.setOpaque(true);
+        label.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return label;
     }
 
     private JPanel createBottomTab(JEditorPane editorComponent) {

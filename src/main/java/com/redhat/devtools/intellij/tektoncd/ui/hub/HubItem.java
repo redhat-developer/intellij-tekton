@@ -97,30 +97,25 @@ public class HubItem {
 
         JLabel mainInstallBtn, secondaryInstallBtn;
         if (model.getIsTaskView()) {
-            mainInstallBtn = new JLabel("Install as Task", SwingConstants.CENTER);
-            secondaryInstallBtn = new JLabel("Install as ClusterTask");
+            mainInstallBtn = createInstallLabel("Install as Task",
+                    new Dimension(120, 30),
+                    new MatteBorder(1, 1, 1, 0, JBUI.CurrentTheme.Link.linkColor()));
+            secondaryInstallBtn = createInstallLabel("Install as ClusterTask",
+                    null,
+                    new EmptyBorder(3, 3, 3, 3));
             setListenerInstallBtn(mainInstallBtn, this, doInstallAction);
             setListenerInstallBtn(secondaryInstallBtn, this, doInstallAsCTAction);
-            mainInstallBtn.setPreferredSize(new Dimension(120, 30));
         } else {
-            mainInstallBtn = new JLabel("Install as ClusterTask", SwingConstants.CENTER);
-            secondaryInstallBtn = new JLabel("Install as Task");
+            mainInstallBtn = createInstallLabel("Install as ClusterTask",
+                    new Dimension(160, 30),
+                    new MatteBorder(1, 1, 1, 0, JBUI.CurrentTheme.Link.linkColor()));
+            secondaryInstallBtn = createInstallLabel("Install as Task",
+                    null,
+                    new EmptyBorder(3, 3, 3, 3));
             setListenerInstallBtn(mainInstallBtn, this, doInstallAsCTAction);
             setListenerInstallBtn(secondaryInstallBtn, this, doInstallAction);
-            mainInstallBtn.setPreferredSize(new Dimension(160, 30));
         }
 
-        mainInstallBtn.setForeground(JBUI.CurrentTheme.Link.linkColor());
-
-        mainInstallBtn.setBorder(new MatteBorder(1, 1, 1, 0, JBUI.CurrentTheme.Link.linkColor()));
-        mainInstallBtn.setOpaque(true);
-        mainInstallBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-
-        secondaryInstallBtn.setBorder(new EmptyBorder(3, 3, 3, 3));
-        secondaryInstallBtn.setForeground(JBUI.CurrentTheme.Link.linkColor());
-        secondaryInstallBtn.setOpaque(true);
-        secondaryInstallBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         JPopupMenu popup = new JPopupMenu();
         popup.add(secondaryInstallBtn);
 
@@ -187,6 +182,23 @@ public class HubItem {
             bottomCenterPanel.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
             doSelectAction.accept(this);
         }
+    }
+
+    private JLabel createInstallLabel(String text, Dimension dimension, Border border) {
+        JLabel label = createCustomizedLabel(text,
+                null,
+                SwingConstants.CENTER,
+                border,
+                null,
+                JBUI.CurrentTheme.Link.linkColor(),
+                null,
+                "");
+        if (dimension != null) {
+            label.setPreferredSize(dimension);
+        }
+        label.setOpaque(true);
+        label.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return label;
     }
 
     private JLabel createCustomizedLabel(String text, Icon icon, int horizontalAlignment, Border border, Color background, Color foreground, Font font, String tooltip) {
