@@ -41,7 +41,6 @@ import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -56,7 +55,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.MatteBorder;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
@@ -140,7 +138,6 @@ public class HubDetailsPageComponent extends MultiPanel {
         installActionsCombo = new ComboBox();
         installActionsCombo.setForeground(JBUI.CurrentTheme.Link.linkColor());
         installActionsCombo.setPreferredSize(new Dimension(200, 30));
-        installActionsCombo.setBorder(new MatteBorder(1, 1, 1, 1, JBUI.CurrentTheme.Link.linkColor()));
 
         if (model.getIsTaskView()) {
             installActionsCombo.addItem("Install");

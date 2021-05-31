@@ -33,7 +33,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
-import javax.swing.border.MatteBorder;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -95,7 +94,6 @@ public class HubItem {
         JComboBox installActionsCombo = new ComboBox();
         installActionsCombo.setForeground(JBUI.CurrentTheme.Link.linkColor());
         installActionsCombo.setPreferredSize(new Dimension(180, 30));
-        installActionsCombo.setBorder(new MatteBorder(1, 1, 1, 1, JBUI.CurrentTheme.Link.linkColor()));
 
         if (model.getIsTaskView()) {
             installActionsCombo.addItem("Install");
@@ -114,7 +112,7 @@ public class HubItem {
 
         parent = new JPanel(new BorderLayout());
         parent.setBackground(MAIN_BG_COLOR);
-        parent.setMaximumSize(new Dimension(Integer.MAX_VALUE,80));
+        parent.setMaximumSize(new Dimension(Integer.MAX_VALUE,90));
         parent.setBorder(MARGIN_10);
         parent.add(rightSide, BorderLayout.CENTER);
 
