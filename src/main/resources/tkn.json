@@ -1,26 +1,26 @@
 {
   "tools": {
     "tkn": {
-      "version": "0.17.2",
+      "version": "0.18.0",
       "versionCmd": "version",
       "versionExtractRegExp": "Client version: (\\d+[\\.\\d+]*)",
       "versionMatchRegExpr": "0\\..*",
       "baseDir": "$HOME/.tekton",
       "platforms": {
         "win": {
-          "url": "https://github.com/tektoncd/cli/releases/download/v0.17.2/tkn_0.17.2_Windows_x86_64.zip",
+          "url": "https://github.com/tektoncd/cli/releases/download/v0.18.0/tkn_0.18.0_Windows_x86_64.zip",
           "cmdFileName": "tkn.exe",
-          "dlFileName": "tkn_0.17.2_Windows_x86_64.zip"
+          "dlFileName": "tkn_0.18.0_Windows_x86_64.zip"
         },
         "osx": {
-          "url": "https://github.com/tektoncd/cli/releases/download/v0.17.2/tkn_0.17.2_Darwin_x86_64.tar.gz",
+          "url": "https://github.com/tektoncd/cli/releases/download/v0.18.0/tkn_0.18.0_Darwin_x86_64.tar.gz",
           "cmdFileName": "tkn",
-          "dlFileName": "tkn_0.17.2_Darwin_x86_64.tar.gz"
+          "dlFileName": "tkn_0.18.0_Darwin_x86_64.tar.gz"
         },
         "lnx": {
-          "url": "https://github.com/tektoncd/cli/releases/download/v0.17.2/tkn_0.17.2_Linux_x86_64.tar.gz",
+          "url": "https://github.com/tektoncd/cli/releases/download/v0.18.0/tkn_0.18.0_Linux_x86_64.tar.gz",
           "cmdFileName": "tkn",
-          "dlFileName": "tkn_0.17.2_Linux_x86_64.tar.gz"
+          "dlFileName": "tkn_0.18.0_Linux_x86_64.tar.gz"
         }
       }
     }
