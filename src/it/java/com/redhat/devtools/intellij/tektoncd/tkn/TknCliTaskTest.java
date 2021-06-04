@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.TestUtils;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import io.fabric8.tekton.client.TektonClient;
 import java.io.IOException;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -95,9 +97,9 @@ public class TknCliTaskTest extends TknCliTest {
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // start task and verify taskrun has been created
-        Map<String, String> params = new HashMap<>();
-        params.put("first", "1");
-        params.put("second", "2");
+        Map<String, Input> params = new HashMap<>();
+        params.put("first", new Input("name", "string", Input.Kind.PARAMETER, "value", Optional.empty(), Optional.empty()));
+        params.put("second", new Input("name2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
         tkn.startTask(NAMESPACE, TASK_NAME, params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
         io.fabric8.tekton.pipeline.v1beta1.TaskRun tRun = tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
                 .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().startsWith(TASK_NAME), 10, TimeUnit.MINUTES);

@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
@@ -28,11 +29,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -40,8 +43,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -161,9 +162,9 @@ public class TknCliTest {
 
     @Test
     public void checkRightArgsWhenStartingPipelineWithParameters() throws IOException {
-        Map<String, String> params = new HashMap<>();
-        params.put("param1", "value1");
-        params.put("param2", "value2");
+        Map<String, Input> params = new HashMap<>();
+        params.put("param1", new Input("param1", "string", Input.Kind.PARAMETER, "value1", Optional.empty(), Optional.empty()));
+        params.put("param2", new Input("param2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
@@ -236,8 +237,8 @@ public class TknCliTest {
 
     @Test
     public void checkRightArgsWhenStartingPipelineWithMultipleInputs() throws IOException {
-        Map<String, String> params = new HashMap<>();
-        params.put("param1", "value1");
+        Map<String, Input> params = new HashMap<>();
+        params.put("param1", new Input("param1", "string", Input.Kind.PARAMETER, "value1", Optional.empty(), Optional.empty()));
         Map<String, String> resources = new HashMap<>();
         resources.put("res1", "value1");
         resources.put("res2", "value2");
@@ -287,9 +288,9 @@ public class TknCliTest {
 
     @Test
     public void checkRightArgsWhenStartingTaskWithParameters() throws IOException {
-        Map<String, String> params = new HashMap<>();
-        params.put("param1", "value1");
-        params.put("param2", "value2");
+        Map<String, Input> params = new HashMap<>();
+        params.put("param1", new Input("param1", "string", Input.Kind.PARAMETER, "value1", Optional.empty(), Optional.empty()));
+        params.put("param2", new Input("param2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
@@ -373,8 +374,8 @@ public class TknCliTest {
 
     @Test
     public void checkRightArgsWhenStartingTaskWithMultipleInputs() throws IOException {
-        Map<String, String> params = new HashMap<>();
-        params.put("param1", "value1");
+        Map<String, Input> params = new HashMap<>();
+        params.put("param1", new Input("param1", "string", Input.Kind.PARAMETER, "value1", Optional.empty(), Optional.empty()));
         Map<String, String> inputResources = new HashMap<>();
         inputResources.put("res1", "value1");
         inputResources.put("res2", "value2");
@@ -424,9 +425,9 @@ public class TknCliTest {
 
     @Test
     public void checkRightArgsWhenStartingClusterTaskWithParameters() throws IOException {
-        Map<String, String> params = new HashMap<>();
-        params.put("param1", "value1");
-        params.put("param2", "value2");
+        Map<String, Input> params = new HashMap<>();
+        params.put("param1", new Input("param1", "string", Input.Kind.PARAMETER, "value1", Optional.empty(), Optional.empty()));
+        params.put("param2", new Input("param2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
@@ -510,8 +511,8 @@ public class TknCliTest {
 
     @Test
     public void checkRightArgsWhenStartingClusterTaskWithMultipleInputs() throws IOException {
-        Map<String, String> params = new HashMap<>();
-        params.put("param1", "value1");
+        Map<String, Input> params = new HashMap<>();
+        params.put("param1", new Input("param1", "string", Input.Kind.PARAMETER, "value1", Optional.empty(), Optional.empty()));
         Map<String, String> inputResources = new HashMap<>();
         inputResources.put("res1", "value1");
         inputResources.put("res2", "value2");

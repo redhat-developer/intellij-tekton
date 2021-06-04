@@ -51,7 +51,7 @@ public class ParametersStep extends BaseStep {
         final int[] row = {1};
         textFields.keySet().stream().forEach(param -> {
             JTextField field = textFields.get(param);
-            if (!isValid(field)) {
+            if (!isValid(param, field)) {
                 field.setBorder(RED_BORDER_SHOW_ERROR);
                 JLabel lblErrorText = new JLabel("Please enter a value.");
                 lblErrorText.setForeground(Color.red);
@@ -104,7 +104,7 @@ public class ParametersStep extends BaseStep {
             if (input.type().equals("string")) {
                 tooltip += "The parameter " + input.name() + " expects a string value.";
             } else {
-                tooltip += "The parameter " + input.name() + " expects an array value (e.g. val1,val2,val3 ...).";
+                tooltip += "The parameter " + input.name() + " expects an array value (e.g. val1,val2,val3 ...). Leave it empty for an empty array.";
             }
             JLabel lblNameParam = new JLabel(label);
             addComponent(lblNameParam, null, BORDER_LABEL_NAME, ROW_DIMENSION, 0, row[0], GridBagConstraints.NORTHWEST);
@@ -140,7 +140,7 @@ public class ParametersStep extends BaseStep {
             public void update() {
                 setInputValue(model.getParams(), idParam, txtValueParam.getText());
                 // reset error graphics if an error occurred earlier
-                if (isValid(txtValueParam)) {
+                if (isValid(idParam, txtValueParam)) {
                     txtValueParam.setBorder(defaultBorder);
                     if (errorFieldsByRow.containsKey(row)) {
                         deleteComponent(errorFieldsByRow.get(row));
@@ -151,7 +151,11 @@ public class ParametersStep extends BaseStep {
         });
     }
 
-    private boolean isValid(JTextField component) {
-        return !component.getText().isEmpty();
+    private boolean isValid(String name, JTextField component) {
+        String type = model.getParams().stream().filter(in -> in.name().equalsIgnoreCase(name)).map(in -> in.type()).findFirst().get();
+        if (type.equalsIgnoreCase("string")) {
+            return !component.getText().isEmpty();
+        }
+        return true;
     }
 }

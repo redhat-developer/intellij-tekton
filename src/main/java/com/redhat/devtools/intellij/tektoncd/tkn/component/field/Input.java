@@ -30,6 +30,15 @@ public class Input {
 
     public Input() {}
 
+    public Input(String name, String type, Kind kind, String value, Optional<String> description, Optional<String> defaultValue) {
+        this.name = name;
+        this.type = type;
+        this.kind = kind;
+        this.value = value;
+        this.description = description;
+        this.defaultValue = defaultValue;
+    }
+
     public String name() {
         return name;
     }

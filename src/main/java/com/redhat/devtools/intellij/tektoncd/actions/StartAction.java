@@ -27,6 +27,7 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
@@ -109,8 +110,8 @@ public class StartAction extends TektonAction {
             try {
                 String serviceAccount = model.getServiceAccount();
                 Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
-                Map<String, String> params = model.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param.value()));
                 createNewVolumes(model.getWorkspaces(), tkncli);
+                Map<String, Input> params = model.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param));
                 Map<String, Workspace> workspaces = model.getWorkspaces();
                 Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
                 Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
@@ -189,7 +190,7 @@ public class StartAction extends TektonAction {
                          StartResourceModel model,
                          String serviceAccount,
                          Map<String, String> taskServiceAccount,
-                         Map<String, String> params,
+                         Map<String, Input> params,
                          Map<String, Workspace> workspaces,
                          Map<String, String> inputResources,
                          Map<String, String> outputResources,
