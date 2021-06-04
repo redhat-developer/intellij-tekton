@@ -528,7 +528,7 @@ public class TknCli implements Tkn {
     private List<String> paramsToArgsList(Map<String, Input> argMap, String flag) {
         List<String> args = new ArrayList<>();
         if (argMap != null) {
-            argMap.entrySet().stream().forEach(param -> {
+            argMap.entrySet().forEach(param -> {
                 if (!param.getKey().isEmpty() && !(param.getValue().type().equalsIgnoreCase("string") && param.getValue().value().isEmpty())) {
                     args.add(flag);
                     args.add(param.getKey() + "=" + param.getValue().value());
