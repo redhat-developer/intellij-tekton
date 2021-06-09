@@ -19,6 +19,7 @@ import com.intellij.ui.BrowserHyperlinkListener;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.border.CustomLineBorder;
+import com.intellij.ui.components.JBOptionButton;
 import com.intellij.ui.components.JBPanelWithEmptyText;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTabbedPane;
@@ -29,40 +30,32 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.actions.InstallFromHubAction;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import javax.swing.BorderFactory;
+import javax.swing.Action;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
@@ -84,7 +77,7 @@ public class HubDetailsPageComponent extends MultiPanel {
     private static final Logger logger = LoggerFactory.getLogger(HubDetailsPageComponent.class);
 
     private OpaquePanel myPanel;
-    private JLabel myIconLabel, mainInstallBtn, secondaryInstallBtn;
+    private JLabel myIconLabel;
     private JPanel myNameAndButtons;
     private JLabel myNameComponent;
     private JComboBox versionsCmb;
@@ -94,12 +87,38 @@ public class HubDetailsPageComponent extends MultiPanel {
     private JBPanelWithEmptyText myEmptyPanel;
     private JEditorPane myTopDescription;
     private HubModel model;
+    private HubItem item;
+    private BiConsumer<HubItem, String> doInstallAction, doInstallAsClusterTaskAction;
 
     public HubDetailsPageComponent(HubModel model) {
         this.model = model;
         createDetailsPanel();
         createEmptyPanel();
         select(1, true);
+    }
+
+    public HubItem getItem() {
+        return item;
+    }
+
+    public void setItem(HubItem item) {
+        this.item = item;
+    }
+
+    public BiConsumer<HubItem, String> getDoInstallAction() {
+        return doInstallAction;
+    }
+
+    public void setDoInstallAction(BiConsumer<HubItem, String> doInstallAction) {
+        this.doInstallAction = doInstallAction;
+    }
+
+    public BiConsumer<HubItem, String> getDoInstallAsClusterTaskAction() {
+        return doInstallAsClusterTaskAction;
+    }
+
+    public void setDoInstallAsClusterTaskAction(BiConsumer<HubItem, String> doInstallAsClusterTaskAction) {
+        this.doInstallAsClusterTaskAction = doInstallAsClusterTaskAction;
     }
 
     private void createEmptyPanel() {
@@ -143,40 +162,22 @@ public class HubDetailsPageComponent extends MultiPanel {
         myNameComponent = new JLabel();
         myNameComponent.setFont(myNameComponent.getFont().deriveFont(Font.BOLD, 25));
 
-        Border mainBorder = new MatteBorder(1, 1, 1, 0, JBUI.CurrentTheme.Link.linkColor());
-        Border secondaryBorder = new EmptyBorder(3, 3, 3, 3);
-        if (model.getIsTaskView()) {
-            mainInstallBtn = createLabel("Install as Task", new Dimension(120, 30), mainBorder);
-            secondaryInstallBtn = createLabel("Install as ClusterTask", null, secondaryBorder);
-        } else {
-            mainInstallBtn = createLabel("Install as ClusterTask", new Dimension(150, 30), mainBorder);
-            secondaryInstallBtn = createLabel("Install as Task", null, secondaryBorder);
-        }
-
-        JPopupMenu popup = new JPopupMenu();
-        popup.add(secondaryInstallBtn);
-
-        Border outside = new MatteBorder(1, 0, 1, 1, JBUI.CurrentTheme.Link.linkColor());
-        CompoundBorder cb1Options = BorderFactory.createCompoundBorder(new EmptyBorder(0, 0, 0, 15), outside);
-        JLabel installOptions = new JLabel("", AllIcons.General.ArrowDown, SwingConstants.LEFT);
-        installOptions.setBackground(MAIN_BG_COLOR);
-        installOptions.setBorder(cb1Options);
-        installOptions.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                popup.show(e.getComponent(), e.getX(), e.getY());
-            }
+        JBOptionButton optionButton = new JBOptionButton(null, new Action[] {
+                new InstallFromHubAction("Install as Task",
+                        () -> getItem(),
+                        () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
+                        () -> getDoInstallAction()),
+                new InstallFromHubAction("Install as ClusterTask",
+                        () -> getItem(),
+                        () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
+                        () -> doInstallAsClusterTaskAction)
         });
-
-        JPanel installPanel = new JPanel(new BorderLayout());
-        installPanel.setBackground(MAIN_BG_COLOR);
-        installPanel.add(mainInstallBtn, BorderLayout.CENTER);
-        installPanel.add(installOptions, BorderLayout.EAST);
+        optionButton.setText("Install");
 
         myNameAndButtons = new JPanel(new BorderLayout());
         myNameAndButtons.setBackground(MAIN_BG_COLOR);
         myNameAndButtons.add(myNameComponent, BorderLayout.CENTER);
-        myNameAndButtons.add(installPanel, BorderLayout.EAST);
+        myNameAndButtons.add(optionButton, BorderLayout.EAST);
 
         centerPanel.add(myNameAndButtons, VerticalLayout.FILL_HORIZONTAL);
 
@@ -260,20 +261,6 @@ public class HubDetailsPageComponent extends MultiPanel {
         return editorPanel;
     }
 
-    private JLabel createLabel(String text, Dimension dimension, Border border) {
-        JLabel label = new JLabel(text, SwingConstants.CENTER);
-        if (dimension != null) {
-            label.setPreferredSize(dimension);
-        }
-        label.setForeground(JBUI.CurrentTheme.Link.linkColor());
-        if (border != null) {
-            label.setBorder(border);
-        }
-        label.setOpaque(true);
-        label.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return label;
-    }
-
     private JPanel createBottomTab(JEditorPane editorComponent) {
         JPanel panel = new OpaquePanel(new VerticalLayout(5));
         panel.setBorder(JBUI.Borders.empty(10, 10, 15, 15));
@@ -337,6 +324,9 @@ public class HubDetailsPageComponent extends MultiPanel {
         if (item == null) {
             select(1, true);
         } else {
+            setItem(item);
+            setDoInstallAction(doInstallAction);
+            setDoInstallAsClusterTaskAction(doInstallAsClusterTaskAction);
             ResourceData resource = item.getResource();
             //edit all panel
             String nameItem = resource.getLatestVersion().getDisplayName().isEmpty() ? resource.getName() : resource.getLatestVersion().getDisplayName();
@@ -349,14 +339,6 @@ public class HubDetailsPageComponent extends MultiPanel {
 
             });
             versionsCmb.setSelectedIndex(versionsCmb.getItemCount() - 1);
-
-            if (model.getIsTaskView()) {
-                setListenerInstallBtn(mainInstallBtn, item, doInstallAction);
-                setListenerInstallBtn(secondaryInstallBtn, item, doInstallAsClusterTaskAction);
-            } else {
-                setListenerInstallBtn(mainInstallBtn, item, doInstallAsClusterTaskAction);
-                setListenerInstallBtn(secondaryInstallBtn, item, doInstallAction);
-            }
 
             myRating.setText(resource.getRating().toString());
             myDetailsComponent.setText(resource.getLatestVersion().getDescription().replace("\n", "<br>") + "<br><br>Tags:<br>" + resource.getTags().stream().map(tag -> tag.getName()).collect(Collectors.joining(", ")));
@@ -427,33 +409,5 @@ public class HubDetailsPageComponent extends MultiPanel {
                 }
             }
         });
-    }
-
-    private void setListenerInstallBtn(JLabel installBtn, HubItem item, BiConsumer<HubItem, String> doInstallAction) {
-        if (installBtn.getMouseListeners().length > 0) {
-            installBtn.removeMouseListener(installBtn.getMouseListeners()[0]);
-        }
-        Color defaultBackground = installBtn.getBackground();
-        installBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                installHubItem(item, doInstallAction);
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                installBtn.setBackground(JBUI.CurrentTheme.TabbedPane.FOCUS_COLOR);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                installBtn.setBackground(defaultBackground);
-            }
-        });
-    }
-
-    private void installHubItem(HubItem item, BiConsumer<HubItem, String> doInstallAction) {
-        String versionSelected = ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion();
-        doInstallAction.accept(item, versionSelected);
     }
 }

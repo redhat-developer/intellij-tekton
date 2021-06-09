@@ -13,30 +13,25 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 import com.google.common.base.Strings;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.ui.components.JBOptionButton;
 import com.intellij.util.ui.JBUI;
+import com.redhat.devtools.intellij.tektoncd.actions.InstallFromHubAction;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import javax.swing.BorderFactory;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -54,7 +49,7 @@ public class HubItem {
         this.resource = resource;
     }
 
-    public JPanel createPanel(HubModel model, Consumer<HubItem> doSelectAction, BiConsumer<HubItem, String> doInstallAction, BiConsumer<HubItem, String> doInstallAsCTAction) {
+    public JPanel createPanel(HubModel model, Consumer<HubItem> doSelectAction, BiConsumer<HubItem, String> doInstallAction, BiConsumer<HubItem, String> doInstallAsClusterTaskAction) {
 
         Font defaultFont = (new JLabel()).getFont();
 
@@ -95,52 +90,23 @@ public class HubItem {
             bottomCenterPanel.add(warningNameAlreadyUsed);
         }
 
-        JLabel mainInstallBtn, secondaryInstallBtn;
-        if (model.getIsTaskView()) {
-            mainInstallBtn = createInstallLabel("Install as Task",
-                    new Dimension(120, 30),
-                    new MatteBorder(1, 1, 1, 0, JBUI.CurrentTheme.Link.linkColor()));
-            secondaryInstallBtn = createInstallLabel("Install as ClusterTask",
-                    null,
-                    new EmptyBorder(3, 3, 3, 3));
-            setListenerInstallBtn(mainInstallBtn, this, doInstallAction);
-            setListenerInstallBtn(secondaryInstallBtn, this, doInstallAsCTAction);
-        } else {
-            mainInstallBtn = createInstallLabel("Install as ClusterTask",
-                    new Dimension(160, 30),
-                    new MatteBorder(1, 1, 1, 0, JBUI.CurrentTheme.Link.linkColor()));
-            secondaryInstallBtn = createInstallLabel("Install as Task",
-                    null,
-                    new EmptyBorder(3, 3, 3, 3));
-            setListenerInstallBtn(mainInstallBtn, this, doInstallAsCTAction);
-            setListenerInstallBtn(secondaryInstallBtn, this, doInstallAction);
-        }
-
-        JPopupMenu popup = new JPopupMenu();
-        popup.add(secondaryInstallBtn);
-
-        Border outside = new MatteBorder(1, 0, 1, 1, JBUI.CurrentTheme.Link.linkColor());
-        CompoundBorder cb1Options = BorderFactory.createCompoundBorder(new EmptyBorder(0, 0, 0, 0), outside);
-        JLabel installOptions = new JLabel("", AllIcons.General.ArrowDown, SwingConstants.LEFT);
-        installOptions.setBackground(MAIN_BG_COLOR);
-        installOptions.setBorder(cb1Options);
-        installOptions.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                popup.show(e.getComponent(), e.getX(), e.getY());
-            }
+        JBOptionButton optionButton = new JBOptionButton(null, new Action[] {
+                new InstallFromHubAction("Install as Task",
+                        () -> this,
+                        () -> resource.getLatestVersion().getVersion(),
+                        () -> doInstallAction),
+                new InstallFromHubAction("Install as ClusterTask",
+                        () -> this,
+                        () -> resource.getLatestVersion().getVersion(),
+                        () -> doInstallAsClusterTaskAction)
         });
-
-        JPanel installPanel = new JPanel(new BorderLayout());
-        installPanel.setBackground(MAIN_BG_COLOR);
-        installPanel.add(mainInstallBtn, BorderLayout.CENTER);
-        installPanel.add(installOptions, BorderLayout.EAST);
+        optionButton.setText("Install");
 
         rightSide = new JPanel(new BorderLayout());
         rightSide.setBackground(MAIN_BG_COLOR);
         rightSide.add(nameHubItem, BorderLayout.CENTER);
         rightSide.add(bottomCenterPanel, BorderLayout.PAGE_END);
-        rightSide.add(installPanel, BorderLayout.LINE_END);
+        rightSide.add(optionButton, BorderLayout.LINE_END);
 
         parent = new JPanel(new BorderLayout());
         parent.setBackground(MAIN_BG_COLOR);
@@ -184,23 +150,6 @@ public class HubItem {
         }
     }
 
-    private JLabel createInstallLabel(String text, Dimension dimension, Border border) {
-        JLabel label = createCustomizedLabel(text,
-                null,
-                SwingConstants.CENTER,
-                border,
-                null,
-                JBUI.CurrentTheme.Link.linkColor(),
-                null,
-                "");
-        if (dimension != null) {
-            label.setPreferredSize(dimension);
-        }
-        label.setOpaque(true);
-        label.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return label;
-    }
-
     private JLabel createCustomizedLabel(String text, Icon icon, int horizontalAlignment, Border border, Color background, Color foreground, Font font, String tooltip) {
         JLabel label = new JLabel(text);
         if (icon != null) {
@@ -225,29 +174,6 @@ public class HubItem {
             label.setToolTipText(tooltip);
         }
         return label;
-    }
-
-    private void setListenerInstallBtn(JLabel installBtn, HubItem item, BiConsumer<HubItem, String> doInstallAction) {
-        if (installBtn.getMouseListeners().length > 0) {
-            installBtn.removeMouseListener(installBtn.getMouseListeners()[0]);
-        }
-        Color defaultBackground = installBtn.getBackground();
-        installBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                doInstallAction.accept(item, resource.getLatestVersion().getVersion());
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                installBtn.setBackground(JBUI.CurrentTheme.TabbedPane.FOCUS_COLOR);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                installBtn.setBackground(defaultBackground);
-            }
-        });
     }
 
     private Icon getIconByKind(String kind) {
