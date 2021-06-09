@@ -91,26 +91,18 @@ public class HubItem {
         }
 
         JBOptionButton optionButton;
+        Action installAsTask = new InstallFromHubAction("Install as Task",
+                () -> this,
+                () -> resource.getLatestVersion().getVersion(),
+                () -> doInstallAction);
+        Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
+                () -> this,
+                () -> resource.getLatestVersion().getVersion(),
+                () -> doInstallAsClusterTaskAction);
         if (model.getIsTaskView()) {
-            optionButton = new JBOptionButton(new InstallFromHubAction("Install as Task",
-                    () -> this,
-                    () -> resource.getLatestVersion().getVersion(),
-                    () -> doInstallAction), new Action[] {
-                    new InstallFromHubAction("Install as ClusterTask",
-                            () -> this,
-                            () -> resource.getLatestVersion().getVersion(),
-                            () -> doInstallAsClusterTaskAction)
-            });
+            optionButton = new JBOptionButton(installAsTask, new Action[] { installAsClusterTask });
         } else {
-            optionButton = new JBOptionButton(new InstallFromHubAction("Install as ClusterTask",
-                    () -> this,
-                    () -> resource.getLatestVersion().getVersion(),
-                    () -> doInstallAsClusterTaskAction), new Action[] {
-                    new InstallFromHubAction("Install as Task",
-                            () -> this,
-                            () -> resource.getLatestVersion().getVersion(),
-                            () -> doInstallAction)
-            });
+            optionButton = new JBOptionButton(installAsClusterTask, new Action[] { installAsTask });
         }
 
         rightSide = new JPanel(new BorderLayout());

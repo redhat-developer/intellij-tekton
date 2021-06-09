@@ -97,24 +97,12 @@ public class HubDetailsPageComponent extends MultiPanel {
         select(1, true);
     }
 
-    public HubItem getItem() {
-        return item;
-    }
-
     public void setItem(HubItem item) {
         this.item = item;
     }
 
-    public BiConsumer<HubItem, String> getDoInstallAction() {
-        return doInstallAction;
-    }
-
     public void setDoInstallAction(BiConsumer<HubItem, String> doInstallAction) {
         this.doInstallAction = doInstallAction;
-    }
-
-    public BiConsumer<HubItem, String> getDoInstallAsClusterTaskAction() {
-        return doInstallAsClusterTaskAction;
     }
 
     public void setDoInstallAsClusterTaskAction(BiConsumer<HubItem, String> doInstallAsClusterTaskAction) {
@@ -164,11 +152,11 @@ public class HubDetailsPageComponent extends MultiPanel {
 
         JBOptionButton optionButton;
         Action installAsTask = new InstallFromHubAction("Install as Task",
-                () -> getItem(),
+                () -> item,
                 () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
-                () -> getDoInstallAction());
+                () -> doInstallAction);
         Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
-                () -> getItem(),
+                () -> item,
                 () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
                 () -> doInstallAsClusterTaskAction);
         if (model.getIsTaskView()) {
