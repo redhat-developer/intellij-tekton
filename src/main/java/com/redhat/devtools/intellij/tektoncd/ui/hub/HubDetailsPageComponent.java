@@ -162,17 +162,20 @@ public class HubDetailsPageComponent extends MultiPanel {
         myNameComponent = new JLabel();
         myNameComponent.setFont(myNameComponent.getFont().deriveFont(Font.BOLD, 25));
 
-        JBOptionButton optionButton = new JBOptionButton(null, new Action[] {
-                new InstallFromHubAction("Install as Task",
-                        () -> getItem(),
-                        () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
-                        () -> getDoInstallAction()),
-                new InstallFromHubAction("Install as ClusterTask",
-                        () -> getItem(),
-                        () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
-                        () -> doInstallAsClusterTaskAction)
-        });
-        optionButton.setText("Install");
+        JBOptionButton optionButton;
+        Action installAsTask = new InstallFromHubAction("Install as Task",
+                () -> getItem(),
+                () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
+                () -> getDoInstallAction());
+        Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
+                () -> getItem(),
+                () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
+                () -> doInstallAsClusterTaskAction);
+        if (model.getIsTaskView()) {
+            optionButton = new JBOptionButton(installAsTask, new Action[] { installAsClusterTask });
+        } else {
+            optionButton = new JBOptionButton(installAsClusterTask, new Action[] { installAsTask });
+        }
 
         myNameAndButtons = new JPanel(new BorderLayout());
         myNameAndButtons.setBackground(MAIN_BG_COLOR);

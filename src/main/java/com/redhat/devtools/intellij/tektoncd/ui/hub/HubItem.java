@@ -90,17 +90,28 @@ public class HubItem {
             bottomCenterPanel.add(warningNameAlreadyUsed);
         }
 
-        JBOptionButton optionButton = new JBOptionButton(null, new Action[] {
-                new InstallFromHubAction("Install as Task",
-                        () -> this,
-                        () -> resource.getLatestVersion().getVersion(),
-                        () -> doInstallAction),
-                new InstallFromHubAction("Install as ClusterTask",
-                        () -> this,
-                        () -> resource.getLatestVersion().getVersion(),
-                        () -> doInstallAsClusterTaskAction)
-        });
-        optionButton.setText("Install");
+        JBOptionButton optionButton;
+        if (model.getIsTaskView()) {
+            optionButton = new JBOptionButton(new InstallFromHubAction("Install as Task",
+                    () -> this,
+                    () -> resource.getLatestVersion().getVersion(),
+                    () -> doInstallAction), new Action[] {
+                    new InstallFromHubAction("Install as ClusterTask",
+                            () -> this,
+                            () -> resource.getLatestVersion().getVersion(),
+                            () -> doInstallAsClusterTaskAction)
+            });
+        } else {
+            optionButton = new JBOptionButton(new InstallFromHubAction("Install as ClusterTask",
+                    () -> this,
+                    () -> resource.getLatestVersion().getVersion(),
+                    () -> doInstallAsClusterTaskAction), new Action[] {
+                    new InstallFromHubAction("Install as Task",
+                            () -> this,
+                            () -> resource.getLatestVersion().getVersion(),
+                            () -> doInstallAction)
+            });
+        }
 
         rightSide = new JPanel(new BorderLayout());
         rightSide.setBackground(MAIN_BG_COLOR);

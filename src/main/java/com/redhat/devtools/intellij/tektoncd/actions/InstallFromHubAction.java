@@ -32,7 +32,10 @@ public class InstallFromHubAction implements Action {
 
     @Override
     public Object getValue(String key) {
-        return this.text;
+        if (key.equals("Name")) {
+            return this.text;
+        }
+        return null;
     }
 
     @Override
