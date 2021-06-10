@@ -17,6 +17,8 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.border.CustomLineBorder;
 import com.intellij.ui.components.JBPanelWithEmptyText;
 import com.intellij.util.ui.JBUI;
+import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiCallback;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiException;
@@ -24,10 +26,10 @@ import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import com.redhat.devtools.intellij.tektoncd.utils.NotificationHelper;
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -154,19 +156,25 @@ public class HubMarketplaceTab extends HubDialogTab {
 
     private void installHubItem(HubItem hubItem, String kindToBeSaved, String version) {
         ResourceData resource = hubItem.getResource();
-        try {
-            Constants.InstallStatus installed = model.installHubItem(resource.getName(), kindToBeSaved, version, resource.getCatalog().getName());
-            if (installed == Constants.InstallStatus.INSTALLED) {
-                JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
-                warningNameAlreadyUsed.setToolTipText("A " + kindToBeSaved + " with this name already exists on the cluster.");
-                hubItem.updateBottomPanel(warningNameAlreadyUsed);
+        myContentPanel.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        ExecHelper.submit(() -> {
+            try {
+                Constants.InstallStatus installed = model.installHubItem(resource.getName(), kindToBeSaved, version, resource.getCatalog().getName());
+                UIHelper.executeInUI(() -> {
+                    if (installed == Constants.InstallStatus.INSTALLED) {
+                        JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
+                        warningNameAlreadyUsed.setToolTipText("A " + kindToBeSaved + " with this name already exists on the cluster.");
+                        hubItem.updateBottomPanel(warningNameAlreadyUsed);
+                    }
+                    if (installed != Constants.InstallStatus.ERROR) {
+                        NotificationHelper.notify(model.getProject(), "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION, true);
+                    }
+                });
+            } catch (IOException ex) {
+                UIHelper.executeInUI(() -> NotificationHelper.notify(model.getProject(), "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR, false));
             }
-            if (installed != Constants.InstallStatus.ERROR) {
-                NotificationHelper.notify(model.getProject(), "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION, true);
-            }
-        } catch (IOException ex) {
-            NotificationHelper.notify(model.getProject(), "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR, false);
-        }
+            UIHelper.executeInUI(() -> myContentPanel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)));
+        });
     }
 
     private ApiCallback<Resources> getSearchCallback() {
