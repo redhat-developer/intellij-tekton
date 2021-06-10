@@ -156,7 +156,8 @@ public class HubMarketplaceTab extends HubDialogTab {
 
     private void installHubItem(HubItem hubItem, String kindToBeSaved, String version) {
         ResourceData resource = hubItem.getResource();
-        myContentPanel.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        //myContentPanel.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        getTabPanel().setCursor(new Cursor(Cursor.WAIT_CURSOR));
         ExecHelper.submit(() -> {
             try {
                 Constants.InstallStatus installed = model.installHubItem(resource.getName(), kindToBeSaved, version, resource.getCatalog().getName());
@@ -173,7 +174,10 @@ public class HubMarketplaceTab extends HubDialogTab {
             } catch (IOException ex) {
                 UIHelper.executeInUI(() -> NotificationHelper.notify(model.getProject(), "Error", "An error occurred while saving " + resource.getKind() + " " + resource.getName() + "\n" + ex.getLocalizedMessage(), NotificationType.ERROR, false));
             }
-            UIHelper.executeInUI(() -> myContentPanel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)));
+            UIHelper.executeInUI(() -> {
+               // myContentPanel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                getTabPanel().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            });
         });
     }
 

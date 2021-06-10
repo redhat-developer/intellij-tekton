@@ -41,7 +41,7 @@ public abstract class HubDialogTab {
     protected HubModel model;
     protected HubDetailsPageComponent myDetailsPage;
     protected JBPanelWithEmptyText myEmptyPanel;
-    protected JComponent myContentPanel;
+    private JComponent myContentPanel;
     protected JPanel innerContentPanel;
     protected SearchTextField mySearchTextField;
     private OnePixelSplitter tabPanel;
