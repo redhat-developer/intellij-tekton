@@ -28,6 +28,7 @@ public class SettingsState implements PersistentStateComponent<SettingsState> {
     public boolean enableDeleteAllRelatedResourcesAsDefault = false;
     public boolean showStartWizardWithNoInputs = true;
     public boolean displayLogsInEditor = false;
+    public boolean displayCleanedYAMLInEditor = false;
 
     public static SettingsState getInstance() {
         return ServiceManager.getService(SettingsState.class);

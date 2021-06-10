@@ -38,6 +38,7 @@ public class SettingsConfigurable  implements Configurable {
         modified |= mySettingsView.getEnableDeleteAllRelatedResourcesAsDefault() != settings.enableDeleteAllRelatedResourcesAsDefault;
         modified |= mySettingsView.getShowStartWizardWithNoInputs() != settings.showStartWizardWithNoInputs;
         modified |= mySettingsView.getDisplayLogsInEditor() != settings.displayLogsInEditor;
+        modified |= mySettingsView.getDisplayCleanedYAMLInEditor() != settings.displayCleanedYAMLInEditor;
         return modified;
     }
 
@@ -48,6 +49,7 @@ public class SettingsConfigurable  implements Configurable {
         settings.enableDeleteAllRelatedResourcesAsDefault = mySettingsView.getEnableDeleteAllRelatedResourcesAsDefault();
         settings.showStartWizardWithNoInputs = mySettingsView.getShowStartWizardWithNoInputs();
         settings.displayLogsInEditor = mySettingsView.getDisplayLogsInEditor();
+        settings.displayCleanedYAMLInEditor = mySettingsView.getDisplayCleanedYAMLInEditor();
     }
 
     @Override
@@ -57,6 +59,7 @@ public class SettingsConfigurable  implements Configurable {
         mySettingsView.setEnableDeleteAllRelatedResourcesAsDefault(settings.enableDeleteAllRelatedResourcesAsDefault);
         mySettingsView.setShowStartWizardWithNoInputs(settings.showStartWizardWithNoInputs);
         mySettingsView.setDisplayLogsInEditor(settings.displayLogsInEditor);
+        mySettingsView.setDisplayCleanedYAMLInEditor(settings.displayCleanedYAMLInEditor);
     }
 
     @Override

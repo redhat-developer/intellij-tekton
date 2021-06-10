@@ -228,6 +228,12 @@
       <action id="com.redhat.devtools.intellij.tektoncd.action.CancelAction" class="com.redhat.devtools.intellij.tektoncd.actions.CancelAction" text="Cancel"/>
       <action id="com.redhat.devtools.intellij.tektoncd.action.DeleteAction" class="com.redhat.devtools.intellij.tektoncd.actions.DeleteAction" text="Delete"/>
       <action id="com.redhat.devtools.intellij.tektoncd.action.RefreshAction" class="com.redhat.devtools.intellij.tektoncd.actions.RefreshAction" text="Refresh"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.action.editor.RemoveYAMLClutterAction" class="com.redhat.devtools.intellij.tektoncd.actions.editor.RemoveYAMLClutterAction" text="Remove YAML Clutter">
+        <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+      </action>
+      <action id="com.redhat.devtools.intellij.tektoncd.action.editor.RestoreYAMLClutterActionHandler" class="com.redhat.devtools.intellij.tektoncd.actions.editor.RestoreYAMLClutterAction" text="Restore YAML Clutter">
+        <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+      </action>
     </group>
   </actions>
 
