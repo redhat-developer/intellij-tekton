@@ -17,6 +17,8 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.actionSystem.EditorWriteActionHandler;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import java.io.IOException;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -24,12 +26,27 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.CLEANED;
 import static com.redhat.devtools.intellij.tektoncd.Constants.CONTENT;
 
 public abstract class YAMLClutterActionHandler extends EditorWriteActionHandler {
+
     @Override
     public void executeWriteAction(Editor editor, @Nullable Caret caret, DataContext dataContext) {
         VirtualFile vf = FileDocumentManager.getInstance().getFile(editor.getDocument());
         if (!Strings.isNullOrEmpty(vf.getUserData(CONTENT))) {
             editor.getDocument().setText(getUpdatedContent(vf.getUserData(CONTENT), editor.getDocument().getText()));
             vf.putUserData(CLEANED, isCleaned());
+        }
+    }
+
+    @Override
+    public void doExecute(@NotNull Editor editor, @Nullable Caret caret, DataContext dataContext) {
+        VirtualFile vf = FileDocumentManager.getInstance().getFile(editor.getDocument());
+        boolean isWritable = vf.isWritable();
+        try {
+            editor.getDocument().setReadOnly(false);
+            vf.setWritable(true);
+            super.doExecute(editor, caret, dataContext);
+            vf.setWritable(isWritable);
+            editor.getDocument().setReadOnly(!isWritable);
+        } catch (IOException e) {
         }
     }
 
