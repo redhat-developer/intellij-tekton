@@ -1418,8 +1418,7 @@
     },
     "Sidecar": {
       "required": [
-        "name",
-        "Workspaces"
+        "name"
       ],
       "properties": {
         "name": {
@@ -1512,7 +1511,7 @@
         "script": {
           "type": "string"
         },
-        "Workspaces": {
+        "workspaces": {
           "items": {
             "$ref": "#/definitions/WorkspaceUsage"
           },
