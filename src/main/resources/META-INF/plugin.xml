@@ -204,34 +204,34 @@
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreatePipelineAction" class="com.redhat.devtools.intellij.tektoncd.actions.pipeline.CreatePipelineAction" text="New Pipeline"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreateTaskAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskAction" text="New Task"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreateClusterTaskAction" class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.CreateClusterTaskAction" text="New ClusterTask"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreateResourceAction" class="com.redhat.devtools.intellij.tektoncd.actions.resource.CreateResourceAction" text="New Pipeline Resource"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreateConditionAction" class="com.redhat.devtools.intellij.tektoncd.actions.condition.CreateConditionAction" text="New Condition"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreateTriggerTemplateAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateTriggerTemplateAction" text="New TriggerTemplate"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreateTriggerBindingAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateTriggerBindingAction" text="New TriggerBinding"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreateClusterTriggerBindingAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateClusterTriggerBindingAction" text="New ClusterTriggerBinding"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreateEventListenerAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateEventListenerAction" text="New Event Listener"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.TektonHubAction" class="com.redhat.devtools.intellij.tektoncd.actions.TektonHubAction" text="Import from TektonHub"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.OpenEditorAction" class="com.redhat.devtools.intellij.tektoncd.actions.OpenEditorAction" text="Open in Editor"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.StartAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartAction" text="Start"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.MirrorStartAction" class="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" text="Mirror Start"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.StartLastRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" text="Start Last Run"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.task.FindTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" text="Find Usages" />
-      <action id="com.redhat.devtools.intellij.tektoncd.action.clustertask.FindClusterTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.FindClusterTaskRefAction" text="Find Usages" />
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CreateTaskRunTemplateAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskRunTemplateAction" text="Create Run Template"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.AddTriggerAction" class="com.redhat.devtools.intellij.tektoncd.actions.AddTriggerAction" text="Add Trigger"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.FollowLogsAction" class="com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction" text="Follow Logs"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.ShowLogsAction" class="com.redhat.devtools.intellij.tektoncd.actions.logs.ShowLogsAction" text="Show Logs"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.ShowDiagnosticDataAction" class="com.redhat.devtools.intellij.tektoncd.actions.ShowDiagnosticDataAction" text="Show Diagnostic Data"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.CancelAction" class="com.redhat.devtools.intellij.tektoncd.actions.CancelAction" text="Cancel"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.DeleteAction" class="com.redhat.devtools.intellij.tektoncd.actions.DeleteAction" text="Delete"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.RefreshAction" class="com.redhat.devtools.intellij.tektoncd.actions.RefreshAction" text="Refresh"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.editor.RemoveYAMLClutterAction" class="com.redhat.devtools.intellij.tektoncd.actions.editor.RemoveYAMLClutterAction" text="Remove YAML Clutter">
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreatePipelineAction" class="com.redhat.devtools.intellij.tektoncd.actions.pipeline.CreatePipelineAction" text="New Pipeline"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTaskAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskAction" text="New Task"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateClusterTaskAction" class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.CreateClusterTaskAction" text="New ClusterTask"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateResourceAction" class="com.redhat.devtools.intellij.tektoncd.actions.resource.CreateResourceAction" text="New Pipeline Resource"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateConditionAction" class="com.redhat.devtools.intellij.tektoncd.actions.condition.CreateConditionAction" text="New Condition"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTriggerTemplateAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateTriggerTemplateAction" text="New TriggerTemplate"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTriggerBindingAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateTriggerBindingAction" text="New TriggerBinding"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateClusterTriggerBindingAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateClusterTriggerBindingAction" text="New ClusterTriggerBinding"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateEventListenerAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateEventListenerAction" text="New Event Listener"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.TektonHubAction" class="com.redhat.devtools.intellij.tektoncd.actions.TektonHubAction" text="Import from TektonHub"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.OpenEditorAction" class="com.redhat.devtools.intellij.tektoncd.actions.OpenEditorAction" text="Open in Editor"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.StartAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartAction" text="Start"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" class="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" text="Mirror Start"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" text="Start Last Run"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" text="Find Usages" />
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.clustertask.FindClusterTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.FindClusterTaskRefAction" text="Find Usages" />
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTaskRunTemplateAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskRunTemplateAction" text="Create Run Template"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.AddTriggerAction" class="com.redhat.devtools.intellij.tektoncd.actions.AddTriggerAction" text="Add Trigger"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.FollowLogsAction" class="com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction" text="Follow Logs"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.ShowLogsAction" class="com.redhat.devtools.intellij.tektoncd.actions.logs.ShowLogsAction" text="Show Logs"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.ShowDiagnosticDataAction" class="com.redhat.devtools.intellij.tektoncd.actions.ShowDiagnosticDataAction" text="Show Diagnostic Data"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CancelAction" class="com.redhat.devtools.intellij.tektoncd.actions.CancelAction" text="Cancel"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.DeleteAction" class="com.redhat.devtools.intellij.tektoncd.actions.DeleteAction" text="Delete"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.RefreshAction" class="com.redhat.devtools.intellij.tektoncd.actions.RefreshAction" text="Refresh"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.editor.RemoveYAMLClutterAction" class="com.redhat.devtools.intellij.tektoncd.actions.editor.RemoveYAMLClutterAction" text="Remove YAML Clutter">
         <add-to-group group-id="EditorPopupMenu" anchor="first"/>
       </action>
-      <action id="com.redhat.devtools.intellij.tektoncd.action.editor.RestoreYAMLClutterActionHandler" class="com.redhat.devtools.intellij.tektoncd.actions.editor.RestoreYAMLClutterAction" text="Restore YAML Clutter">
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.editor.RestoreYAMLClutterActionHandler" class="com.redhat.devtools.intellij.tektoncd.actions.editor.RestoreYAMLClutterAction" text="Restore YAML Clutter">
         <add-to-group group-id="EditorPopupMenu" anchor="first"/>
       </action>
     </group>

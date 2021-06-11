@@ -40,7 +40,7 @@ public class RestoreYAMLClutterActionHandler extends YAMLClutterActionHandler {
             JsonNode originalContentMetadata = originalContentNode.has("metadata") ? (ObjectNode) originalContentNode.get("metadata") : null;
             ObjectNode currentContentMetadata = currentContentNode.has("metadata") ? (ObjectNode) currentContentNode.get("metadata") : null;
             if (currentContentMetadata == null) {
-                currentContentMetadata.set("metadata", originalContentMetadata);
+                currentContentNode.set("metadata", originalContentMetadata);
             } else {
                 setMetadataFieldsValues(Arrays.asList(
                         "clusterName",
@@ -56,8 +56,8 @@ public class RestoreYAMLClutterActionHandler extends YAMLClutterActionHandler {
                         "uid"
                 ), originalContentMetadata, currentContentMetadata);
                 currentContentNode.set("metadata", currentContentMetadata);
-                currentContent = YAMLBuilder.writeValueAsString(currentContentNode);
             }
+            currentContent = YAMLBuilder.writeValueAsString(currentContentNode);
         } catch (IOException e) {
 
         }
