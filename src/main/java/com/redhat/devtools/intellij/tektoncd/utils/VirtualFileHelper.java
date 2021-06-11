@@ -1,6 +1,5 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -9,20 +8,18 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.redhat.devtools.intellij.common.editor.AllowNonProjectEditing;
-import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.common.CommonConstants.CLEANED;
+import static com.redhat.devtools.intellij.common.CommonConstants.CONTENT;
 import static com.redhat.devtools.intellij.common.CommonConstants.PROJECT;
+import static com.redhat.devtools.intellij.common.utils.VirtualFileHelper.cleanContent;
 import static com.redhat.devtools.intellij.common.utils.VirtualFileHelper.createTempFile;
-import static com.redhat.devtools.intellij.tektoncd.Constants.CLEANED;
-import static com.redhat.devtools.intellij.tektoncd.Constants.CONTENT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PLURAL;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
@@ -30,7 +27,6 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 
 public class VirtualFileHelper {
-    private static final Logger logger = LoggerFactory.getLogger(VirtualFileHelper.class);
 
     public static void openVirtualFileInEditor(Project project, String name, String content, boolean clean) throws IOException {
         innerOpenVirtualFileInEditor(project, "", name, content, "", true, false, clean);
@@ -79,37 +75,6 @@ public class VirtualFileHelper {
         vf.putUserData(CONTENT, originalContent);
         vf.putUserData(CLEANED, clean);
         FileEditorManager.getInstance(project).openFile(vf, true);
-    }
-
-    public static String cleanContent(String content) {
-        if (content.isEmpty()) {
-            return content;
-        }
-
-        try {
-            ObjectNode contentNode = (ObjectNode) YAMLHelper.YAMLToJsonNode(content);
-            ObjectNode metadata = contentNode.has("metadata") ? (ObjectNode) contentNode.get("metadata") : null;
-            if (metadata != null) {
-                metadata.remove(Arrays.asList(
-                        "clusterName",
-                        "creationTimestamp",
-                        "deletionGracePeriodSeconds",
-                        "deletionTimestamp",
-                        "finalizers",
-                        "generation",
-                        "managedFields",
-                        "ownerReferences",
-                        "resourceVersion",
-                        "selfLink",
-                        "uid"
-                ));
-                contentNode.set("metadata", metadata);
-                content = YAMLBuilder.writeValueAsString(contentNode);
-            }
-        } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage(), e);
-        }
-        return content;
     }
 
     public static VirtualFile createVirtualFile(String name, String content, boolean isReadOnly) throws IOException {

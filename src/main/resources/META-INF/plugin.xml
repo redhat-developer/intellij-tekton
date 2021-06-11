@@ -228,10 +228,10 @@
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CancelAction" class="com.redhat.devtools.intellij.tektoncd.actions.CancelAction" text="Cancel"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.DeleteAction" class="com.redhat.devtools.intellij.tektoncd.actions.DeleteAction" text="Delete"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.RefreshAction" class="com.redhat.devtools.intellij.tektoncd.actions.RefreshAction" text="Refresh"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.actions.editor.RemoveYAMLClutterAction" class="com.redhat.devtools.intellij.tektoncd.actions.editor.RemoveYAMLClutterAction" text="Remove YAML Clutter">
+      <action id="com.redhat.devtools.intellij.common.actions.editor.RemoveYAMLClutterAction" class="com.redhat.devtools.intellij.common.actions.editor.RemoveYAMLClutterAction" text="Remove YAML Clutter">
         <add-to-group group-id="EditorPopupMenu" anchor="first"/>
       </action>
-      <action id="com.redhat.devtools.intellij.tektoncd.actions.editor.RestoreYAMLClutterActionHandler" class="com.redhat.devtools.intellij.tektoncd.actions.editor.RestoreYAMLClutterAction" text="Restore YAML Clutter">
+      <action id="com.redhat.devtools.intellij.common.actions.editor.RestoreYAMLClutterAction" class="com.redhat.devtools.intellij.common.actions.editor.RestoreYAMLClutterAction" text="Restore YAML Clutter">
         <add-to-group group-id="EditorPopupMenu" anchor="first"/>
       </action>
     </group>

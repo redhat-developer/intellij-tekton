@@ -1,7 +1,0 @@
-apiVersion: tekton.dev/v1beta1
-kind: Pipeline
-spec:
-  tasks:
-    - name: step2
-      taskRef:
-        name: task2

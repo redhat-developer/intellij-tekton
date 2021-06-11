@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 
-import static com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature.WRITE_DOC_START_MARKER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 
@@ -454,17 +452,6 @@ public class YAMLBuilder {
         metadataTaskRef.put("kind", kind);
         taskRef.set("taskRef", metadataTaskRef);
         return taskRef;
-    }
-
-    public static String writeValueAsString(ObjectNode rootNode) throws IOException {
-        try {
-            return new YAMLMapper()
-                    .configure(WRITE_DOC_START_MARKER, false)
-                    .configure(YAMLGenerator.Feature.MINIMIZE_QUOTES, true)
-                    .writeValueAsString(rootNode);
-        } catch (JsonProcessingException e) {
-            throw new IOException(e);
-        }
     }
 
     public static String writeValueAsString(Map<String, Object> value) throws IOException {

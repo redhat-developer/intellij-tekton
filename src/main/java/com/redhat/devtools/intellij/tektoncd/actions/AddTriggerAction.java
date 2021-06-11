@@ -107,7 +107,7 @@ public class AddTriggerAction extends TektonAction {
                 String triggerTemplateName = element.getName() + "-template-" + randomString;
                 ObjectNode run = createNode(element, model);
                 ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings), Arrays.asList(run));
-                saveResource(YAMLBuilder.writeValueAsString(triggerTemplate), namespace, "triggertemplates", tkncli);
+                saveResource(YAMLHelper.JSONToYAML(triggerTemplate), namespace, "triggertemplates", tkncli);
                 notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
 
                 // create the eventListener
@@ -116,7 +116,7 @@ public class AddTriggerAction extends TektonAction {
                 ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "pipeline", triggerBindingsSelected.keySet().stream()
                         .map(binding -> binding.replace(" NEW", ""))
                         .collect(Collectors.toList()), triggerTemplateName);
-                saveResource(YAMLBuilder.writeValueAsString(eventListener), namespace, "eventlisteners", tkncli);
+                saveResource(YAMLHelper.JSONToYAML(eventListener), namespace, "eventlisteners", tkncli);
                 telemetry.result("bindings and resources created")
                         .send();
                 notifySuccessOperation("EventListener " + eventListenerName);
