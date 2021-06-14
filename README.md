@@ -17,6 +17,19 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
 
+The Tekton CLI in use has been upgrated to 0.18.0.
+
+### YAML cleanup
+
+When a Kubernetes resource is retrieved from a cluster, its YAML content stored some internal metadata that users may not need to care about. So there is now a new command called XXX to remove it. There is also a setting so that this command is automatically executed when a Tekton resource is displayed in the editor.
+
+![](images/0.10.0/tekton1.gif)
+![](images/0.10.0/tekton2.png)
+
+## Previous releases
+
+## 0.9.0
+
 ### VolumeClaimTemplate support
 
 When start a task or pipeline, it is now possible to specifiy a VolumeClaimTemplate. Also, if a PersistentVolumeClaim is chosen and needs to be created, it can be done from within the wizard.
@@ -28,9 +41,6 @@ When start a task or pipeline, it is now possible to specifiy a VolumeClaimTempl
 It is now possible to save an inline task from a pipeline as a task or cluster task from within the pipeline editor. The inline task is saved to the cluster and replaced in the pipeline definition by a task reference.
 
 ![](images/0.9.0/tekton2.gif)
-
-
-## Previous releases
 
 ## 0.8.0
 
