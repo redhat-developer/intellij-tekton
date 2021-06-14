@@ -13,6 +13,13 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.10.0</b></p>
+  <p>YAML cleanup</p>
+  <p><ul>
+  <li>When a Kubernetes resource is retrieved from a cluster, its YAML content stored some internal metadata that users may not need to care about. So there is now a new command called XXX to remove it. There is also a setting so that this command is automatically executed when a Tekton resource is displayed in the editor.</li>
+  </ul></p>
+  <p>Switch to tkn 0.18.0</p>
+  <p>Schemas for validation and code assist have been updated to Tekton Pipeline 0.24.3</p>
   <p><b>0.9.0</b></p>
   <p>VolumeClaimTemplate support</p>
   <p><ul>
