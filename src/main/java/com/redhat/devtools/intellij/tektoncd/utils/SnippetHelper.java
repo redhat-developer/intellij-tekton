@@ -1,6 +1,5 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
@@ -27,7 +26,7 @@ public class SnippetHelper {
         return convertJSONBodyToYAML(SnippetHelper.getSnippetJSON(SNIPPETS_URL).get(snippet).get("body"));
     }
 
-    private static String convertJSONBodyToYAML(JsonNode snippetBody) throws JsonProcessingException {
+    private static String convertJSONBodyToYAML(JsonNode snippetBody) throws IOException {
         String yaml = YAMLHelper.JSONToYAML(snippetBody);
         return yaml.replaceAll("\"\n", "\n").replaceAll("- \"", "");
     }

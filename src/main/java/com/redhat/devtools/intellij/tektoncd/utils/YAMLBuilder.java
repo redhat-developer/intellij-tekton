@@ -454,14 +454,6 @@ public class YAMLBuilder {
         return taskRef;
     }
 
-    public static String writeValueAsString(ObjectNode rootNode) throws IOException {
-        try {
-            return new YAMLMapper().writeValueAsString(rootNode);
-        } catch (JsonProcessingException e) {
-            throw new IOException(e);
-        }
-    }
-
     public static String writeValueAsString(Map<String, Object> value) throws IOException {
         try {
             return new YAMLMapper().writeValueAsString(value);

@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.hub.api.ResourceApi;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiCallback;
@@ -181,7 +182,7 @@ public class HubModel {
                 ((ObjectNode)yamlObject.get("metadata").get("labels")).put(HUB_CATALOG_TAG, catalog);
             }
             yamlObject.put("kind", kind);
-            String yamlUpdated = YAMLBuilder.writeValueAsString(yamlObject);
+            String yamlUpdated = YAMLHelper.JSONToYAML(yamlObject);
             if (DeployHelper.saveOnCluster(project, "", yamlUpdated, confirmationMessage, true, false)) {
                 if (!clusterTaskAlreadyOnCluster) {
                     clusterTasksInstalled.add(name);

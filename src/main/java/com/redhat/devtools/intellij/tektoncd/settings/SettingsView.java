@@ -23,6 +23,7 @@ public class SettingsView {
     private final JBCheckBox chkEnableDeleteAllRelatedResourcesAsDefault = new JBCheckBox("Enable delete all related resource as default");
     private final JBCheckBox chkShowStartWizardWithNoInputs = new JBCheckBox("Show start wizard when a pipeline/task have no inputs (this allows to set up service accounts)");
     private final JBCheckBox chkDisplayLogsInEditor = new JBCheckBox("Show logs in text editor");
+    private final JBCheckBox chkDisplayCleanedYAMLInEditor = new JBCheckBox("Show cleaned YAML (without redundant meta data) in text editor");
 
     public SettingsView() {
         this.myMainPanel = FormBuilder.createFormBuilder()
@@ -30,6 +31,7 @@ public class SettingsView {
                 .addComponent(chkEnableDeleteAllRelatedResourcesAsDefault, 1)
                 .addComponent(chkShowStartWizardWithNoInputs, 1)
                 .addComponent(chkDisplayLogsInEditor, 1)
+                .addComponent(chkDisplayCleanedYAMLInEditor, 1)
                 .addComponent(createTelemetryComponent("Tekton Pipelines", this::getPanel), 1)
                 .addComponentFillVertically(new JPanel(), 0)
                 .getPanel();
@@ -69,6 +71,14 @@ public class SettingsView {
 
     public void setDisplayLogsInEditor(boolean newStatus) {
         chkDisplayLogsInEditor.setSelected(newStatus);
+    }
+
+    public boolean getDisplayCleanedYAMLInEditor() {
+        return chkDisplayCleanedYAMLInEditor.isSelected();
+    }
+
+    public void setDisplayCleanedYAMLInEditor(boolean newStatus) {
+        chkDisplayCleanedYAMLInEditor.setSelected(newStatus);
     }
 
 }

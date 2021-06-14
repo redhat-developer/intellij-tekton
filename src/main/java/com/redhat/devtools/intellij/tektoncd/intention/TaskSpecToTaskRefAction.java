@@ -23,6 +23,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.ui.CreateTaskFromTaskSpecDialog;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
@@ -110,7 +111,7 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
     private String createTaskYAMLFromTaskSpec(String taskSpecText, String name, String kind) throws IOException {
         ObjectNode taskToSave = createTaskBody(taskSpecText);
         taskToSave = YAMLBuilder.createTask(name, kind, taskToSave);
-        return YAMLBuilder.writeValueAsString(taskToSave);
+        return YAMLHelper.JSONToYAML(taskToSave);
     }
 
     private ObjectNode createTaskBody(String taskSpecText) throws IOException {
@@ -126,7 +127,7 @@ public class TaskSpecToTaskRefAction extends PsiElementBaseIntentionAction {
     }
 
     private String createTaskRefBlock(String name, String kind, String whiteSpacesPlaceholder) throws IOException {
-        String taskRef = YAMLBuilder.writeValueAsString(YAMLBuilder.createTaskRef(name, kind));
+        String taskRef = YAMLHelper.JSONToYAML(YAMLBuilder.createTaskRef(name, kind));
         taskRef = taskRef.replace("---\n", "");
         taskRef = taskRef.replace("\n", "\n" +  whiteSpacesPlaceholder);
         return taskRef;
