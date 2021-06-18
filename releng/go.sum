@@ -1293,6 +1293,8 @@ github.com/tektoncd/pipeline v0.24.1 h1:c+Odgmf8dkUVRdQ5NVbOliwFB8608kM9i+18t5QD
 github.com/tektoncd/pipeline v0.24.1/go.mod h1:ChFD/vfu14VOtCVlLWdtlvOwXfBfVotULoNV6yz+CKY=
 github.com/tektoncd/pipeline v0.24.3 h1:hfMDwkAa5D4BMKUI0ojivXa1Vw5ls+N3KROtwK8sNd0=
 github.com/tektoncd/pipeline v0.24.3/go.mod h1:8yXwJvaRU+cDH6fjwJFvKFOnB/WYHrRUD66TTR7l1eg=
+github.com/tektoncd/pipeline v0.25.0 h1:zFl6c9t4LuFeAcO05w27qv9fxU0QDaLfRGwjSEkvN0s=
+github.com/tektoncd/pipeline v0.25.0/go.mod h1:jgHxrbx/FXRh+hgD2R2E1U+NBrBggOg+dgk0RkMcTKs=
 github.com/tektoncd/plumbing v0.0.0-20191216083742-847dcf196de9/go.mod h1:QZHgU07PRBTRF6N57w4+ApRu8OgfYLFNqCDlfEZaD9Y=
 github.com/tektoncd/plumbing v0.0.0-20200217163359-cd0db6e567d2/go.mod h1:QZHgU07PRBTRF6N57w4+ApRu8OgfYLFNqCDlfEZaD9Y=
 github.com/tektoncd/plumbing v0.0.0-20200430135134-e53521e1d887/go.mod h1:cZPJIeTIoP7UPTxQyTQLs7VE1TiXJSNj0te+If4Q+jI=

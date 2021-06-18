@@ -408,6 +408,17 @@
     },
     "EmbeddedTask": {
       "properties": {
+        "apiVersion": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "spec": {
+          "properties": {},
+          "additionalProperties": true,
+          "type": "object"
+        },
         "metadata": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/PipelineTaskMetadata"
