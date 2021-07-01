@@ -33,7 +33,7 @@ public class HubItemScore implements Comparator<HubItem> {
     }
 
     private boolean stringContainsItemFromList(String inputStr, List<String> items) {
-        return items.stream().map(item -> item.toLowerCase()).anyMatch(inputStr::contains);
+        return items.stream().map(item -> item.toLowerCase()).anyMatch(item -> inputStr.toLowerCase().contains(item));
     }
 
     private boolean listsHaveAnElementInCommon(List<String> list1, List<String> list2) {
@@ -42,7 +42,7 @@ public class HubItemScore implements Comparator<HubItem> {
 
     private boolean matches(String strInput, Language language) {
         return !Strings.isNullOrEmpty(strInput) &&
-                (strInput.contains(language.getName().toLowerCase()) ||
+                (strInput.toLowerCase().contains(language.getName().toLowerCase()) ||
                 stringContainsItemFromList(strInput, language.getTools()) ||
                 stringContainsItemFromList(strInput, language.getFrameworks()) ||
                 stringContainsItemFromList(strInput, language.getAliases()));

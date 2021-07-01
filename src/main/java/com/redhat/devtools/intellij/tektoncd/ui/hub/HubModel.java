@@ -86,7 +86,7 @@ public class HubModel {
         if (allHubItems.isEmpty()) {
             try {
                 List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
-                allHubItems = retrieveAllHubItems().get().stream().sorted( new HubItemScore(languages).reversed())
+                allHubItems = retrieveAllHubItems().get().stream().sorted(new HubItemScore(languages).reversed())
                         .collect(Collectors.toList());;
             } catch (InterruptedException | ExecutionException | IOException e) {
                 logger.warn(e.getLocalizedMessage(), e);
@@ -99,7 +99,7 @@ public class HubModel {
     public void search(String query, List<String> kinds, List<String> tags, ApiCallback<Resources> callback) {
         ResourceApi resApi = new ResourceApi();
         try {
-            resApi.resourceQueryAsync(query,null, null, kinds, tags, null, null, callback);
+            resApi.resourceQueryAsync(query, null, null, kinds, tags, null, null, callback);
         } catch (ApiException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
