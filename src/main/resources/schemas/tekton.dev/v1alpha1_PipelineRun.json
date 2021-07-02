@@ -2458,11 +2458,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "RawExtension": {
-      "properties": {},
-      "additionalProperties": false,
-      "type": "object"
-    },
     "ResourceFieldSelector": {
       "required": [
         "resource"
@@ -2571,8 +2566,9 @@
           "type": "array"
         },
         "extraFields": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/RawExtension"
+          "properties": {},
+          "additionalProperties": true,
+          "type": "object"
         }
       },
       "additionalProperties": false,

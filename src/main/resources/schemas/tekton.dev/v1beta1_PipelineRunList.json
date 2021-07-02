@@ -601,6 +601,17 @@
     },
     "EmbeddedTask": {
       "properties": {
+        "apiVersion": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "spec": {
+          "properties": {},
+          "additionalProperties": true,
+          "type": "object"
+        },
         "metadata": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/PipelineTaskMetadata"
@@ -1866,6 +1877,10 @@
         "status": {
           "type": "string"
         },
+        "timeouts": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/TimeoutFields"
+        },
         "timeout": {
           "pattern": "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
           "type": "string"
@@ -2579,11 +2594,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "RawExtension": {
-      "properties": {},
-      "additionalProperties": false,
-      "type": "object"
-    },
     "ResourceFieldSelector": {
       "required": [
         "resource"
@@ -2692,8 +2702,9 @@
           "type": "array"
         },
         "extraFields": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/RawExtension"
+          "properties": {},
+          "additionalProperties": true,
+          "type": "object"
         }
       },
       "additionalProperties": false,
@@ -3565,6 +3576,24 @@
         },
         "hostNetwork": {
           "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TimeoutFields": {
+      "properties": {
+        "pipeline": {
+          "pattern": "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
+          "type": "string"
+        },
+        "tasks": {
+          "pattern": "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
+          "type": "string"
+        },
+        "finally": {
+          "pattern": "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
+          "type": "string"
         }
       },
       "additionalProperties": false,
