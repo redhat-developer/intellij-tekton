@@ -93,7 +93,7 @@ publishPlugin {
 
 openApiGenerate {
     generatorName = "java"
-    inputSpec = "https://raw.githubusercontent.com/tektoncd/hub/master/api/gen/http/openapi3.yaml".toString()
+    inputSpec = "https://raw.githubusercontent.com/tektoncd/hub/v1.3.0/api/gen/http/openapi3.yaml".toString()
     outputDir = "$buildDir/hubapi-java".toString()
     apiPackage = "com.redhat.devtools.intellij.tektoncd.hub.api"
     invokerPackage = "com.redhat.devtools.intellij.tektoncd.hub.invoker"
