@@ -11,9 +11,9 @@
 package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.redhat.devtools.alizer.api.Language;
-import com.redhat.devtools.intellij.tektoncd.hub.model.Category;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
+import com.redhat.devtools.intellij.tektoncd.hub.model.Tag;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -61,12 +61,12 @@ public class HubItemScoreTest {
         Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList());
         List<Language> languages = Arrays.asList(lang, lang2);
 
-        Category category = buildCategory("framework1");
-        Category category2 = buildCategory("framework2");
-        Category category3 = buildCategory("framework3");
+        Tag tag = buildTag("framework1");
+        Tag tag2 = buildTag("framework2");
+        Tag tag3 = buildTag("framework3");
 
-        HubItem hubItem1 = buildHubItem("name", "", Arrays.asList(category));
-        HubItem hubItem2 = buildHubItem("name2", "", Arrays.asList(category2, category3));
+        HubItem hubItem1 = buildHubItem("name", "", Arrays.asList(tag));
+        HubItem hubItem2 = buildHubItem("name2", "", Arrays.asList(tag2, tag3));
 
         HubItemScore hubItemScore = new HubItemScore(languages);
 
@@ -79,11 +79,11 @@ public class HubItemScoreTest {
         Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList());
         List<Language> languages = Arrays.asList(lang, lang2);
 
-        Category category2 = buildCategory("framework2");
-        Category category3 = buildCategory("framework3");
+        Tag tag2 = buildTag("framework2");
+        Tag tag3 = buildTag("framework3");
 
         HubItem hubItem1 = buildHubItem("name", "this is the first item for the first language", Collections.emptyList());
-        HubItem hubItem2 = buildHubItem("name2", "blabla", Arrays.asList(category2, category3));
+        HubItem hubItem2 = buildHubItem("name2", "blabla", Arrays.asList(tag2, tag3));
 
         HubItemScore hubItemScore = new HubItemScore(languages);
 
@@ -110,13 +110,13 @@ public class HubItemScoreTest {
         assertEquals("Third", hubItems.get(2).getResource().getName());
     }
 
-    private Category buildCategory(String name) {
-        Category category1 = mock(Category.class);
-        when(category1.getName()).thenReturn(name);
-        return category1;
+    private Tag buildTag(String name) {
+        Tag tag1 = mock(Tag.class);
+        when(tag1.getName()).thenReturn(name);
+        return tag1;
     }
 
-    private HubItem buildHubItem(String name, String description, List<Category> tags) {
+    private HubItem buildHubItem(String name, String description, List<Tag> tags) {
         ResourceData resourceData = mock(ResourceData.class);
         ResourceVersionData resourceVersionData = mock(ResourceVersionData.class);
         HubItem hubItem = new HubItem(resourceData);

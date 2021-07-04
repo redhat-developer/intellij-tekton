@@ -99,7 +99,7 @@ public class HubModel {
     public void search(String query, List<String> kinds, List<String> tags, ApiCallback<Resources> callback) {
         ResourceApi resApi = new ResourceApi();
         try {
-            resApi.resourceQueryAsync(query, null, null, kinds, tags, null, null, callback);
+            resApi.resourceQueryAsync(query, null, kinds, tags, null, null, callback);
         } catch (ApiException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
