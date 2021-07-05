@@ -9,6 +9,7 @@ import (
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	resource "github.com/tektoncd/pipeline/pkg/apis/resource/v1alpha1"
 	triggers "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	knative "knative.dev/pkg/apis"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -83,6 +84,47 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 			AdditionalProperties: []byte("true"),
 			Properties: orderedmap.New()}
 	}
+	if (i == reflect.TypeOf(apiextensionsv1.JSON{})) {
+		return &jsonschema.Type{
+			OneOf: []*jsonschema.Type{
+				{
+					Type: "boolean",
+				},
+				{
+					Type: "integer",
+				},
+				{
+					Type: "number",
+				},
+				{
+					Type: "string",
+				},
+				{
+					Type: "array",
+					Items: &jsonschema.Type{
+						OneOf: []*jsonschema.Type{
+							{
+								Type:                 "string",
+							},
+							{
+								Type:                 "object",
+								AdditionalProperties: []byte("true"),
+								Properties: orderedmap.New(),
+							},
+						},
+					},
+				},
+				{
+					Type: "object",
+					AdditionalProperties: []byte("true"),
+					Properties: orderedmap.New(),
+				},
+				{
+					Type: "null",
+				},
+			},
+		}
+	}
 	return nil
 }
 
@@ -143,4 +185,6 @@ func main() {
 	dump(&triggers.TriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "TriggerBindingList")
 	dump(&triggers.ClusterTriggerBinding{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBinding")
 	dump(&triggers.ClusterTriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBindingList")
+	dump(&triggers.ClusterInterceptor{}, "triggers.tekton.dev/v1alpha1", "ClusterInterceptor")
+	dump(&triggers.ClusterInterceptorList{}, "triggers.tekton.dev/v1alpha1", "ClusterInterceptorList")
 }

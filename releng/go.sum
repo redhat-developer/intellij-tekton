@@ -1318,6 +1318,8 @@ github.com/tektoncd/triggers v0.12.1 h1:JmhS1WebgE8rSPpMTsjOhEZLUWL567neGtQC1Zs/
 github.com/tektoncd/triggers v0.12.1/go.mod h1:WaVu+zfTS8Wa1F53FAI8ywR4oueye/OfXqtANuA00cE=
 github.com/tektoncd/triggers v0.14.0 h1:Kbx94118UU8DDouExri7uDdKmqi1yplQfZDVF+oyuvE=
 github.com/tektoncd/triggers v0.14.0/go.mod h1:YEM6BT3OVOFaeoalY3VDW2GLh1BFibia+S1a/B1lMv8=
+github.com/tektoncd/triggers v0.14.2 h1:p0tQpLMqa7a2uq9sY8IqawENPoA7aQuluDkHYbYW4tk=
+github.com/tektoncd/triggers v0.14.2/go.mod h1:JajnZFFjm5t2ZlHR5TtsERuWkbhAvIOK5TMjyUemJbw=
 github.com/tetafro/godot v0.3.7/go.mod h1:/7NLHhv08H1+8DNj0MElpAACw1ajsCuf3TKNQxA5S+0=
 github.com/tetafro/godot v0.4.2/go.mod h1:/7NLHhv08H1+8DNj0MElpAACw1ajsCuf3TKNQxA5S+0=
 github.com/tidwall/gjson v1.3.5/go.mod h1:P256ACg0Mn+j1RXIDXoss50DeIABTYK1PULOJHhxOls=
