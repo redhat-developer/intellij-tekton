@@ -733,7 +733,6 @@
     },
     "EventListenerSpec": {
       "required": [
-        "serviceAccountName",
         "triggers"
       ],
       "properties": {
@@ -749,6 +748,10 @@
         },
         "replicas": {
           "type": "integer"
+        },
+        "podTemplate": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/PodTemplate"
         },
         "namespaceSelector": {
           "$schema": "http://json-schema.org/draft-04/schema#",
@@ -1176,8 +1179,43 @@
           "type": "string"
         },
         "value": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/JSON"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "properties": {},
+                    "additionalProperties": true,
+                    "type": "object"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "properties": {},
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false,
@@ -1193,21 +1231,6 @@
         },
         "apiVersion": {
           "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "JSON": {
-      "required": [
-        "Raw"
-      ],
-      "properties": {
-        "Raw": {
-          "type": "string",
-          "media": {
-            "binaryEncoding": "base64"
-          }
         }
       },
       "additionalProperties": false,
@@ -1916,7 +1939,6 @@
         },
         "tolerations": {
           "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
             "$ref": "#/definitions/Toleration"
           },
           "type": "array"
@@ -1981,6 +2003,27 @@
         "spec": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/PodSpec"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PodTemplate": {
+      "properties": {
+        "tolerations": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/Toleration"
+          },
+          "type": "array"
+        },
+        "nodeSelector": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
         }
       },
       "additionalProperties": false,
@@ -2601,7 +2644,8 @@
         "RawPath",
         "ForceQuery",
         "RawQuery",
-        "Fragment"
+        "Fragment",
+        "RawFragment"
       ],
       "properties": {
         "Scheme": {
@@ -2630,6 +2674,9 @@
           "type": "string"
         },
         "Fragment": {
+          "type": "string"
+        },
+        "RawFragment": {
           "type": "string"
         }
       },
