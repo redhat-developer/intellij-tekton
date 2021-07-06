@@ -12,6 +12,8 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intellij.openapi.project.Project;
+import com.redhat.devtools.alizer.api.Language;
+import com.redhat.devtools.alizer.api.LanguageRecognizerBuilder;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
@@ -83,8 +85,10 @@ public class HubModel {
     public List<HubItem> getAllHubItems() {
         if (allHubItems.isEmpty()) {
             try {
-                allHubItems = retrieveAllHubItems().get();
-            } catch (InterruptedException | ExecutionException e) {
+                List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
+                allHubItems = retrieveAllHubItems().get().stream().sorted(new HubItemScore(languages).reversed())
+                        .collect(Collectors.toList());;
+            } catch (InterruptedException | ExecutionException | IOException e) {
                 logger.warn(e.getLocalizedMessage(), e);
             }
         }
