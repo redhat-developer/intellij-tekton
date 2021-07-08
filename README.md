@@ -19,14 +19,23 @@ This new release is based on v1beta1. Although it still supports v1alpha1 resour
 
 The Tekton CLI in use has been upgrated to 0.18.0.
 
+### Tekton Hub search enhanced
+
+When searching on Tekton Hub, the list is now ordered according to the main language of your local IntelliJ project. In this example, we are working on a Java project so tasks relevant for Java development workflow are displayed first in the list:
+
+![](images/0.11.0/tekton1.gif)
+
+
+## Previous releases
+
+## 0.10.0
+
 ### YAML cleanup
 
 When a Kubernetes resource is retrieved from a cluster, its YAML content stored some internal metadata that users may not need to care about. So there is now a new command called XXX to remove it. There is also a setting so that this command is automatically executed when a Tekton resource is displayed in the editor.
 
 ![](images/0.10.0/tekton1.gif)
 ![](images/0.10.0/tekton2.png)
-
-## Previous releases
 
 ## 0.9.0
 
