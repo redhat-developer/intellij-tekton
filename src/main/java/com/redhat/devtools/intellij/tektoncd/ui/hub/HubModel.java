@@ -53,18 +53,17 @@ public class HubModel {
     private List<HubItem> allHubItems;
     private Map<String, String> resourcesYaml;
     private Project project;
-    private String selected, namespace;
+    private String selected;
     private List<String> tasksInstalled, clusterTasksInstalled;
     private boolean isTaskView;
 
-    public HubModel(Project project, Tkn tkn, String namespace, List<String> tasks, List<String> clusterTasks, boolean isTaskView) {
+    public HubModel(Project project, Tkn tkn, List<String> tasks, List<String> clusterTasks, boolean isTaskView) {
         this.allHubItems = new ArrayList<>();
         this.resourcesYaml = new HashMap<>();
         this.tkn = tkn;
         this.tasksInstalled = tasks;
         this.clusterTasksInstalled = clusterTasks;
         this.project = project;
-        this.namespace = namespace;
         this.isTaskView = isTaskView;
     }
 
@@ -88,6 +87,35 @@ public class HubModel {
                 List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
                 allHubItems = retrieveAllHubItems().get().stream().sorted(new HubItemScore(languages).reversed())
                         .collect(Collectors.toList());;
+            } catch (InterruptedException | ExecutionException | IOException e) {
+                logger.warn(e.getLocalizedMessage(), e);
+            }
+        }
+
+        return allHubItems;
+    }
+
+    public List<HubItem> getRecommendedHubItems() {
+        if (allHubItems.isEmpty()) {
+            try {
+                List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
+                allHubItems = retrieveAllHubItems().get().stream().filter(item -> new HubItemScore(languages).compare(item, 0) > 0)
+                        .collect(Collectors.toList());;
+            } catch (InterruptedException | ExecutionException | IOException e) {
+                logger.warn(e.getLocalizedMessage(), e);
+            }
+        }
+
+        return allHubItems;
+    }
+
+    public List<HubItem> getInstalledHubItems() {
+        if (allHubItems.isEmpty()) {
+            try {
+                List<String> tasks = tkn.getTasks("").stream()
+                        .map(task -> task.getMetadata().getName()).collect(Collectors.toList());
+                allHubItems = retrieveAllHubItems().get().stream().filter(item -> tasks.contains(item.getResource().getName()))
+                        .collect(Collectors.toList());
             } catch (InterruptedException | ExecutionException | IOException e) {
                 logger.warn(e.getLocalizedMessage(), e);
             }

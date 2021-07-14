@@ -149,7 +149,9 @@ public class HubItem {
             parent.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
             rightSide.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
             bottomCenterPanel.setBackground(JBUI.CurrentTheme.StatusBar.hoverBackground());
-            doSelectAction.accept(this);
+            if (doSelectAction != null) {
+                doSelectAction.accept(this);
+            }
         }
     }
 

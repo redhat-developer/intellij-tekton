@@ -83,4 +83,6 @@ public class HubItemScore implements Comparator<HubItem> {
     public int compare(HubItem o1, HubItem o2) {
         return computeScore(o1) - computeScore(o2);
     }
+
+    public int compare(HubItem o1, int value) { return computeScore(o1) - value; }
 }

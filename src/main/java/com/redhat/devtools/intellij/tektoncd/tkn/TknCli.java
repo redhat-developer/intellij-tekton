@@ -153,7 +153,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getNamespace() throws IOException {
+    public String getNamespace() {
         String namespace = client.getNamespace();
         if (Strings.isNullOrEmpty(namespace)) {
             namespace = "default";
@@ -206,7 +206,7 @@ public class TknCli implements Tkn {
     @Override
     public List<Task> getTasks(String namespace) throws IOException {
         try {
-            TaskList tasks = client.adapt(TektonClient.class).v1beta1().tasks().inNamespace(namespace).list();
+            TaskList tasks = client.adapt(TektonClient.class).v1beta1().tasks().inNamespace(getNamespace()).list();
             return tasks.getItems();
         } catch (KubernetesClientException e) {
             throw new IOException(e);

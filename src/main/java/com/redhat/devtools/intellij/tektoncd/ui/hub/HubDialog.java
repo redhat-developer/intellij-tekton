@@ -42,7 +42,6 @@ public class HubDialog extends DialogWrapper {
 
     public void createComponent(HubModel model) {
         HubMarketplaceTab marketplaceTab = new HubMarketplaceTab(model);
-        marketplaceTab.draw(model.getAllHubItems());
         myContentPanel = marketplaceTab.getTabPanel();
     }
 }
