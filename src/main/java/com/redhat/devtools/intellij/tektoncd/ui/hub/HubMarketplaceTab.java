@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
+import java.util.Optional;
 import javax.swing.JComponent;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +23,7 @@ public class HubMarketplaceTab extends HubDialogTab {
     @NotNull
     @Override
     protected JComponent createContentPanel() {
-        return new HubItemsListPanelBuilder(model, myDetailsPage).withAll().build();
+        return new HubItemsListPanelBuilder(model, myDetailsPage).withAll().build(Optional.empty());
     }
 
 }

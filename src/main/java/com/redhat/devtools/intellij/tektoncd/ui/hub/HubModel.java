@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,32 +97,27 @@ public class HubModel {
     }
 
     public List<HubItem> getRecommendedHubItems() {
-        if (allHubItems.isEmpty()) {
-            try {
-                List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
-                allHubItems = retrieveAllHubItems().get().stream().filter(item -> new HubItemScore(languages).compare(item, 0) > 0)
-                        .collect(Collectors.toList());;
-            } catch (InterruptedException | ExecutionException | IOException e) {
-                logger.warn(e.getLocalizedMessage(), e);
-            }
+        try {
+            List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
+            return retrieveAllHubItems().get().stream().filter(item -> new HubItemScore(languages).compare(item, 0) > 0)
+                    .collect(Collectors.toList());
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            logger.warn(e.getLocalizedMessage(), e);
         }
 
-        return allHubItems;
+        return Collections.emptyList();
     }
 
     public List<HubItem> getInstalledHubItems() {
-        if (allHubItems.isEmpty()) {
-            try {
-                List<String> tasks = tkn.getTasks("").stream()
-                        .map(task -> task.getMetadata().getName()).collect(Collectors.toList());
-                allHubItems = retrieveAllHubItems().get().stream().filter(item -> tasks.contains(item.getResource().getName()))
-                        .collect(Collectors.toList());
-            } catch (InterruptedException | ExecutionException | IOException e) {
-                logger.warn(e.getLocalizedMessage(), e);
-            }
+        try {
+            List<String> tasks = tkn.getTasks(tkn.getNamespace()).stream()
+                    .map(task -> task.getMetadata().getName()).collect(Collectors.toList());
+            return retrieveAllHubItems().get().stream().filter(item -> tasks.contains(item.getResource().getName()))
+                    .collect(Collectors.toList());
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            logger.warn(e.getLocalizedMessage(), e);
         }
-
-        return allHubItems;
+        return Collections.emptyList();
     }
 
     public void search(String query, List<String> kinds, List<String> tags, ApiCallback<Resources> callback) {

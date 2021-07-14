@@ -206,7 +206,7 @@ public class TknCli implements Tkn {
     @Override
     public List<Task> getTasks(String namespace) throws IOException {
         try {
-            TaskList tasks = client.adapt(TektonClient.class).v1beta1().tasks().inNamespace(getNamespace()).list();
+            TaskList tasks = client.adapt(TektonClient.class).v1beta1().tasks().inNamespace(namespace).list();
             return tasks.getItems();
         } catch (KubernetesClientException e) {
             throw new IOException(e);

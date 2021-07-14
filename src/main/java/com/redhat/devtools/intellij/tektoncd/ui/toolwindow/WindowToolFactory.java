@@ -38,6 +38,7 @@ import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Optional;
 import javax.swing.JPanel;
 import org.jetbrains.annotations.NotNull;
 
@@ -67,7 +68,7 @@ public class WindowToolFactory implements ToolWindowFactory {
                 JPanel hubItemsListPanel = new HubItemsListPanelBuilder(hubModel, null)
                         .withInstalled()
                         .withRecommended()
-                        .build();
+                        .build(Optional.empty());
 
                 OnePixelSplitter tabPanel = new OnePixelSplitter(true, 0.37F) {
                     protected Divider createDivider() {

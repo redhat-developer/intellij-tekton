@@ -35,6 +35,7 @@ import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import com.redhat.devtools.intellij.tektoncd.utils.NotificationHelper;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
@@ -42,6 +43,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +72,7 @@ public class HubItemsListPanelBuilder {
     private HubModel model;
     private List<JPanel> innerPanels = new ArrayList<>();
     private JBScrollPane scrollContentPanel;
-    private JPanel contentPanel, wrapperInnerPanel;
+    private JPanel contentPanel, wrapperInnerPanel, unclassifiedPanel;
     private SearchTextField mySearchTextField;
     private final Alarm mySearchUpdateAlarm = new Alarm();
     private HubDetailsPageComponent itemDetailsPage;
@@ -108,12 +110,17 @@ public class HubItemsListPanelBuilder {
     }
 
     private HubItemsListPanelBuilder with(String panel) {
+        JPanel hubItemsPanel = buildBoxLayoutPanel(panel);
+        innerPanels.add(hubItemsPanel);
+        return this;
+    }
+
+    private JPanel buildBoxLayoutPanel(String panel) {
         JPanel hubItemsPanel = new JPanel();
         hubItemsPanel.setName(panel);
         hubItemsPanel.setLayout(new BoxLayout(hubItemsPanel, 1));
         hubItemsPanel.setBackground(MAIN_BG_COLOR);
-        innerPanels.add(hubItemsPanel);
-        return this;
+        return hubItemsPanel;
     }
 
     private void createSearchTextField(final int flyDelay) {
@@ -165,14 +172,13 @@ public class HubItemsListPanelBuilder {
             @Override
             public void onFailure(ApiException e, int statusCode, Map<String, List<String>> responseHeaders) {
                 if(statusCode == 404) {
-                    buildSearchPanel(Collections.emptyList());
+                    build(Optional.empty());
                 }
             }
 
             @Override
             public void onSuccess(Resources result, int statusCode, Map<String, List<String>> responseHeaders) {
-                // draw(result.getData().stream().map(resource -> new HubItem(resource)).collect(Collectors.toList()), resource -> updateDetailsPanel(resource) );
-                 buildSearchPanel(result.getData().stream().map(resource -> new HubItem(resource)).collect(Collectors.toList()));
+                 build(Optional.of(result.getData().stream().map(resource -> new HubItem(resource)).collect(Collectors.toList())));
             }
 
             @Override
@@ -196,36 +202,21 @@ public class HubItemsListPanelBuilder {
         updateDetailsPanel(item, getInstallCallback(), getInstallAsClusterTaskCallback());
     }
 
-    public void buildSearchPanel(List<HubItem> items) {
+    public JPanel build(Optional<List<HubItem>> unclassifiedItems) {
         wrapperInnerPanel.removeAll();
-
-
-        JPanel hubItemsPanel = new JPanel();
-        hubItemsPanel.setName("Search");
-        hubItemsPanel.setLayout(new BoxLayout(hubItemsPanel, 1));
-        hubItemsPanel.setBackground(MAIN_BG_COLOR);
-
-
-        JPanel innerPanel = buildPanel();
-        innerPanel.add(buildLabel("Results"), BorderLayout.NORTH);
-        innerPanel.add(hubItemsPanel, BorderLayout.CENTER);
-        wrapperInnerPanel.add(innerPanel, BorderLayout.CENTER);
-
-        fillPanel(hubItemsPanel, items);
-        wrapperInnerPanel.revalidate();
-        wrapperInnerPanel.repaint();
-    }
-
-    public JPanel build() {
-        wrapperInnerPanel.removeAll();
-        buildInnerStructure();
-        for (JPanel innerPanel: innerPanels) {
-            if (innerPanel.getName().equals(ALL)) {
-                fillPanel(innerPanel, model.getAllHubItems());
-            } else if (innerPanel.getName().equals(INSTALLED)) {
-                fillPanel(innerPanel, model.getInstalledHubItems());
-            } else if (innerPanel.getName().equals(RECOMMENDED)) {
-                fillPanel(innerPanel, model.getRecommendedHubItems());
+        boolean showUnclassifiedItems = !mySearchTextField.getTextEditor().getText().isEmpty();
+        buildInnerStructure(showUnclassifiedItems);
+        if (showUnclassifiedItems) {
+            fillPanel(unclassifiedPanel, unclassifiedItems.isPresent() ? unclassifiedItems.get() : Collections.emptyList());
+        } else {
+            for (JPanel innerPanel : innerPanels) {
+                if (innerPanel.getName().equals(ALL)) {
+                    fillPanel(innerPanel, model.getAllHubItems());
+                } else if (innerPanel.getName().equals(INSTALLED)) {
+                    fillPanel(innerPanel, model.getInstalledHubItems());
+                } else if (innerPanel.getName().equals(RECOMMENDED)) {
+                    fillPanel(innerPanel, model.getRecommendedHubItems());
+                }
             }
         }
         wrapperInnerPanel.revalidate();
@@ -234,6 +225,7 @@ public class HubItemsListPanelBuilder {
     }
 
     private void fillPanel(JPanel panel, List<HubItem> items) {
+        panel.removeAll();
         for (HubItem item: items) {
             Consumer<HubItem> consumer = resource -> updateDetailsPanel(resource);
             JPanel itemAsPanel = item.createPanel(model, consumer, getInstallCallback(), getInstallAsClusterTaskCallback());
@@ -261,26 +253,34 @@ public class HubItemsListPanelBuilder {
         if (items.isEmpty()) {
             panel.add(buildEmptyTextPanel());
         }
+        Optional<Component> label = Arrays.stream(panel.getParent().getComponents()).filter(comp -> comp instanceof JLabel).findFirst();
+        label.ifPresent(component -> component.setName(panel.getName() + " (" + items.size() + ")"));
     }
 
-    private void buildInnerStructure() {
-        JComponent innerPanel = null;
-        switch (innerPanels.size()) {
-            case 0: {
-                innerPanel = buildEmptyPanel();
+    private void buildInnerStructure(boolean useUnclassifiedPanel) {
+        JComponent innerPanel;
+        if (useUnclassifiedPanel) {
+            unclassifiedPanel = buildBoxLayoutPanel("Results");
+            innerPanel = buildPanel();
+            innerPanel.add(buildLabel("Results"), BorderLayout.NORTH);
+            innerPanel.add(unclassifiedPanel, BorderLayout.CENTER);
+        } else {
+            switch (innerPanels.size()) {
+                case 0: {
+                    innerPanel = buildEmptyPanel();
+                    break;
+                }
+                case 1: {
+                    innerPanel = buildPanel();
+                    innerPanel.add(buildLabel(innerPanels.get(0).getName()), BorderLayout.NORTH);
+                    innerPanel.add(innerPanels.get(0), BorderLayout.CENTER);
+                    break;
+                }
+                default: {
+                    innerPanel = buildMultipleComponentsPanel();
+                    break;
+                }
             }
-            case 1: {
-                innerPanel = buildPanel();
-                innerPanel.add(buildLabel(innerPanels.get(0).getName()), BorderLayout.NORTH);
-                innerPanel.add(innerPanels.get(0), BorderLayout.CENTER);
-            }
-            case 2: {
-                innerPanel = buildMultipleComponentsPanel();
-            }
-            case 3: {
-
-            }
-            default: break;
         }
         if (innerPanel != null) {
             wrapperInnerPanel.add(innerPanel, BorderLayout.CENTER);
