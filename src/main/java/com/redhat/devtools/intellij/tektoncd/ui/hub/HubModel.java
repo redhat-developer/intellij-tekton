@@ -20,11 +20,13 @@ import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.hub.api.ResourceApi;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiCallback;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiException;
+import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -43,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.APP_K8S_IO_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.HUB_CATALOG_TAG;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
@@ -68,13 +71,13 @@ public class HubModel {
         this.isTaskView = isTaskView;
     }
 
-    public Future<List<HubItem>> retrieveAllHubItems() {
-        CompletableFuture<List<HubItem>> completableFuture = new CompletableFuture<>();
+    private Future<List<ResourceData>> retrieveAllResources() {
+        CompletableFuture<List<ResourceData>> completableFuture = new CompletableFuture<>();
         ExecHelper.submit(() -> {
             ResourceApi resApi = new ResourceApi();
             try {
                 Resources resources = resApi.resourceList(500);
-                completableFuture.complete(resources.getData().stream().map(resource -> new HubItem(resource)).collect(Collectors.toList()));
+                completableFuture.complete(resources.getData());
             } catch (ApiException e) {
                 logger.warn(e.getLocalizedMessage(), e);
             }
@@ -86,7 +89,9 @@ public class HubModel {
         if (allHubItems.isEmpty()) {
             try {
                 List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
-                allHubItems = retrieveAllHubItems().get().stream().sorted(new HubItemScore(languages).reversed())
+                allHubItems = retrieveAllResources().get().stream()
+                        .map(resource -> new HubItem(resource))
+                        .sorted(new HubItemScore(languages).reversed())
                         .collect(Collectors.toList());;
             } catch (InterruptedException | ExecutionException | IOException e) {
                 logger.warn(e.getLocalizedMessage(), e);
@@ -99,7 +104,12 @@ public class HubModel {
     public List<HubItem> getRecommendedHubItems() {
         try {
             List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
-            return retrieveAllHubItems().get().stream().filter(item -> new HubItemScore(languages).compare(item, 0) > 0)
+            List<String> hubTasksAlreadyInstalled = getAllInstalledHubTasks().stream()
+                    .map(task -> task.getMetadata().getName())
+                    .collect(Collectors.toList());
+            return retrieveAllResources().get().stream()
+                    .map(resource -> new HubItem(resource))
+                    .filter(item -> new HubItemScore(languages).compare(item, 0) > 0 && !hubTasksAlreadyInstalled.contains(item.getResource().getName()))
                     .collect(Collectors.toList());
         } catch (InterruptedException | ExecutionException | IOException e) {
             logger.warn(e.getLocalizedMessage(), e);
@@ -110,15 +120,39 @@ public class HubModel {
 
     public List<HubItem> getInstalledHubItems() {
         try {
-            List<String> tasks = tkn.getTasks(tkn.getNamespace()).stream()
-                    .map(task -> task.getMetadata().getName()).collect(Collectors.toList());
-            return retrieveAllHubItems().get().stream().filter(item -> tasks.contains(item.getResource().getName()))
+            List<HasMetadata> hubTasksAlreadyInstalled = getAllInstalledHubTasks();
+
+            return retrieveAllResources().get().stream()
+                    .filter(resourceData -> hubTasksAlreadyInstalled.stream()
+                                    .anyMatch(task -> task.getMetadata().getName().equalsIgnoreCase(resourceData.getName())))
+                    .map(resourceData -> {
+                        Optional<String> version = hubTasksAlreadyInstalled.stream()
+                                .filter(task -> task.getMetadata().getName().equalsIgnoreCase(resourceData.getName()))
+                                .map(task -> task.getMetadata().getLabels().get(APP_K8S_IO_VERSION)).findFirst();
+                        if (version.isPresent()) {
+                            return new HubItem(resourceData, version.get());
+                        } else {
+                            return new HubItem(resourceData);
+                        }
+                    })
                     .collect(Collectors.toList());
         } catch (InterruptedException | ExecutionException | IOException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
         return Collections.emptyList();
     }
+
+    private List<HasMetadata> getAllInstalledHubTasks() throws IOException {
+        List<HasMetadata> tasks = new ArrayList<>();
+        tasks.addAll(tkn.getTasks(tkn.getNamespace()).stream()
+                .filter(task -> task.getMetadata().getLabels() != null && task.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
+                .collect(Collectors.toList()));
+        tasks.addAll(tkn.getClusterTasks().stream()
+                .filter(task -> task.getMetadata().getLabels() != null && task.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
+                .collect(Collectors.toList()));
+        return tasks;
+    }
+
 
     public void search(String query, List<String> kinds, List<String> tags, ApiCallback<Resources> callback) {
         ResourceApi resApi = new ResourceApi();

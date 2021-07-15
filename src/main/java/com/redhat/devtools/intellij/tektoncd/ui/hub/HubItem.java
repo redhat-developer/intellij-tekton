@@ -45,9 +45,19 @@ public class HubItem {
 
     private ResourceData resource;
     private JPanel parent, rightSide, bottomCenterPanel;
+    private String version;
 
     public HubItem(@NotNull ResourceData resource) {
+        this(resource, resource.getLatestVersion().getVersion());
+    }
+
+    public HubItem(@NotNull ResourceData resource, String version) {
         this.resource = resource;
+        this.version = version;
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     public JPanel createPanel(HubModel model, Consumer<HubItem> doSelectAction, TriConsumer<HubItem, String, String> doInstallAction) {
@@ -60,9 +70,9 @@ public class HubItem {
         bottomCenterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         bottomCenterPanel.setBackground(MAIN_BG_COLOR);
 
-        JLabel version = createCustomizedLabel("v. " + this.resource.getLatestVersion().getVersion(), null, -1,
+        JLabel lblVersion = createCustomizedLabel("v. " + version, null, -1,
                                                                 JBUI.Borders.empty(0, 0, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
-        bottomCenterPanel.add(version);
+        bottomCenterPanel.add(lblVersion);
 
         JLabel rating = createCustomizedLabel(this.resource.getRating().toString(), AllIcons.Plugins.Rating, SwingConstants.RIGHT,
                                                                 JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
@@ -91,28 +101,33 @@ public class HubItem {
             bottomCenterPanel.add(warningNameAlreadyUsed);
         }
 
-        JBOptionButton optionButton;
-        Action installAsTask = new InstallFromHubAction("Install as Task",
-                () -> this,
-                () -> KIND_TASK,
-                () -> resource.getLatestVersion().getVersion(),
-                () -> doInstallAction);
-        Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
-                () -> this,
-                () -> KIND_CLUSTERTASK,
-                () -> resource.getLatestVersion().getVersion(),
-                () -> doInstallAction);
-        if (model.getIsTaskView()) {
-            optionButton = new JBOptionButton(installAsTask, new Action[] { installAsClusterTask });
-        } else {
-            optionButton = new JBOptionButton(installAsClusterTask, new Action[] { installAsTask });
-        }
+
 
         rightSide = new JPanel(new BorderLayout());
         rightSide.setBackground(MAIN_BG_COLOR);
         rightSide.add(nameHubItem, BorderLayout.CENTER);
         rightSide.add(bottomCenterPanel, BorderLayout.PAGE_END);
-        rightSide.add(optionButton, BorderLayout.LINE_END);
+
+        if (doInstallAction != null) {
+            JBOptionButton optionButton;
+            Action installAsTask = new InstallFromHubAction("Install as Task",
+                    () -> this,
+                    () -> KIND_TASK,
+                    () -> version,
+                    () -> doInstallAction);
+            Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
+                    () -> this,
+                    () -> KIND_CLUSTERTASK,
+                    () -> version,
+                    () -> doInstallAction);
+            if (model.getIsTaskView()) {
+                optionButton = new JBOptionButton(installAsTask, new Action[]{installAsClusterTask});
+            } else {
+                optionButton = new JBOptionButton(installAsClusterTask, new Action[]{installAsTask});
+            }
+
+            rightSide.add(optionButton, BorderLayout.LINE_END);
+        }
 
         parent = new JPanel(new BorderLayout());
         parent.setBackground(MAIN_BG_COLOR);

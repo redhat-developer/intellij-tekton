@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
+import com.google.common.base.Strings;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.plugins.LinkPanel;
 import com.intellij.ide.plugins.MultiPanel;
@@ -45,6 +46,8 @@ import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.swing.Action;
 import javax.swing.JComboBox;
@@ -317,34 +320,44 @@ public class HubDetailsPageComponent extends MultiPanel {
         } else {
             setItem(item);
             setDoInstallAction(doInstallAction);
+
             ResourceData resource = item.getResource();
+            List<ResourceVersionData> resourceVersions = model.getVersionsById(resource.getId());
+            Optional<ResourceVersionData> resourceVersion = resourceVersions.stream()
+                    .filter(res -> res.getVersion().equalsIgnoreCase(item.getVersion())).findFirst();
+            if (!resourceVersion.isPresent()) {
+                return;
+            }
+
+            ResourceVersionData resourceVersionData = resourceVersion.get();
+
             //edit all panel
-            String nameItem = resource.getLatestVersion().getDisplayName().isEmpty() ? resource.getName() : resource.getLatestVersion().getDisplayName();
+            String nameItem = Strings.isNullOrEmpty(resourceVersionData.getDisplayName()) ? resource.getName() : resourceVersionData.getDisplayName();
             myNameComponent.setText(nameItem);
 
             versionsCmb.removeAllItems();
-            model.getVersionsById(resource.getId()).forEach(version -> {
+            resourceVersions.forEach(version -> {
                 version.setDisplayName(item.getResource().getName());
                 versionsCmb.addItem(version);
-
             });
-            versionsCmb.setSelectedIndex(versionsCmb.getItemCount() - 1);
+            versionsCmb.setSelectedItem(resourceVersion.get());
 
             myRating.setText(resource.getRating().toString());
-            myDetailsComponent.setText(resource.getLatestVersion().getDescription().replace("\n", "<br>") + "<br><br>Tags:<br>" + resource.getTags().stream().map(tag -> tag.getName()).collect(Collectors.joining(", ")));
+            String description = Strings.isNullOrEmpty(resourceVersionData.getDescription()) ? resource.getLatestVersion().getDescription() : resourceVersionData.getDescription();
+            myDetailsComponent.setText(description.replace("\n", "<br>") + "<br><br>Tags:<br>" + resource.getTags().stream().map(tag -> tag.getName()).collect(Collectors.joining(", ")));
             myHomePage.show(resource.getKind() + " Homepage", () -> {
                 try {
-                    Desktop.getDesktop().browse(resource.getLatestVersion().getWebURL());
+                    Desktop.getDesktop().browse(resourceVersionData.getWebURL());
                 } catch (IOException e) {
                     logger.warn(e.getLocalizedMessage(), e);
                 }
             });
 
-            String description = resource.getLatestVersion().getDescription();
+
             description = description.indexOf("\n") > -1 ? description.substring(0, description.indexOf("\n")) : description;
             myTopDescription.setText(description);
 
-            loadBottomTabs(item.getResource().getName(), resource.getLatestVersion().getRawURL());
+            loadBottomTabs(item.getResource().getName(), resourceVersionData.getRawURL());
 
             select(0, true);
         }

@@ -208,7 +208,7 @@ public class HubItemsListPanelBuilder {
                 if (innerPanel.getName().equals(ALL)) {
                     fillPanel(innerPanel, model.getAllHubItems());
                 } else if (innerPanel.getName().equals(INSTALLED)) {
-                    fillPanel(innerPanel, model.getInstalledHubItems());
+                    fillPanel(innerPanel, model.getInstalledHubItems(), null);
                 } else if (innerPanel.getName().equals(RECOMMENDED)) {
                     fillPanel(innerPanel, model.getRecommendedHubItems());
                 }
@@ -220,10 +220,14 @@ public class HubItemsListPanelBuilder {
     }
 
     private void fillPanel(JPanel panel, List<HubItem> items) {
+        fillPanel(panel, items, getInstallCallback());
+    }
+
+    private void fillPanel(JPanel panel, List<HubItem> items, TriConsumer<HubItem, String, String> installCallback) {
         panel.removeAll();
         for (HubItem item: items) {
             Consumer<HubItem> consumer = resource -> updateDetailsPanel(resource);
-            JPanel itemAsPanel = item.createPanel(model, consumer, getInstallCallback());
+            JPanel itemAsPanel = item.createPanel(model, consumer, installCallback);
             itemAsPanel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {

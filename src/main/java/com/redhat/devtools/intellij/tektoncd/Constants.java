@@ -62,6 +62,7 @@ public class Constants {
 
     public static final String STRUCTURE_PROPERTY = Constants.class.getPackage().getName() + ".structure";
 
+    public static final String APP_K8S_IO_VERSION = "app.kubernetes.io/version";
     public static final String HUB_CATALOG_TAG = "hub.tekton.dev/catalog";
 
     public enum InstallStatus {
