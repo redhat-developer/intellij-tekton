@@ -210,7 +210,7 @@ public class HubModel {
                 ((ObjectNode)yamlObject.get("metadata").get("labels")).put(HUB_CATALOG_TAG, catalog);
             }
             yamlObject.put("kind", kind);
-            String yamlUpdated = YAMLHelper.JSONToYAML(yamlObject);
+            String yamlUpdated = YAMLHelper.JSONToYAML(yamlObject, false);
             if (DeployHelper.saveOnCluster(project, "", yamlUpdated, confirmationMessage, true, false)) {
                 if (!clusterTaskAlreadyOnCluster) {
                     clusterTasksInstalled.add(name);

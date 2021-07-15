@@ -27,7 +27,7 @@ public class SnippetHelper {
     }
 
     private static String convertJSONBodyToYAML(JsonNode snippetBody) throws IOException {
-        String yaml = YAMLHelper.JSONToYAML(snippetBody);
+        String yaml = YAMLHelper.JSONToYAML(snippetBody, false);
         return yaml.replaceAll("\"\n", "\n").replaceAll("- \"", "");
     }
 

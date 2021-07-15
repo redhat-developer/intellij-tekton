@@ -28,6 +28,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.StatusText;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiCallback;
 import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiException;
@@ -61,7 +62,6 @@ import javax.swing.event.DocumentEvent;
 import org.jetbrains.annotations.NotNull;
 
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.GRAY_COLOR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_BG_COLOR;
@@ -75,14 +75,14 @@ public class HubItemsListPanelBuilder {
     private JPanel contentPanel, wrapperInnerPanel, unclassifiedPanel;
     private SearchTextField mySearchTextField;
     private final Alarm mySearchUpdateAlarm = new Alarm();
-    private HubDetailsPageComponent itemDetailsPage;
+    private BiConsumer<HubItem, TriConsumer<HubItem, String, String>> doSelectAction;
     private final static String RECOMMENDED = "Recommended";
     private final static String ALL = "All";
     private final static String INSTALLED = "Installed";
 
-    public HubItemsListPanelBuilder(HubModel model, HubDetailsPageComponent itemDetailsPage) {
+    public HubItemsListPanelBuilder(HubModel model, BiConsumer<HubItem, TriConsumer<HubItem, String, String>> doSelectAction) {
         this.model = model;
-        this.itemDetailsPage = itemDetailsPage;
+        this.doSelectAction = doSelectAction;
 
         wrapperInnerPanel = new JPanel(new BorderLayout());
         wrapperInnerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE,80));
@@ -193,13 +193,8 @@ public class HubItemsListPanelBuilder {
         };
     }
 
-    private void updateDetailsPanel(HubItem item, BiConsumer<HubItem, String> installAsTaskCallback, BiConsumer<HubItem, String> installAsClusterTaskCallback) {
-        if (itemDetailsPage != null) {
-            itemDetailsPage.show(item, installAsTaskCallback, installAsClusterTaskCallback);
-        }
-    }
     private void updateDetailsPanel(HubItem item) {
-        updateDetailsPanel(item, getInstallCallback(), getInstallAsClusterTaskCallback());
+        doSelectAction.accept(item, getInstallCallback());
     }
 
     public JPanel build(Optional<List<HubItem>> unclassifiedItems) {
@@ -228,7 +223,7 @@ public class HubItemsListPanelBuilder {
         panel.removeAll();
         for (HubItem item: items) {
             Consumer<HubItem> consumer = resource -> updateDetailsPanel(resource);
-            JPanel itemAsPanel = item.createPanel(model, consumer, getInstallCallback(), getInstallAsClusterTaskCallback());
+            JPanel itemAsPanel = item.createPanel(model, consumer, getInstallCallback());
             itemAsPanel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -342,56 +337,9 @@ public class HubItemsListPanelBuilder {
         return myEmptyTextPanel;
     }
 
-
-
-    /* public void draw(List<HubItem> items) {
-        innerContentPanel.removeAll();
-        for (HubItem item: items) {
-            Consumer<HubItem> consumer = resource -> updateDetailsPanel(resource);
-            JPanel itemAsPanel = item.createPanel(model, consumer, getInstallCallback(), getInstallAsClusterTaskCallback());
-            itemAsPanel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    String old = model.getSelectedHubItem();
-                    if (Strings.isNullOrEmpty(old) || old != item.getResource().getName()) {
-                        model.setSelectedHubItem(item.getResource().getName());
-                        if (!Strings.isNullOrEmpty(old)) {
-                            Optional<HubItem> oldItem = items.stream().filter(item -> item.getResource().getName().equalsIgnoreCase(old)).findFirst();
-                            if (oldItem.isPresent()) {
-                                oldItem.get().repaint(false);
-                            }
-                        }
-                        item.repaint(true);
-                        if (consumer != null) {
-                            consumer.accept(item);
-                        }
-                    }
-                }
-            });
-            innerContentPanel.add(itemAsPanel);
-        }
-        if (items.isEmpty()) {
-            JBPanelWithEmptyText myEmptyPanel = new JBPanelWithEmptyText();
-            myEmptyPanel.setBorder(new CustomLineBorder(SEARCH_FIELD_BORDER_COLOR, JBUI.insets(1, 0, 0, 0)));
-            myEmptyPanel.setOpaque(true);
-            myEmptyPanel.setBackground(MAIN_BG_COLOR);
-            myEmptyPanel.getEmptyText().setText("Nothing found.");
-            innerContentPanel.add(myEmptyPanel);
-        }
-        lblResultsCount.setText("Results (" + items.size()+ ")");
-        innerContentPanel.revalidate();
-        innerContentPanel.repaint();
-    }*/
-
-    private BiConsumer<HubItem, String> getInstallCallback() {
-        return (hubItem, version) -> {
-            installHubItem(hubItem, hubItem.getResource().getKind(), version);
-        };
-    }
-
-    private BiConsumer<HubItem, String> getInstallAsClusterTaskCallback() {
-        return (hubItem, version) -> {
-            installHubItem(hubItem, KIND_CLUSTERTASK, version);
+    private TriConsumer<HubItem, String, String> getInstallCallback() {
+        return (hubItem, kind, version) -> {
+            installHubItem(hubItem, kind, version);
         };
     }
 

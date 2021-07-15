@@ -23,7 +23,9 @@ public class HubMarketplaceTab extends HubDialogTab {
     @NotNull
     @Override
     protected JComponent createContentPanel() {
-        return new HubItemsListPanelBuilder(model, myDetailsPage).withAll().build(Optional.empty());
+        return new HubItemsListPanelBuilder(model, (item, callback) -> myDetailsPage.show(item, callback))
+                .withAll()
+                .build(Optional.empty());
     }
 
 }

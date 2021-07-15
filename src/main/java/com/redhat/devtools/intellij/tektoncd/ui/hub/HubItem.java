@@ -15,6 +15,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.components.JBOptionButton;
 import com.intellij.util.ui.JBUI;
+import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.actions.InstallFromHubAction;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
@@ -23,7 +24,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -35,6 +35,7 @@ import javax.swing.border.Border;
 import org.jetbrains.annotations.NotNull;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
@@ -49,7 +50,7 @@ public class HubItem {
         this.resource = resource;
     }
 
-    public JPanel createPanel(HubModel model, Consumer<HubItem> doSelectAction, BiConsumer<HubItem, String> doInstallAction, BiConsumer<HubItem, String> doInstallAsClusterTaskAction) {
+    public JPanel createPanel(HubModel model, Consumer<HubItem> doSelectAction, TriConsumer<HubItem, String, String> doInstallAction) {
 
         Font defaultFont = (new JLabel()).getFont();
 
@@ -93,12 +94,14 @@ public class HubItem {
         JBOptionButton optionButton;
         Action installAsTask = new InstallFromHubAction("Install as Task",
                 () -> this,
+                () -> KIND_TASK,
                 () -> resource.getLatestVersion().getVersion(),
                 () -> doInstallAction);
         Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
                 () -> this,
+                () -> KIND_CLUSTERTASK,
                 () -> resource.getLatestVersion().getVersion(),
-                () -> doInstallAsClusterTaskAction);
+                () -> doInstallAction);
         if (model.getIsTaskView()) {
             optionButton = new JBOptionButton(installAsTask, new Action[] { installAsClusterTask });
         } else {

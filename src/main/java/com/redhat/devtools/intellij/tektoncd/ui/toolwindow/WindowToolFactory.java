@@ -27,18 +27,22 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
+import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.listener.TektonTreeDoubleClickListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TektonTreePopupMenuListener;
 import com.redhat.devtools.intellij.tektoncd.tree.MutableTektonModelSynchronizer;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
+import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDetailsDialog;
+import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItem;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemsListPanelBuilder;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import javax.swing.JPanel;
 import org.jetbrains.annotations.NotNull;
 
@@ -65,9 +69,10 @@ public class WindowToolFactory implements ToolWindowFactory {
 
             ((TektonRootNode) structure.getRootElement()).load().whenComplete((tkn, err) -> {
                 HubModel hubModel = new HubModel(project, tkn, new ArrayList<>(), new ArrayList<>(), true);
-                JPanel hubItemsListPanel = new HubItemsListPanelBuilder(hubModel, null)
-                        .withInstalled()
+
+                JPanel hubItemsListPanel = new HubItemsListPanelBuilder(hubModel, getDoSelectAction(project, hubModel))
                         .withRecommended()
+                        .withInstalled()
                         .build(Optional.empty());
 
                 OnePixelSplitter tabPanel = new OnePixelSplitter(true, 0.37F) {
@@ -85,6 +90,14 @@ public class WindowToolFactory implements ToolWindowFactory {
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             throw new RuntimeException((e));
         }
+    }
+
+    private BiConsumer<HubItem, TriConsumer<HubItem, String, String>> getDoSelectAction(Project project, HubModel model) {
+        return (item, callback) -> {
+            HubDetailsDialog dialog = new HubDetailsDialog(item.getResource().getName() + " details", project, model);
+            dialog.setModal(false);
+            dialog.show(item, callback);
+        };
     }
 
     /**

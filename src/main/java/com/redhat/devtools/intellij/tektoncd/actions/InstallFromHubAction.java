@@ -10,22 +10,23 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
+import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItem;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import javax.swing.Action;
 
 public class InstallFromHubAction implements Action {
     private String text;
     private Supplier<HubItem> item;
-    private Supplier<String> version;
-    private Supplier<BiConsumer<HubItem, String>> doInstallAction;
+    private Supplier<String> kind, version;
+    private Supplier<TriConsumer<HubItem, String, String>> doInstallAction;
 
-    public InstallFromHubAction(String text, Supplier<HubItem> item, Supplier<String> version, Supplier<BiConsumer<HubItem, String>> doInstallAction) {
+    public InstallFromHubAction(String text, Supplier<HubItem> item, Supplier<String> kind, Supplier<String> version, Supplier<TriConsumer<HubItem, String, String>> doInstallAction) {
         this.text = text;
         this.item = item;
+        this.kind = kind;
         this.version = version;
         this.doInstallAction = doInstallAction;
     }
@@ -65,6 +66,6 @@ public class InstallFromHubAction implements Action {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        doInstallAction.get().accept(item.get(), version.get());
+        doInstallAction.get().accept(item.get(), kind.get(), version.get());
     }
 }

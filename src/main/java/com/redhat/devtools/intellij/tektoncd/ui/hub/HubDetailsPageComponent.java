@@ -30,6 +30,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.actions.InstallFromHubAction;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
@@ -44,7 +45,6 @@ import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import javax.swing.Action;
 import javax.swing.JComboBox;
@@ -69,6 +69,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.GRAY_COLOR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
@@ -88,7 +90,7 @@ public class HubDetailsPageComponent extends MultiPanel {
     private JEditorPane myTopDescription;
     private HubModel model;
     private HubItem item;
-    private BiConsumer<HubItem, String> doInstallAction, doInstallAsClusterTaskAction;
+    private TriConsumer<HubItem, String, String> doInstallAction;
 
     public HubDetailsPageComponent(HubModel model) {
         this.model = model;
@@ -101,12 +103,8 @@ public class HubDetailsPageComponent extends MultiPanel {
         this.item = item;
     }
 
-    public void setDoInstallAction(BiConsumer<HubItem, String> doInstallAction) {
+    public void setDoInstallAction(TriConsumer<HubItem, String, String> doInstallAction) {
         this.doInstallAction = doInstallAction;
-    }
-
-    public void setDoInstallAsClusterTaskAction(BiConsumer<HubItem, String> doInstallAsClusterTaskAction) {
-        this.doInstallAsClusterTaskAction = doInstallAsClusterTaskAction;
     }
 
     private void createEmptyPanel() {
@@ -153,12 +151,14 @@ public class HubDetailsPageComponent extends MultiPanel {
         JBOptionButton optionButton;
         Action installAsTask = new InstallFromHubAction("Install as Task",
                 () -> item,
+                () -> KIND_TASK,
                 () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
                 () -> doInstallAction);
         Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
                 () -> item,
+                () -> KIND_CLUSTERTASK,
                 () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
-                () -> doInstallAsClusterTaskAction);
+                () -> doInstallAction);
         if (model.getIsTaskView()) {
             optionButton = new JBOptionButton(installAsTask, new Action[] { installAsClusterTask });
         } else {
@@ -311,13 +311,12 @@ public class HubDetailsPageComponent extends MultiPanel {
         return super.create(key);
     }
 
-    public void show(HubItem item, BiConsumer<HubItem, String> doInstallAction, BiConsumer<HubItem, String> doInstallAsClusterTaskAction) {
+    public void show(HubItem item, TriConsumer<HubItem, String, String> doInstallAction) {
         if (item == null) {
             select(1, true);
         } else {
             setItem(item);
             setDoInstallAction(doInstallAction);
-            setDoInstallAsClusterTaskAction(doInstallAsClusterTaskAction);
             ResourceData resource = item.getResource();
             //edit all panel
             String nameItem = resource.getLatestVersion().getDisplayName().isEmpty() ? resource.getName() : resource.getLatestVersion().getDisplayName();
