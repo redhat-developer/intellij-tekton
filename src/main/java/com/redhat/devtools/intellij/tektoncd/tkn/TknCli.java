@@ -192,6 +192,16 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public List<Pipeline> getPipelineItems(String namespace) throws IOException {
+        try {
+            PipelineList pipelines = client.adapt(TektonClient.class).v1beta1().pipelines().inNamespace(namespace).list();
+            return pipelines.getItems();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
     public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
         String json = ExecHelper.execute(command, envVars, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
         return getCustomCollection(json, PipelineRun.class);
@@ -859,6 +869,11 @@ public class TknCli implements Tkn {
     @Override
     public String getTaskYAMLFromHub(String task, String version) throws IOException {
         return ExecHelper.execute(command, envVars, "hub", "get", "task", task, "--version", version);
+    }
+
+    @Override
+    public String getPipelineYAMLFromHub(String pipeline, String version) throws IOException {
+        return ExecHelper.execute(command, envVars, "hub", "get", "pipeline", pipeline, "--version", version);
     }
 
     private String getTempFile(String data) throws IOException {

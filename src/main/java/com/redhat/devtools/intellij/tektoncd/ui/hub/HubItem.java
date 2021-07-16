@@ -45,14 +45,15 @@ public class HubItem {
 
     private ResourceData resource;
     private JPanel parent, rightSide, bottomCenterPanel;
-    private String version;
+    private String kind, version;
 
     public HubItem(@NotNull ResourceData resource) {
-        this(resource, resource.getLatestVersion().getVersion());
+        this(resource, resource.getKind(), resource.getLatestVersion().getVersion());
     }
 
-    public HubItem(@NotNull ResourceData resource, String version) {
+    public HubItem(@NotNull ResourceData resource, String kind, String version) {
         this.resource = resource;
+        this.kind = kind;
         this.version = version;
     }
 
@@ -78,7 +79,7 @@ public class HubItem {
                                                                 JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
         bottomCenterPanel.add(rating);
 
-        Icon kindIcon = getIconByKind(this.resource.getKind());
+        Icon kindIcon = getIconByKind(kind);
         if (kindIcon != null) {
             JLabel kind = createCustomizedLabel("", kindIcon, SwingConstants.LEFT,
                                                                 JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, this.resource.getKind());
@@ -86,13 +87,13 @@ public class HubItem {
         }
 
         String labelText = null;
-        if (model.getIsTaskView()) {
-            if (model.getTasksInstalled().contains(resource.getName())) {
-                labelText = "A task with this name already exists on the cluster.";
-            }
-        } else {
+        if (model.getIsClusterTaskView()) {
             if (model.getClusterTasksInstalled().contains(resource.getName())) {
                 labelText = "A clusterTask with this name already exists on the cluster.";
+            }
+        } else {
+            if (model.getTasksInstalled().contains(resource.getName())) {
+                labelText = "A task with this name already exists on the cluster.";
             }
         }
         if (labelText != null) {
@@ -101,8 +102,6 @@ public class HubItem {
             bottomCenterPanel.add(warningNameAlreadyUsed);
         }
 
-
-
         rightSide = new JPanel(new BorderLayout());
         rightSide.setBackground(MAIN_BG_COLOR);
         rightSide.add(nameHubItem, BorderLayout.CENTER);
@@ -110,21 +109,29 @@ public class HubItem {
 
         if (doInstallAction != null) {
             JBOptionButton optionButton;
-            Action installAsTask = new InstallFromHubAction("Install as Task",
+
+            Action install = new InstallFromHubAction("Install",
                     () -> this,
-                    () -> KIND_TASK,
+                    () -> this.resource.getKind(),
                     () -> version,
                     () -> doInstallAction);
-            Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
-                    () -> this,
-                    () -> KIND_CLUSTERTASK,
-                    () -> version,
-                    () -> doInstallAction);
-            if (model.getIsTaskView()) {
-                optionButton = new JBOptionButton(installAsTask, new Action[]{installAsClusterTask});
+
+            if (this.resource.getKind().equalsIgnoreCase(KIND_TASK)) {
+                Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
+                        () -> this,
+                        () -> KIND_CLUSTERTASK,
+                        () -> version,
+                        () -> doInstallAction);
+                if (model.getIsClusterTaskView()) {
+                    ((InstallFromHubAction)install).setText("Install as Task");
+                    optionButton = new JBOptionButton(installAsClusterTask, new Action[]{install});
+                } else {
+                    optionButton = new JBOptionButton(install, new Action[]{installAsClusterTask});
+                }
             } else {
-                optionButton = new JBOptionButton(installAsClusterTask, new Action[]{installAsTask});
+                optionButton = new JBOptionButton(install, null);
             }
+
 
             rightSide.add(optionButton, BorderLayout.LINE_END);
         }
@@ -202,6 +209,8 @@ public class HubItem {
     private Icon getIconByKind(String kind) {
         if (kind.toLowerCase().equalsIgnoreCase(KIND_TASK)) {
             return IconLoader.findIcon("/images/task.svg", TektonTreeStructure.class);
+        } else if (kind.toLowerCase().equalsIgnoreCase(KIND_CLUSTERTASK)) {
+            return IconLoader.findIcon("/images/clustertask.svg", TektonTreeStructure.class);
         } else if (kind.toLowerCase().equalsIgnoreCase(KIND_PIPELINE)) {
             return IconLoader.findIcon("/images/pipeline.svg", TektonTreeStructure.class);
         }

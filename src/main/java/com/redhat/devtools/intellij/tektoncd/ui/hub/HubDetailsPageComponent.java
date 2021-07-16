@@ -88,6 +88,7 @@ public class HubDetailsPageComponent extends MultiPanel {
     private JComboBox versionsCmb;
     private JLabel myRating;
     private JEditorPane myDetailsComponent, myDescriptionComponent, myYamlComponent;
+    private JBOptionButton optionButton;
     private LinkPanel myHomePage;
     private JBPanelWithEmptyText myEmptyPanel;
     private JEditorPane myTopDescription;
@@ -151,27 +152,12 @@ public class HubDetailsPageComponent extends MultiPanel {
         myNameComponent = new JLabel();
         myNameComponent.setFont(myNameComponent.getFont().deriveFont(Font.BOLD, 25));
 
-        JBOptionButton optionButton;
-        Action installAsTask = new InstallFromHubAction("Install as Task",
-                () -> item,
-                () -> KIND_TASK,
-                () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
-                () -> doInstallAction);
-        Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
-                () -> item,
-                () -> KIND_CLUSTERTASK,
-                () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
-                () -> doInstallAction);
-        if (model.getIsTaskView()) {
-            optionButton = new JBOptionButton(installAsTask, new Action[] { installAsClusterTask });
-        } else {
-            optionButton = new JBOptionButton(installAsClusterTask, new Action[] { installAsTask });
-        }
+        //JBOptionButton optionButton;
 
         myNameAndButtons = new JPanel(new BorderLayout());
         myNameAndButtons.setBackground(MAIN_BG_COLOR);
         myNameAndButtons.add(myNameComponent, BorderLayout.CENTER);
-        myNameAndButtons.add(optionButton, BorderLayout.EAST);
+       // myNameAndButtons.add(optionButton, BorderLayout.EAST);
 
         centerPanel.add(myNameAndButtons, VerticalLayout.FILL_HORIZONTAL);
 
@@ -320,6 +306,29 @@ public class HubDetailsPageComponent extends MultiPanel {
         } else {
             setItem(item);
             setDoInstallAction(doInstallAction);
+
+            Action install = new InstallFromHubAction("Install",
+                    () -> item,
+                    () -> item.getResource().getKind(),
+                    () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
+                    () -> doInstallAction);
+
+            if (item.getResource().getKind().equalsIgnoreCase(KIND_TASK)) {
+                Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
+                        () -> item,
+                        () -> KIND_CLUSTERTASK,
+                        () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
+                        () -> doInstallAction);
+                if (model.getIsClusterTaskView()) {
+                    ((InstallFromHubAction)install).setText("Install as Task");
+                    optionButton = new JBOptionButton(installAsClusterTask, new Action[]{install});
+                } else {
+                    optionButton = new JBOptionButton(install, new Action[]{installAsClusterTask});
+                }
+            } else {
+                optionButton = new JBOptionButton(install, null);
+            }
+            myNameAndButtons.add(optionButton, BorderLayout.EAST);
 
             ResourceData resource = item.getResource();
             List<ResourceVersionData> resourceVersions = model.getVersionsById(resource.getId());

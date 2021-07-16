@@ -31,6 +31,10 @@ public class InstallFromHubAction implements Action {
         this.doInstallAction = doInstallAction;
     }
 
+    public void setText(String text) {
+        this.text = text;
+    }
+
     @Override
     public Object getValue(String key) {
         if (key.equals("Name")) {

@@ -58,7 +58,7 @@ public class TektonHubAction extends TektonAction {
                         .map(ct -> ct.getMetadata().getName())
                         .collect(Collectors.toList());
                 Project project = getEventProject(anActionEvent);
-                HubModel model = new HubModel(project, tkncli, tasks, clusterTasks, element instanceof TasksNode);
+                HubModel model = new HubModel(project, tkncli, tasks, clusterTasks, element instanceof ClusterTasksNode);
                 telemetry.send();
                 UIHelper.executeInUI(() -> {
                     HubDialog wizard = new HubDialog(project, model);

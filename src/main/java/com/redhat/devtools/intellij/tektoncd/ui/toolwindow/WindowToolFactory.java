@@ -68,7 +68,7 @@ public class WindowToolFactory implements ToolWindowFactory {
             new TektonTreeDoubleClickListener(tree);
 
             ((TektonRootNode) structure.getRootElement()).load().whenComplete((tkn, err) -> {
-                HubModel hubModel = new HubModel(project, tkn, new ArrayList<>(), new ArrayList<>(), true);
+                HubModel hubModel = new HubModel(project, tkn, new ArrayList<>(), new ArrayList<>(), false);
 
                 JPanel hubItemsListPanel = new HubItemsListPanelBuilder(hubModel, getDoSelectAction(project, hubModel))
                         .withRecommended()
