@@ -40,7 +40,6 @@ import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemsListPanelBuilder;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import javax.swing.JPanel;
@@ -68,7 +67,7 @@ public class WindowToolFactory implements ToolWindowFactory {
             new TektonTreeDoubleClickListener(tree);
 
             ((TektonRootNode) structure.getRootElement()).load().whenComplete((tkn, err) -> {
-                HubModel hubModel = new HubModel(project, tkn, new ArrayList<>(), new ArrayList<>(), false);
+                HubModel hubModel = new HubModel(project, tkn, false);
 
                 JPanel hubItemsListPanel = new HubItemsListPanelBuilder(hubModel, getDoSelectAction(project, hubModel))
                         .withRecommended()

@@ -49,6 +49,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -79,10 +83,13 @@ public class HubItemsListPanelBuilder {
     private final static String RECOMMENDED = "Recommended";
     private final static String ALL = "All";
     private final static String INSTALLED = "Installed";
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private ScheduledFuture scheduler;
 
     public HubItemsListPanelBuilder(HubModel model, BiConsumer<HubItem, TriConsumer<HubItem, String, String>> doSelectAction) {
         this.model = model;
         this.doSelectAction = doSelectAction;
+        model.registerHubPanelCallback(getHubPanelCallback());
 
         wrapperInnerPanel = new JPanel(new BorderLayout());
         wrapperInnerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE,80));
@@ -190,6 +197,18 @@ public class HubItemsListPanelBuilder {
             public void onDownloadProgress(long bytesRead, long contentLength, boolean done) {
 
             }
+        };
+    }
+
+    private HubPanelCallback getHubPanelCallback() {
+        return () -> {
+            if (scheduler != null && !scheduler.isCancelled() && !scheduler.isDone()) {
+                scheduler.cancel(true);
+            }
+
+            scheduler = executor.schedule(() -> {
+                build(Optional.empty());
+            }, 500, TimeUnit.MILLISECONDS);
         };
     }
 

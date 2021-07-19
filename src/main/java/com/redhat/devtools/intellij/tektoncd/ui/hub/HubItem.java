@@ -86,17 +86,8 @@ public class HubItem {
             bottomCenterPanel.add(kind);
         }
 
-        String labelText = null;
-        if (model.getIsClusterTaskView()) {
-            if (model.getClusterTasksInstalled().contains(resource.getName())) {
-                labelText = "A clusterTask with this name already exists on the cluster.";
-            }
-        } else {
-            if (model.getTasksInstalled().contains(resource.getName())) {
-                labelText = "A task with this name already exists on the cluster.";
-            }
-        }
-        if (labelText != null) {
+        String labelText = getLabelForExistingResource(model, kind, resource.getName());
+        if (!labelText.isEmpty()) {
             JLabel warningNameAlreadyUsed = createCustomizedLabel("", AllIcons.General.Warning, SwingConstants.CENTER,
                     JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + resource.getKind() + " with this name already exists on the cluster.");
             bottomCenterPanel.add(warningNameAlreadyUsed);
@@ -215,6 +206,34 @@ public class HubItem {
             return IconLoader.findIcon("/images/pipeline.svg", TektonTreeStructure.class);
         }
         return null;
+    }
+
+    private String getLabelForExistingResource(HubModel model, String kind, String name) {
+        String labelText = "";
+        switch(kind) {
+            case KIND_TASK: {
+                if (model.getTasksInstalled().stream().anyMatch(pp -> pp.getMetadata().getName().equalsIgnoreCase(name))) {
+                    labelText = "A task with this name already exists on the cluster.";
+                }
+                break;
+            }
+            case KIND_CLUSTERTASK: {
+                if (model.getClusterTasksInstalled().stream().anyMatch(pp -> pp.getMetadata().getName().equalsIgnoreCase(name))) {
+                    labelText = "A clusterTask with this name already exists on the cluster.";
+                }
+                break;
+            }
+            case KIND_PIPELINE: {
+                if (model.getPipelinesInstalled().stream().anyMatch(pp -> pp.getMetadata().getName().equalsIgnoreCase(name))) {
+                    labelText = "A pipeline with this name already exists on the cluster.";
+                }
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        return labelText;
     }
 
     public void updateBottomPanel(JComponent component) {

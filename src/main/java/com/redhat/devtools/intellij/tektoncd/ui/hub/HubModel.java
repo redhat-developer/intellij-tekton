@@ -27,6 +27,11 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
+import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
+import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
+import io.fabric8.tekton.pipeline.v1beta1.Task;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -59,18 +64,32 @@ public class HubModel {
     private Map<String, String> resourcesYaml;
     private Project project;
     private String selected;
-    private List<String> tasksInstalled, clusterTasksInstalled, pipelinesInstalled;
+    private List<HasMetadata> tasksInstalled, clusterTasksInstalled, pipelinesInstalled;
     private boolean isClusterTaskView;
+    private HubPanelCallback hubPanelCallback;
 
-    public HubModel(Project project, Tkn tkn, List<String> tasks, List<String> clusterTasks, boolean isClusterTaskView) {
+    public HubModel(Project project, Tkn tkn, boolean isClusterTaskView) {
         this.allHubItems = new ArrayList<>();
         this.resourcesYaml = new HashMap<>();
         this.tkn = tkn;
-        this.tasksInstalled = tasks;
-        this.clusterTasksInstalled = clusterTasks;
-        this.pipelinesInstalled = new ArrayList<>();
+        this.tasksInstalled = Collections.synchronizedList(new ArrayList<>());
+        this.clusterTasksInstalled = Collections.synchronizedList(new ArrayList<>());
+        this.pipelinesInstalled = Collections.synchronizedList(new ArrayList<>());
         this.project = project;
         this.isClusterTaskView = isClusterTaskView;
+        init();
+    }
+
+    private void init() {
+        try {
+            initWatch();
+        } catch (IOException e) {
+            logger.warn(e.getLocalizedMessage());
+        }
+    }
+
+    public void registerHubPanelCallback(HubPanelCallback hubPanelCallback) {
+        this.hubPanelCallback = hubPanelCallback;
     }
 
     private Future<List<ResourceData>> retrieveAllResources() {
@@ -130,7 +149,7 @@ public class HubModel {
                 Optional<HubItem> hubItem = resourceDataList.stream()
                         .filter(resourceData -> resourceData.getName().equalsIgnoreCase(task.getMetadata().getName()))
                         .map(resourceData -> {
-                            String version = task.getMetadata().getLabels().get(APP_K8S_IO_VERSION);
+                            String version = task.getMetadata().getLabels() != null ? task.getMetadata().getLabels().get(APP_K8S_IO_VERSION) : "";
                             if (!version.isEmpty()) {
                                 return new HubItem(resourceData, task.getKind(), version);
                             } else {
@@ -141,26 +160,37 @@ public class HubModel {
                     items.add(hubItem.get());
                 }
             }
-        } catch (InterruptedException | ExecutionException | IOException e) {
+        } catch (InterruptedException | ExecutionException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
         return items;
     }
 
-    private List<HasMetadata> getAllInstalledHubItems() throws IOException {
+    private List<HasMetadata> getAllInstalledHubItems() {
         List<HasMetadata> items = new ArrayList<>();
-        items.addAll(tkn.getTasks(tkn.getNamespace()).stream()
-                .filter(task -> task.getMetadata().getLabels() != null && task.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
-                .collect(Collectors.toList()));
-        items.addAll(tkn.getClusterTasks().stream()
-                .filter(task -> task.getMetadata().getLabels() != null && task.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
-                .collect(Collectors.toList()));
-        items.addAll(tkn.getPipelineItems(tkn.getNamespace()).stream()
-                .filter(pipeline -> pipeline.getMetadata().getLabels() != null && pipeline.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
-                .collect(Collectors.toList()));
+        items.addAll(tasksInstalled);
+        items.addAll(clusterTasksInstalled);
+        items.addAll(pipelinesInstalled);
         return items;
     }
 
+    private List<Task> getAllInstalledHubTasks() throws IOException {
+        return tkn.getTasks(tkn.getNamespace()).stream()
+                .filter(task -> task.getMetadata().getLabels() != null && task.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
+                .collect(Collectors.toList());
+    }
+
+    private List<ClusterTask> getAllInstalledHubClusterTasks() throws IOException {
+        return tkn.getClusterTasks().stream()
+                .filter(task -> task.getMetadata().getLabels() != null && task.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
+                .collect(Collectors.toList());
+    }
+
+    private List<Pipeline> getAllInstalledHubPipelines() throws IOException {
+        return tkn.getPipelineItems(tkn.getNamespace()).stream()
+                .filter(pipeline -> pipeline.getMetadata().getLabels() != null && pipeline.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
+                .collect(Collectors.toList());
+    }
 
     public void search(String query, List<String> kinds, List<String> tags, ApiCallback<Resources> callback) {
         ResourceApi resApi = new ResourceApi();
@@ -238,11 +268,10 @@ public class HubModel {
     }
 
     private Constants.InstallStatus installTaskFromHub(String name, String kind, String version) throws IOException {
-        boolean taskAlreadyOnCluster = tasksInstalled.contains(name);
+        boolean taskAlreadyOnCluster = tasksInstalled.stream().anyMatch(task -> task.getMetadata().getName().equalsIgnoreCase(name));
         String confirmationMessage = getConfirmationMessage(kind, name, taskAlreadyOnCluster);
         if (DeployHelper.saveTaskOnClusterFromHub(project, name, version, taskAlreadyOnCluster, confirmationMessage)) {
             if (!taskAlreadyOnCluster) {
-                tasksInstalled.add(name);
                 return Constants.InstallStatus.INSTALLED;
             }
             return Constants.InstallStatus.OVERWRITTEN;
@@ -251,7 +280,7 @@ public class HubModel {
     }
 
     private Constants.InstallStatus installClusterTaskFromHub(String name, String kind, String version, String catalog) throws IOException {
-        boolean clusterTaskAlreadyOnCluster = clusterTasksInstalled.contains(name);
+        boolean clusterTaskAlreadyOnCluster = clusterTasksInstalled.stream().anyMatch(task -> task.getMetadata().getName().equalsIgnoreCase(name));;
         String confirmationMessage = getConfirmationMessage(kind, name, clusterTaskAlreadyOnCluster);
         String yamlFromHub = tkn.getTaskYAMLFromHub(name, version);
         ObjectNode yamlObject = YAMLBuilder.convertToObjectNode(yamlFromHub);
@@ -264,7 +293,6 @@ public class HubModel {
         String yamlUpdated = YAMLHelper.JSONToYAML(yamlObject, false);
         if (DeployHelper.saveOnCluster(project, "", yamlUpdated, confirmationMessage, true, false)) {
             if (!clusterTaskAlreadyOnCluster) {
-                clusterTasksInstalled.add(name);
                 return Constants.InstallStatus.INSTALLED;
             }
             return Constants.InstallStatus.OVERWRITTEN;
@@ -273,7 +301,7 @@ public class HubModel {
     }
 
     private Constants.InstallStatus installPipelineFromHub(String name, String kind, String version, String catalog) throws IOException {
-        boolean pipelineAlreadyOnCluster = pipelinesInstalled.contains(name);
+        boolean pipelineAlreadyOnCluster = pipelinesInstalled.stream().anyMatch(pp -> pp.getMetadata().getName().equalsIgnoreCase(name));
         String confirmationMessage = getConfirmationMessage(kind, name, pipelineAlreadyOnCluster);
         String yamlFromHub = tkn.getPipelineYAMLFromHub(name, version);
         ObjectNode yamlObject = YAMLBuilder.convertToObjectNode(yamlFromHub);
@@ -285,7 +313,6 @@ public class HubModel {
         String yamlUpdated = YAMLHelper.JSONToYAML(yamlObject, false);
         if (DeployHelper.saveOnCluster(project, "", yamlUpdated, confirmationMessage, false, false)) {
             if (!pipelineAlreadyOnCluster) {
-                clusterTasksInstalled.add(name);
                 return Constants.InstallStatus.INSTALLED;
             }
             return Constants.InstallStatus.OVERWRITTEN;
@@ -300,12 +327,67 @@ public class HubModel {
         return "Do you want to install the " + kind + " " + name + " on the cluster?";
     }
 
-    public List<String> getTasksInstalled() {
+    private void initWatch() throws IOException {
+        String namespace = tkn.getNamespace();
+        tkn.watchPipelines(namespace, getWatcher());
+        tkn.watchTasks(namespace, getWatcher());
+        tkn.watchClusterTasks(getWatcher());
+    }
+
+    private <T extends HasMetadata> Watcher<T> getWatcher() {
+        return new Watcher<T>() {
+            @Override
+            public void eventReceived(Action action, T resource) {
+                switch (action) {
+                    case ADDED: {
+                        if (resource instanceof Task) {
+                            tasksInstalled.add(resource);
+                        } else if (resource instanceof ClusterTask) {
+                            clusterTasksInstalled.add(resource);
+                        } else if (resource instanceof Pipeline) {
+                            pipelinesInstalled.add(resource);
+                        }
+                        refreshHubPanel();
+                        break;
+                    }
+                    case DELETED: {
+                        if (resource instanceof Task) {
+                            tasksInstalled.removeIf(task -> task.getMetadata().getName().equalsIgnoreCase(resource.getMetadata().getName()));
+                        } else if (resource instanceof ClusterTask) {
+                            clusterTasksInstalled.removeIf(task -> task.getMetadata().getName().equalsIgnoreCase(resource.getMetadata().getName()));
+                        } else if (resource instanceof Pipeline) {
+                            pipelinesInstalled.removeIf(pp -> pp.getMetadata().getName().equalsIgnoreCase(resource.getMetadata().getName()));
+                        }
+                        refreshHubPanel();
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onClose(WatcherException cause) {  }
+        };
+    }
+
+    private void refreshHubPanel() {
+        if (hubPanelCallback != null) {
+            hubPanelCallback.refresh();
+        }
+    }
+
+    public List<HasMetadata> getTasksInstalled() {
         return tasksInstalled;
     }
 
-    public List<String> getClusterTasksInstalled() {
+    public List<HasMetadata> getClusterTasksInstalled() {
         return clusterTasksInstalled;
+    }
+
+    public List<HasMetadata> getPipelinesInstalled() {
+        return pipelinesInstalled;
     }
 
     public Project getProject() {
