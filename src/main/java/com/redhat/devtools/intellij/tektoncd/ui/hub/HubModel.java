@@ -84,11 +84,13 @@ public class HubModel {
     }
 
     private void init() {
-        try {
-            initWatch();
-        } catch (IOException e) {
-            logger.warn(e.getLocalizedMessage());
-        }
+        ExecHelper.submit(() -> {
+            try {
+                initWatch();
+            } catch (IOException e) {
+                logger.warn(e.getLocalizedMessage());
+            }
+        });
     }
 
     public void registerHubPanelCallback(HubPanelCallback hubPanelCallback) {
@@ -150,7 +152,7 @@ public class HubModel {
                     .map(task -> task.getMetadata().getName())
                     .collect(Collectors.toList());
             return retrieveAllResources().get().stream()
-                    .map(resource -> new HubItem(resource))
+                    .map(HubItem::new)
                     .filter(item -> new HubItemScore(languages).compare(item, 0) > 0 && !hubItemsAlreadyInstalled.contains(item.getResource().getName()))
                     .collect(Collectors.toList());
         } catch (InterruptedException | ExecutionException | IOException e) {
@@ -177,9 +179,7 @@ public class HubModel {
                                 return new HubItem(resourceData);
                             }
                         }).findFirst();
-                if(hubItem.isPresent()) {
-                    items.add(hubItem.get());
-                }
+                hubItem.ifPresent(items::add);
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.warn(e.getLocalizedMessage(), e);
@@ -218,7 +218,7 @@ public class HubModel {
                     itemSelected.get().getResource().setVersions(versions);
                 }
             } catch (ApiException e) {
-                e.printStackTrace();
+                logger.warn(e.getLocalizedMessage());
             }
         }
         return versions;

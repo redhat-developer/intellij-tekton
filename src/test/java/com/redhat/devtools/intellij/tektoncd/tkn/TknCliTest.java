@@ -599,4 +599,15 @@ public class TknCliTest {
         }
     }
 
+    @Test
+    public void GetPipelineYAMLFromHub_PipelineAndVersion_Call() throws IOException {
+        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
+        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn(null);
+        String pipeline = "p1";
+        String version = "v1";
+        tkn.getPipelineYAMLFromHub(pipeline, version);
+        exec.verify(() -> ExecHelper.execute(anyString(), anyMap(), eq("hub"), eq("get"), eq("pipeline"), eq(pipeline), eq("--version"), eq(version)));
+        exec.close();
+    }
+
 }

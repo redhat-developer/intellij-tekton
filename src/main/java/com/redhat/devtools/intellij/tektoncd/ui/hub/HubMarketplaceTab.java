@@ -18,7 +18,6 @@ public class HubMarketplaceTab extends HubDialogTab {
 
     public HubMarketplaceTab(HubModel model) {
         super(model);
-
     }
 
     @NotNull

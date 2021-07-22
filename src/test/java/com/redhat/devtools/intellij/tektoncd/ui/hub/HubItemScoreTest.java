@@ -42,6 +42,19 @@ public class HubItemScoreTest {
     }
 
     @Test
+    public void Compare_1HubItemAndValue_VerifyCalculatedScoreWithOnlyName() {
+        Language lang = new Language("First", Collections.emptyList(), 99.0);
+        Language lang2 = new Language("Second", Collections.emptyList(), 1.0);
+        List<Language> languages = Arrays.asList(lang, lang2);
+
+        HubItem hubItem1 = buildHubItem("Second", "", Collections.emptyList());
+
+        HubItemScore hubItemScore = new HubItemScore(languages);
+
+        assertEquals(19, hubItemScore.compare(hubItem1, 1));
+    }
+
+    @Test
     public void Compare_2HubItems_VerifyCalculatedScoreWithAliases() {
         Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0);
         Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0);
@@ -53,6 +66,19 @@ public class HubItemScoreTest {
         HubItemScore hubItemScore = new HubItemScore(languages);
 
         assertEquals(20, hubItemScore.compare(hubItem1, hubItem2));
+    }
+
+    @Test
+    public void Compare_1HubItemAndValue_VerifyCalculatedScoreWithAliases() {
+        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0);
+        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0);
+        List<Language> languages = Arrays.asList(lang, lang2);
+
+        HubItem hubItem1 = buildHubItem("alias1", "", Collections.emptyList());
+
+        HubItemScore hubItemScore = new HubItemScore(languages);
+
+        assertEquals(39, hubItemScore.compare(hubItem1, 1));
     }
 
     @Test
@@ -74,6 +100,21 @@ public class HubItemScoreTest {
     }
 
     @Test
+    public void Compare_1HubItemAndValue_VerifyCalculatedScoreWithFrameworks() {
+        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList());
+        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList());
+        List<Language> languages = Arrays.asList(lang, lang2);
+
+        Tag tag = buildTag("framework1");
+
+        HubItem hubItem1 = buildHubItem("name", "", Arrays.asList(tag));
+
+        HubItemScore hubItemScore = new HubItemScore(languages);
+
+        assertEquals(19, hubItemScore.compare(hubItem1, 1));
+    }
+
+    @Test
     public void Compare_2HubItems_VerifyCalculatedScoreWithDescription() {
         Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList());
         Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList());
@@ -88,6 +129,19 @@ public class HubItemScoreTest {
         HubItemScore hubItemScore = new HubItemScore(languages);
 
         assertEquals(2, hubItemScore.compare(hubItem1, hubItem2));
+    }
+
+    @Test
+    public void Compare_1HubItemAndValue_VerifyCalculatedScoreWithDescription() {
+        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList());
+        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList());
+        List<Language> languages = Arrays.asList(lang, lang2);
+
+        HubItem hubItem1 = buildHubItem("name", "this is the first item for the first language", Collections.emptyList());
+
+        HubItemScore hubItemScore = new HubItemScore(languages);
+
+        assertEquals(11, hubItemScore.compare(hubItem1, 1));
     }
 
     @Test
@@ -119,12 +173,14 @@ public class HubItemScoreTest {
     private HubItem buildHubItem(String name, String description, List<Tag> tags) {
         ResourceData resourceData = mock(ResourceData.class);
         ResourceVersionData resourceVersionData = mock(ResourceVersionData.class);
-        HubItem hubItem = new HubItem(resourceData);
         when(resourceData.getLatestVersion()).thenReturn(resourceVersionData);
+        when(resourceVersionData.getVersion()).thenReturn("v1");
         when(resourceVersionData.getDescription()).thenReturn(description);
         when(resourceData.getName()).thenReturn(name);
+        when(resourceData.getKind()).thenReturn("kind");
         when(resourceData.getTags()).thenReturn(tags);
 
+        HubItem hubItem = new HubItem(resourceData);
         return hubItem;
     }
 }

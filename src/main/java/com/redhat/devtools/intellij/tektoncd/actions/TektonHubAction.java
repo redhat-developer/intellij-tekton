@@ -12,8 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
@@ -35,18 +33,12 @@ public class TektonHubAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "tekton hub");
-        ExecHelper.submit(() -> {
-            ParentableNode element = getElement(selected);
-            Project project = getEventProject(anActionEvent);
-            HubModel model = new HubModel(project, tkncli, element);
-            telemetry.send();
-            UIHelper.executeInUI(() -> {
-                HubDialog wizard = new HubDialog(project, model);
-                wizard.setModal(false);
-                wizard.show();
-                return wizard;
-            });
-        });
-
+        ParentableNode element = getElement(selected);
+        Project project = getEventProject(anActionEvent);
+        HubModel model = new HubModel(project, tkncli, element);
+        telemetry.send();
+        HubDialog wizard = new HubDialog(project, model);
+        wizard.setModal(false);
+        wizard.show();
     }
 }
