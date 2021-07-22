@@ -82,22 +82,13 @@ public interface Tkn {
     List<String> getPersistentVolumeClaim(String namespace);
 
     /**
-     * Return the names of Tekton pipelines for a namespace
-     *
-     * @param namespace the namespace to use
-     * @return the list of pipelines names
-     * @throws IOException if communication errored
-     */
-    List<String> getPipelines(String namespace) throws IOException;
-
-    /**
-     * Return the list of pipelines for a namespace
+     * Return the list of Tekton pipelines for a namespace
      *
      * @param namespace the namespace to use
      * @return the list of pipelines
      * @throws IOException if communication errored
      */
-    List<Pipeline> getPipelineItems(String namespace) throws IOException;
+    List<Pipeline> getPipelines(String namespace) throws IOException;
 
     /**
      * Return the list of pipeline runs for a pipeline

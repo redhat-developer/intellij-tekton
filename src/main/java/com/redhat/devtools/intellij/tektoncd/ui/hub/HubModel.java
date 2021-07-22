@@ -24,6 +24,9 @@ import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -45,6 +48,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,12 +67,11 @@ public class HubModel {
     private List<HubItem> allHubItems;
     private Map<String, String> resourcesYaml;
     private Project project;
-    private String selected;
     private List<HasMetadata> tasksInstalled, clusterTasksInstalled, pipelinesInstalled;
-    private boolean isClusterTaskView;
     private HubPanelCallback hubPanelCallback;
+    private ParentableNode caller;
 
-    public HubModel(Project project, Tkn tkn, boolean isClusterTaskView) {
+    public HubModel(Project project, Tkn tkn, ParentableNode caller) {
         this.allHubItems = new ArrayList<>();
         this.resourcesYaml = new HashMap<>();
         this.tkn = tkn;
@@ -76,7 +79,7 @@ public class HubModel {
         this.clusterTasksInstalled = Collections.synchronizedList(new ArrayList<>());
         this.pipelinesInstalled = Collections.synchronizedList(new ArrayList<>());
         this.project = project;
-        this.isClusterTaskView = isClusterTaskView;
+        this.caller = caller;
         init();
     }
 
@@ -108,18 +111,36 @@ public class HubModel {
 
     public List<HubItem> getAllHubItems() {
         if (allHubItems.isEmpty()) {
-            try {
-                List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
-                allHubItems = retrieveAllResources().get().stream()
-                        .map(resource -> new HubItem(resource))
-                        .sorted(new HubItemScore(languages).reversed())
-                        .collect(Collectors.toList());;
-            } catch (InterruptedException | ExecutionException | IOException e) {
-                logger.warn(e.getLocalizedMessage(), e);
-            }
+            allHubItems = getHubItems(resource -> true);
         }
 
         return allHubItems;
+    }
+
+    private List<HubItem> getHubItems(Predicate<ResourceData> filter) {
+        try {
+            List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
+            return retrieveAllResources().get().stream()
+                    .filter(filter)
+                    .map(HubItem::new)
+                    .sorted(new HubItemScore(languages).reversed())
+                    .collect(Collectors.toList());
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            logger.warn(e.getLocalizedMessage(), e);
+        }
+        return Collections.emptyList();
+    }
+
+    private List<HubItem> getAllHubItemsPerKind(String kind) {
+        return getHubItems(resourceData -> resourceData.getKind().equalsIgnoreCase(kind));
+    }
+
+    public List<HubItem> getAllTasksHubItems() {
+        return getAllHubItemsPerKind(KIND_TASK);
+    }
+
+    public List<HubItem> getAllPipelineHubItems() {
+        return getAllHubItemsPerKind(KIND_PIPELINE);
     }
 
     public List<HubItem> getRecommendedHubItems() {
@@ -174,24 +195,6 @@ public class HubModel {
         return items;
     }
 
-    private List<Task> getAllInstalledHubTasks() throws IOException {
-        return tkn.getTasks(tkn.getNamespace()).stream()
-                .filter(task -> task.getMetadata().getLabels() != null && task.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
-                .collect(Collectors.toList());
-    }
-
-    private List<ClusterTask> getAllInstalledHubClusterTasks() throws IOException {
-        return tkn.getClusterTasks().stream()
-                .filter(task -> task.getMetadata().getLabels() != null && task.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
-                .collect(Collectors.toList());
-    }
-
-    private List<Pipeline> getAllInstalledHubPipelines() throws IOException {
-        return tkn.getPipelineItems(tkn.getNamespace()).stream()
-                .filter(pipeline -> pipeline.getMetadata().getLabels() != null && pipeline.getMetadata().getLabels().containsKey(HUB_CATALOG_TAG))
-                .collect(Collectors.toList());
-    }
-
     public void search(String query, List<String> kinds, List<String> tags, ApiCallback<Resources> callback) {
         ResourceApi resApi = new ResourceApi();
         try {
@@ -199,14 +202,6 @@ public class HubModel {
         } catch (ApiException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
-    }
-
-    public String getSelectedHubItem() {
-        return this.selected;
-    }
-
-    public void setSelectedHubItem(String itemSelected) {
-        this.selected = itemSelected;
     }
 
     public List<ResourceVersionData> getVersionsById(int id) {
@@ -394,6 +389,10 @@ public class HubModel {
         return project;
     }
 
-    public boolean getIsClusterTaskView() { return isClusterTaskView; }
+    public boolean getIsClusterTaskView() { return caller != null && caller instanceof ClusterTasksNode; }
+
+    public boolean getIsPipelineView() {
+        return caller != null && caller instanceof PipelinesNode;
+    }
 
 }

@@ -18,14 +18,18 @@ public class HubMarketplaceTab extends HubDialogTab {
 
     public HubMarketplaceTab(HubModel model) {
         super(model);
+
     }
 
     @NotNull
     @Override
     protected JComponent createContentPanel() {
-        return new HubItemsListPanelBuilder(model, (item, callback) -> myDetailsPage.show(item, callback))
-                .withAll()
-                .build(Optional.empty());
+        HubItemPanelsBoard board = new HubItemPanelsBoard(model, (item, callback) -> myDetailsPage.show(item, callback));
+        if (model.getIsPipelineView()) {
+            return board.withAllPipelines().build(Optional.empty());
+        } else {
+            return board.withAllTasks().build(Optional.empty());
+        }
     }
 
 }

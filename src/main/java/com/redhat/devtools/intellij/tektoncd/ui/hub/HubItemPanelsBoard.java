@@ -10,8 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
-import com.google.common.base.Strings;
-import com.intellij.icons.AllIcons;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.ui.Divider;
 import com.intellij.ui.DocumentAdapter;
@@ -40,8 +38,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,14 +50,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,7 +65,7 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_BG_COLOR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
 
-public class HubItemsListPanelBuilder {
+public class HubItemPanelsBoard {
 
     private HubModel model;
     private List<JPanel> innerPanels = new ArrayList<>();
@@ -82,11 +76,14 @@ public class HubItemsListPanelBuilder {
     private BiConsumer<HubItem, TriConsumer<HubItem, String, String>> doSelectAction;
     private final static String RECOMMENDED = "Recommended";
     private final static String ALL = "All";
+    private final static String ALL_TASKS = "All Tasks";
+    private final static String ALL_PIPELINES = "All Pipelines";
     private final static String INSTALLED = "Installed";
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private ScheduledFuture scheduler;
+    private HubItemPanel selected;
 
-    public HubItemsListPanelBuilder(HubModel model, BiConsumer<HubItem, TriConsumer<HubItem, String, String>> doSelectAction) {
+    public HubItemPanelsBoard(HubModel model, BiConsumer<HubItem, TriConsumer<HubItem, String, String>> doSelectAction) {
         this.model = model;
         this.doSelectAction = doSelectAction;
         model.registerHubPanelCallback(getHubPanelCallback());
@@ -104,19 +101,31 @@ public class HubItemsListPanelBuilder {
         contentPanel.add(scrollContentPanel);
     }
 
-    public HubItemsListPanelBuilder withInstalled() {
+    public HubModel getModel() {
+        return model;
+    }
+
+    public HubItemPanelsBoard withInstalled() {
         return with(INSTALLED);
     }
 
-    public HubItemsListPanelBuilder withRecommended() {
+    public HubItemPanelsBoard withRecommended() {
         return with(RECOMMENDED);
     }
 
-    public HubItemsListPanelBuilder withAll() {
+    public HubItemPanelsBoard withAllTasks() {
+        return with(ALL_TASKS);
+    }
+
+    public HubItemPanelsBoard withAllPipelines() {
+        return with(ALL_PIPELINES);
+    }
+
+    public HubItemPanelsBoard withAll() {
         return with(ALL);
     }
 
-    private HubItemsListPanelBuilder with(String panel) {
+    private HubItemPanelsBoard with(String panel) {
         JPanel hubItemsPanel = buildBoxLayoutPanel(panel);
         innerPanels.add(hubItemsPanel);
         return this;
@@ -157,7 +166,7 @@ public class HubItemsListPanelBuilder {
         StatusText emptyText = mySearchTextField.getTextEditor().getEmptyText();
         emptyText.appendText(text, new SimpleTextAttributes(0, GRAY_COLOR));
 
-        HubItemsListPanelBuilder self = this;
+        HubItemPanelsBoard self = this;
 
         mySearchTextField.getTextEditor().getDocument().addDocumentListener(new DocumentAdapter() {
             protected void textChanged(@NotNull DocumentEvent e) {
@@ -212,7 +221,7 @@ public class HubItemsListPanelBuilder {
         };
     }
 
-    private void updateDetailsPanel(HubItem item) {
+    public void openItemDetailsPanel(HubItem item) {
         doSelectAction.accept(item, getInstallCallback());
     }
 
@@ -226,6 +235,10 @@ public class HubItemsListPanelBuilder {
             for (JPanel innerPanel : innerPanels) {
                 if (innerPanel.getName().equals(ALL)) {
                     fillPanel(innerPanel, model.getAllHubItems());
+                } else if (innerPanel.getName().equals(ALL_PIPELINES)) {
+                    fillPanel(innerPanel, model.getAllPipelineHubItems());
+                } else if (innerPanel.getName().equalsIgnoreCase(ALL_TASKS)) {
+                    fillPanel(innerPanel, model.getAllTasksHubItems());
                 } else if (innerPanel.getName().equals(INSTALLED)) {
                     fillPanel(innerPanel, model.getInstalledHubItems(), null);
                 } else if (innerPanel.getName().equals(RECOMMENDED)) {
@@ -244,35 +257,24 @@ public class HubItemsListPanelBuilder {
 
     private void fillPanel(JPanel panel, List<HubItem> items, TriConsumer<HubItem, String, String> installCallback) {
         panel.removeAll();
-        for (HubItem item: items) {
-            Consumer<HubItem> consumer = resource -> updateDetailsPanel(resource);
-            JPanel itemAsPanel = item.createPanel(model, consumer, installCallback);
-            itemAsPanel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    String old = model.getSelectedHubItem();
-                    if (Strings.isNullOrEmpty(old) || old != item.getResource().getName()) {
-                        model.setSelectedHubItem(item.getResource().getName());
-                        if (!Strings.isNullOrEmpty(old)) {
-                            Optional<HubItem> oldItem = items.stream().filter(item -> item.getResource().getName().equalsIgnoreCase(old)).findFirst();
-                            if (oldItem.isPresent()) {
-                                oldItem.get().repaint(false);
-                            }
-                        }
-                        item.repaint(true);
-                        if (consumer != null) {
-                            consumer.accept(item);
-                        }
-                    }
-                }
-            });
-            panel.add(itemAsPanel);
-        }
         if (items.isEmpty()) {
             panel.add(buildEmptyTextPanel());
+        } else {
+            for (HubItem item : items) {
+                HubItemPanel hubItemPanel = new HubItemPanel(item, this, installCallback);
+                panel.add(hubItemPanel.build());
+            }
         }
+
         Optional<Component> label = Arrays.stream(panel.getParent().getComponents()).filter(comp -> comp instanceof JLabel).findFirst();
         label.ifPresent(component -> component.setName(panel.getName() + " (" + items.size() + ")"));
+    }
+
+    public void updateActiveHubItemPanel(HubItemPanel panel) {
+        if (selected != null && !selected.getHubItem().getResource().getName().equalsIgnoreCase(panel.getHubItem().getResource().getName())) {
+            selected.setActive(false);
+        }
+        selected = panel;
     }
 
     private void buildInnerStructure(boolean useUnclassifiedPanel) {
@@ -361,9 +363,7 @@ public class HubItemsListPanelBuilder {
     }
 
     private TriConsumer<HubItem, String, String> getInstallCallback() {
-        return (hubItem, kind, version) -> {
-            installHubItem(hubItem, kind, version);
-        };
+        return this::installHubItem;
     }
 
     private void installHubItem(HubItem hubItem, String kindToBeSaved, String version) {
@@ -373,11 +373,6 @@ public class HubItemsListPanelBuilder {
             try {
                 Constants.InstallStatus installed = model.installHubItem(resource.getName(), kindToBeSaved, version, resource.getCatalog().getName());
                 UIHelper.executeInUI(() -> {
-                    if (installed == Constants.InstallStatus.INSTALLED) {
-                        JLabel warningNameAlreadyUsed = new JLabel("", AllIcons.General.Warning, SwingConstants.CENTER);
-                        warningNameAlreadyUsed.setToolTipText("A " + kindToBeSaved + " with this name already exists on the cluster.");
-                        hubItem.updateBottomPanel(warningNameAlreadyUsed);
-                    }
                     if (installed != Constants.InstallStatus.ERROR) {
                         NotificationHelper.notify(model.getProject(), "Save Successful", resource.getKind() + " " + resource.getName() + " has been saved!", NotificationType.INFORMATION, true);
                     }

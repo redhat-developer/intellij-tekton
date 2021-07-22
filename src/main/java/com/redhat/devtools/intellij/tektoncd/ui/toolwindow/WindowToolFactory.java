@@ -36,7 +36,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDetailsDialog;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItem;
-import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemsListPanelBuilder;
+import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemPanelsBoard;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -67,9 +67,9 @@ public class WindowToolFactory implements ToolWindowFactory {
             new TektonTreeDoubleClickListener(tree);
 
             ((TektonRootNode) structure.getRootElement()).load().whenComplete((tkn, err) -> {
-                HubModel hubModel = new HubModel(project, tkn, false);
+                HubModel hubModel = new HubModel(project, tkn, null);
 
-                JPanel hubItemsListPanel = new HubItemsListPanelBuilder(hubModel, getDoSelectAction(project, hubModel))
+                JPanel hubItemsListPanel = new HubItemPanelsBoard(hubModel, getDoSelectAction(project, hubModel))
                         .withRecommended()
                         .withInstalled()
                         .build(Optional.empty());

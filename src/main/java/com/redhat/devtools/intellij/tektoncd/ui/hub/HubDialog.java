@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.util.ui.JBDimension;
+import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.JComponent;

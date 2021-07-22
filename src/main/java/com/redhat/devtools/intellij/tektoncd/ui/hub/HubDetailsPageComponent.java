@@ -93,7 +93,6 @@ public class HubDetailsPageComponent extends MultiPanel {
     private JBPanelWithEmptyText myEmptyPanel;
     private JEditorPane myTopDescription;
     private HubModel model;
-    private HubItem item;
     private TriConsumer<HubItem, String, String> doInstallAction;
 
     public HubDetailsPageComponent(HubModel model) {
@@ -101,10 +100,6 @@ public class HubDetailsPageComponent extends MultiPanel {
         createDetailsPanel();
         createEmptyPanel();
         select(1, true);
-    }
-
-    public void setItem(HubItem item) {
-        this.item = item;
     }
 
     public void setDoInstallAction(TriConsumer<HubItem, String, String> doInstallAction) {
@@ -152,12 +147,9 @@ public class HubDetailsPageComponent extends MultiPanel {
         myNameComponent = new JLabel();
         myNameComponent.setFont(myNameComponent.getFont().deriveFont(Font.BOLD, 25));
 
-        //JBOptionButton optionButton;
-
         myNameAndButtons = new JPanel(new BorderLayout());
         myNameAndButtons.setBackground(MAIN_BG_COLOR);
         myNameAndButtons.add(myNameComponent, BorderLayout.CENTER);
-       // myNameAndButtons.add(optionButton, BorderLayout.EAST);
 
         centerPanel.add(myNameAndButtons, VerticalLayout.FILL_HORIZONTAL);
 
@@ -304,7 +296,6 @@ public class HubDetailsPageComponent extends MultiPanel {
         if (item == null) {
             select(1, true);
         } else {
-            setItem(item);
             setDoInstallAction(doInstallAction);
 
             Action install = new InstallFromHubAction("Install",
@@ -412,7 +403,7 @@ public class HubDetailsPageComponent extends MultiPanel {
 
     private void updateEditor(String item, JEditorPane editor, String content) {
         UIHelper.executeInUI(() -> {
-            if (item != null && item.equalsIgnoreCase(model.getSelectedHubItem())) {
+            if (item != null) {
                 try {
                     editor.setText(content);
                     editor.setCaretPosition(0);

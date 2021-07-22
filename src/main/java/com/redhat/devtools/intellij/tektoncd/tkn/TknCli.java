@@ -182,17 +182,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getPipelines(String namespace) throws IOException {
-        try {
-            PipelineList pipelines = client.adapt(TektonClient.class).v1beta1().pipelines().inNamespace(namespace).list();
-            return pipelines.getItems().stream().map(pipeline -> pipeline.getMetadata().getName()).collect(Collectors.toList());
-        } catch (KubernetesClientException e) {
-            throw new IOException(e);
-        }
-    }
-
-    @Override
-    public List<Pipeline> getPipelineItems(String namespace) throws IOException {
+    public List<Pipeline> getPipelines(String namespace) throws IOException {
         try {
             PipelineList pipelines = client.adapt(TektonClient.class).v1beta1().pipelines().inNamespace(namespace).list();
             return pipelines.getItems();
