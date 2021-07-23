@@ -35,6 +35,7 @@ import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.actions.InstallFromHubAction;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
+import com.redhat.devtools.intellij.tektoncd.hub.model.Tag;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Desktop;
@@ -93,17 +94,12 @@ public class HubDetailsPageComponent extends MultiPanel {
     private JBPanelWithEmptyText myEmptyPanel;
     private JEditorPane myTopDescription;
     private HubModel model;
-    private TriConsumer<HubItem, String, String> doInstallAction;
 
     public HubDetailsPageComponent(HubModel model) {
         this.model = model;
         createDetailsPanel();
         createEmptyPanel();
         select(1, true);
-    }
-
-    public void setDoInstallAction(TriConsumer<HubItem, String, String> doInstallAction) {
-        this.doInstallAction = doInstallAction;
     }
 
     private void createEmptyPanel() {
@@ -296,55 +292,16 @@ public class HubDetailsPageComponent extends MultiPanel {
         if (item == null) {
             select(1, true);
         } else {
-            setDoInstallAction(doInstallAction);
-
-            Action install = new InstallFromHubAction("Install",
-                    () -> item,
-                    () -> item.getResource().getKind(),
-                    () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
-                    () -> doInstallAction);
-
-            if (item.getResource().getKind().equalsIgnoreCase(KIND_TASK)) {
-                Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
-                        () -> item,
-                        () -> KIND_CLUSTERTASK,
-                        () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
-                        () -> doInstallAction);
-                if (model.getIsClusterTaskView()) {
-                    ((InstallFromHubAction)install).setText("Install as Task");
-                    optionButton = new JBOptionButton(installAsClusterTask, new Action[]{install});
-                } else {
-                    optionButton = new JBOptionButton(install, new Action[]{installAsClusterTask});
-                }
-            } else {
-                optionButton = new JBOptionButton(install, null);
-            }
-            myNameAndButtons.add(optionButton, BorderLayout.EAST);
-
             ResourceData resource = item.getResource();
-            List<ResourceVersionData> resourceVersions = model.getVersionsById(resource.getId());
-            Optional<ResourceVersionData> resourceVersion = resourceVersions.stream()
-                    .filter(res -> res.getVersion().equalsIgnoreCase(item.getVersion())).findFirst();
-            if (!resourceVersion.isPresent()) {
+            ResourceVersionData resourceVersionData = getHubItemResourceVersionData(item);
+            if (resourceVersionData == null) {
                 return;
             }
 
-            ResourceVersionData resourceVersionData = resourceVersion.get();
-
-            //edit all panel
-            String nameItem = Strings.isNullOrEmpty(resourceVersionData.getDisplayName()) ? resource.getName() : resourceVersionData.getDisplayName();
-            myNameComponent.setText(nameItem);
-
-            versionsCmb.removeAllItems();
-            resourceVersions.forEach(version -> {
-                version.setDisplayName(item.getResource().getName());
-                versionsCmb.addItem(version);
-            });
-            versionsCmb.setSelectedItem(resourceVersion.get());
-
+            setInstallButtons(item, doInstallAction);
+            setNameLabel(resourceVersionData, resource.getName());
+            fillVersionsCombo(resource, resourceVersionData);
             myRating.setText(resource.getRating().toString());
-            String description = Strings.isNullOrEmpty(resourceVersionData.getDescription()) ? resource.getLatestVersion().getDescription() : resourceVersionData.getDescription();
-            myDetailsComponent.setText(description.replace("\n", "<br>") + "<br><br>Tags:<br>" + resource.getTags().stream().map(tag -> tag.getName()).collect(Collectors.joining(", ")));
             myHomePage.show(resource.getKind() + " Homepage", () -> {
                 try {
                     Desktop.getDesktop().browse(resourceVersionData.getWebURL());
@@ -352,15 +309,65 @@ public class HubDetailsPageComponent extends MultiPanel {
                     logger.warn(e.getLocalizedMessage(), e);
                 }
             });
-
-
-            description = description.indexOf("\n") > -1 ? description.substring(0, description.indexOf("\n")) : description;
-            myTopDescription.setText(description);
-
-            loadBottomTabs(item.getResource().getName(), resourceVersionData.getRawURL());
+            setDetailsPanel(resource, resourceVersionData);
+            loadBottomTabs(resource.getName(), resourceVersionData.getRawURL());
 
             select(0, true);
         }
+    }
+
+    private void setDetailsPanel(ResourceData resource, ResourceVersionData resourceVersionData) {
+        String description = Strings.isNullOrEmpty(resourceVersionData.getDescription()) ? resource.getLatestVersion().getDescription() : resourceVersionData.getDescription();
+        myDetailsComponent.setText(description.replace("\n", "<br>") + "<br><br>Tags:<br>" + resource.getTags().stream().map(Tag::getName).collect(Collectors.joining(", ")));
+        description = description.contains("\n") ? description.substring(0, description.indexOf("\n")) : description;
+        myTopDescription.setText(description);
+    }
+
+    private void fillVersionsCombo(ResourceData resource, ResourceVersionData resourceVersionData) {
+        List<ResourceVersionData> resourceVersions = model.getVersionsById(resource.getId());
+        versionsCmb.removeAllItems();
+        resourceVersions.forEach(version -> {
+            version.setDisplayName(resource.getName());
+            versionsCmb.addItem(version);
+        });
+        versionsCmb.setSelectedItem(resourceVersionData);
+    }
+
+    private void setNameLabel(ResourceVersionData resourceVersionData, String defaultName) {
+        String nameItem = Strings.isNullOrEmpty(resourceVersionData.getDisplayName()) ? defaultName : resourceVersionData.getDisplayName();
+        myNameComponent.setText(nameItem);
+    }
+
+    private ResourceVersionData getHubItemResourceVersionData(HubItem item) {
+        List<ResourceVersionData> resourceVersions = model.getVersionsById(item.getResource().getId());
+        Optional<ResourceVersionData> resourceVersion = resourceVersions.stream()
+                .filter(res -> res.getVersion().equalsIgnoreCase(item.getVersion())).findFirst();
+        return resourceVersion.orElse(null);
+    }
+
+    private void setInstallButtons(HubItem item, TriConsumer<HubItem, String, String> doInstallAction) {
+        Action install = new InstallFromHubAction("Install",
+                () -> item,
+                () -> item.getResource().getKind(),
+                () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
+                () -> doInstallAction);
+
+        if (item.getResource().getKind().equalsIgnoreCase(KIND_TASK)) {
+            Action installAsClusterTask = new InstallFromHubAction("Install as ClusterTask",
+                    () -> item,
+                    () -> KIND_CLUSTERTASK,
+                    () -> ((ResourceVersionData)versionsCmb.getSelectedItem()).getVersion(),
+                    () -> doInstallAction);
+            if (model.getIsClusterTaskView()) {
+                ((InstallFromHubAction)install).setText("Install as Task");
+                optionButton = new JBOptionButton(installAsClusterTask, new Action[]{install});
+            } else {
+                optionButton = new JBOptionButton(install, new Action[]{installAsClusterTask});
+            }
+        } else {
+            optionButton = new JBOptionButton(install, null);
+        }
+        myNameAndButtons.add(optionButton, BorderLayout.EAST);
     }
 
     private void loadBottomTabs(String item, URI rawURL) {
