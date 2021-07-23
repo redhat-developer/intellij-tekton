@@ -229,25 +229,36 @@ public class HubItemPanelsBoard {
         wrapperInnerPanel.removeAll();
         boolean showUnclassifiedItems = !mySearchTextField.getTextEditor().getText().isEmpty();
         buildInnerStructure(showUnclassifiedItems);
-        if (showUnclassifiedItems) {
-            fillPanel(unclassifiedPanel, unclassifiedItems.isPresent() ? unclassifiedItems.get() : Collections.emptyList());
-        } else {
-            for (JPanel innerPanel : innerPanels) {
-                if (innerPanel.getName().equals(ALL)) {
-                    fillPanel(innerPanel, model.getAllHubItems());
-                } else if (innerPanel.getName().equals(ALL_PIPELINES)) {
-                    fillPanel(innerPanel, model.getAllPipelineHubItems());
-                } else if (innerPanel.getName().equalsIgnoreCase(ALL_TASKS)) {
-                    fillPanel(innerPanel, model.getAllTasksHubItems());
-                } else if (innerPanel.getName().equals(INSTALLED)) {
-                    fillPanel(innerPanel, model.getInstalledHubItems(), null);
-                } else if (innerPanel.getName().equals(RECOMMENDED)) {
-                    fillPanel(innerPanel, model.getRecommendedHubItems());
+
+        ExecHelper.submit(() -> {
+            if (showUnclassifiedItems) {
+                UIHelper.executeInUI(() -> fillPanel(unclassifiedPanel, unclassifiedItems.orElse(Collections.emptyList())));
+            } else {
+                for (JPanel innerPanel : innerPanels) {
+                    if (innerPanel.getName().equals(ALL)) {
+                        List<HubItem> hubItems = model.getAllHubItems();;
+                        UIHelper.executeInUI(() -> fillPanel(innerPanel, hubItems));
+                    } else if (innerPanel.getName().equals(ALL_PIPELINES)) {
+                        List<HubItem> hubItems = model.getAllPipelineHubItems();
+                        UIHelper.executeInUI(() -> fillPanel(innerPanel, hubItems));
+                    } else if (innerPanel.getName().equalsIgnoreCase(ALL_TASKS)) {
+                        List<HubItem> hubItems = model.getAllTaskHubItems();
+                        UIHelper.executeInUI(() -> fillPanel(innerPanel, hubItems));
+                    } else if (innerPanel.getName().equals(INSTALLED)) {
+                        List<HubItem> hubItems = model.getInstalledHubItems();
+                        UIHelper.executeInUI(() -> fillPanel(innerPanel, hubItems, null));
+                    } else if (innerPanel.getName().equals(RECOMMENDED)) {
+                        List<HubItem> hubItems = model.getRecommendedHubItems();
+                        UIHelper.executeInUI(() -> fillPanel(innerPanel, hubItems));
+                    }
                 }
             }
-        }
-        wrapperInnerPanel.revalidate();
-        wrapperInnerPanel.repaint();
+            UIHelper.executeInUI(() -> {
+                wrapperInnerPanel.revalidate();
+                wrapperInnerPanel.repaint();
+            });
+        });
+
         return contentPanel;
     }
 

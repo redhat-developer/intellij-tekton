@@ -45,9 +45,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -97,18 +94,15 @@ public class HubModel {
         this.hubPanelCallback = hubPanelCallback;
     }
 
-    private Future<List<ResourceData>> retrieveAllResources() {
-        CompletableFuture<List<ResourceData>> completableFuture = new CompletableFuture<>();
-        ExecHelper.submit(() -> {
+    private List<ResourceData> retrieveAllResources() {
+        try {
             ResourceApi resApi = new ResourceApi();
-            try {
-                Resources resources = resApi.resourceList(500);
-                completableFuture.complete(resources.getData());
-            } catch (ApiException e) {
-                logger.warn(e.getLocalizedMessage(), e);
-            }
-        });
-        return completableFuture;
+            Resources resources = resApi.resourceList(500);
+            return resources.getData();
+        } catch (ApiException e) {
+            logger.warn(e.getLocalizedMessage(), e);
+        }
+        return Collections.emptyList();
     }
 
     public List<HubItem> getAllHubItems() {
@@ -122,12 +116,12 @@ public class HubModel {
     private List<HubItem> getHubItems(Predicate<ResourceData> filter) {
         try {
             List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
-            return retrieveAllResources().get().stream()
+            return retrieveAllResources().stream()
                     .filter(filter)
                     .map(HubItem::new)
                     .sorted(new HubItemScore(languages).reversed())
                     .collect(Collectors.toList());
-        } catch (InterruptedException | ExecutionException | IOException e) {
+        } catch (IOException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
         return Collections.emptyList();
@@ -137,7 +131,7 @@ public class HubModel {
         return getHubItems(resourceData -> resourceData.getKind().equalsIgnoreCase(kind));
     }
 
-    public List<HubItem> getAllTasksHubItems() {
+    public List<HubItem> getAllTaskHubItems() {
         return getAllHubItemsPerKind(KIND_TASK);
     }
 
@@ -151,11 +145,11 @@ public class HubModel {
             List<String> hubItemsAlreadyInstalled = getAllInstalledHubItems().stream()
                     .map(task -> task.getMetadata().getName())
                     .collect(Collectors.toList());
-            return retrieveAllResources().get().stream()
+            return retrieveAllResources().stream()
                     .map(HubItem::new)
                     .filter(item -> new HubItemScore(languages).compare(item, 0) > 0 && !hubItemsAlreadyInstalled.contains(item.getResource().getName()))
                     .collect(Collectors.toList());
-        } catch (InterruptedException | ExecutionException | IOException e) {
+        } catch (IOException e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
 
@@ -164,25 +158,21 @@ public class HubModel {
 
     public List<HubItem> getInstalledHubItems() {
         List<HubItem> items = new ArrayList<>();
-        try {
-            List<HasMetadata> hubItemsAlreadyInstalled = getAllInstalledHubItems();
-            List<ResourceData> resourceDataList = retrieveAllResources().get();
+        List<HasMetadata> hubItemsAlreadyInstalled = getAllInstalledHubItems();
+        List<ResourceData> resourceDataList = retrieveAllResources();
 
-            for (HasMetadata task: hubItemsAlreadyInstalled) {
-                Optional<HubItem> hubItem = resourceDataList.stream()
-                        .filter(resourceData -> resourceData.getName().equalsIgnoreCase(task.getMetadata().getName()))
-                        .map(resourceData -> {
-                            String version = task.getMetadata().getLabels() != null ? task.getMetadata().getLabels().get(APP_K8S_IO_VERSION) : "";
-                            if (!version.isEmpty()) {
-                                return new HubItem(resourceData, task.getKind(), version);
-                            } else {
-                                return new HubItem(resourceData);
-                            }
-                        }).findFirst();
-                hubItem.ifPresent(items::add);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn(e.getLocalizedMessage(), e);
+        for (HasMetadata task: hubItemsAlreadyInstalled) {
+            Optional<HubItem> hubItem = resourceDataList.stream()
+                    .filter(resourceData -> resourceData.getName().equalsIgnoreCase(task.getMetadata().getName()))
+                    .map(resourceData -> {
+                        String version = task.getMetadata().getLabels() != null ? task.getMetadata().getLabels().get(APP_K8S_IO_VERSION) : "";
+                        if (!version.isEmpty()) {
+                            return new HubItem(resourceData, task.getKind(), version);
+                        } else {
+                            return new HubItem(resourceData);
+                        }
+                    }).findFirst();
+            hubItem.ifPresent(items::add);
         }
         return items;
     }
@@ -206,7 +196,7 @@ public class HubModel {
 
     public List<ResourceVersionData> getVersionsById(int id) {
         List<ResourceVersionData> versions = new ArrayList<>();
-        Optional<HubItem> itemSelected = allHubItems.stream().filter(item -> item.getResource().getId() == id).findFirst();
+        Optional<HubItem> itemSelected = getAllHubItems().stream().filter(item -> item.getResource().getId() == id).findFirst();
         if (itemSelected.isPresent()) {
             versions = itemSelected.get().getResource().getVersions();
         }
