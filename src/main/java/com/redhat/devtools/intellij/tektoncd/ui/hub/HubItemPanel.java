@@ -26,6 +26,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import javax.swing.Action;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -75,6 +76,10 @@ public class HubItemPanel {
         if (leftComponent != null) {
             parent.add(leftComponent, BorderLayout.LINE_START);
         }
+        if (doInstallAction != null) {
+            JPanel installOptionsButton = createInstallOptionBox();
+            parent.add(installOptionsButton, BorderLayout.LINE_END);
+        }
 
         parent.addMouseListener(getMouseAdapter(this));
 
@@ -94,7 +99,7 @@ public class HubItemPanel {
 
     private JComponent createCenterSideComponent() {
         Font defaultFont = (new JLabel()).getFont();
-        JLabel nameHubItem = createCustomizedLabel(this.hubItem.getResource().getName(), null, -1, JBUI.Borders.empty(2, 5, 1, 2), null, null, defaultFont.deriveFont(Font.BOLD), "");
+        JLabel nameHubItem = createCustomizedLabel(this.hubItem.getResource().getName(), null, -1, JBUI.Borders.empty(0, 5, 0, 2), null, null, defaultFont.deriveFont(Font.BOLD), "");
 
         JPanel bottomCenterPanel = createBottomComponent();
 
@@ -102,11 +107,6 @@ public class HubItemPanel {
         panel.setBackground(MAIN_BG_COLOR);
         panel.add(nameHubItem, BorderLayout.CENTER);
         panel.add(bottomCenterPanel, BorderLayout.PAGE_END);
-
-        if (doInstallAction != null) {
-            JBOptionButton installOptionsButton = createInstallOptionButton();
-            panel.add(installOptionsButton, BorderLayout.LINE_END);
-        }
 
         return panel;
     }
@@ -117,23 +117,23 @@ public class HubItemPanel {
         bottomCenterPanel.setBackground(MAIN_BG_COLOR);
 
         JLabel lblVersion = createCustomizedLabel("v. " + hubItem.getVersion(), null, -1,
-                JBUI.Borders.empty(0, 0, 1, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
+                JBUI.Borders.emptyRight(5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
         bottomCenterPanel.add(lblVersion);
 
         JLabel rating = createCustomizedLabel(hubItem.getResource().getRating().toString(), AllIcons.Plugins.Rating, SwingConstants.RIGHT,
-                JBUI.Borders.empty(0, 5, 1, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
+                JBUI.Borders.empty(0, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
         bottomCenterPanel.add(rating);
 
         Icon kindIcon = getIconByKind(hubItem.getKind());
         if (kindIcon != null) {
             JLabel kind = createCustomizedLabel("", kindIcon, SwingConstants.LEFT,
-                    JBUI.Borders.empty(0, 5, 1, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, hubItem.getResource().getKind());
+                    JBUI.Borders.empty(0, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, hubItem.getResource().getKind());
             bottomCenterPanel.add(kind);
         }
         String labelText = getLabelForExistingResource();
         if (!labelText.isEmpty()) {
             JLabel warningNameAlreadyUsed = createCustomizedLabel("", AllIcons.General.Warning, SwingConstants.CENTER,
-                    JBUI.Borders.empty(0, 5, 1, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + hubItem.getResource().getKind() + " with this name already exists on the cluster.");
+                    JBUI.Borders.empty(0, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + hubItem.getResource().getKind() + " with this name already exists on the cluster.");
             bottomCenterPanel.add(warningNameAlreadyUsed);
         }
         return bottomCenterPanel;
@@ -147,9 +147,21 @@ public class HubItemPanel {
         return null;
     }
 
+    private JPanel createInstallOptionBox() {
+        JBOptionButton installOptionsButton = createInstallOptionButton();
+        JPanel verticalBox = new JPanel();
+        verticalBox.setLayout(new BoxLayout(verticalBox, BoxLayout.Y_AXIS));
+        verticalBox.setBackground(MAIN_BG_COLOR);
+        verticalBox.add(installOptionsButton);
+        JPanel hackPanel = new JPanel(new BorderLayout());
+        hackPanel.setBackground(MAIN_BG_COLOR);
+        verticalBox.add(hackPanel); // hack to push components to the top
+        return verticalBox;
+    }
+
     private JBOptionButton createInstallOptionButton() {
         JBOptionButton optionButton;
-        Action install = new InstallFromHubAction("Install",
+        InstallFromHubAction install = new InstallFromHubAction("Install",
                 () -> hubItem,
                 () -> hubItem.getResource().getKind(),
                 () -> hubItem.getVersion(),
@@ -162,7 +174,7 @@ public class HubItemPanel {
                     () -> hubItem.getVersion(),
                     () -> doInstallAction);
             if (model.getIsClusterTaskView()) {
-                ((InstallFromHubAction)install).setText("Install as Task");
+                install.setText("Install as Task");
                 optionButton = new JBOptionButton(installAsClusterTask, new Action[]{install});
             } else {
                 optionButton = new JBOptionButton(install, new Action[]{installAsClusterTask});
@@ -170,6 +182,7 @@ public class HubItemPanel {
         } else {
             optionButton = new JBOptionButton(install, null);
         }
+        optionButton.setPreferredSize(new Dimension(110, 30));
         return optionButton;
     }
 

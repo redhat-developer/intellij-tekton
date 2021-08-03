@@ -136,6 +136,7 @@ public class HubItemPanelsBoard {
         hubItemsPanel.setName(panel);
         hubItemsPanel.setLayout(new BoxLayout(hubItemsPanel, 1));
         hubItemsPanel.setBackground(MAIN_BG_COLOR);
+        hubItemsPanel.setBorder(JBUI.Borders.emptyTop(5));
         return hubItemsPanel;
     }
 
@@ -304,6 +305,7 @@ public class HubItemPanelsBoard {
                 case 1: {
                     innerPanel = buildPanel();
                     innerPanel.add(buildLabel(innerPanels.get(0).getName()), BorderLayout.NORTH);
+                    innerPanels.get(0).setBorder(JBUI.Borders.emptyTop(5));
                     innerPanel.add(innerPanels.get(0), BorderLayout.CENTER);
                     break;
                 }
@@ -323,6 +325,7 @@ public class HubItemPanelsBoard {
         for (JPanel innerPanel: innerPanels) {
             JComponent secondComponent  = buildPanel();
             secondComponent.add(buildLabel(innerPanel.getName()), BorderLayout.NORTH);
+            innerPanel.setBorder(JBUI.Borders.emptyTop(5));
             secondComponent.add(innerPanel, BorderLayout.CENTER);
             if (firstComponent != null) {
                 firstComponent = buildSplitter(firstComponent, secondComponent);
