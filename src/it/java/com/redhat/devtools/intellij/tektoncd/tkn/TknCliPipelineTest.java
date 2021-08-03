@@ -37,11 +37,11 @@ public class TknCliPipelineTest extends TknCliTest {
         String pipelineConfig = TestUtils.load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
         TestUtils.saveResource(tkn, pipelineConfig, NAMESPACE, "pipelines");
         // verify pipeline has been created
-        List<String> pipelines = tkn.getPipelines(NAMESPACE);
+        List<String> pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(pipelines.contains(PIPELINE_NAME));
         // clean up and verify cleaning succeed
         tkn.deletePipelines(NAMESPACE, pipelines, false);
-        pipelines = tkn.getPipelines(NAMESPACE);
+        pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
         assertFalse(pipelines.contains(PIPELINE_NAME));
     }
 
@@ -51,14 +51,14 @@ public class TknCliPipelineTest extends TknCliTest {
         String pipelineConfig = TestUtils.load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
         TestUtils.saveResource(tkn, pipelineConfig, NAMESPACE, "pipelines");
         // verify pipeline has been created
-        List<String> pipelines = tkn.getPipelines(NAMESPACE);
+        List<String> pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
         assertTrue(pipelines.contains(PIPELINE_NAME));
         // get YAML from cluster and verify is the same uploaded
         String resourceBodyFromCluster = tkn.getPipelineYAML(NAMESPACE, PIPELINE_NAME);
         assertEquals(TestUtils.getSpecFromResource(pipelineConfig), TestUtils.getSpecFromResource(resourceBodyFromCluster));
         // clean up and verify cleaning succeed
         tkn.deletePipelines(NAMESPACE, pipelines, false);
-        pipelines = tkn.getPipelines(NAMESPACE);
+        pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
         assertFalse(pipelines.contains(PIPELINE_NAME));
     }
 
@@ -78,7 +78,7 @@ public class TknCliPipelineTest extends TknCliTest {
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // verify pipeline has been created
-        List<String> pipelines = tkn.getPipelines(NAMESPACE);
+        List<String> pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
         assertTrue(pipelines.contains(PIPELINE_NAME));
         // verify pipelinerun has been created
         tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE)
@@ -86,7 +86,7 @@ public class TknCliPipelineTest extends TknCliTest {
         tkn.cancelPipelineRun(NAMESPACE, PIPELINE_RUN_NAME);
         // clean up and verify cleaning succeed
         tkn.deletePipelines(NAMESPACE, Arrays.asList(PIPELINE_NAME), true);
-        pipelines = tkn.getPipelines(NAMESPACE);
+        pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
         assertFalse(pipelines.contains(PIPELINE_NAME));
         List<PipelineRun> pipelineRuns = tkn.getPipelineRuns(NAMESPACE, PIPELINE_NAME);
         assertTrue(pipelineRuns.stream().noneMatch(run -> run.getName().equals(PIPELINE_RUN_NAME)));
@@ -105,7 +105,7 @@ public class TknCliPipelineTest extends TknCliTest {
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // verify pipeline has been created
-        List<String> pipelines = tkn.getPipelines(NAMESPACE);
+        List<String> pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
         assertTrue(pipelines.contains(PIPELINE_NAME));
         // start pipeline and verify taskrun and pipelinerun has been created
         Map<String, Input> params = new HashMap<>();

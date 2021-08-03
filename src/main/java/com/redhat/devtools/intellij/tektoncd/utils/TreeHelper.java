@@ -15,7 +15,9 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.content.Content;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
@@ -37,9 +39,6 @@ import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.tree.TreePath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
@@ -80,8 +81,12 @@ public class TreeHelper {
 
     public static Tree getTree(Project project) {
         ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow("Tekton");
-        JBScrollPane pane = (JBScrollPane) window.getContentManager().findContent("").getComponent();
-        return (Tree) pane.getViewport().getView();
+        Content content = window.getContentManager().findContent("");
+        if (content != null && content.getComponent() instanceof JBSplitter) {
+            JBScrollPane pane = ((JBScrollPane)((JBSplitter)content.getComponent()).getFirstComponent());
+            return (Tree) pane.getViewport().getView();
+        }
+        return null;
     }
 
     public static Tkn getTkn(Project project) {

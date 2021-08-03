@@ -318,7 +318,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> pipelines = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getPipelines(element.getParent().getName()).forEach(name -> pipelines.add(new PipelineNode(element.getRoot(), element, name)));
+            tkn.getPipelines(element.getParent().getName()).forEach(pipeline -> pipelines.add(new PipelineNode(element.getRoot(), element, pipeline.getMetadata().getName())));
             watchNodes(pipelines.toArray());
         } catch (IOException e) {
             pipelines.add(new MessageNode(element.getRoot(), element, "Failed to load pipelines"));

@@ -82,13 +82,13 @@ public interface Tkn {
     List<String> getPersistentVolumeClaim(String namespace);
 
     /**
-     * Return the names of Tekton pipelines for a namespace
+     * Return the list of Tekton pipelines for a namespace
      *
      * @param namespace the namespace to use
-     * @return the list of pipelines names
+     * @return the list of pipelines
      * @throws IOException if communication errored
      */
-    List<String> getPipelines(String namespace) throws IOException;
+    List<Pipeline> getPipelines(String namespace) throws IOException;
 
     /**
      * Return the list of pipeline runs for a pipeline
@@ -731,6 +731,15 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     String getTaskYAMLFromHub(String task, String version) throws IOException;
+
+    /**
+     * Get the pipeline yaml from Tekton Hub
+     * @param pipeline pipeline name
+     * @param version version of the pipeline
+     * @return the pipeline yaml
+     * @throws IOException if communication errored
+     */
+    String getPipelineYAMLFromHub(String pipeline, String version) throws IOException;
 
     public URL getMasterUrl();
 

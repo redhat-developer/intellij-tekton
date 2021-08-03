@@ -153,7 +153,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getNamespace() throws IOException {
+    public String getNamespace() {
         String namespace = client.getNamespace();
         if (Strings.isNullOrEmpty(namespace)) {
             namespace = "default";
@@ -182,10 +182,10 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<String> getPipelines(String namespace) throws IOException {
+    public List<Pipeline> getPipelines(String namespace) throws IOException {
         try {
             PipelineList pipelines = client.adapt(TektonClient.class).v1beta1().pipelines().inNamespace(namespace).list();
-            return pipelines.getItems().stream().map(pipeline -> pipeline.getMetadata().getName()).collect(Collectors.toList());
+            return pipelines.getItems();
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }
@@ -859,6 +859,11 @@ public class TknCli implements Tkn {
     @Override
     public String getTaskYAMLFromHub(String task, String version) throws IOException {
         return ExecHelper.execute(command, envVars, "hub", "get", "task", task, "--version", version);
+    }
+
+    @Override
+    public String getPipelineYAMLFromHub(String pipeline, String version) throws IOException {
+        return ExecHelper.execute(command, envVars, "hub", "get", "pipeline", pipeline, "--version", version);
     }
 
     private String getTempFile(String data) throws IOException {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Red Hat, Inc.
+ * Copyright (c) 2021 Red Hat, Inc.
  * Distributed under license by Red Hat, Inc. All rights reserved.
  * This program is made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution,
@@ -12,36 +12,34 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.util.ui.JBDimension;
+import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.jetbrains.annotations.Nullable;
 
-public class HubDialog extends DialogWrapper {
+public class HubDetailsDialog extends DialogWrapper {
 
-    private JComponent myContentPanel;
+    private HubDetailsPageComponent hubDetailsPageComponent;
 
-    public HubDialog(Project project, HubModel model) {
+    public HubDetailsDialog(String title, @Nullable Project project, HubModel model) {
         super(project, true);
-        setTitle("Import from Tekton Hub");
-        createComponent(model);
+        setTitle(title);
+        this.hubDetailsPageComponent = new HubDetailsPageComponent(model);
         super.init();
     }
 
-    @Nullable
     @Override
-    protected JComponent createCenterPanel() {
+    protected @Nullable JComponent createCenterPanel() {
         final JPanel panel = new JPanel(new BorderLayout());
-        panel.add(myContentPanel, BorderLayout.CENTER);
-        panel.setMinimumSize(new JBDimension(800, 600));
-        panel.setPreferredSize(new Dimension(800, 600));
+        panel.setPreferredSize(new Dimension(600, 400));
+        panel.add(hubDetailsPageComponent, BorderLayout.CENTER);
         return panel;
     }
 
-    public void createComponent(HubModel model) {
-        HubMarketplaceTab marketplaceTab = new HubMarketplaceTab(model);
-        myContentPanel = marketplaceTab.getTabPanel();
+    public void show(HubItem item, TriConsumer<HubItem, String, String> callback) {
+        hubDetailsPageComponent.show(item, callback);
+        super.show();
     }
 }

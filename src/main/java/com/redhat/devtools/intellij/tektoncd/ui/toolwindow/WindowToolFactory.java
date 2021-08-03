@@ -17,22 +17,36 @@ import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Divider;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
+import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.listener.TektonTreeDoubleClickListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TektonTreePopupMenuListener;
 import com.redhat.devtools.intellij.tektoncd.tree.MutableTektonModelSynchronizer;
+import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
+import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDetailsDialog;
+import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItem;
+import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemPanelsBoard;
+import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import javax.swing.JPanel;
 import org.jetbrains.annotations.NotNull;
+
+
+import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
 
 public class WindowToolFactory implements ToolWindowFactory {
     @Override
@@ -49,11 +63,40 @@ public class WindowToolFactory implements ToolWindowFactory {
             ActionManager actionManager = ActionManager.getInstance();
             ActionGroup group = (ActionGroup)actionManager.getAction("com.redhat.devtools.intellij.tektoncd.tree");
             PopupHandler.installPopupHandler(tree, group, ActionPlaces.UNKNOWN, actionManager, new TektonTreePopupMenuListener());
-            toolWindow.getContentManager().addContent(contentFactory.createContent(new JBScrollPane(tree), "", false));
+
             new TektonTreeDoubleClickListener(tree);
+
+            ((TektonRootNode) structure.getRootElement()).load().whenComplete((tkn, err) -> {
+                HubModel hubModel = new HubModel(project, tkn, null);
+
+                JPanel hubItemsListPanel = new HubItemPanelsBoard(hubModel, getDoSelectAction(project, hubModel))
+                        .withRecommended()
+                        .withInstalled()
+                        .build(Optional.empty());
+
+                OnePixelSplitter tabPanel = new OnePixelSplitter(true, 0.37F) {
+                    protected Divider createDivider() {
+                        Divider divider = super.createDivider();
+                        divider.setBackground(SEARCH_FIELD_BORDER_COLOR);
+                        return divider;
+                    }
+                };
+                tabPanel.setFirstComponent(new JBScrollPane(tree));
+                tabPanel.setSecondComponent(hubItemsListPanel);
+
+                toolWindow.getContentManager().addContent(contentFactory.createContent(tabPanel, "", false));
+            });
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             throw new RuntimeException((e));
         }
+    }
+
+    private BiConsumer<HubItem, TriConsumer<HubItem, String, String>> getDoSelectAction(Project project, HubModel model) {
+        return (item, callback) -> {
+            HubDetailsDialog dialog = new HubDetailsDialog(item.getResource().getName() + " details", project, model);
+            dialog.setModal(false);
+            dialog.show(item, callback);
+        };
     }
 
     /**
