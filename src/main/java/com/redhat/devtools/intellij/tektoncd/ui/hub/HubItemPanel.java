@@ -38,7 +38,6 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
-import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
 
 public class HubItemPanel {
 
@@ -70,11 +69,9 @@ public class HubItemPanel {
 
         parent = new JPanel(new BorderLayout());
         parent.setBackground(MAIN_BG_COLOR);
-        parent.setMaximumSize(new Dimension(Integer.MAX_VALUE,90));
-        parent.setBorder(MARGIN_10);
-        if (centerComponent != null) {
-            parent.add(centerComponent, BorderLayout.CENTER);
-        }
+        parent.setMaximumSize(new Dimension(Integer.MAX_VALUE,70));
+        parent.setBorder(JBUI.Borders.empty(3));
+        parent.add(centerComponent, BorderLayout.CENTER);
         if (leftComponent != null) {
             parent.add(leftComponent, BorderLayout.LINE_START);
         }
@@ -97,7 +94,7 @@ public class HubItemPanel {
 
     private JComponent createCenterSideComponent() {
         Font defaultFont = (new JLabel()).getFont();
-        JLabel nameHubItem = createCustomizedLabel(this.hubItem.getResource().getName(), null, -1, JBUI.Borders.empty(5), null, null, defaultFont.deriveFont(Font.BOLD), "");
+        JLabel nameHubItem = createCustomizedLabel(this.hubItem.getResource().getName(), null, -1, JBUI.Borders.empty(2, 5, 1, 2), null, null, defaultFont.deriveFont(Font.BOLD), "");
 
         JPanel bottomCenterPanel = createBottomComponent();
 
@@ -120,23 +117,23 @@ public class HubItemPanel {
         bottomCenterPanel.setBackground(MAIN_BG_COLOR);
 
         JLabel lblVersion = createCustomizedLabel("v. " + hubItem.getVersion(), null, -1,
-                JBUI.Borders.empty(0, 0, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
+                JBUI.Borders.empty(0, 0, 1, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
         bottomCenterPanel.add(lblVersion);
 
         JLabel rating = createCustomizedLabel(hubItem.getResource().getRating().toString(), AllIcons.Plugins.Rating, SwingConstants.RIGHT,
-                JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
+                JBUI.Borders.empty(0, 5, 1, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "");
         bottomCenterPanel.add(rating);
 
         Icon kindIcon = getIconByKind(hubItem.getKind());
         if (kindIcon != null) {
             JLabel kind = createCustomizedLabel("", kindIcon, SwingConstants.LEFT,
-                    JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, hubItem.getResource().getKind());
+                    JBUI.Borders.empty(0, 5, 1, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, hubItem.getResource().getKind());
             bottomCenterPanel.add(kind);
         }
         String labelText = getLabelForExistingResource();
         if (!labelText.isEmpty()) {
             JLabel warningNameAlreadyUsed = createCustomizedLabel("", AllIcons.General.Warning, SwingConstants.CENTER,
-                    JBUI.Borders.empty(0, 5, 5, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + hubItem.getResource().getKind() + " with this name already exists on the cluster.");
+                    JBUI.Borders.empty(0, 5, 1, 5), null, JBUI.CurrentTheme.Label.disabledForeground(), null, "A " + hubItem.getResource().getKind() + " with this name already exists on the cluster.");
             bottomCenterPanel.add(warningNameAlreadyUsed);
         }
         return bottomCenterPanel;
