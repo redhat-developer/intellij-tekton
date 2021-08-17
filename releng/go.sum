@@ -761,8 +761,8 @@ github.com/tektoncd/pipeline v0.27.0 h1:lsQBNg3q+VK5S0liDxhaodnI0+VLlL+8znl+ZWbL
 github.com/tektoncd/pipeline v0.27.0/go.mod h1:m8fmoJm7h5qhtl4lroyn6tBzyy53rkM/kYVqM/UL304=
 github.com/tektoncd/plumbing v0.0.0-20210420200944-17170d5e7bc9/go.mod h1:WTWwsg91xgm+jPOKoyKVK/yRYxnVDlUYeDlypB1lDdQ=
 github.com/tektoncd/plumbing v0.0.0-20210514044347-f8a9689d5bd5/go.mod h1:WTWwsg91xgm+jPOKoyKVK/yRYxnVDlUYeDlypB1lDdQ=
-github.com/tektoncd/triggers v0.14.2 h1:p0tQpLMqa7a2uq9sY8IqawENPoA7aQuluDkHYbYW4tk=
-github.com/tektoncd/triggers v0.14.2/go.mod h1:JajnZFFjm5t2ZlHR5TtsERuWkbhAvIOK5TMjyUemJbw=
+github.com/tektoncd/triggers v0.15.0 h1:NrEhEVuTZUyY6WZ5x2WHorRA1kKsTwxTs3x+Ar4vPRc=
+github.com/tektoncd/triggers v0.15.0/go.mod h1:JajnZFFjm5t2ZlHR5TtsERuWkbhAvIOK5TMjyUemJbw=
 github.com/tidwall/gjson v1.3.5 h1:2oW9FBNu8qt9jy5URgrzsVx/T/KSn3qn/smJQ0crlDQ=
 github.com/tidwall/gjson v1.3.5/go.mod h1:P256ACg0Mn+j1RXIDXoss50DeIABTYK1PULOJHhxOls=
 github.com/tidwall/match v1.0.1 h1:PnKP62LPNxHKTwvHHZZzdOAOCtsJTjo6dZLCwpKm5xc=

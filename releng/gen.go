@@ -8,7 +8,8 @@ import (
 	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	resource "github.com/tektoncd/pipeline/pkg/apis/resource/v1alpha1"
-	triggers "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
+	triggersv1alpha1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
+	triggersv1beta1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	knative "knative.dev/pkg/apis"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,7 +47,7 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 			Format: "data-time",
 		}
 	}
-	if (i == reflect.TypeOf(triggers.TriggerResourceTemplate{})) {
+	if (i == reflect.TypeOf(triggersv1alpha1.TriggerResourceTemplate{}) || i == reflect.TypeOf(triggersv1beta1.TriggerResourceTemplate{})) {
 		return &jsonschema.Type{
 			Type: "object",
 			AdditionalProperties: []byte("true"),
@@ -177,14 +178,28 @@ func main() {
 	dump(&v1beta1.ClusterTask{}, "tekton.dev/v1beta1", "ClusterTask")
 	dump(&v1beta1.ClusterTaskList{}, "tekton.dev/v1beta1", "ClusterTaskList")
 
-	dump(&triggers.EventListener{}, "triggers.tekton.dev/v1alpha1", "EventListener")
-	dump(&triggers.EventListenerList{}, "triggers.tekton.dev/v1alpha1", "EventListenerList")
-	dump(&triggers.TriggerTemplate{}, "triggers.tekton.dev/v1alpha1", "TriggerTemplate")
-	dump(&triggers.TriggerTemplateList{}, "triggers.tekton.dev/v1alpha1", "TriggerTemplateList")
-	dump(&triggers.TriggerBinding{}, "triggers.tekton.dev/v1alpha1", "TriggerBinding")
-	dump(&triggers.TriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "TriggerBindingList")
-	dump(&triggers.ClusterTriggerBinding{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBinding")
-	dump(&triggers.ClusterTriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBindingList")
-	dump(&triggers.ClusterInterceptor{}, "triggers.tekton.dev/v1alpha1", "ClusterInterceptor")
-	dump(&triggers.ClusterInterceptorList{}, "triggers.tekton.dev/v1alpha1", "ClusterInterceptorList")
+	dump(&triggersv1alpha1.EventListener{}, "triggers.tekton.dev/v1alpha1", "EventListener")
+	dump(&triggersv1alpha1.EventListenerList{}, "triggers.tekton.dev/v1alpha1", "EventListenerList")
+	dump(&triggersv1alpha1.Trigger{}, "triggers.tekton.dev/v1alpha1", "Trigger")
+	dump(&triggersv1alpha1.Trigger{}, "triggers.tekton.dev/v1alpha1", "TriggerList")
+	dump(&triggersv1alpha1.TriggerTemplate{}, "triggers.tekton.dev/v1alpha1", "TriggerTemplate")
+	dump(&triggersv1alpha1.TriggerTemplateList{}, "triggers.tekton.dev/v1alpha1", "TriggerTemplateList")
+	dump(&triggersv1alpha1.TriggerBinding{}, "triggers.tekton.dev/v1alpha1", "TriggerBinding")
+	dump(&triggersv1alpha1.TriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "TriggerBindingList")
+	dump(&triggersv1alpha1.ClusterTriggerBinding{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBinding")
+	dump(&triggersv1alpha1.ClusterTriggerBindingList{}, "triggers.tekton.dev/v1alpha1", "ClusterTriggerBindingList")
+	dump(&triggersv1alpha1.ClusterInterceptor{}, "triggers.tekton.dev/v1alpha1", "ClusterInterceptor")
+	dump(&triggersv1alpha1.ClusterInterceptorList{}, "triggers.tekton.dev/v1alpha1", "ClusterInterceptorList")
+
+
+	dump(&triggersv1beta1.EventListener{}, "triggers.tekton.dev/v1beta1", "EventListener")
+	dump(&triggersv1beta1.EventListenerList{}, "triggers.tekton.dev/v1beta1", "EventListenerList")
+	dump(&triggersv1beta1.Trigger{}, "triggers.tekton.dev/v1beta1", "Trigger")
+	dump(&triggersv1beta1.Trigger{}, "triggers.tekton.dev/v1beta1", "TriggerList")
+	dump(&triggersv1beta1.TriggerTemplate{}, "triggers.tekton.dev/v1beta1", "TriggerTemplate")
+	dump(&triggersv1beta1.TriggerTemplateList{}, "triggers.tekton.dev/v1beta1", "TriggerTemplateList")
+	dump(&triggersv1beta1.TriggerBinding{}, "triggers.tekton.dev/v1beta1", "TriggerBinding")
+	dump(&triggersv1beta1.TriggerBindingList{}, "triggers.tekton.dev/v1beta1", "TriggerBindingList")
+	dump(&triggersv1beta1.ClusterTriggerBinding{}, "triggers.tekton.dev/v1beta1", "ClusterTriggerBinding")
+	dump(&triggersv1beta1.ClusterTriggerBindingList{}, "triggers.tekton.dev/v1beta1", "ClusterTriggerBindingList")
 }

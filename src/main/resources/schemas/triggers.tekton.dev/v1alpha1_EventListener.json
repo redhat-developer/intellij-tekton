@@ -758,13 +758,6 @@
           },
           "type": "array"
         },
-        "replicas": {
-          "type": "integer"
-        },
-        "podTemplate": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/PodTemplate"
-        },
         "namespaceSelector": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/NamespaceSelector"
@@ -2002,6 +1995,7 @@
         },
         "tolerations": {
           "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
             "$ref": "#/definitions/Toleration"
           },
           "type": "array"
@@ -2069,27 +2063,6 @@
         "spec": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/PodSpec"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "PodTemplate": {
-      "properties": {
-        "tolerations": {
-          "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/Toleration"
-          },
-          "type": "array"
-        },
-        "nodeSelector": {
-          "patternProperties": {
-            ".*": {
-              "type": "string"
-            }
-          },
-          "type": "object"
         }
       },
       "additionalProperties": false,
