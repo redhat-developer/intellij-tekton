@@ -594,6 +594,21 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "SeccompProfile": {
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "localhostProfile": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "SecretEnvSource": {
       "properties": {
         "name": {
@@ -658,6 +673,10 @@
         },
         "procMount": {
           "type": "string"
+        },
+        "seccompProfile": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/SeccompProfile"
         }
       },
       "additionalProperties": false,
@@ -777,6 +796,9 @@
             "$ref": "#/definitions/WorkspaceUsage"
           },
           "type": "array"
+        },
+        "onError": {
+          "type": "string"
         }
       },
       "additionalProperties": false,

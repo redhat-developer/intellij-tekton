@@ -743,6 +743,19 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "EphemeralVolumeSource": {
+      "properties": {
+        "volumeClaimTemplate": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/PersistentVolumeClaimTemplate"
+        },
+        "readOnly": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "ExecAction": {
       "properties": {
         "command": {
@@ -1438,7 +1451,6 @@
           "$ref": "#/definitions/ObjectMeta"
         },
         "spec": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/PersistentVolumeClaimSpec"
         },
         "status": {
@@ -1488,6 +1500,7 @@
           "type": "array"
         },
         "selector": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/LabelSelector"
         },
         "resources": {
@@ -1535,6 +1548,22 @@
             "$ref": "#/definitions/PersistentVolumeClaimCondition"
           },
           "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PersistentVolumeClaimTemplate": {
+      "required": [
+        "spec"
+      ],
+      "properties": {
+        "metadata": {
+          "$ref": "#/definitions/ObjectMeta"
+        },
+        "spec": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/PersistentVolumeClaimSpec"
         }
       },
       "additionalProperties": false,
@@ -2286,7 +2315,6 @@
       ],
       "properties": {
         "labelSelector": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/LabelSelector"
         },
         "namespaces": {
@@ -2392,6 +2420,9 @@
         },
         "fsGroupChangePolicy": {
           "type": "string"
+        },
+        "seccompProfile": {
+          "$ref": "#/definitions/SeccompProfile"
         }
       },
       "additionalProperties": false,
@@ -2728,6 +2759,21 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "SeccompProfile": {
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "localhostProfile": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "SecretEnvSource": {
       "properties": {
         "name": {
@@ -2852,6 +2898,10 @@
         },
         "procMount": {
           "type": "string"
+        },
+        "seccompProfile": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/SeccompProfile"
         }
       },
       "additionalProperties": false,
@@ -3156,6 +3206,9 @@
             "$ref": "#/definitions/WorkspaceUsage"
           },
           "type": "array"
+        },
+        "onError": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -3718,6 +3771,10 @@
         "csi": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/CSIVolumeSource"
+        },
+        "ephemeral": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/EphemeralVolumeSource"
         }
       },
       "additionalProperties": false,
