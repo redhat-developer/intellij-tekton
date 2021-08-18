@@ -1,3 +1,4 @@
+go mod tidy
 go build .
 ./tekton-jsongenerator
 diff -q tekton.dev ../src/main/resources/schemas/tekton.dev

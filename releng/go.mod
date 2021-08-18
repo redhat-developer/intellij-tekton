@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0
 	github.com/tektoncd/pipeline v0.27.0
-	github.com/tektoncd/triggers v0.14.2
+	github.com/tektoncd/triggers v0.15.0
 	k8s.io/apiextensions-apiserver v0.20.7
 	k8s.io/apimachinery v0.20.7
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible // indirect

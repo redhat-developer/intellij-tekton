@@ -27,9 +27,6 @@
       "properties": {
         "url": {
           "$ref": "#/definitions/URL"
-        },
-        "hostname": {
-          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -95,49 +92,6 @@
         },
         "readOnly": {
           "type": "boolean"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "BitbucketInterceptor": {
-      "properties": {
-        "secretRef": {
-          "$ref": "#/definitions/SecretRef"
-        },
-        "eventTypes": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "CELInterceptor": {
-      "properties": {
-        "filter": {
-          "type": "string"
-        },
-        "overlays": {
-          "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/CELOverlay"
-          },
-          "type": "array"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "CELOverlay": {
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "expression": {
-          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -969,37 +923,6 @@
         },
         "readOnly": {
           "type": "boolean"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "GitHubInterceptor": {
-      "properties": {
-        "secretRef": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/SecretRef"
-        },
-        "eventTypes": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "GitLabInterceptor": {
-      "properties": {
-        "secretRef": {
-          "$ref": "#/definitions/SecretRef"
-        },
-        "eventTypes": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -2444,18 +2367,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "SecretRef": {
-      "properties": {
-        "secretKey": {
-          "type": "string"
-        },
-        "secretName": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
     "SecretVolumeSource": {
       "properties": {
         "secretName": {
@@ -2657,22 +2568,6 @@
         "webhook": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/WebhookInterceptor"
-        },
-        "github": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/GitHubInterceptor"
-        },
-        "gitlab": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/GitLabInterceptor"
-        },
-        "cel": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/CELInterceptor"
-        },
-        "bitbucket": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/BitbucketInterceptor"
         }
       },
       "additionalProperties": false,
