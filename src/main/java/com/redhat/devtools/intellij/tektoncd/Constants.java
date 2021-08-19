@@ -65,6 +65,8 @@ public class Constants {
     public static final String APP_K8S_IO_VERSION = "app.kubernetes.io/version";
     public static final String HUB_CATALOG_TAG = "hub.tekton.dev/catalog";
 
+    public static final String TRIGGER_API_VERSION = "triggers.tekton.dev/v1beta1";
+
     public enum InstallStatus {
         ERROR,
         INSTALLED,

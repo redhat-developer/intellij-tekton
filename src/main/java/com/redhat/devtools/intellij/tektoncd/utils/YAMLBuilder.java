@@ -30,6 +30,7 @@ import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_API_VERSION;
 
 public class YAMLBuilder {
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
@@ -208,7 +209,7 @@ public class YAMLBuilder {
         });
 
         ObjectNode templateNode = YAML_MAPPER.createObjectNode();
-        templateNode.put("name", triggerTemplate);
+        templateNode.put("ref", triggerTemplate);
 
         triggerNode.put("name", name);
         if (bindingsNode.size() > 0) {
@@ -358,7 +359,7 @@ public class YAMLBuilder {
     public static ObjectNode createTriggerTemplate(String name, List<String> params, List<ObjectNode> runs) {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
-        rootNode.put("apiVersion", "triggers.tekton.dev/v1alpha1");
+        rootNode.put("apiVersion", TRIGGER_API_VERSION);
         rootNode.put("kind", "TriggerTemplate");
 
         ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
@@ -384,7 +385,7 @@ public class YAMLBuilder {
     public static ObjectNode createEventListener(String name, String serviceAccount, List<String> triggerBindings, String triggerTemplate) {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
-        rootNode.put("apiVersion", "triggers.tekton.dev/v1alpha1");
+        rootNode.put("apiVersion", TRIGGER_API_VERSION);
         rootNode.put("kind", "EventListener");
 
         ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
