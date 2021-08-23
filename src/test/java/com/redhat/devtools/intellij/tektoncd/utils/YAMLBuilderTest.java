@@ -21,7 +21,7 @@ import java.util.Collections;
 import org.junit.Test;
 
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_API_VERSION;
+import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_BETA1_API_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -315,9 +315,9 @@ public class YAMLBuilderTest extends BaseTest {
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
-        ObjectNode triggerTemplateNode = YAMLBuilder.createTriggerTemplate("template", Collections.emptyList(), Arrays.asList(taskRunNode));
+        ObjectNode triggerTemplateNode = YAMLBuilder.createTriggerTemplate("template", TRIGGER_BETA1_API_VERSION, Collections.emptyList(), Arrays.asList(taskRunNode));
 
-        assertEquals(triggerTemplateNode.get("apiVersion").asText(), TRIGGER_API_VERSION);
+        assertEquals(triggerTemplateNode.get("apiVersion").asText(), TRIGGER_BETA1_API_VERSION);
         assertEquals(triggerTemplateNode.get("kind").asText(), "TriggerTemplate");
         assertEquals(triggerTemplateNode.get("metadata").get("name").asText(), "template");
         assertFalse(triggerTemplateNode.get("spec").has("params"));
@@ -330,9 +330,9 @@ public class YAMLBuilderTest extends BaseTest {
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
-        ObjectNode triggerTemplateNode = YAMLBuilder.createTriggerTemplate("template", Arrays.asList("param1", "param2"), Arrays.asList(taskRunNode));
+        ObjectNode triggerTemplateNode = YAMLBuilder.createTriggerTemplate("template", TRIGGER_BETA1_API_VERSION, Arrays.asList("param1", "param2"), Arrays.asList(taskRunNode));
 
-        assertEquals(triggerTemplateNode.get("apiVersion").asText(), TRIGGER_API_VERSION);
+        assertEquals(triggerTemplateNode.get("apiVersion").asText(), TRIGGER_BETA1_API_VERSION);
         assertEquals(triggerTemplateNode.get("kind").asText(), "TriggerTemplate");
         assertEquals(triggerTemplateNode.get("metadata").get("name").asText(), "template");
         assertTrue(triggerTemplateNode.get("spec").has("params"));
@@ -347,9 +347,9 @@ public class YAMLBuilderTest extends BaseTest {
 
     @Test
     public void checkEventListenerCreatedWithNoBindings() {
-        ObjectNode eventListenerNode = YAMLBuilder.createEventListener("el", "sa", Collections.emptyList(), "triggerTemplate");
+        ObjectNode eventListenerNode = YAMLBuilder.createEventListener("el", TRIGGER_BETA1_API_VERSION, "sa", Collections.emptyList(), "triggerTemplate");
 
-        assertEquals(eventListenerNode.get("apiVersion").asText(), TRIGGER_API_VERSION);
+        assertEquals(eventListenerNode.get("apiVersion").asText(), TRIGGER_BETA1_API_VERSION);
         assertEquals(eventListenerNode.get("kind").asText(), "EventListener");
         assertEquals(eventListenerNode.get("metadata").get("name").asText(), "el");
         assertFalse(eventListenerNode.get("spec").get("triggers").get(0).has("bindings"));
@@ -359,9 +359,9 @@ public class YAMLBuilderTest extends BaseTest {
 
     @Test
     public void checkEventListenerCreatedWithOneBinding() {
-        ObjectNode eventListenerNode = YAMLBuilder.createEventListener("el", "sa", Arrays.asList("binding"), "triggerTemplate");
+        ObjectNode eventListenerNode = YAMLBuilder.createEventListener("el", TRIGGER_BETA1_API_VERSION, "sa", Arrays.asList("binding"), "triggerTemplate");
 
-        assertEquals(eventListenerNode.get("apiVersion").asText(), TRIGGER_API_VERSION);
+        assertEquals(eventListenerNode.get("apiVersion").asText(), TRIGGER_BETA1_API_VERSION);
         assertEquals(eventListenerNode.get("kind").asText(), "EventListener");
         assertEquals(eventListenerNode.get("metadata").get("name").asText(), "el");
         assertTrue(eventListenerNode.get("spec").get("triggers").get(0).has("bindings"));
@@ -372,9 +372,9 @@ public class YAMLBuilderTest extends BaseTest {
 
     @Test
     public void checkEventListenerCreatedWithMoreBindings() {
-        ObjectNode eventListenerNode = YAMLBuilder.createEventListener("el", "sa", Arrays.asList("binding1", "binding2", "binding3"), "triggerTemplate");
+        ObjectNode eventListenerNode = YAMLBuilder.createEventListener("el", TRIGGER_BETA1_API_VERSION, "sa", Arrays.asList("binding1", "binding2", "binding3"), "triggerTemplate");
 
-        assertEquals(eventListenerNode.get("apiVersion").asText(), TRIGGER_API_VERSION);
+        assertEquals(eventListenerNode.get("apiVersion").asText(), TRIGGER_BETA1_API_VERSION);
         assertEquals(eventListenerNode.get("kind").asText(), "EventListener");
         assertEquals(eventListenerNode.get("metadata").get("name").asText(), "el");
         assertTrue(eventListenerNode.get("spec").get("triggers").get(0).has("bindings"));
