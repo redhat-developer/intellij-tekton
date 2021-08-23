@@ -10,56 +10,38 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions.triggers;
 
-import com.google.common.base.Strings;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
-import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
-import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
-import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.swing.tree.TreePath;
-
-import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
-import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
-import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
-public class CreateClusterTriggerBindingAction extends TektonAction {
-
-    private static final Logger logger = LoggerFactory.getLogger(CreateClusterTriggerBindingAction.class);
+public class CreateClusterTriggerBindingAction extends CreateTriggerAction {
 
     public CreateClusterTriggerBindingAction() { super(ClusterTriggerBindingsNode.class); }
 
     @Override
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ActionMessage telemetry = TelemetryService.instance()
-                .action(NAME_PREFIX_CRUD + "create cluster trigger binding")
-                .property(PROP_RESOURCE_KIND, KIND_CLUSTERTRIGGERBINDING);
-        ClusterTriggerBindingsNode item = getElement(selected);
-        String namespace = item.getParent().getName();
-        String content = getSnippet("Tekton: ClusterTriggerBinding");
-        if (Strings.isNullOrEmpty(content)) {
-            telemetry
-                    .error("snippet content empty")
-                    .send();
-        } else {
-            String name = namespace + "-newclustertriggerbinding.yaml";
-            try {
-                VirtualFileHelper.createAndOpenVirtualFile(anActionEvent.getProject(), namespace, name, content, KIND_CLUSTERTRIGGERBINDINGS, item);
-                telemetry.success().send();
-            } catch (IOException e) {
-                telemetry
-                        .error(anonymizeResource(name, namespace, e.getMessage()))
-                        .send();
-                logger.warn("Could not create cluster cluster trigger: " + e.getLocalizedMessage(), e);
-            }
-        }
+    public String getKind() {
+        return KIND_CLUSTERTRIGGERBINDING;
+    }
+
+    @Override
+    public String getActionName() {
+        return NAME_PREFIX_CRUD + "create cluster trigger binding";
+    }
+
+    @Override
+    public String getNewFilename() {
+        return "-newclustertriggerbinding.yaml";
+    }
+
+    @Override
+    public String getSnippetName() {
+        return "Tekton: ClusterTriggerBinding";
+    }
+
+    @Override
+    public String getErrorMessage() {
+        return "Could not create cluster trigger binding: ";
     }
 }

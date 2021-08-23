@@ -42,6 +42,14 @@ public interface Tkn {
     boolean isTektonTriggersAware();
 
     /**
+     * Return the newest apiVersion for tekton triggers
+     *
+     * @return the newest tekton triggers apiVersion
+     * @throws IOException if communication errored
+     */
+    String getTektonTriggersApiVersion() throws IOException;
+
+    /**
      * Return the name of the current active namespace (project for OpenShift).
      *
      * @return the active namespace name
