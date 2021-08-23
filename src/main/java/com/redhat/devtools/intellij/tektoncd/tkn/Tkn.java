@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface Tkn {
+
     /**
      * Check if the cluster is Tekton aware.
      *
@@ -130,7 +131,7 @@ public interface Tkn {
      * Return the list of task runs for a task.
      *
      * @param namespace the namespace of the task
-     * @param task the task to look task runs for
+     * @param task      the task to look task runs for
      * @return the list of task runs
      * @throws IOException if communication errored
      */
@@ -184,7 +185,7 @@ public interface Tkn {
      * Get pipeline configuration in YAML
      *
      * @param namespace the namespace of the task
-     * @param pipeline the pipeline to use
+     * @param pipeline  the pipeline to use
      * @throws IOException if communication errored
      */
     String getPipelineYAML(String namespace, String pipeline) throws IOException;
@@ -193,7 +194,7 @@ public interface Tkn {
      * Get pipeline resource configuration in YAML
      *
      * @param namespace the namespace of the task
-     * @param resource the pipeline resource to use
+     * @param resource  the pipeline resource to use
      * @throws IOException if communication errored
      */
     String getResourceYAML(String namespace, String resource) throws IOException;
@@ -202,7 +203,7 @@ public interface Tkn {
      * Get task configuration in YAML
      *
      * @param namespace the namespace of the task
-     * @param task the task to use
+     * @param task      the task to use
      * @throws IOException if communication errored
      */
     String getTaskYAML(String namespace, String task) throws IOException;
@@ -222,11 +223,10 @@ public interface Tkn {
      * @param condition the condition to use
      * @throws IOException if communication errored
      */
-    String getConditionYAML(String namespace, String condition) throws IOException ;
+    String getConditionYAML(String namespace, String condition) throws IOException;
 
     /**
-     *
-     * @param namespace the namespace of the triggerTemplate
+     * @param namespace       the namespace of the triggerTemplate
      * @param triggerTemplate the triggerTemplate to use
      * @return triggerTemplate configuration
      * @throws IOException if communication errored
@@ -236,7 +236,7 @@ public interface Tkn {
     /**
      * Get triggerBinding configuration in YAML
      *
-     * @param namespace the namespace of the triggerBinding
+     * @param namespace      the namespace of the triggerBinding
      * @param triggerBinding the triggerBinding to use
      * @return triggerBinding configuration
      * @throws IOException if communication errored
@@ -255,7 +255,7 @@ public interface Tkn {
     /**
      * Get eventListener configuration in YAML
      *
-     * @param namespace the namespace of the eventListener
+     * @param namespace     the namespace of the eventListener
      * @param eventListener the eventListener to use
      * @return eventListener configuration
      * @throws IOException if communication errored
@@ -275,8 +275,8 @@ public interface Tkn {
     /**
      * Delete a list of pipelines
      *
-     * @param namespace the namespace to use
-     * @param pipelines the list of pipelines to delete
+     * @param namespace              the namespace to use
+     * @param pipelines              the list of pipelines to delete
      * @param deleteRelatedResources boolean to delete related resources (e.g pipelinerun)
      * @throws IOException if communication errored
      */
@@ -286,7 +286,7 @@ public interface Tkn {
      * Delete a list of pipelineruns
      *
      * @param namespace the namespace to use
-     * @param prs the list of pipelineRuns to delete
+     * @param prs       the list of pipelineRuns to delete
      * @throws IOException if communication errored
      */
     void deletePipelineRuns(String namespace, List<String> prs) throws IOException;
@@ -294,8 +294,8 @@ public interface Tkn {
     /**
      * Delete a list of tasks
      *
-     * @param namespace the namespace to use
-     * @param tasks the list of tasks to delete
+     * @param namespace              the namespace to use
+     * @param tasks                  the list of tasks to delete
      * @param deleteRelatedResources boolean to delete related resources (e.g taskrun)
      * @throws IOException if communication errored
      */
@@ -304,7 +304,7 @@ public interface Tkn {
     /**
      * Delete a list of clusterTasks
      *
-     * @param tasks the list of tasks to delete
+     * @param tasks                  the list of tasks to delete
      * @param deleteRelatedResources boolean to delete related resources (e.g taskrun)
      * @throws IOException if communication errored
      */
@@ -314,7 +314,7 @@ public interface Tkn {
      * Delete a list of taskruns
      *
      * @param namespace the namespace to use
-     * @param trs the list of taskRuns to delete
+     * @param trs       the list of taskRuns to delete
      * @throws IOException if communication errored
      */
     void deleteTaskRuns(String namespace, List<String> trs) throws IOException;
@@ -331,7 +331,7 @@ public interface Tkn {
     /**
      * Delete a list of conditions
      *
-     * @param namespace the namespace to use
+     * @param namespace  the namespace to use
      * @param conditions the list of conditions to delete
      * @throws IOException if communication errored
      */
@@ -340,7 +340,7 @@ public interface Tkn {
     /**
      * Delete a list of triggerTemplates
      *
-     * @param namespace the namespace to use
+     * @param namespace        the namespace to use
      * @param triggerTemplates the list of triggerTemplates to delete
      * @throws IOException if communication errored
      */
@@ -349,7 +349,7 @@ public interface Tkn {
     /**
      * Delete a list of triggerBindings
      *
-     * @param namespace the namespace to use
+     * @param namespace       the namespace to use
      * @param triggerBindings the list of triggerBindings to delete
      * @throws IOException if communication errored
      */
@@ -366,7 +366,7 @@ public interface Tkn {
     /**
      * Delete a list of eventListeners
      *
-     * @param namespace the namespace to use
+     * @param namespace      the namespace to use
      * @param eventListeners the list of eventListeners to delete
      * @throws IOException if communication errored
      */
@@ -375,7 +375,7 @@ public interface Tkn {
     /**
      * Get all custom resources from the cluster which is namespaced.
      *
-     * @param namespace the namespace to use
+     * @param namespace  the namespace to use
      * @param crdContext the custom resource definition context of the resource kind
      * @return Object as HashMap, null if no resource was found
      */
@@ -384,8 +384,8 @@ public interface Tkn {
     /**
      * Get a custom resource from the cluster which is namespaced.
      *
-     * @param namespace the namespace to use
-     * @param name name of custom resource
+     * @param namespace  the namespace to use
+     * @param name       name of custom resource
      * @param crdContext the custom resource definition context of the resource kind
      * @return Object as HashMap, null if no resource was found
      */
@@ -394,9 +394,9 @@ public interface Tkn {
     /**
      * Edit a custom resource object which is a namespaced object
      *
-     * @param namespace the namespace to use
-     * @param name name of custom resource
-     * @param crdContext the custom resource definition context of the resource kind
+     * @param namespace      the namespace to use
+     * @param name           name of custom resource
+     * @param crdContext     the custom resource definition context of the resource kind
      * @param objectAsString new object as a JSON string
      * @throws IOException
      */
@@ -405,8 +405,8 @@ public interface Tkn {
     /**
      * Create a custom resource which is a namespaced object.
      *
-     * @param namespace the namespace to use
-     * @param crdContext the custom resource definition context of the resource kind
+     * @param namespace      the namespace to use
+     * @param crdContext     the custom resource definition context of the resource kind
      * @param objectAsString new object as a JSON string
      * @throws IOException
      */
@@ -415,10 +415,10 @@ public interface Tkn {
     /**
      * Create a PVC
      *
-     * @param name PVC name
+     * @param name       PVC name
      * @param accessMode PVC accessMode
-     * @param size PVC size
-     * @param unit PVC size format (MB, GB or TB)
+     * @param size       PVC size
+     * @param unit       PVC size format (MB, GB or TB)
      * @throws IOException if communication errored
      */
     void createPVC(String name, String accessMode, String size, String unit) throws IOException;
@@ -426,16 +426,16 @@ public interface Tkn {
     /**
      * Start the execution of a pipeline
      *
-     * @param namespace the namespace of the pipeline
-     * @param pipeline the pipeline that has to be run
-     * @param parameters the parameters to start pipeline
-     * @param inputResources the input resources to start pipeline
-     * @param serviceAccount the service account to use when running the pipeline
+     * @param namespace          the namespace of the pipeline
+     * @param pipeline           the pipeline that has to be run
+     * @param parameters         the parameters to start pipeline
+     * @param inputResources     the input resources to start pipeline
+     * @param serviceAccount     the service account to use when running the pipeline
      * @param taskServiceAccount the service account corresponding to the task
-     * @param workspaces the workspaces to start pipeline
-     * @param runPrefixName the name to use as a prefix for the pipelinerun
-     * @throws IOException if communication errored
+     * @param workspaces         the workspaces to start pipeline
+     * @param runPrefixName      the name to use as a prefix for the pipelinerun
      * @return PipelineRun name
+     * @throws IOException if communication errored
      */
     String startPipeline(String namespace, String pipeline, Map<String, Input> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
@@ -443,41 +443,41 @@ public interface Tkn {
      * Re-run the pipeline using last pipelinerun values
      *
      * @param namespace the namespace of the task
-     * @param pipeline the pipeline that has to be run
-     * @throws IOException if communication errored
+     * @param pipeline  the pipeline that has to be run
      * @return PipelineRun name
+     * @throws IOException if communication errored
      */
     String startLastPipeline(String namespace, String pipeline) throws IOException;
 
     /**
      * Start the execution of a task
      *
-     * @param namespace the namespace of the task
-     * @param task the task that has to be run
-     * @param parameters the parameters to start task
-     * @param inputResources the input resources to start task
+     * @param namespace       the namespace of the task
+     * @param task            the task that has to be run
+     * @param parameters      the parameters to start task
+     * @param inputResources  the input resources to start task
      * @param outputResources the output resources to start task
-     * @param serviceAccount the service account to use when running the task
-     * @param workspaces the workspaces to start the task
-     * @param runPrefixName the name to use as a prefix for the taskrun
-     * @throws IOException if communication errored
+     * @param serviceAccount  the service account to use when running the task
+     * @param workspaces      the workspaces to start the task
+     * @param runPrefixName   the name to use as a prefix for the taskrun
      * @return TaskRun name
+     * @throws IOException if communication errored
      */
     String startTask(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Start the execution of a task
      *
-     * @param namespace the namespace where to run the clusterTask, useful to retrieve the input/output resources
-     * @param clusterTask the task that has to be run
-     * @param parameters the parameters to start task
-     * @param inputResources the input resources to start task
+     * @param namespace       the namespace where to run the clusterTask, useful to retrieve the input/output resources
+     * @param clusterTask     the task that has to be run
+     * @param parameters      the parameters to start task
+     * @param inputResources  the input resources to start task
      * @param outputResources the output resources to start task
-     * @param serviceAccount the service account to use when running the task
-     * @param workspaces the workspaces to start the task
-     * @param runPrefixName the name to use as a prefix for the taskrun
-     * @throws IOException if communication errored
+     * @param serviceAccount  the service account to use when running the task
+     * @param workspaces      the workspaces to start the task
+     * @param runPrefixName   the name to use as a prefix for the taskrun
      * @return TaskRun name
+     * @throws IOException if communication errored
      */
     String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
@@ -485,35 +485,37 @@ public interface Tkn {
      * Re-run the task using last taskrun values
      *
      * @param namespace the namespace of the task
-     * @param task the task that has to be run
-     * @throws IOException if communication errored
+     * @param task      the task that has to be run
      * @return TaskRun name
+     * @throws IOException if communication errored
      */
     String startLastTask(String namespace, String task) throws IOException;
 
     /**
      * Show logs for a PipelineRun
      *
-     * @param namespace the namespace to use
+     * @param namespace   the namespace to use
      * @param pipelineRun name of the PipelineRun
-     * @param toEditor true if logs has to be redirected and displayed in the editor
+     * @param toEditor    true if logs has to be redirected and displayed in the editor
      * @throws IOException if communication errored
      */
     void showLogsPipelineRun(String namespace, String pipelineRun, boolean toEditor) throws IOException;
 
     /**
      * Get logs for a TaskRun
+     *
      * @param namespace the namespace to use
-     * @param taskRun name of the TaskRun
-     * @param toEditor true if logs has to be redirected and displayed in the editor
+     * @param taskRun   name of the TaskRun
+     * @param toEditor  true if logs has to be redirected and displayed in the editor
      * @throws IOException if communication errored
      */
     void showLogsTaskRun(String namespace, String taskRun, boolean toEditor) throws IOException;
 
     /**
      * Get logs for an eventListener
+     *
      * @param namespace the namespace to use
-     * @param el name of the eventListener
+     * @param el        name of the eventListener
      * @throws IOException if communication errored
      */
     void showLogsEventListener(String namespace, String el) throws IOException;
@@ -521,18 +523,19 @@ public interface Tkn {
     /**
      * Follow logs for a PipelineRun
      *
-     * @param namespace the namespace to use
+     * @param namespace   the namespace to use
      * @param pipelineRun name of the PipelineRun
-     * @param toEditor true if logs has to be redirected and displayed in the editor
+     * @param toEditor    true if logs has to be redirected and displayed in the editor
      * @throws IOException if communication errored
      */
     void followLogsPipelineRun(String namespace, String pipelineRun, boolean toEditor) throws IOException;
 
     /**
      * Follow logs for a TaskRun
+     *
      * @param namespace the namespace to use
-     * @param taskRun name of the TaskRun
-     * @param toEditor true if logs has to be redirected and displayed in the editor
+     * @param taskRun   name of the TaskRun
+     * @param toEditor  true if logs has to be redirected and displayed in the editor
      * @throws IOException if communication errored
      */
     void followLogsTaskRun(String namespace, String taskRun, boolean toEditor) throws IOException;
@@ -541,7 +544,7 @@ public interface Tkn {
      * Get TaskRun configuration in YAML
      *
      * @param namespace the namespace to use
-     * @param taskRun name of the TaskRun
+     * @param taskRun   name of the TaskRun
      * @throws IOException if communication errored
      */
     String getTaskRunYAML(String namespace, String taskRun) throws IOException;
@@ -549,25 +552,25 @@ public interface Tkn {
     /**
      * Get PipelineRun configuration in YAML
      *
-     * @param namespace the namespace to use
+     * @param namespace   the namespace to use
      * @param pipelineRun name of the PipelineRun
      */
     String getPipelineRunYAML(String namespace, String pipelineRun) throws IOException;
 
     /**
-     *  Cancel the pipelineRun
+     * Cancel the pipelineRun
      *
-     * @param namespace the namespace to use
+     * @param namespace   the namespace to use
      * @param pipelineRun name of the PipelineRun
      * @throws IOException if communication errored
      */
     void cancelPipelineRun(String namespace, String pipelineRun) throws IOException;
 
     /**
-     *  Cancel the taskRun
+     * Cancel the taskRun
      *
      * @param namespace the namespace to use
-     * @param taskRun name of the TaskRun
+     * @param taskRun   name of the TaskRun
      * @throws IOException if communication errored
      */
     void cancelTaskRun(String namespace, String taskRun) throws IOException;
@@ -576,8 +579,8 @@ public interface Tkn {
      * Set a watch on Pipeline resource
      *
      * @param namespace the namespace to use
-     * @param pipeline the name of the pipeline
-     * @param watcher the watcher to call when a new event is received
+     * @param pipeline  the name of the pipeline
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -587,7 +590,7 @@ public interface Tkn {
      * Set a watch on Pipeline resources
      *
      * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -597,7 +600,7 @@ public interface Tkn {
      * Set a watch on PipelineRun resources
      *
      * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -607,8 +610,8 @@ public interface Tkn {
      * Set a watch on a specific Task resource
      *
      * @param namespace the namespace to use
-     * @param task the name of the task
-     * @param watcher the watcher to call when a new event is received
+     * @param task      the name of the task
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -618,7 +621,7 @@ public interface Tkn {
      * Set a watch on Task resources
      *
      * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -628,7 +631,7 @@ public interface Tkn {
      * Set a watch on TaskRun resources
      *
      * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -638,7 +641,7 @@ public interface Tkn {
      * Set a watch on PipelineResource resources
      *
      * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -657,7 +660,7 @@ public interface Tkn {
      * Set a watch on Condition resources
      *
      * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -667,7 +670,7 @@ public interface Tkn {
      * Set a watch on TriggerTemplate resources
      *
      * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -677,7 +680,7 @@ public interface Tkn {
      * Set a watch on TriggerBinding resources
      *
      * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -697,7 +700,7 @@ public interface Tkn {
      * Set a watch on EventListener resources
      *
      * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
+     * @param watcher   the watcher to call when a new event is received
      * @return the watch object
      * @throws IOException if communication errored
      */
@@ -706,8 +709,8 @@ public interface Tkn {
     /**
      * Get diagnostic data related to objects with the field=value pair
      *
-     * @param namespace the namespace to use
-     * @param keyLabel the key to use to retrieve the objects
+     * @param namespace  the namespace to use
+     * @param keyLabel   the key to use to retrieve the objects
      * @param valueLabel the value to use to retrieve the objects
      * @return if the search succeeded or not
      * @throws IOException if communication errored
@@ -716,8 +719,9 @@ public interface Tkn {
 
     /**
      * Install task from Tekton Hub
-     * @param task task name
-     * @param version version of the task
+     *
+     * @param task      task name
+     * @param version   version of the task
      * @param overwrite if the task is already installed and we want to overwrite that
      * @throws IOException if communication errored
      */
@@ -725,7 +729,8 @@ public interface Tkn {
 
     /**
      * Get the task yaml from Tekton Hub
-     * @param task task name
+     *
+     * @param task    task name
      * @param version version of the task
      * @return the task yaml
      * @throws IOException if communication errored
@@ -734,8 +739,9 @@ public interface Tkn {
 
     /**
      * Get the pipeline yaml from Tekton Hub
+     *
      * @param pipeline pipeline name
-     * @param version version of the pipeline
+     * @param version  version of the pipeline
      * @return the pipeline yaml
      * @throws IOException if communication errored
      */
@@ -745,4 +751,5 @@ public interface Tkn {
 
     public <T> T getClient(Class<T> clazz);
 
+    public Map<String, String> getEnvVariables();
 }

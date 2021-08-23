@@ -609,7 +609,7 @@ public class TknCli implements Tkn {
     @Override
     public void showLogsTaskRun(String namespace, String taskRun, boolean toEditor) throws IOException {
         if (!toEditor) {
-            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, false, envVars, command, "taskrun", "logs", taskRun, "-n", namespace);
+            ExecHelper.executeWithTerminal(project, Constants.TERMINAL_TITLE, command, "taskrun", "logs", taskRun, "-n", namespace);
         } else {
             String fileName = namespace + "-" + KIND_TASKRUN + "-" + taskRun + ".log";
             ExecHelper.executeWithUI(envVars,
@@ -892,6 +892,11 @@ public class TknCli implements Tkn {
     @Override
     public <T> T getClient(Class<T> clazz) {
         return client.adapt(clazz);
+    }
+
+    @Override
+    public Map<String, String> getEnvVariables() {
+        return envVars;
     }
 
     private String getTektonRunName(String output) {
