@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
@@ -179,6 +180,15 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     List<String> getEventListeners(String namespace) throws IOException;
+
+    /**
+     * Get configmap by name
+     *
+     * @param namespace the namespace of the configmap
+     * @param name configmap name
+     * @return configmap object
+     */
+    ConfigMap getConfigMap(String namespace, String name);
 
     /**
      * Get pipeline configuration in YAML
