@@ -218,7 +218,6 @@
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
       <group id="com.redhat.devtools.intellij.tektoncd.tree.configuration" text="Show Configuration" popup="true">
-        <add-to-group group-id="com.redhat.devtools.intellij.tektoncd.tree" anchor="first"/>
         <action id="com.redhat.devtools.intellij.tektoncd.actions.setting.ShowConfigDefaultsAction" class="com.redhat.devtools.intellij.tektoncd.actions.setting.ShowConfigDefaultsAction" text="Show Config-Defaults"/>
         <action id="com.redhat.devtools.intellij.tektoncd.actions.setting.ShowFeatureFlagsAction" class="com.redhat.devtools.intellij.tektoncd.actions.setting.ShowFeatureFlagsAction" text="Show Feature-Flags"/>
       </group>
