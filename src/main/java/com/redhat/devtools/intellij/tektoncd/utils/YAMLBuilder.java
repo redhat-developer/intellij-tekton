@@ -208,7 +208,7 @@ public class YAMLBuilder {
         });
 
         ObjectNode templateNode = YAML_MAPPER.createObjectNode();
-        templateNode.put("name", triggerTemplate);
+        templateNode.put("ref", triggerTemplate);
 
         triggerNode.put("name", name);
         if (bindingsNode.size() > 0) {
@@ -355,10 +355,10 @@ public class YAMLBuilder {
         return specNode;
     }
 
-    public static ObjectNode createTriggerTemplate(String name, List<String> params, List<ObjectNode> runs) {
+    public static ObjectNode createTriggerTemplate(String name, String apiVersion, List<String> params, List<ObjectNode> runs) {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
-        rootNode.put("apiVersion", "triggers.tekton.dev/v1alpha1");
+        rootNode.put("apiVersion", apiVersion);
         rootNode.put("kind", "TriggerTemplate");
 
         ObjectNode metadataNode = YAML_MAPPER.createObjectNode();
@@ -381,10 +381,10 @@ public class YAMLBuilder {
         return rootNode;
     }
 
-    public static ObjectNode createEventListener(String name, String serviceAccount, List<String> triggerBindings, String triggerTemplate) {
+    public static ObjectNode createEventListener(String name, String apiVersion, String serviceAccount, List<String> triggerBindings, String triggerTemplate) {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
-        rootNode.put("apiVersion", "triggers.tekton.dev/v1alpha1");
+        rootNode.put("apiVersion", apiVersion);
         rootNode.put("kind", "EventListener");
 
         ObjectNode metadataNode = YAML_MAPPER.createObjectNode();

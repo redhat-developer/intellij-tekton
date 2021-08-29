@@ -106,14 +106,15 @@ public class AddTriggerAction extends TektonAction {
                 String randomString = Utils.getRandomString(6);
                 String triggerTemplateName = element.getName() + "-template-" + randomString;
                 ObjectNode run = createNode(element, model);
-                ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, new ArrayList<>(paramsFromBindings), Arrays.asList(run));
+                String triggerApiVersion = tkncli.getTektonTriggersApiVersion();
+                ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, triggerApiVersion, new ArrayList<>(paramsFromBindings), Arrays.asList(run));
                 saveResource(YAMLHelper.JSONToYAML(triggerTemplate), namespace, "triggertemplates", tkncli);
                 notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
 
                 // create the eventListener
                 String eventListenerName = element.getName() + "-listener-" + randomString;
                 // TODO we are using the default pipeline serviceAccount but we should allow users to select the one they prefer
-                ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, "pipeline", triggerBindingsSelected.keySet().stream()
+                ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, triggerApiVersion, "pipeline", triggerBindingsSelected.keySet().stream()
                         .map(binding -> binding.replace(" NEW", ""))
                         .collect(Collectors.toList()), triggerTemplateName);
                 saveResource(YAMLHelper.JSONToYAML(eventListener), namespace, "eventlisteners", tkncli);

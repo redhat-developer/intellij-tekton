@@ -317,7 +317,7 @@
   "Tekton: TriggerTemplate": {
     "prefix": "Tekton: TriggerTemplate",
     "body": [
-      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "apiVersion: #apiversion",
       "kind: TriggerTemplate",
       "metadata:",
       "  name: name",
@@ -334,7 +334,7 @@
   "Tekton: TriggerBinding": {
     "prefix": "Tekton: TriggerBinding",
     "body": [
-      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "apiVersion: #apiversion",
       "kind: TriggerBinding",
       "metadata:",
       "  name: name",
@@ -352,7 +352,7 @@
   "Tekton: ClusterTriggerBinding": {
     "prefix": "Tekton: ClusterTriggerBinding",
     "body": [
-      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "apiVersion: #apiversion",
       "kind: ClusterTriggerBinding",
       "metadata:",
       "  name: name",
@@ -370,7 +370,7 @@
   "Tekton: EventListener": {
     "prefix": "Tekton: EventListener",
     "body": [
-      "apiVersion: triggers.tekton.dev/v1alpha1",
+      "apiVersion: #apiversion",
       "kind: EventListener",
       "metadata:",
       "  name: name",
@@ -379,9 +379,9 @@
       "  triggers:",
       "    - name: triggerName",
       "      bindings:",
-      "        - name: bindingName",
+      "        - ref: bindingName",
       "      template:",
-      "        name: templateName"
+      "        ref: templateName"
     ],
     "description": "Tekton EventListener",
     "keywords": [

@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
+import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.treeStructure.Tree;
@@ -19,11 +20,11 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
+import java.io.IOException;
+import java.util.Map;
+import javax.swing.tree.TreePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.swing.tree.TreePath;
-import java.io.IOException;
 
 public class TektonAction extends StructureTreeAction {
     Logger logger = LoggerFactory.getLogger(TektonAction.class);
@@ -74,6 +75,23 @@ public class TektonAction extends StructureTreeAction {
             content = SnippetHelper.getBody(snippet);
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage(), e);
+        }
+        return content;
+    }
+
+    public String getSnippet(String snippet, Map<String, String> replacements) {
+        String content = getSnippet(snippet);
+        if (!Strings.isNullOrEmpty(content)) {
+            content = findAndReplaceInSnippet(content, replacements);
+        }
+        return content;
+    }
+
+    private String findAndReplaceInSnippet(String content, Map<String, String> replacements) {
+        for (Map.Entry<String, String> entry: replacements.entrySet()) {
+            if (content.contains(entry.getKey())) {
+                content = content.replaceAll(entry.getKey(), entry.getValue());
+            }
         }
         return content;
     }

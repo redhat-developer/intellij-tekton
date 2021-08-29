@@ -91,6 +91,8 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_ALPHA1_API_VERSION;
+import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_BETA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.IS_OPENSHIFT;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.KUBERNETES_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_DIAG;
@@ -149,6 +151,18 @@ public class TknCli implements Tkn {
             return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("triggers.tekton.dev")).findFirst().isPresent();
         } catch (KubernetesClientException e) {
             return false;
+        }
+    }
+
+    @Override
+    public String getTektonTriggersApiVersion() throws IOException {
+        try {
+            if (client.rootPaths().getPaths().stream().anyMatch(path -> path.endsWith("triggers.tekton.dev/v1beta1"))) {
+                return TRIGGER_BETA1_API_VERSION;
+            }
+            return TRIGGER_ALPHA1_API_VERSION;
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
         }
     }
 
