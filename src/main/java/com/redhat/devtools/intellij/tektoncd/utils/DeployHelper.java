@@ -75,7 +75,7 @@ public class DeployHelper {
 
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(resource.getKind()) ? "" : namespace;
-            boolean isNewResource = executeTkn(resourceNamespace, yaml, updateLabels, resource, tknCli);
+            boolean isNewResource = doSave(resourceNamespace, yaml, updateLabels, resource, tknCli);
             telemetry.property(PROP_RESOURCE_CRUD, (isNewResource ? VALUE_RESOURCE_CRUD_CREATE : VALUE_RESOURCE_CRUD_UPDATE))
                     .send();
         } catch (KubernetesClientException e) {
@@ -136,7 +136,7 @@ public class DeployHelper {
         return resultDialog == Messages.OK;
     }
 
-    private static boolean executeTkn(String namespace, String yaml, boolean updateLabels, GenericResource resource, Tkn tknCli) throws IOException {
+    private static boolean doSave(String namespace, String yaml, boolean updateLabels, GenericResource resource, Tkn tknCli) throws KubernetesClientException, IOException {
         CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(resource.getApiVersion(), TreeHelper.getPluralKind(resource.getKind()));
         if (crdContext == null) {
             throw new IOException("Tekton file has not a valid format. ApiVersion field contains an invalid value.");
@@ -145,6 +145,7 @@ public class DeployHelper {
         if (CRDHelper.isRunResource(resource.getKind())) {
             tknCli.createCustomResource(namespace, crdContext, yaml);
         } else {
+            namespace = CRDHelper.isClusterScopedResource(resource.getKind()) ? "" : namespace;
             GenericKubernetesResource customResourceMap = tknCli.getCustomResource(namespace, resource.getName(), crdContext);
             if (customResourceMap == null) {
                 tknCli.createCustomResource(namespace, crdContext, yaml);
@@ -160,6 +161,15 @@ public class DeployHelper {
             }
         }
         return newResource;
+    }
+
+    public static void saveResource(String resourceAsYAML, String namespace, Tkn tkncli) throws IOException {
+        try {
+            GenericResource resource = getResource(resourceAsYAML);
+            doSave(namespace, resourceAsYAML, false, resource, tkncli);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     private static String createErrorMessage(GenericResource resource, KubernetesClientException e) {

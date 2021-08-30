@@ -29,6 +29,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.addtrigger.AddTriggerWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.Utils;
@@ -117,7 +118,7 @@ public class AddTriggerAction extends TektonAction {
                 ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, triggerApiVersion, "pipeline", triggerBindingsSelected.keySet().stream()
                         .map(binding -> binding.replace(" NEW", ""))
                         .collect(Collectors.toList()), triggerTemplateName);
-                saveResource(YAMLHelper.JSONToYAML(eventListener), namespace, "eventlisteners", tkncli);
+                DeployHelper.saveResource(YAMLHelper.JSONToYAML(eventListener), namespace, tkncli);
                 telemetry.result("bindings and resources created")
                         .send();
                 notifySuccessOperation("EventListener " + eventListenerName);
@@ -150,7 +151,7 @@ public class AddTriggerAction extends TektonAction {
         triggerBindingsSelected.keySet().stream().filter(binding -> binding.endsWith(" NEW")).forEach(binding -> {
             try {
                 String bindingBody = triggerBindingsSelected.get(binding);
-                saveResource(bindingBody, namespace, "triggerbindings", tkncli);
+                DeployHelper.saveResource(bindingBody, namespace, tkncli);
                 String nameBinding = YAMLHelper.getStringValueFromYAML(bindingBody, new String[] {"metadata", "name"});
                 notifySuccessOperation("TriggerBinding " + nameBinding);
             } catch (IOException e) {

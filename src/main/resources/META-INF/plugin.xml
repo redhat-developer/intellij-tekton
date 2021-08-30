@@ -249,6 +249,7 @@
       <action id="com.redhat.devtools.intellij.tektoncd.actions.StartAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartAction" text="Start"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" class="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" text="Mirror Start"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" text="Start Last Run"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.task.DebugTaskRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.DebugTaskRunAction" text="Start in Debug Mode"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" text="Find Usages" />
       <action id="com.redhat.devtools.intellij.tektoncd.actions.clustertask.FindClusterTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.FindClusterTaskRefAction" text="Find Usages" />
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTaskRunTemplateAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskRunTemplateAction" text="Create Run Template"/>

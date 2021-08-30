@@ -29,6 +29,8 @@ import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessa
 
 public class MirrorStartAction extends StartAction {
 
+    public MirrorStartAction(Class... filters) { super(filters); }
+
     public MirrorStartAction() {
         super(PipelineRunNode.class, TaskRunNode.class);
     }

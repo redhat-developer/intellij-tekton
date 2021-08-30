@@ -224,22 +224,30 @@ public class YAMLBuilder {
     }
 
     public static ObjectNode createRun(ActionToRunModel model) {
+        return createRun(model, false);
+    }
+
+    public static ObjectNode createRun(ActionToRunModel model, boolean toDebug) {
         if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
             return createPipelineRun(model);
         } else {
-            return createTaskRun(model);
+            return createTaskRun(model, toDebug);
         }
     }
 
     public static ObjectNode createPipelineRun(ActionToRunModel model) {
-        return createRunInternal("PipelineRun", model);
+        return createRunInternal("PipelineRun", model, false);
+    }
+
+    public static ObjectNode createTaskRun(ConfigurationModel model, boolean toDebug) {
+        return createRunInternal("TaskRun", model, toDebug);
     }
 
     public static ObjectNode createTaskRun(ConfigurationModel model) {
-        return createRunInternal("TaskRun", model);
+        return createTaskRun(model, false);
     }
 
-    public static ObjectNode createRunInternal(String kind, ConfigurationModel model) {
+    public static ObjectNode createRunInternal(String kind, ConfigurationModel model, boolean toDebug) {
         ObjectNode rootNode = YAML_MAPPER.createObjectNode();
 
         rootNode.put("apiVersion", "tekton.dev/v1beta1");
@@ -261,7 +269,9 @@ public class YAMLBuilder {
                         actionModel.getInputResources(),
                         actionModel.getOutputResources(),
                         actionModel.getWorkspaces(),
-                        actionModel.getServiceAccount().isEmpty() ? null : actionModel.getServiceAccount());
+                        actionModel.getServiceAccount().isEmpty() ? null : actionModel.getServiceAccount(),
+                        toDebug
+                );
             }
         } else if (model instanceof TaskConfigurationModel) {
             Map<String, Workspace> workspaces = new HashMap<>();
@@ -274,7 +284,8 @@ public class YAMLBuilder {
                     ((TaskConfigurationModel)model).getInputResources(),
                     ((TaskConfigurationModel)model).getOutputResources(),
                     workspaces,
-                    "");
+                    "",
+                    toDebug);
         }
 
         rootNode.set("spec", spec);
@@ -317,8 +328,13 @@ public class YAMLBuilder {
         return specNode;
     }
 
-    private static ObjectNode createTaskRunSpec(String name, List<Input> params, List<Input> inputResources, List<Output> outputs, Map<String, Workspace> workspaces, String serviceAccount) {
+    private static ObjectNode createTaskRunSpec(String name, List<Input> params, List<Input> inputResources, List<Output> outputs, Map<String, Workspace> workspaces, String serviceAccount, boolean toDebug) {
         ObjectNode specNode = YAML_MAPPER.createObjectNode();
+
+        if (toDebug) {
+            ObjectNode breakpoint = YAMLBuilder.createBreakpointSection();
+            specNode.set("debug", breakpoint);
+        }
 
         ObjectNode pipelineRefNode = YAML_MAPPER.createObjectNode();
         pipelineRefNode.put("name", name);
@@ -354,6 +370,7 @@ public class YAMLBuilder {
         if (workspacesNode.size() > 0) {
             specNode.set("workspaces", workspacesNode);
         }
+
         return specNode;
     }
 
@@ -454,6 +471,14 @@ public class YAMLBuilder {
         metadataTaskRef.put("kind", kind);
         taskRef.set("taskRef", metadataTaskRef);
         return taskRef;
+    }
+
+    public static ObjectNode createBreakpointSection() {
+        ArrayNode breakpoints = YAML_MAPPER.createArrayNode();
+        breakpoints.add("onFailure");
+        ObjectNode breakpoint = YAML_MAPPER.createObjectNode();
+        breakpoint.set("breakpoint", breakpoints);
+        return breakpoint;
     }
 
     public static String writeValueAsString(Map<String, Object> value) throws IOException {
