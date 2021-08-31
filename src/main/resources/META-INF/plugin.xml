@@ -217,10 +217,6 @@
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
-      <group id="com.redhat.devtools.intellij.tektoncd.tree.configuration" text="Show Configuration" popup="true">
-        <action id="com.redhat.devtools.intellij.tektoncd.actions.setting.ShowConfigDefaultsAction" class="com.redhat.devtools.intellij.tektoncd.actions.setting.ShowConfigDefaultsAction" text="Show Config-Defaults"/>
-        <action id="com.redhat.devtools.intellij.tektoncd.actions.setting.ShowFeatureFlagsAction" class="com.redhat.devtools.intellij.tektoncd.actions.setting.ShowFeatureFlagsAction" text="Show Feature-Flags"/>
-      </group>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreatePipelineAction" class="com.redhat.devtools.intellij.tektoncd.actions.pipeline.CreatePipelineAction" text="New Pipeline"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTaskAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskAction" text="New Task"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateClusterTaskAction" class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.CreateClusterTaskAction" text="New ClusterTask"/>

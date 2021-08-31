@@ -8,19 +8,10 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.actions.setting;
+package com.redhat.devtools.intellij.tektoncd.tree;
 
-public class ShowFeatureFlagsAction extends ShowConfigurationAction {
-
-    public ShowFeatureFlagsAction() { super(); }
-
-    @Override
-    public String getNamespace() {
-        return "tekton-pipelines";
-    }
-
-    @Override
-    public String getName() {
-        return "feature-flags";
+public class ConfigurationsNode extends ParentableNode<TektonRootNode> {
+    protected ConfigurationsNode(TektonRootNode root, String name) {
+        super(root, root, name);
     }
 }
