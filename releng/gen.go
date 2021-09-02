@@ -85,6 +85,12 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 			AdditionalProperties: []byte("true"),
 			Properties: orderedmap.New()}
 	}
+	if (i == reflect.TypeOf(v1.FieldsV1{})) {
+		return &jsonschema.Type{
+			Type: "object",
+			AdditionalProperties: []byte("true"),
+			Properties: orderedmap.New()}
+	}
 	if (i == reflect.TypeOf(apiextensionsv1.JSON{})) {
 		return &jsonschema.Type{
 			OneOf: []*jsonschema.Type{
