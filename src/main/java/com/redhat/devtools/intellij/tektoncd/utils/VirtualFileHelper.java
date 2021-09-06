@@ -28,8 +28,12 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.TARGET_NODE;
 
 public class VirtualFileHelper {
 
+    public static void openVirtualFileInEditor(Project project, String name, String content, boolean readOnly, boolean clean) throws IOException {
+        innerOpenVirtualFileInEditor(project, "", name, content, "", true, readOnly, clean);
+    }
+
     public static void openVirtualFileInEditor(Project project, String name, String content, boolean clean) throws IOException {
-        innerOpenVirtualFileInEditor(project, "", name, content, "", true, false, clean);
+        openVirtualFileInEditor(project, name, content, false, clean);
     }
 
     public static void openVirtualFileInEditor(Project project, String name, String content) throws IOException {

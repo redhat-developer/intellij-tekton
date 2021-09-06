@@ -113,7 +113,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         Tkn tkn = root.getTkn();
         if (tkn != null) {
             if (element instanceof TektonRootNode) {
-                return getNamespaces((TektonRootNode) element);
+                return getFirstLevelNodes((TektonRootNode) element);
             }
             if (element instanceof NamespaceNode) {
                 Object[] generalNodes = new Object[]{
@@ -135,10 +135,13 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                         new ClusterTriggerBindingsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new EventListenersNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
-                Object[] firstLevelNodes = ArrayUtils.addAll(generalNodes, triggersNode);
-                watchNodes(firstLevelNodes);
-                return firstLevelNodes;
+                Object[] secondLevelNodes = ArrayUtils.addAll(generalNodes, triggersNode);
+                watchNodes(secondLevelNodes);
+                return secondLevelNodes;
 
+            }
+            if (element instanceof ConfigurationsNode) {
+                return getConfigurationNodes((ConfigurationsNode) element);
             }
             if (element instanceof PipelinesNode) {
                 return getPipelines((PipelinesNode) element);
@@ -338,13 +341,21 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return tasks.toArray(new Object[tasks.size()]);
     }
 
-    private Object[] getNamespaces(TektonRootNode element) {
+    private Object[] getConfigurationNodes(ConfigurationsNode element) {
+        List<Object> configurations = new ArrayList<>();
+        configurations.add(new ConfigurationNode(element.getRoot(), element, "config-defaults", "Defaults"));
+        configurations.add(new ConfigurationNode(element.getRoot(), element, "feature-flags", "Features"));
+        return configurations.toArray(new Object[configurations.size()]);
+    }
+
+    private Object[] getFirstLevelNodes(TektonRootNode element) {
         List<Object> namespaces = new ArrayList<>();
         try {
             Tkn tkn = element.getTkn();
             if (tkn.isTektonAware()) {
                 String namespace = element.getTkn().getNamespace();
                 namespaces.add(new NamespaceNode(element, namespace));
+                namespaces.add(new ConfigurationsNode(element, "Configurations"));
             } else {
                 namespaces.add(new MessageNode(element, element, NO_TEKTON));
             }
@@ -438,6 +449,12 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         }
         if (element instanceof EventListenerNode) {
             return new LabelAndIconDescriptor(project, element, ((EventListenerNode)element).getName(), EVENT_LISTENER_ICON, parentDescriptor);
+        }
+        if (element instanceof ConfigurationsNode) {
+            return new LabelAndIconDescriptor(project, element, ((ConfigurationsNode)element).getName(), AllIcons.General.ExternalTools, parentDescriptor);
+        }
+        if (element instanceof ConfigurationNode) {
+            return new LabelAndIconDescriptor(project, element, ((ConfigurationNode)element).getDisplayName(), AllIcons.General.Settings, parentDescriptor);
         }
         if (element instanceof MessageNode) {
             return new LabelAndIconDescriptor(project, element, ((MessageNode)element).getName(), AllIcons.General.Warning, parentDescriptor);

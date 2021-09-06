@@ -28,6 +28,7 @@ import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import com.twelvemonkeys.lang.Platform;
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimSpec;
@@ -280,6 +281,11 @@ public class TknCli implements Tkn {
     public List<String> getEventListeners(String namespace) throws IOException {
         String output = ExecHelper.execute(command, envVars, "eventlisteners", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
+    }
+
+    @Override
+    public ConfigMap getConfigMap(String namespace, String name) {
+        return client.configMaps().inNamespace(namespace).withName(name).get();
     }
 
     @Override

@@ -10,6 +10,9 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Pair;
@@ -20,6 +23,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
+import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
@@ -27,6 +31,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
+import com.redhat.devtools.intellij.tektoncd.tree.ConfigurationNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
@@ -39,6 +44,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,6 +78,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDIN
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
@@ -164,29 +171,65 @@ public class TreeHelper {
         }
 
         Object node = path.getLastPathComponent();
-        ParentableNode<? extends ParentableNode<?>> element = StructureTreeAction.getElement(node);
-        Pair<String, String> yamlAndKind = getYAMLAndKindFromNode(element);
-        if (yamlAndKind == null
-                || yamlAndKind.getFirst().isEmpty()) {
-            return;
+        ParentableNode<?> element = StructureTreeAction.getElement(node);
+        if (element instanceof ConfigurationNode) {
+            openTektonConfigurationInEditor(element);
+        } else {
+            openTektonResourceInEditor(element);
         }
-        Project project = element.getRoot().getProject();
-        String namespace = element.getNamespace();
-        String name = element.getName();
-        String content = yamlAndKind.getFirst();
-        String kind = yamlAndKind.getSecond();
-        TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "open resource in editor")
-                .property(TelemetryService.PROP_RESOURCE_KIND, yamlAndKind.second);
-        try {
-            VirtualFileHelper.openVirtualFileInEditor(project, namespace, name, content, kind, false);
-            telemetry.send();
-        } catch (IOException e) {
-            String errorMessage = "Could not open resource in editor: " + e.getLocalizedMessage();
-            telemetry
-                    .error(anonymizeResource(name, namespace, errorMessage))
-                    .send();
-            logger.warn(errorMessage, e);
-        }
+    }
+
+    private static void openTektonConfigurationInEditor(ParentableNode element) {
+        ExecHelper.submit(() -> {
+            Tkn tkncli = element.getRoot().getTkn();
+            String namespace = "tekton-pipelines";
+            String name = element.getName();
+            ConfigMap configMap = tkncli.getConfigMap(namespace, name);
+            UIHelper.executeInUI(() -> {
+                if (configMap == null) {
+                    Messages.showErrorDialog("No configuration file " + name + " found in namespace " + namespace, "Configuration not Found");
+                    return;
+                }
+                try {
+                    String yaml = YAMLBuilder.writeValueAsString(configMap);
+                    VirtualFileHelper.openVirtualFileInEditor(element.getRoot().getProject(), name + ".yaml", yaml, true, true);
+                } catch (IOException e) {
+                    Notification notification = new Notification(NOTIFICATION_ID,
+                            "Error",
+                            name + " file in namespace " + namespace + " was not found\n" + e.getLocalizedMessage(),
+                            NotificationType.ERROR);
+                    Notifications.Bus.notify(notification);
+                    logger.warn("Error: " + e.getLocalizedMessage(), e);
+                }
+            });
+        });
+    }
+
+    private static void openTektonResourceInEditor(ParentableNode element) {
+        ExecHelper.submit(() -> {
+            Pair<String, String> yamlAndKind = getYAMLAndKindFromNode(element);
+            if (yamlAndKind == null
+                    || yamlAndKind.getFirst().isEmpty()) {
+                return;
+            }
+            Project project = element.getRoot().getProject();
+            String namespace = element.getNamespace();
+            String name = element.getName();
+            String content = yamlAndKind.getFirst();
+            String kind = yamlAndKind.getSecond();
+            TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "open resource in editor")
+                    .property(TelemetryService.PROP_RESOURCE_KIND, yamlAndKind.second);
+            UIHelper.executeInUI(() -> {
+                try {
+                    VirtualFileHelper.openVirtualFileInEditor(project, namespace, name, content, kind, false);
+                    ExecHelper.submit(() -> telemetry.send());
+                } catch (IOException e) {
+                    String errorMessage = "Could not open resource in editor: " + e.getLocalizedMessage();
+                    logger.warn(errorMessage, e);
+                    ExecHelper.submit(() -> telemetry.error(anonymizeResource(name, namespace, errorMessage)).send());
+                }
+            });
+        });
     }
 
     public static String getPluralKind(String kind) {

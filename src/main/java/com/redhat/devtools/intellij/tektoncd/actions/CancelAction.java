@@ -42,8 +42,7 @@ public class CancelAction extends TektonAction {
     @Override
     public boolean isVisible(Object[] selected) {
         if (selected == null) return false;
-        boolean isCancellable = Arrays.stream(selected).allMatch(item -> isVisible(item));
-        return isCancellable;
+        return Arrays.stream(selected).allMatch(this::isVisible);
     }
 
     @Override

@@ -22,12 +22,14 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
+import static com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature.WRITE_DOC_START_MARKER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 
@@ -457,6 +459,14 @@ public class YAMLBuilder {
     public static String writeValueAsString(Map<String, Object> value) throws IOException {
         try {
             return new YAMLMapper().writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public static String writeValueAsString(HasMetadata value) throws IOException {
+        try {
+            return new YAMLMapper().configure(WRITE_DOC_START_MARKER, false).writeValueAsString(value);
         } catch (JsonProcessingException e) {
             throw new IOException(e);
         }
