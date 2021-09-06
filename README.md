@@ -17,16 +17,24 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
 
-The Tekton CLI in use has been upgrated to 0.18.0.
+The Tekton CLI in use has been upgrated to 0.20.0.
+
+### Tekton Hub view
+
+The Tekton Hub was integrated through a search dialog that allows users to search to tasks and pipelines from the Tekton Hub to be added to the cluster.
+The content from the Tekton Hub is now integrated into a new view that is displayed below the cluster Tekton resources and is automatically synced with the current IntelliJ project: if you working on a Java project, then only tasks and pipelines relevant for Java will be displayed:
+
+![](images/0.12.0/tekton1.png)
+
+## Previous releases
+
+## 0.11.0
 
 ### Tekton Hub search enhanced
 
 When searching on Tekton Hub, the list is now ordered according to the main language of your local IntelliJ project. In this example, we are working on a Java project so tasks relevant for Java development workflow are displayed first in the list:
 
 ![](images/0.11.0/tekton1.gif)
-
-
-## Previous releases
 
 ## 0.10.0
 
