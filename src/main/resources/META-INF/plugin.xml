@@ -13,6 +13,17 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>0.12.0</b></p>
+  <p>Tekton Hub</p>
+  <p><ul>
+  <li>The context of the Tekton Hub is now displayed in a specific view below the cluster resources.</li>
+  </ul></p>
+  <p>Tekton Triggers</p>
+  <p><ul>
+  <li>The implementation is now using v1beta1 version</li>
+  </ul></p>
+  <p>Switch to tkn 0.20.0</p>
+  <p>Schemas for validation and code assist have been updated to Tekton Pipeline 0.27.1 and Tekton Triggers 0.15.0</p>
   <p><b>0.11.0</b></p>
   <p>Tekton Hub</p>
   <p><ul>
