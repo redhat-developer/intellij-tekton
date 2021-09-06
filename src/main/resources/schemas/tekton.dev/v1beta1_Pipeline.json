@@ -602,11 +602,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "FieldsV1": {
-      "properties": {},
-      "additionalProperties": false,
-      "type": "object"
-    },
     "FlexVolumeSource": {
       "required": [
         "driver"
@@ -952,8 +947,9 @@
           "type": "string"
         },
         "fieldsV1": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/FieldsV1"
+          "properties": {},
+          "additionalProperties": true,
+          "type": "object"
         }
       },
       "additionalProperties": false,
