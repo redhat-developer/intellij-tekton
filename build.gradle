@@ -1,6 +1,6 @@
 
 plugins {
-    id "org.jetbrains.intellij" version "0.6.5"
+    id "org.jetbrains.intellij" version "1.1.4"
     id "idea"
     id "java"
     id "jacoco"
@@ -20,11 +20,11 @@ targetCompatibility = '1.8'
 def versionsMap = ['IU-2019.3':'193.5233.144','IU-2020.1':'201.6668.99', 'IU-2020.2':'202.6397.93', 'IU-2020.3':'203.5981.152', 'IU-2021.1':'211.6693.108', 'IU-2021.2':'212.4746.57']
 
 intellij {
-    version ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
-    pluginName 'com.redhat.devtools.intellij.tekton'
+    version = ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
+    pluginName = 'com.redhat.devtools.intellij.tekton'
     // use '<git repo clone>/build/idea-sandbox/plugins/Telemetry by Red Hat' if working from source
-    plugins 'terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.1.9", 'com.redhat.devtools.intellij.kubernetes:0.1.6.32'
-    updateSinceUntilBuild false
+    plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.1.9", 'com.redhat.devtools.intellij.kubernetes:0.1.6.32']
+    updateSinceUntilBuild = false
 }
 
 runIde {
@@ -85,8 +85,8 @@ task integrationTest(type: Test) {
 
 
 publishPlugin {
-    token    jetBrainsToken
-    channels jetBrainsChannel
+    token    = jetBrainsToken
+    channels = [jetBrainsChannel]
 }
 
 openApiGenerate {
