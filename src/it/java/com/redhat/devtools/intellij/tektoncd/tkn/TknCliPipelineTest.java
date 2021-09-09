@@ -81,7 +81,7 @@ public class TknCliPipelineTest extends TknCliTest {
         List<String> pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
         assertTrue(pipelines.contains(PIPELINE_NAME));
         // verify pipelinerun has been created
-        tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE)
+        tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE).withName(PIPELINE_NAME)
                 .waitUntilCondition(pipelineRun -> pipelineRun.getMetadata().getName() != null && pipelineRun.getMetadata().getName().equals(PIPELINE_RUN_NAME), 10, TimeUnit.MINUTES);
         tkn.cancelPipelineRun(NAMESPACE, PIPELINE_RUN_NAME);
         // clean up and verify cleaning succeed
@@ -93,7 +93,7 @@ public class TknCliPipelineTest extends TknCliTest {
     }
 
     @Test
-    public void verifyStartPipelineCreateRuns() throws IOException, InterruptedException {
+    public void verifyStartPipelineCreateRuns() throws IOException {
         String TASK_NAME = "add-task";
         String PIPELINE_NAME = "sum-three-pipeline";
         String taskConfig = TestUtils.load("start/add-task.yaml");
@@ -113,9 +113,9 @@ public class TknCliPipelineTest extends TknCliTest {
         params.put("second", new Input("name2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
         params.put("third", new Input("name3", "string", Input.Kind.PARAMETER, "value3", Optional.empty(), Optional.empty()));
         tkn.startPipeline(NAMESPACE, PIPELINE_NAME, params, Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
-        io.fabric8.tekton.pipeline.v1beta1.PipelineRun pRun = tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE)
+        io.fabric8.tekton.pipeline.v1beta1.PipelineRun pRun = tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE).withName(PIPELINE_NAME)
                 .waitUntilCondition(pipelineRun -> pipelineRun.getMetadata().getName() != null && pipelineRun.getMetadata().getName().startsWith(PIPELINE_NAME), 10, TimeUnit.MINUTES);
-        tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
+        tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE).withName(PIPELINE_NAME)
                 .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().startsWith(PIPELINE_NAME), 10, TimeUnit.MINUTES);
         tkn.cancelPipelineRun(NAMESPACE, pRun.getMetadata().getName());
         // clean up
