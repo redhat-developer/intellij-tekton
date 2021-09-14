@@ -49,8 +49,8 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.dsl.ExecListener;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
-import io.fabric8.kubernetes.client.dsl.PodResource;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.tekton.client.TektonClient;
@@ -68,6 +68,7 @@ import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -80,6 +81,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import okhttp3.Response;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -481,17 +483,27 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
+    public String createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
         try {
             GenericKubernetesResource genericKubernetesResource = Serialization.unmarshal(objectAsString , GenericKubernetesResource.class);
             if (namespace.isEmpty()) {
-                client.genericKubernetesResources(crdContext).create(genericKubernetesResource);
+                genericKubernetesResource = client.genericKubernetesResources(crdContext).create(genericKubernetesResource);
             } else {
-                client.genericKubernetesResources(crdContext).inNamespace(namespace).create(genericKubernetesResource);
+                genericKubernetesResource = client.genericKubernetesResources(crdContext).inNamespace(namespace).create(genericKubernetesResource);
             }
+            return getResourceNameFromMap(genericKubernetesResource);
         } catch(KubernetesClientException e) {
             throw new IOException(e.getLocalizedMessage(), e);
         }
+
+    }
+
+    private String getResourceNameFromMap(GenericKubernetesResource resource) {
+        if (resource == null
+                || resource.getMetadata() == null) {
+            return "";
+        }
+        return resource.getMetadata().getName();
     }
 
     @Override
@@ -893,6 +905,95 @@ public class TknCli implements Tkn {
         return true;
     }
 
+    public Watch watchPodsWithLabel(String namespace, String key, String value, Watcher<Pod> watcher) throws IOException {
+        try {
+            return client.pods().inNamespace(namespace).withLabel(key, value).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public Pod getPod(String namespace, String name) throws IOException {
+        try {
+            return client.pods().inNamespace(namespace).withName(name).get();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public boolean isContainerStuckOnDebug(String namespace, String name, String container) throws IOException {
+        try {
+            InputStream inputStream = client.pods().inNamespace(namespace).withName(name).inContainer(container).file("tekton/termination").read();
+            return inputStream.read() != -1;
+        } catch(KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public void openContainerInTerminal(Pod pod, String containerId) throws IOException {
+        ExecHelper.executeWithTerminal(project, "tekton", "kubectl", "exec", "-it", "--namespace", pod.getMetadata().getNamespace(), "-c", containerId, pod.getMetadata().getName(), "bash");
+    }
+
+    public ExecWatch openContainerWatch(Pod pod, String containerId) {
+        return client.pods().inNamespace(pod.getMetadata().getNamespace())
+                .withName(pod.getMetadata().getName())
+                .inContainer(containerId)
+                .redirectingInput()
+                .redirectingOutput()
+                .redirectingError()
+                .withTTY()
+                .exec("sh");
+    }
+
+    public ExecWatch openContainerWatch(Pod pod, String containerId, String... command) {
+        return client.pods().inNamespace(pod.getMetadata().getNamespace())
+                .withName(pod.getMetadata().getName())
+                .inContainer(containerId)
+                .redirectingInput()
+                .redirectingOutput()
+                .redirectingError()
+                .withTTY()
+                .exec(command);
+    }
+
+    public ExecWatch openContainerWatch(String namespace, String name, String containerId) {
+
+
+        return client.pods().inNamespace(namespace)
+                .withName(name)
+                .inContainer(containerId)
+                .redirectingInput()
+                .redirectingOutput()
+                .redirectingError()
+                .withTTY()
+                .usingListener(new ExecListener() {
+                    @Override
+                    public void onOpen(Response response) {
+
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t, Response response) {
+
+                    }
+
+                    @Override
+                    public void onClose(int code, String reason) {
+
+                    }
+                })
+                .exec("sh");
+    }
+
+    /*public Pod getPod(String namespace, String name, String container) throws IOException {
+        try {
+            ExecWatch execWatch = client.pods().inNamespace(namespace).withName(name).inContainer(container).exec("--", "ls", "-la", "/bin/bash");
+            //execWatch.
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }*/
+
     @Override
     public void installTaskFromHub(String task, String version, boolean overwrite) throws IOException {
         String installType = overwrite ? "reinstall" : "install";
@@ -947,5 +1048,9 @@ public class TknCli implements Tkn {
             }
         }
         return null;
+    }
+
+    public Project getProject() {
+        return project;
     }
 }

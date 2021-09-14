@@ -10,11 +10,20 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory;
 
 public class DebugWindowToolFactory extends TerminalToolWindowFactory {
+
+    @Override
+    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        toolWindow.setIcon(AllIcons.Toolwindows.ToolWindowDebugger);
+        toolWindow.setStripeTitle("Tekton Debug");
+    }
+
     @Override
     public boolean isDoNotActivateOnStart() {
         return true;

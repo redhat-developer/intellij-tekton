@@ -10,14 +10,17 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResourceList;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
@@ -429,8 +432,9 @@ public interface Tkn {
      * @param crdContext the custom resource definition context of the resource kind
      * @param objectAsString new object as a JSON string
      * @throws IOException
+     * @return resource name
      */
-    void createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
+    String createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
 
     /**
      * Create a PVC
@@ -751,6 +755,21 @@ public interface Tkn {
     boolean getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException;
 
     /**
+     *
+     * @param namespace
+     * @param key
+     * @param value
+     * @return
+     */
+    Watch watchPodsWithLabel(String namespace, String key, String value, Watcher<Pod> watcher) throws IOException;
+
+    Pod getPod(String namespace, String name) throws IOException;
+
+    boolean isContainerStuckOnDebug(String namespace, String name, String container) throws IOException;
+
+    void openContainerInTerminal(Pod pod, String containerId) throws IOException;
+
+    /**
      * Install task from Tekton Hub
      * @param task task name
      * @param version version of the task
@@ -781,4 +800,11 @@ public interface Tkn {
 
     public <T> T getClient(Class<T> clazz);
 
+    Project getProject();
+
+    ExecWatch openContainerWatch(Pod pod, String containerId);
+
+    ExecWatch openContainerWatch(Pod pod, String containerId, String... command);
+
+    ExecWatch openContainerWatch(String namespace, String name, String containerId);
 }
