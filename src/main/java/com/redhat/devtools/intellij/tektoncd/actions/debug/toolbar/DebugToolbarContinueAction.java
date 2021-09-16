@@ -12,7 +12,9 @@ package com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
+import com.redhat.devtools.intellij.tektoncd.actions.task.State;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import java.util.function.Supplier;
 import javax.swing.Icon;
@@ -27,14 +29,16 @@ public class DebugToolbarContinueAction extends DebugToolbarAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        model.get().setResourceStatus(State.RUNNING);
         DebugModel debugModel = model.get();
         ExecWatch execWatch = tkn.openContainerWatch(debugModel.getPod(), debugModel.getContainerId(), "sh", getScript());
         execWatch.close();
+        DebugPanelBuilder.instance(tkn).addContent(model.get());
     }
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        e.getPresentation().setEnabled(this.getTemplatePresentation().isEnabled());
+        e.getPresentation().setEnabled(model.get().getResourceStatus().equals(State.DEBUG));
     }
 
     protected String getScript() {

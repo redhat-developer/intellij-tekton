@@ -31,8 +31,13 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import java.io.IOException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DebugTaskRunAction extends MirrorStartAction {
+
+    private static final Logger logger = LoggerFactory.getLogger(DebugTaskRunAction.class);
+    private Watcher<Pod> watcher;
 
     public DebugTaskRunAction() {
         super(TaskRunNode.class);
@@ -65,49 +70,59 @@ public class DebugTaskRunAction extends MirrorStartAction {
         if (run == null) {
             throw new IOException("Unable to debug task" + model.getName());
         }
-        String runAsYAML = YAMLHelper.JSONToYAML(run);
+        String runAsYAML = YAMLHelper.JSONToYAML(run, false);
         String runName = DeployHelper.saveResource(runAsYAML, namespace, tkncli);
         DebugModel debugModel = new DebugModel(runName);
-        UIHelper.executeInUI(() -> DebugPanelBuilder.instance().build(tkncli, debugModel));
-        tkncli.watchPodsWithLabel(namespace, "tekton.dev/taskRun", runName, new Watcher<Pod>() {
+        UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkncli).addContent(debugModel));
+        tkncli.watchPodsWithLabel(namespace, "tekton.dev/taskRun", runName, createWatcher(tkncli, debugModel));
+
+        return null;
+    }
+
+    private Watcher<Pod> createWatcher(Tkn tkn, DebugModel debugModel) {
+        watcher = new Watcher<Pod>() {
             @Override
             public void eventReceived(Action action, Pod resource) {
                 debugModel.setPod(resource);
-                PollingHelper.get().pollResource(tkncli,
+                PollingHelper.get().pollResource(tkn,
                         debugModel,
                         DebugTaskRunAction.this::isReadyForDebugging,
-                        DebugTaskRunAction.this::openTerminalForDebugging);
-                this.onClose();
-                String t  ="";
+                        DebugTaskRunAction.this::updateDebugPanel);
+                //this.onClose();
+                //String t  ="";
             }
 
             @Override
             public void onClose(WatcherException cause) {
 
             }
-        });
 
-        return null;
+        };
+        return watcher;
     }
 
-    private Pair<Boolean, String> isReadyForDebugging(Tkn tkn, Pod pod) {
+    private Pair<Boolean, DebugModel> isReadyForDebugging(Tkn tkn, DebugModel model) {
+        Pod pod = model.getPod();
         List<ContainerStatus> containerStatuses = pod.getStatus().getContainerStatuses();
         for (ContainerStatus containerStatus: containerStatuses) {
             try {
                 if (containerStatus.getStarted()
                         && containerStatus.getState().getRunning() != null
                         && tkn.isContainerStuckOnDebug(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), containerStatus.getName())) {
-                    return Pair.create(true, containerStatus.getName());
+                    model.setContainerId(containerStatus.getName());
+                    model.setStep(containerStatus.getName());
+                    model.setImage(containerStatus.getImage());
+                    return Pair.create(true, model);
                 }
             } catch (IOException e) {
-                //e.printStackTrace();
+                logger.warn(e.getLocalizedMessage(), e);
             }
         }
 
-        return Pair.create(false, "");
+        return Pair.create(false, model);
     }
 
-    private void openTerminalForDebugging(Tkn tkn, DebugModel model) {
-        UIHelper.executeInUI(() -> DebugPanelBuilder.instance().update(tkn, model));
+    private void updateDebugPanel(Tkn tkn, DebugModel model) {
+        UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkn).addContent(model));
     }
 }

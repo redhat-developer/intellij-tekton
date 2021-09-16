@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
+import com.redhat.devtools.intellij.tektoncd.actions.task.State;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.io.IOException;
@@ -21,9 +22,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PollingHelper {
 
+    private static final Logger logger = LoggerFactory.getLogger(PollingHelper.class);
     private static PollingHelper instance;
     private List<String> resourceInPolling;
 
@@ -38,7 +42,7 @@ public class PollingHelper {
         return instance;
     }
 
-    public void pollResource(Tkn tkn, DebugModel model, BiFunction<Tkn, Pod, Pair<Boolean, String>> isReadyForExecution, BiConsumer<Tkn, DebugModel> doExecute) {
+    public void pollResource(Tkn tkn, DebugModel model, BiFunction<Tkn, DebugModel, Pair<Boolean, DebugModel>> isReadyForExecution, BiConsumer<Tkn, DebugModel> doExecute) {
         Pod resource = model.getPod();
         String name = resource.getMetadata().getNamespace() + "-" + resource.getMetadata().getName();
         if (resourceInPolling.contains(name)) {
@@ -53,20 +57,37 @@ public class PollingHelper {
             @Override
             public void run() {
                 try {
+                    if (model.getResourceStatus().equals(State.DEBUG)) {
+                        return;
+                    }
                     Pod updatedPod = tkn.getPod(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
-                    Pair<Boolean, String> isReadyForExecutionResult = isReadyForExecution.apply(tkn, updatedPod);
-                    if (isReadyForExecutionResult.getFirst()) {
-                        DebugModel debugModel = new DebugModel(updatedPod, isReadyForExecutionResult.getSecond(), model.getResource());
-                        doExecute.accept(tkn, debugModel);
+                    if (isPodCompleted(updatedPod)) {
+                        model.setResourceStatus(isPodInPhase(updatedPod, "Failed") ? State.COMPLETE_FAILED : State.COMPLETE_SUCCESS);
+                        doExecute.accept(tkn, model);
                         pollTimer.cancel();
                         pollTimer.purge();
                     }
+                    model.setPod(updatedPod);
+                    Pair<Boolean, DebugModel> isReadyForExecutionResult = isReadyForExecution.apply(tkn, model);
+                    if (isReadyForExecutionResult.getFirst()) {
+                        model.setResourceStatus(State.DEBUG);
+                        doExecute.accept(tkn, isReadyForExecutionResult.getSecond());
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.warn(e.getLocalizedMessage(), e);
                 }
 
             };
         };
         pollTimer.schedule(pollTask, 1000, 5000);
+    }
+
+    private boolean isPodCompleted(Pod pod) {
+        return isPodInPhase(pod, "Succeeded") ||
+                isPodInPhase(pod, "Failed");
+    }
+
+    private boolean isPodInPhase(Pod pod, String phase) {
+        return pod.getStatus().getPhase().equalsIgnoreCase(phase);
     }
 }

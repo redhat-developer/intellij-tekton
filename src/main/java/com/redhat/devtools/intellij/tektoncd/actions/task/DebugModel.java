@@ -15,9 +15,8 @@ import io.fabric8.kubernetes.api.model.Pod;
 public class DebugModel {
 
     private Pod pod;
-    private String containerId;
-    private String step;
-    private String resource;
+    private String containerId, step, resource, image;
+    private State resourceStatus;
 
     public DebugModel(String resource) {
         this(null, resource);
@@ -27,16 +26,17 @@ public class DebugModel {
         this(pod, "", resource);
     }
 
-
     public DebugModel(Pod pod, String containerId, String resource) {
-        this(pod, containerId, "", resource);
+        this(pod, containerId, "", resource, "");
     }
 
-    public DebugModel(Pod pod, String containerId, String step, String resource) {
+    public DebugModel(Pod pod, String containerId, String step, String resource, String image) {
         this.pod = pod;
         this.containerId = containerId;
         this.step = step;
         this.resource = resource;
+        this.image = image;
+        this.resourceStatus = State.RUNNING;
     }
 
     public Pod getPod() {
@@ -65,5 +65,21 @@ public class DebugModel {
 
     public String getResource() {
         return resource;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public State getResourceStatus() {
+        return resourceStatus;
+    }
+
+    public void setResourceStatus(State resourceStatus) {
+        this.resourceStatus = resourceStatus;
     }
 }
