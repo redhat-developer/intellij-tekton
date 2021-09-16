@@ -56,6 +56,21 @@ public interface Tkn {
     String getTektonTriggersApiVersion() throws IOException;
 
     /**
+     * Check if tekton in active cluster has a version older than the one required
+     * @param version version to compare tekton in active cluster
+     * @return true if tekton in active cluster has a version older than the one passed as param
+     * @throws IOException if communication errored
+     */
+    boolean isTektonVersionOlderThan(String version) throws IOException;
+
+    /**
+     * Check if alpha features are enabled on active cluster
+     * @return true if alpha features are enabled
+     * @throws IOException if communication errored
+     */
+    boolean isTektonAlphaFeatureEnabled() throws IOException;
+
+    /**
      * Return the name of the current active namespace (project for OpenShift).
      *
      * @return the active namespace name

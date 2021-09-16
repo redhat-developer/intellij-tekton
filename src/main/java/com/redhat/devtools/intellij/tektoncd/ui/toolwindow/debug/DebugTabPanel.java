@@ -35,8 +35,8 @@ import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarA
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarContinueAction;
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarContinueWithFailureAction;
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarTerminateAction;
-import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
-import com.redhat.devtools.intellij.tektoncd.actions.task.State;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import java.awt.BorderLayout;
@@ -211,7 +211,7 @@ public class DebugTabPanel {
     }
 
     private void update() {
-        if (model.getResourceStatus().equals(State.DEBUG)) {
+        if (model.getResourceStatus().equals(DebugResourceState.DEBUG)) {
             DefaultMutableTreeNode kindNode = new DefaultMutableTreeNode(
                     new LabelAndIconDescriptor(tkn.getProject(),
                             null,

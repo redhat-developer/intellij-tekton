@@ -11,8 +11,8 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.util.Pair;
-import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
-import com.redhat.devtools.intellij.tektoncd.actions.task.State;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import io.fabric8.kubernetes.api.model.Pod;
 import java.io.IOException;
@@ -57,12 +57,12 @@ public class PollingHelper {
             @Override
             public void run() {
                 try {
-                    if (model.getResourceStatus().equals(State.DEBUG)) {
+                    if (model.getResourceStatus().equals(DebugResourceState.DEBUG)) {
                         return;
                     }
                     Pod updatedPod = tkn.getPod(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
                     if (isPodCompleted(updatedPod)) {
-                        model.setResourceStatus(isPodInPhase(updatedPod, "Failed") ? State.COMPLETE_FAILED : State.COMPLETE_SUCCESS);
+                        model.setResourceStatus(isPodInPhase(updatedPod, "Failed") ? DebugResourceState.COMPLETE_FAILED : DebugResourceState.COMPLETE_SUCCESS);
                         doExecute.accept(tkn, model);
                         pollTimer.cancel();
                         pollTimer.purge();
@@ -70,7 +70,7 @@ public class PollingHelper {
                     model.setPod(updatedPod);
                     Pair<Boolean, DebugModel> isReadyForExecutionResult = isReadyForExecution.apply(tkn, model);
                     if (isReadyForExecutionResult.getFirst()) {
-                        model.setResourceStatus(State.DEBUG);
+                        model.setResourceStatus(DebugResourceState.DEBUG);
                         doExecute.accept(tkn, isReadyForExecutionResult.getSecond());
                     }
                 } catch (IOException e) {

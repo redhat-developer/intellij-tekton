@@ -16,7 +16,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
-import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import java.util.HashMap;
 import java.util.Map;

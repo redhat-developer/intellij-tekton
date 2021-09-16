@@ -16,7 +16,7 @@ import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction;
-import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
@@ -119,8 +119,13 @@ public class DebugTaskRunAction extends MirrorStartAction {
         Object element = getElement(selected);
         if (element instanceof ParentableNode) {
             Tkn tkn = ((ParentableNode)element).getRoot().getTkn();
-
+            try {
+                return tkn.isTektonVersionOlderThan("0.26.0") &&
+                        tkn.isTektonAlphaFeatureEnabled();
+            } catch (IOException e) {
+                logger.warn(e.getLocalizedMessage(), e);
+            }
         }
-        return super.isVisible(selected);
+        return false;
     }
 }

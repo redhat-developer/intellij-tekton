@@ -11,8 +11,8 @@
 package com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
-import com.redhat.devtools.intellij.tektoncd.actions.task.State;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
@@ -30,8 +30,8 @@ public class DebugToolbarContinueAction extends DebugToolbarAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         DebugModel debugModel = model.get();
-        if (debugModel.getResourceStatus().equals(State.DEBUG)) {
-            debugModel.setResourceStatus(State.RUNNING);
+        if (debugModel.getResourceStatus().equals(DebugResourceState.DEBUG)) {
+            debugModel.setResourceStatus(DebugResourceState.RUNNING);
             ExecWatch execWatch = tkn.openContainerWatch(debugModel.getPod(), debugModel.getContainerId(), "sh", getScript());
             execWatch.close();
             DebugPanelBuilder.instance(tkn).addContent(debugModel);
@@ -40,7 +40,7 @@ public class DebugToolbarContinueAction extends DebugToolbarAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        e.getPresentation().setEnabled(model.get().getResourceStatus().equals(State.DEBUG));
+        e.getPresentation().setEnabled(model.get().getResourceStatus().equals(DebugResourceState.DEBUG));
     }
 
     protected String getScript() {

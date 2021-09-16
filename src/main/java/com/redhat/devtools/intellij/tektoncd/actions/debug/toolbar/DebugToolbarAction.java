@@ -11,7 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar;
 
 import com.intellij.openapi.project.DumbAwareAction;
-import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import java.util.function.Supplier;
 import javax.swing.Icon;

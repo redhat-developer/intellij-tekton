@@ -8,7 +8,7 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.actions.task;
+package com.redhat.devtools.intellij.tektoncd.utils.model.debug;
 
 import io.fabric8.kubernetes.api.model.Pod;
 
@@ -16,7 +16,7 @@ public class DebugModel {
 
     private Pod pod;
     private String containerId, step, resource, image;
-    private State resourceStatus;
+    private DebugResourceState resourceStatus;
 
     public DebugModel(String resource) {
         this(null, resource);
@@ -36,7 +36,7 @@ public class DebugModel {
         this.step = step;
         this.resource = resource;
         this.image = image;
-        this.resourceStatus = State.RUNNING;
+        this.resourceStatus = DebugResourceState.RUNNING;
     }
 
     public Pod getPod() {
@@ -75,11 +75,11 @@ public class DebugModel {
         this.image = image;
     }
 
-    public State getResourceStatus() {
+    public DebugResourceState getResourceStatus() {
         return resourceStatus;
     }
 
-    public void setResourceStatus(State resourceStatus) {
+    public void setResourceStatus(DebugResourceState resourceStatus) {
         this.resourceStatus = resourceStatus;
     }
 }

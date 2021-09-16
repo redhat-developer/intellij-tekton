@@ -8,9 +8,9 @@
  * Contributors:
  * Red Hat, Inc.
  ******************************************************************************/
-package com.redhat.devtools.intellij.tektoncd.actions.task;
+package com.redhat.devtools.intellij.tektoncd.utils.model.debug;
 
-public enum State {
+public enum DebugResourceState {
     RUNNING,
     DEBUG,
     COMPLETE_SUCCESS,
