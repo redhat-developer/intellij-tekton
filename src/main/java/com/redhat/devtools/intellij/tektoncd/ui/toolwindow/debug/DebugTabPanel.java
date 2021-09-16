@@ -18,13 +18,18 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Divider;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.terminal.JBTerminalSystemSettingsProviderBase;
+import com.intellij.terminal.JBTerminalWidget;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.jediterm.terminal.ProcessTtyConnector;
+import com.jediterm.terminal.ui.TerminalPanel;
 import com.redhat.devtools.intellij.common.tree.LabelAndIconDescriptor;
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarAction;
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarContinueAction;
@@ -33,7 +38,11 @@ import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarT
 import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.actions.task.State;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import java.awt.BorderLayout;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -58,6 +67,10 @@ public class DebugTabPanel {
     private DefaultTreeModel treeModel;
     private JPanel terminalPanel;
     private Tkn tkn;
+    private ExecWatch activeContainerExecWatch;
+    private Process activeDebugProcess;
+    private ProcessTtyConnector activeProcessTtyConnector;
+    private JBTerminalWidget activeTerminalWidget;
 
     private DebugToolbarAction debugContinueAction, debugContinueWithFailureAction, debugTerminateAction;
 
@@ -208,8 +221,9 @@ public class DebugTabPanel {
                             null));
             treeModel.insertNodeInto(kindNode, (MutableTreeNode) treeModel.getRoot(), 0);
 
-            updateTerminalPanel(new JLabel("ok, terminal opened"));
+            updateTerminalPanel(createTerminalComponent());
         } else {
+            closeDebugProcess();
             ((DefaultMutableTreeNode)treeModel.getRoot()).removeAllChildren();
             treeModel.reload();
             fillTerminalPanelWithMessage();
@@ -217,6 +231,80 @@ public class DebugTabPanel {
         updateRoot();
         tree.invalidate();
         tree.expandPath(new TreePath(((DefaultMutableTreeNode)treeModel.getRoot()).getPath()));
+    }
+
+    private void closeDebugProcess() {
+        activeProcessTtyConnector.close();
+        activeDebugProcess.destroy();
+        activeContainerExecWatch.close();
+        activeTerminalWidget.dispose();
+    }
+
+    private JComponent createTerminalComponent() {
+        activeContainerExecWatch = tkn.openContainerWatch(model.getPod(), model.getContainerId());
+        activeDebugProcess = createDebugProcess(activeContainerExecWatch);
+        activeProcessTtyConnector = createDebugProcessConnector(activeDebugProcess);
+        activeTerminalWidget = new JBTerminalWidget(tkn.getProject(),
+                new JBTerminalSystemSettingsProviderBase(),
+                Disposer.newDisposable());
+        activeTerminalWidget.setTtyConnector(activeProcessTtyConnector);
+        TerminalPanel panel = activeTerminalWidget.getTerminalPanel();
+        activeTerminalWidget.start();
+        return panel;
+    }
+
+    private Process createDebugProcess(ExecWatch execWatch) {
+        return new Process() {
+            @Override
+            public OutputStream getOutputStream() {
+                return execWatch.getInput();
+            }
+
+            @Override
+            public InputStream getInputStream() {
+                return execWatch.getOutput();
+            }
+
+            @Override
+            public InputStream getErrorStream() {
+                return execWatch.getError();
+            }
+
+            @Override
+            public int waitFor() throws InterruptedException {
+                return 0;
+            }
+
+            @Override
+            public int exitValue() {
+                return 0;
+            }
+
+            @Override
+            public void destroy() {
+
+            }
+        };
+    }
+
+    private ProcessTtyConnector createDebugProcessConnector(Process process) {
+        return new ProcessTtyConnector(process, Charset.defaultCharset()) {
+
+            @Override
+            protected void resizeImmediately() {
+
+            }
+
+            @Override
+            public String getName() {
+                return "Tekton Debug";
+            }
+
+            @Override
+            public boolean isConnected() {
+                return true;
+            }
+        };
     }
 
     private void updateRoot() {
