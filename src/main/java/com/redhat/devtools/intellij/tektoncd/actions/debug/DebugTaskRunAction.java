@@ -27,6 +27,7 @@ import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import java.io.IOException;
@@ -37,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class DebugTaskRunAction extends MirrorStartAction {
 
     private static final Logger logger = LoggerFactory.getLogger(DebugTaskRunAction.class);
-    private Watcher<Pod> watcher;
+    private Watch watch;
 
     public DebugTaskRunAction() {
         super(TaskRunNode.class);
@@ -47,21 +48,6 @@ public class DebugTaskRunAction extends MirrorStartAction {
     protected boolean canBeStarted(Project project, ParentableNode element, StartResourceModel model) {
         return true;
     }
-
-    /*@Override
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        DebugModel debugModel = new DebugModel(null, "", "taskrun-98r");
-        DebugPanelBuilder.instance().build(tkncli, debugModel);
-
-        ExecHelper.submit(() -> {
-            try {
-                Thread.sleep(4000);
-                DebugPanelBuilder.instance().update(tkncli.getProject());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-    }*/
 
     @Override
     protected String doStart(Tkn tkncli, String namespace, StartResourceModel model) throws IOException {
@@ -74,13 +60,13 @@ public class DebugTaskRunAction extends MirrorStartAction {
         String runName = DeployHelper.saveResource(runAsYAML, namespace, tkncli);
         DebugModel debugModel = new DebugModel(runName);
         UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkncli).addContent(debugModel));
-        tkncli.watchPodsWithLabel(namespace, "tekton.dev/taskRun", runName, createWatcher(tkncli, debugModel));
+        watch = tkncli.watchPodsWithLabel(namespace, "tekton.dev/taskRun", runName, createWatcher(tkncli, debugModel));
 
         return null;
     }
 
     private Watcher<Pod> createWatcher(Tkn tkn, DebugModel debugModel) {
-        watcher = new Watcher<Pod>() {
+        return new Watcher<Pod>() {
             @Override
             public void eventReceived(Action action, Pod resource) {
                 debugModel.setPod(resource);
@@ -88,8 +74,7 @@ public class DebugTaskRunAction extends MirrorStartAction {
                         debugModel,
                         DebugTaskRunAction.this::isReadyForDebugging,
                         DebugTaskRunAction.this::updateDebugPanel);
-                //this.onClose();
-                //String t  ="";
+                closeWatch();
             }
 
             @Override
@@ -98,7 +83,10 @@ public class DebugTaskRunAction extends MirrorStartAction {
             }
 
         };
-        return watcher;
+    }
+
+    private void closeWatch() {
+        watch.close();
     }
 
     private Pair<Boolean, DebugModel> isReadyForDebugging(Tkn tkn, DebugModel model) {
@@ -124,5 +112,15 @@ public class DebugTaskRunAction extends MirrorStartAction {
 
     private void updateDebugPanel(Tkn tkn, DebugModel model) {
         UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkn).addContent(model));
+    }
+
+    @Override
+    public boolean isVisible(Object selected) {
+        Object element = getElement(selected);
+        if (element instanceof ParentableNode) {
+            Tkn tkn = ((ParentableNode)element).getRoot().getTkn();
+
+        }
+        return super.isVisible(selected);
     }
 }

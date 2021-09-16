@@ -88,6 +88,10 @@ public class PollingHelper {
     }
 
     private boolean isPodInPhase(Pod pod, String phase) {
-        return pod.getStatus().getPhase().equalsIgnoreCase(phase);
+        if (pod.getStatus() != null &&
+                pod.getStatus().getPhase() != null) {
+            return pod.getStatus().getPhase().equalsIgnoreCase(phase);
+        }
+        return false;
     }
 }

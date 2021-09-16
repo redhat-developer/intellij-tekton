@@ -29,11 +29,13 @@ public class DebugToolbarContinueAction extends DebugToolbarAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        model.get().setResourceStatus(State.RUNNING);
         DebugModel debugModel = model.get();
-        ExecWatch execWatch = tkn.openContainerWatch(debugModel.getPod(), debugModel.getContainerId(), "sh", getScript());
-        execWatch.close();
-        DebugPanelBuilder.instance(tkn).addContent(model.get());
+        if (debugModel.getResourceStatus().equals(State.DEBUG)) {
+            debugModel.setResourceStatus(State.RUNNING);
+            ExecWatch execWatch = tkn.openContainerWatch(debugModel.getPod(), debugModel.getContainerId(), "sh", getScript());
+            execWatch.close();
+            DebugPanelBuilder.instance(tkn).addContent(debugModel);
+        }
     }
 
     @Override

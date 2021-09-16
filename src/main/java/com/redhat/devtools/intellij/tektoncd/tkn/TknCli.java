@@ -173,6 +173,16 @@ public class TknCli implements Tkn {
         }
     }
 
+    public boolean isTektonVersionOlderThan(String version) {
+        return false;
+    }
+
+    public boolean isTektonAlphaFeatureEnabled() {
+        //ConfigMap configMap = getConfigMap("tekton-pipelines", "feature-flags");
+        //return configMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha");
+        return false;
+    }
+
     @Override
     public String getNamespace() {
         String namespace = client.getNamespace();

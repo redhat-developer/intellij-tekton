@@ -14,6 +14,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.actions.task.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.actions.task.State;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
 import java.io.IOException;
 import java.util.function.Supplier;
 import javax.swing.Icon;
@@ -34,6 +35,8 @@ public class DebugToolbarTerminateAction extends DebugToolbarAction {
         try {
             DebugModel debugModel = model.get();
             tkn.cancelTaskRun(debugModel.getPod().getMetadata().getNamespace(), debugModel.getResource());
+            debugModel.setResourceStatus(State.COMPLETE_FAILED);
+            DebugPanelBuilder.instance(tkn).addContent(debugModel);
         } catch (IOException ex) {
             logger.warn(ex.getLocalizedMessage(), ex);
         }
