@@ -51,35 +51,36 @@ public class PollingHelper {
             resourceInPolling.add(name);
         }
 
-
         Timer pollTimer = new Timer();
         TimerTask pollTask = new TimerTask() {
             @Override
             public void run() {
+                if (model.getResourceStatus().equals(DebugResourceState.DEBUG)) {
+                    return;
+                }
                 try {
-                    if (model.getResourceStatus().equals(DebugResourceState.DEBUG)) {
-                        return;
-                    }
-                    Pod updatedPod = tkn.getPod(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                    Pod updatedPod = tkn.getPod(model.getPod().getMetadata().getNamespace(), model.getPod().getMetadata().getName());
                     if (isPodCompleted(updatedPod)) {
-                        model.setResourceStatus(isPodInPhase(updatedPod, "Failed") ? DebugResourceState.COMPLETE_FAILED : DebugResourceState.COMPLETE_SUCCESS);
-                        doExecute.accept(tkn, model);
+                        doPolling(tkn, model, isPodInPhase(updatedPod, "Failed") ? DebugResourceState.COMPLETE_FAILED : DebugResourceState.COMPLETE_SUCCESS, doExecute);
                         pollTimer.cancel();
                         pollTimer.purge();
                     }
                     model.setPod(updatedPod);
                     Pair<Boolean, DebugModel> isReadyForExecutionResult = isReadyForExecution.apply(tkn, model);
                     if (isReadyForExecutionResult.getFirst()) {
-                        model.setResourceStatus(DebugResourceState.DEBUG);
-                        doExecute.accept(tkn, isReadyForExecutionResult.getSecond());
+                        doPolling(tkn, isReadyForExecutionResult.getSecond(), DebugResourceState.DEBUG, doExecute);
                     }
                 } catch (IOException e) {
                     logger.warn(e.getLocalizedMessage(), e);
                 }
-
             };
         };
         pollTimer.schedule(pollTask, 1000, 5000);
+    }
+
+    private void doPolling(Tkn tkn, DebugModel model, DebugResourceState state, BiConsumer<Tkn, DebugModel> doExecute) {
+        model.setResourceStatus(state);
+        doExecute.accept(tkn, model);
     }
 
     private boolean isPodCompleted(Pod pod) {

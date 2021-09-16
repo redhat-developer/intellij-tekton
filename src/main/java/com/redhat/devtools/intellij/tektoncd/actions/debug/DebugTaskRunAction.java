@@ -16,7 +16,6 @@ import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction;
-import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
@@ -25,23 +24,27 @@ import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.PollingHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DebugTaskRunAction extends MirrorStartAction {
 
     private static final Logger logger = LoggerFactory.getLogger(DebugTaskRunAction.class);
-    private Watch watch;
+    private Map<String, Watch> resourceXWatch;
 
     public DebugTaskRunAction() {
         super(TaskRunNode.class);
+        resourceXWatch = new HashMap<>();
     }
 
     @Override
@@ -51,7 +54,6 @@ public class DebugTaskRunAction extends MirrorStartAction {
 
     @Override
     protected String doStart(Tkn tkncli, String namespace, StartResourceModel model) throws IOException {
-
         ObjectNode run = YAMLBuilder.createRun(model, true);
         if (run == null) {
             throw new IOException("Unable to debug task" + model.getName());
@@ -60,7 +62,8 @@ public class DebugTaskRunAction extends MirrorStartAction {
         String runName = DeployHelper.saveResource(runAsYAML, namespace, tkncli);
         DebugModel debugModel = new DebugModel(runName);
         UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkncli).addContent(debugModel));
-        watch = tkncli.watchPodsWithLabel(namespace, "tekton.dev/taskRun", runName, createWatcher(tkncli, debugModel));
+        Watch watch = tkncli.watchPodsWithLabel(namespace, "tekton.dev/taskRun", runName, createWatcher(tkncli, debugModel));
+        resourceXWatch.put(namespace + "-" + runName, watch);
 
         return null;
     }
@@ -74,7 +77,7 @@ public class DebugTaskRunAction extends MirrorStartAction {
                         debugModel,
                         DebugTaskRunAction.this::isReadyForDebugging,
                         DebugTaskRunAction.this::updateDebugPanel);
-                closeWatch();
+                closeWatch(resource.getMetadata().getNamespace() + "-" + debugModel.getResource());
             }
 
             @Override
@@ -85,8 +88,11 @@ public class DebugTaskRunAction extends MirrorStartAction {
         };
     }
 
-    private void closeWatch() {
-        watch.close();
+    private void closeWatch(String resource) {
+        if (resourceXWatch.containsKey(resource)) {
+            resourceXWatch.get(resource).close();
+            resourceXWatch.remove(resource);
+        }
     }
 
     private Pair<Boolean, DebugModel> isReadyForDebugging(Tkn tkn, DebugModel model) {
@@ -96,7 +102,7 @@ public class DebugTaskRunAction extends MirrorStartAction {
             try {
                 if (containerStatus.getStarted()
                         && containerStatus.getState().getRunning() != null
-                        && tkn.isContainerStuckOnDebug(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), containerStatus.getName())) {
+                        && tkn.isContainerStoppedOnDebug(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), containerStatus.getName())) {
                     model.setContainerId(containerStatus.getName());
                     model.setStep(containerStatus.getName());
                     model.setImage(containerStatus.getImage());

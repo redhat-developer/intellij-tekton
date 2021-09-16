@@ -32,7 +32,7 @@ public class DebugToolbarContinueAction extends DebugToolbarAction {
         DebugModel debugModel = model.get();
         if (debugModel.getResourceStatus().equals(DebugResourceState.DEBUG)) {
             debugModel.setResourceStatus(DebugResourceState.RUNNING);
-            ExecWatch execWatch = tkn.openContainerWatch(debugModel.getPod(), debugModel.getContainerId(), "sh", getScript());
+            ExecWatch execWatch = tkn.execCommandInContainer(debugModel.getPod(), debugModel.getContainerId(), "sh", getScript());
             execWatch.close();
             DebugPanelBuilder.instance(tkn).addContent(debugModel);
         }
@@ -44,6 +44,6 @@ public class DebugToolbarContinueAction extends DebugToolbarAction {
     }
 
     protected String getScript() {
-        return "./tekton/debug/scripts/debug-continue";
+        return "/tekton/debug/scripts/debug-continue";
     }
 }

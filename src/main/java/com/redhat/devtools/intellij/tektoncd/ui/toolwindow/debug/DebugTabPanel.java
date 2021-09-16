@@ -241,7 +241,7 @@ public class DebugTabPanel {
     }
 
     private JComponent createTerminalComponent() {
-        activeContainerExecWatch = tkn.openContainerWatch(model.getPod(), model.getContainerId());
+        activeContainerExecWatch = tkn.execCommandInContainer(model.getPod(), model.getContainerId());
         activeDebugProcess = createDebugProcess(activeContainerExecWatch);
         activeProcessTtyConnector = createDebugProcessConnector(activeDebugProcess);
         activeTerminalWidget = new JBTerminalWidget(tkn.getProject(),

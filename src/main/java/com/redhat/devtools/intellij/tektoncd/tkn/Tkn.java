@@ -770,19 +770,50 @@ public interface Tkn {
     boolean getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException;
 
     /**
-     *
-     * @param namespace
-     * @param key
-     * @param value
-     * @return
+     * Set a watch on a pod by using a label ket-value
+     * @param namespace namespace where the pod exists
+     * @param key key of the label
+     * @param value value of the label
+     * @return the watch object
+     * @throws IOException if communication errored
      */
     Watch watchPodsWithLabel(String namespace, String key, String value, Watcher<Pod> watcher) throws IOException;
 
+    /**
+     * Get  the pod with name
+     * @param namespace namesapce where the pod exists
+     * @param name pod name
+     * @return pod resource
+     * @throws IOException if communication errored
+     */
     Pod getPod(String namespace, String name) throws IOException;
 
-    boolean isContainerStuckOnDebug(String namespace, String name, String container) throws IOException;
+    /**
+     * Check if container is stopped in debug mode
+     * @param namespace namespace where the pod exists
+     * @param name name of the pod
+     * @param container container name
+     * @return true if the container is stopped in debug mode, false otherwise
+     * @throws IOException if communication errored
+     */
+    boolean isContainerStoppedOnDebug(String namespace, String name, String container) throws IOException;
 
-    void openContainerInTerminal(Pod pod, String containerId) throws IOException;
+    /**
+     * Execute a default command within the container
+     * @param pod pod where the container exists
+     * @param containerId container where to execute the command
+     * @return watch to check command execution
+     */
+    ExecWatch execCommandInContainer(Pod pod, String containerId);
+
+    /**
+     * Execute a command within the container
+     * @param pod pod where the container exists
+     * @param containerId container where to execute the command
+     * @param command command to execute
+     * @return watch to check command execution
+     */
+    ExecWatch execCommandInContainer(Pod pod, String containerId, String... command);
 
     /**
      * Install task from Tekton Hub
@@ -817,9 +848,4 @@ public interface Tkn {
 
     Project getProject();
 
-    ExecWatch openContainerWatch(Pod pod, String containerId);
-
-    ExecWatch openContainerWatch(Pod pod, String containerId, String... command);
-
-    ExecWatch openContainerWatch(String namespace, String name, String containerId);
 }
