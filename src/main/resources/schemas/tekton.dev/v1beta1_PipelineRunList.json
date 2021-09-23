@@ -748,9 +748,6 @@
         "volumeClaimTemplate": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/PersistentVolumeClaimTemplate"
-        },
-        "readOnly": {
-          "type": "boolean"
         }
       },
       "additionalProperties": false,
@@ -1695,7 +1692,7 @@
           "$ref": "#/definitions/PipelineResourceRef"
         },
         "type": {
-          "type": "string"
+          "type": "integer"
         }
       },
       "additionalProperties": false,
@@ -2362,6 +2359,9 @@
         },
         "topologyKey": {
           "type": "string"
+        },
+        "namespaceSelector": {
+          "$ref": "#/definitions/LabelSelector"
         }
       },
       "additionalProperties": false,
@@ -2526,6 +2526,9 @@
           "type": "integer"
         },
         "failureThreshold": {
+          "type": "integer"
+        },
+        "terminationGracePeriodSeconds": {
           "type": "integer"
         }
       },
