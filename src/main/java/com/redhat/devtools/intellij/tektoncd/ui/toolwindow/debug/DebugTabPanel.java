@@ -18,28 +18,28 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Divider;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.terminal.JBTerminalSystemSettingsProviderBase;
-import com.intellij.terminal.JBTerminalWidget;
+import com.intellij.terminal.TerminalExecutionConsole;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
-import com.jediterm.terminal.ProcessTtyConnector;
-import com.jediterm.terminal.ui.TerminalPanel;
+import com.pty4j.PtyProcess;
+import com.pty4j.WinSize;
 import com.redhat.devtools.intellij.common.tree.LabelAndIconDescriptor;
+import com.redhat.devtools.intellij.common.utils.ExecProcessHandler;
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarAction;
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarContinueAction;
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarContinueWithFailureAction;
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarTerminateAction;
+import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
-import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import java.awt.BorderLayout;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -69,15 +69,13 @@ public class DebugTabPanel {
     private Tkn tkn;
     private ExecWatch activeContainerExecWatch;
     private Process activeDebugProcess;
-    private ProcessTtyConnector activeProcessTtyConnector;
-    private JBTerminalWidget activeTerminalWidget;
+    private TerminalExecutionConsole terminalExecutionConsole;
 
     private DebugToolbarAction debugContinueAction, debugContinueWithFailureAction, debugTerminateAction;
 
     public DebugTabPanel(String displayName, DebugModel model, Tkn tkn) {
         this.displayName = displayName;
         this.model = model;
-        updateRoot();
         this.tkn = tkn;
     }
 
@@ -95,12 +93,12 @@ public class DebugTabPanel {
     }
 
     public JComponent getComponent() {
-        JComponent tabPanel = createTabPanel();
+        JComponent mainPanel = createMainPanel();
         ActionToolbar actionToolbar = createActionsColumn(tkn);
-        actionToolbar.setTargetComponent(tabPanel);
+        actionToolbar.setTargetComponent(mainPanel);
 
         SimpleToolWindowPanel wrapper = new SimpleToolWindowPanel(false, true);
-        wrapper.setContent(tabPanel);
+        wrapper.setContent(mainPanel);
         wrapper.setToolbar(actionToolbar.getComponent());
         wrapper.revalidate();
         return wrapper;
@@ -122,22 +120,22 @@ public class DebugTabPanel {
                 "Mark the step as completed with success so that the task continues executing",
                 AllIcons.Actions.Execute,
                 tkn,
-                () -> model);
+                model);
 
         debugContinueWithFailureAction = new DebugToolbarContinueWithFailureAction("Continue with Failure",
                 "Mark the step as completed with failure and terminate the task",
                 AllIcons.RunConfigurations.RerunFailedTests,
                 tkn,
-                () -> model);
+                model);
 
         debugTerminateAction = new DebugToolbarTerminateAction("Terminate",
                 "Stop the task execution",
                 AllIcons.Actions.Suspend,
                 tkn,
-                () -> model);
+                model);
     }
 
-    public JComponent createTabPanel() {
+    private JComponent createMainPanel() {
         OnePixelSplitter tabPanel = new OnePixelSplitter(false, 0.37F) {
             protected Divider createDivider() {
                 Divider divider = super.createDivider();
@@ -171,6 +169,7 @@ public class DebugTabPanel {
     }
 
     private JComponent buildDebugTree(Tkn tkn, DebugModel model) {
+        updateRoot();
         DefaultTreeModel treeModel = getTreeModel(tkn.getProject(), model);
         tree = new Tree(treeModel);
         UIUtil.putClientProperty(tree, ANIMATION_IN_RENDERER_ALLOWED, true);
@@ -180,10 +179,15 @@ public class DebugTabPanel {
     }
 
     private DefaultTreeModel getTreeModel(Project project, DebugModel model) {
-
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode(new LabelAndIconDescriptor(project, null, () -> model.getResource(), () -> rootLocation, () -> rootIcon, null));
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(
+                new LabelAndIconDescriptor(project,
+                        null,
+                        model::getResource,
+                        () -> rootLocation,
+                        () -> rootIcon,
+                        null
+                ));
         treeModel = new DefaultTreeModel(root);
-
         return treeModel;
     }
 
@@ -211,21 +215,23 @@ public class DebugTabPanel {
     }
 
     private void update() {
+        ((DefaultMutableTreeNode)treeModel.getRoot()).removeAllChildren();
+        treeModel.reload();
+
         if (model.getResourceStatus().equals(DebugResourceState.DEBUG)) {
-            DefaultMutableTreeNode kindNode = new DefaultMutableTreeNode(
+            DefaultMutableTreeNode stepNode = new DefaultMutableTreeNode(
                     new LabelAndIconDescriptor(tkn.getProject(),
                             null,
                             model.getStep(),
                             "(" + model.getImage() + ")",
                             null,
                             null));
-            treeModel.insertNodeInto(kindNode, (MutableTreeNode) treeModel.getRoot(), 0);
+            treeModel.insertNodeInto(stepNode, (MutableTreeNode) treeModel.getRoot(), 0);
 
             updateTerminalPanel(createTerminalComponent());
         } else {
             closeDebugProcess();
             ((DefaultMutableTreeNode)treeModel.getRoot()).removeAllChildren();
-            treeModel.reload();
             fillTerminalPanelWithMessage();
         }
         updateRoot();
@@ -234,27 +240,52 @@ public class DebugTabPanel {
     }
 
     private void closeDebugProcess() {
-        activeProcessTtyConnector.close();
-        activeDebugProcess.destroy();
-        activeContainerExecWatch.close();
-        activeTerminalWidget.dispose();
+        if (activeDebugProcess != null) {
+            activeDebugProcess.destroy();
+        }
+        if (activeContainerExecWatch != null) {
+            activeContainerExecWatch.close();
+        }
+        if (terminalExecutionConsole != null) {
+            terminalExecutionConsole.dispose();
+        }
     }
 
     private JComponent createTerminalComponent() {
-        activeContainerExecWatch = tkn.execCommandInContainer(model.getPod(), model.getContainerId());
+        activeContainerExecWatch = tkn.execCommandInContainer(model.getPod(), model.getContainerId(), "sh");
         activeDebugProcess = createDebugProcess(activeContainerExecWatch);
-        activeProcessTtyConnector = createDebugProcessConnector(activeDebugProcess);
-        activeTerminalWidget = new JBTerminalWidget(tkn.getProject(),
-                new JBTerminalSystemSettingsProviderBase(),
-                Disposer.newDisposable());
-        activeTerminalWidget.setTtyConnector(activeProcessTtyConnector);
-        TerminalPanel panel = activeTerminalWidget.getTerminalPanel();
-        activeTerminalWidget.start();
+
+        ExecProcessHandler processHandler = new ExecProcessHandler(activeDebugProcess, "debug", Charset.defaultCharset());
+        terminalExecutionConsole = new TerminalExecutionConsole(tkn.getProject(), processHandler);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(terminalExecutionConsole.getComponent(), BorderLayout.CENTER);
+        processHandler.startNotify();
+
         return panel;
     }
 
-    private Process createDebugProcess(ExecWatch execWatch) {
-        return new Process() {
+    private PtyProcess createDebugProcess(ExecWatch execWatch) {
+        return new PtyProcess() {
+            @Override
+            public boolean isRunning() {
+                return true;
+            }
+
+            @Override
+            public void setWinSize(WinSize winSize) {
+
+            }
+
+            @Override
+            public WinSize getWinSize() throws IOException {
+                return null;
+            }
+
+            @Override
+            public int getPid() {
+                return 0;
+            }
+
             @Override
             public OutputStream getOutputStream() {
                 return execWatch.getInput();
@@ -284,26 +315,7 @@ public class DebugTabPanel {
             public void destroy() {
 
             }
-        };
-    }
 
-    private ProcessTtyConnector createDebugProcessConnector(Process process) {
-        return new ProcessTtyConnector(process, Charset.defaultCharset()) {
-
-            @Override
-            protected void resizeImmediately() {
-
-            }
-
-            @Override
-            public String getName() {
-                return "Tekton Debug";
-            }
-
-            @Override
-            public boolean isConnected() {
-                return true;
-            }
         };
     }
 

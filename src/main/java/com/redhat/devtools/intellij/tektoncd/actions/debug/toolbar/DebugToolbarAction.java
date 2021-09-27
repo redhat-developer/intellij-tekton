@@ -11,17 +11,16 @@
 package com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar;
 
 import com.intellij.openapi.project.DumbAwareAction;
-import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import java.util.function.Supplier;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import javax.swing.Icon;
 
 public abstract class DebugToolbarAction extends DumbAwareAction {
 
     protected Tkn tkn;
-    protected Supplier<DebugModel> model;
+    protected DebugModel model;
 
-    public DebugToolbarAction(String text, String description, Icon icon, Tkn tkn, Supplier<DebugModel> model) {
+    public DebugToolbarAction(String text, String description, Icon icon, Tkn tkn, DebugModel model) {
         super(text, description, icon);
         this.tkn = tkn;
         this.model = model;

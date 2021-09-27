@@ -79,7 +79,10 @@ public class DebugModel {
         return resourceStatus;
     }
 
-    public void setResourceStatus(DebugResourceState resourceStatus) {
-        this.resourceStatus = resourceStatus;
+    public synchronized void updateResourceStatus(DebugResourceState resourceStatus) {
+        if (!this.resourceStatus.equals(DebugResourceState.COMPLETE_SUCCESS)
+            && !this.resourceStatus.equals(DebugResourceState.COMPLETE_FAILED)) {
+            this.resourceStatus = resourceStatus;
+        }
     }
 }

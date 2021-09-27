@@ -40,19 +40,32 @@ public class DebugPanelBuilder {
         return instance;
     }
 
+    public Content getResourceDebugPanel(String resource) {
+        DebugTabPanel debugTabPanel = resourceXTab.getOrDefault(resource, null);
+        if (debugTabPanel != null) {
+            return getContentManager().findContent(debugTabPanel.getDisplayName());
+        }
+        return null;
+    }
+
     public void addContent(DebugModel model) {
         DebugTabPanel debugTabPanel = resourceXTab.getOrDefault(model.getResource(), null);
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content panel = getResourceDebugPanel(model.getResource());
+
         if (debugTabPanel != null) {
+            if (panel == null) {
+                panel = contentFactory.createContent(debugTabPanel.getComponent(), debugTabPanel.getDisplayName(), true);
+            }
             debugTabPanel.updateModel(model);
         } else {
-            ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             debugTabPanel = new DebugTabPanel(model.getResource(), model, tkn);
-            Content panel = contentFactory.createContent(debugTabPanel.getComponent(), debugTabPanel.getDisplayName(), true);
+            panel = contentFactory.createContent(debugTabPanel.getComponent(), debugTabPanel.getDisplayName(), true);
             resourceXTab.put(model.getResource(), debugTabPanel);
-            panel.setCloseable(true);
-            getContentManager().addContent(panel);
         }
 
+        panel.setCloseable(true);
+        getContentManager().addContent(panel);
         ensureTabIsSelected(debugTabPanel.getDisplayName());
         ensureToolWindowOpened();
     }

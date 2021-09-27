@@ -26,6 +26,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import com.twelvemonkeys.lang.Platform;
 import io.fabric8.kubernetes.api.model.ConfigMap;
@@ -49,9 +50,11 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.kubernetes.client.utils.Serialization;
+import io.fabric8.kubernetes.client.dsl.internal.ExecWebSocketListener;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
@@ -60,6 +63,8 @@ import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineList;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskList;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRunList;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
 import io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.EventListener;
@@ -67,7 +72,7 @@ import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -81,6 +86,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +100,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PREFIXNAME;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
@@ -115,6 +123,9 @@ public class TknCli implements Tkn {
 
     private Map<String, String> envVars;
 
+    private String tektonVersion;
+    private boolean hasAlphaFeaturesEnabled;
+
 
     TknCli(Project project, String command) {
         this.command = command;
@@ -126,6 +137,7 @@ public class TknCli implements Tkn {
             this.envVars = Collections.emptyMap();
         }
         reportTelemetry();
+        updateTektonInfos();
     }
 
     private void reportTelemetry() {
@@ -172,40 +184,45 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public boolean isTektonVersionOlderThan(String version) throws IOException {
-        try {
-            ConfigMap configMap = getConfigMap("tekton-pipelines", "pipelines-info");
-            String activeVersion = configMap.getData().get("version");
-            return isActiveTektonVersionOlder(activeVersion, version);
-        } catch (KubernetesClientException e) {
-            throw new IOException(e);
-        }
-    }
-
-    private boolean isActiveTektonVersionOlder(String activeVersion, String version) {
-        String[] activeVersionSplitted = activeVersion.replace("v", "").split(".");
-        String[] versionSplitted = version.split(".");
-        int size = Math.max(versionSplitted.length, activeVersionSplitted.length);
-        for (int i=0; i<size; i++) {
-            int activeVersionNumber = activeVersionSplitted.length > i ? Integer.parseInt(activeVersionSplitted[i]) : -1;
-            int versionNumber = versionSplitted.length > i ? Integer.parseInt(versionSplitted[i]) : -1;
-            if (activeVersionNumber > versionNumber) {
-                return true;
-            } else if (activeVersionNumber < versionNumber) {
-                return false;
-            }
-        }
-        return true;
+    public String getTektonVersion() {
+        return tektonVersion;
     }
 
     @Override
-    public boolean isTektonAlphaFeatureEnabled() throws IOException {
+    public boolean isTektonAlphaFeatureEnabled() {
+        return hasAlphaFeaturesEnabled;
+    }
+
+    private void updateTektonInfos() {
         try {
-            ConfigMap configMap = getConfigMap("tekton-pipelines", "feature-flags");
-            return configMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha");
+            ConfigMap pipelineInfoMap = getConfigMap("tekton-pipelines", "pipelines-info");
+            tektonVersion = pipelineInfoMap.getData().get("version");
+            ConfigMap alphaMap = getConfigMap("tekton-pipelines", "feature-flags");
+            hasAlphaFeaturesEnabled = alphaMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha");
+            initConfigMapWatchers();
         } catch (KubernetesClientException e) {
-            throw new IOException(e);
+            logger.warn(e.getLocalizedMessage(), e);
         }
+    }
+
+    private void initConfigMapWatchers() {
+        initConfigMapWatcher("tekton-pipelines", "pipelines-info", (configMap -> tektonVersion = configMap.getData().get("version")));
+        initConfigMapWatcher("tekton-pipelines", "feature-flags", (configMap -> hasAlphaFeaturesEnabled = configMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha")));
+    }
+
+    private void initConfigMapWatcher(String namespace, String resource, Consumer<ConfigMap> doUpdate) {
+        WatchHandler.get().setWatchByResourceName(this, namespace, KIND_CONFIGMAP, resource,
+                new Watcher<ConfigMap>() {
+                    @Override
+                    public void eventReceived(Action action, ConfigMap resource) {
+                        doUpdate.accept(resource);
+                    }
+
+                    @Override
+                    public void onClose(WatcherException cause) {
+
+                    }
+                });
     }
 
     @Override
@@ -279,11 +296,17 @@ public class TknCli implements Tkn {
         }
     }
 
-    @Override
+
+    public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
+        TaskRunList taskRunList = client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).list();
+        return taskRunList.getItems();
+    }
+
+    /*@Override
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
         String json = ExecHelper.execute(command, envVars, "taskrun", "ls", task, "-n", namespace, "-o", "json");
         return getCustomCollection(json, TaskRun.class);
-    }
+    }*/
 
     @Override
     public List<Condition> getConditions(String namespace) throws IOException, NullPointerException {
@@ -837,6 +860,15 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public Watch watchTaskRun(String namespace, String name, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException {
+        try {
+            return client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).withName(name).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
     public Watch watchTaskRuns(String namespace, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).watch(watcher);
@@ -956,11 +988,23 @@ public class TknCli implements Tkn {
         }
     }
 
-    public boolean isContainerStoppedOnDebug(String namespace, String name, String container) throws IOException {
-        try {
-            InputStream inputStream = client.pods().inNamespace(namespace).withName(name).inContainer(container).file("tekton/termination").read();
-            return inputStream.read() != -1;
-        } catch(KubernetesClientException e) {
+    public boolean isContainerStoppedOnDebug(String namespace, String name, String container, Pod resource) throws IOException {
+        // This is a hack to prevent from displaying error messages in the IDE Fatal Errors panel
+        // regarding a container already closed during command execution
+        LogManager.getLogger(ExecWebSocketListener.class).setLevel(Level.FATAL);
+        try(ExecWatch watch = client.pods().inNamespace(namespace).withName(name).inContainer(container)
+                .redirectingInput()
+                .redirectingOutput()
+                .writingError(new OutputStream() {
+                    @Override
+                    public void write(int b) throws IOException {
+                    }
+                })
+                .exec("sh", "-c", "cat tekton/termination")) {
+            boolean isEmpty = watch.getOutput().read() == -1;
+            watch.close();
+            return !isEmpty;
+        } catch(Throwable e) {
             throw new IOException(e);
         }
     }
@@ -971,7 +1015,7 @@ public class TknCli implements Tkn {
     }
 
     public ExecWatch execCommandInContainer(Pod pod, String containerId, String... command) {
-        return client.pods().inNamespace(pod.getMetadata().getNamespace())
+        ExecWatch watch = client.pods().inNamespace(pod.getMetadata().getNamespace())
                 .withName(pod.getMetadata().getName())
                 .inContainer(containerId)
                 .redirectingInput()
@@ -979,6 +1023,9 @@ public class TknCli implements Tkn {
                 .redirectingError()
                 .withTTY()
                 .exec(command);
+
+
+        return watch;
     }
 
     @Override

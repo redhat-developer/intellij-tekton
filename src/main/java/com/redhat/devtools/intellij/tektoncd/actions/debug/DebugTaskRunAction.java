@@ -12,39 +12,25 @@ package com.redhat.devtools.intellij.tektoncd.actions.debug;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Pair;
-import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
+import com.redhat.devtools.intellij.tektoncd.utils.DebugHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
-import com.redhat.devtools.intellij.tektoncd.utils.PollingHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
-import io.fabric8.kubernetes.api.model.ContainerStatus;
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.client.Watch;
-import io.fabric8.kubernetes.client.Watcher;
-import io.fabric8.kubernetes.client.WatcherException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DebugTaskRunAction extends MirrorStartAction {
 
     private static final Logger logger = LoggerFactory.getLogger(DebugTaskRunAction.class);
-    private Map<String, Watch> resourceXWatch;
 
     public DebugTaskRunAction() {
         super(TaskRunNode.class);
-        resourceXWatch = new HashMap<>();
     }
 
     @Override
@@ -60,64 +46,8 @@ public class DebugTaskRunAction extends MirrorStartAction {
         }
         String runAsYAML = YAMLHelper.JSONToYAML(run, false);
         String runName = DeployHelper.saveResource(runAsYAML, namespace, tkncli);
-        DebugModel debugModel = new DebugModel(runName);
-        UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkncli).addContent(debugModel));
-        Watch watch = tkncli.watchPodsWithLabel(namespace, "tekton.dev/taskRun", runName, createWatcher(tkncli, debugModel));
-        resourceXWatch.put(namespace + "-" + runName, watch);
-
+        DebugHelper.doDebugTaskRun(tkncli, namespace, runName);
         return null;
-    }
-
-    private Watcher<Pod> createWatcher(Tkn tkn, DebugModel debugModel) {
-        return new Watcher<Pod>() {
-            @Override
-            public void eventReceived(Action action, Pod resource) {
-                debugModel.setPod(resource);
-                PollingHelper.get().pollResource(tkn,
-                        debugModel,
-                        DebugTaskRunAction.this::isReadyForDebugging,
-                        DebugTaskRunAction.this::updateDebugPanel);
-                closeWatch(resource.getMetadata().getNamespace() + "-" + debugModel.getResource());
-            }
-
-            @Override
-            public void onClose(WatcherException cause) {
-
-            }
-
-        };
-    }
-
-    private void closeWatch(String resource) {
-        if (resourceXWatch.containsKey(resource)) {
-            resourceXWatch.get(resource).close();
-            resourceXWatch.remove(resource);
-        }
-    }
-
-    private Pair<Boolean, DebugModel> isReadyForDebugging(Tkn tkn, DebugModel model) {
-        Pod pod = model.getPod();
-        List<ContainerStatus> containerStatuses = pod.getStatus().getContainerStatuses();
-        for (ContainerStatus containerStatus: containerStatuses) {
-            try {
-                if (containerStatus.getStarted()
-                        && containerStatus.getState().getRunning() != null
-                        && tkn.isContainerStoppedOnDebug(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), containerStatus.getName())) {
-                    model.setContainerId(containerStatus.getName());
-                    model.setStep(containerStatus.getName());
-                    model.setImage(containerStatus.getImage());
-                    return Pair.create(true, model);
-                }
-            } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage(), e);
-            }
-        }
-
-        return Pair.create(false, model);
-    }
-
-    private void updateDebugPanel(Tkn tkn, DebugModel model) {
-        UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkn).addContent(model));
     }
 
     @Override
@@ -125,13 +55,26 @@ public class DebugTaskRunAction extends MirrorStartAction {
         Object element = getElement(selected);
         if (element instanceof ParentableNode) {
             Tkn tkn = ((ParentableNode)element).getRoot().getTkn();
-            try {
-                return tkn.isTektonVersionOlderThan("0.26.0") &&
-                        tkn.isTektonAlphaFeatureEnabled();
-            } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage(), e);
-            }
+            return isActiveTektonVersionOlder(tkn.getTektonVersion(), "0.26.0") &&
+                    tkn.isTektonAlphaFeatureEnabled();
         }
         return false;
+    }
+
+
+    private boolean isActiveTektonVersionOlder(String activeVersion, String version) {
+        String[] activeVersionSplitted = activeVersion.replace("v", "").split(".");
+        String[] versionSplitted = version.split(".");
+        int size = Math.max(versionSplitted.length, activeVersionSplitted.length);
+        for (int i=0; i<size; i++) {
+            int activeVersionNumber = activeVersionSplitted.length > i ? Integer.parseInt(activeVersionSplitted[i]) : -1;
+            int versionNumber = versionSplitted.length > i ? Integer.parseInt(versionSplitted[i]) : -1;
+            if (activeVersionNumber > versionNumber) {
+                return true;
+            } else if (activeVersionNumber < versionNumber) {
+                return false;
+            }
+        }
+        return true;
     }
 }

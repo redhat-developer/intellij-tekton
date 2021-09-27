@@ -10,14 +10,13 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar;
 
-import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import java.util.function.Supplier;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import javax.swing.Icon;
 
 public class DebugToolbarContinueWithFailureAction extends DebugToolbarContinueAction {
 
-    public DebugToolbarContinueWithFailureAction(String text, String description, Icon icon, Tkn tkn, Supplier<DebugModel> model) {
+    public DebugToolbarContinueWithFailureAction(String text, String description, Icon icon, Tkn tkn, DebugModel model) {
         super(text, description, icon, tkn, model);
     }
 

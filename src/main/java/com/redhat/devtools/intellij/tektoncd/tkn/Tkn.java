@@ -26,6 +26,7 @@ import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
 import java.io.IOException;
 import java.net.URL;
@@ -56,19 +57,16 @@ public interface Tkn {
     String getTektonTriggersApiVersion() throws IOException;
 
     /**
-     * Check if tekton in active cluster has a version older than the one required
-     * @param version version to compare tekton in active cluster
-     * @return true if tekton in active cluster has a version older than the one passed as param
-     * @throws IOException if communication errored
+     * Return the tekton version used on active cluster
+     * @return tekton version
      */
-    boolean isTektonVersionOlderThan(String version) throws IOException;
+    String getTektonVersion();
 
     /**
      * Check if alpha features are enabled on active cluster
      * @return true if alpha features are enabled
-     * @throws IOException if communication errored
      */
-    boolean isTektonAlphaFeatureEnabled() throws IOException;
+    boolean isTektonAlphaFeatureEnabled();
 
     /**
      * Return the name of the current active namespace (project for OpenShift).
@@ -679,6 +677,8 @@ public interface Tkn {
      */
     Watch watchTasks(String namespace, Watcher<Task> watcher) throws IOException;
 
+    Watch watchTaskRun(String namespace, String name, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException;
+
     /**
      * Set a watch on TaskRun resources
      *
@@ -796,7 +796,7 @@ public interface Tkn {
      * @return true if the container is stopped in debug mode, false otherwise
      * @throws IOException if communication errored
      */
-    boolean isContainerStoppedOnDebug(String namespace, String name, String container) throws IOException;
+    boolean isContainerStoppedOnDebug(String namespace, String name, String container, Pod resource) throws IOException;
 
     /**
      * Execute a default command within the container

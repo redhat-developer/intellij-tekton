@@ -19,6 +19,8 @@ public class TaskRunNode extends RunNode {
     }
 
     public String getDisplayName() {
+        io.fabric8.tekton.pipeline.v1beta1.TaskRun taskRun;
+
         TaskRun run = (TaskRun)getRun();
         String displayName = "";
         String triggeredBy = run.getTriggeredBy();

@@ -11,12 +11,11 @@
 package com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import java.io.IOException;
-import java.util.function.Supplier;
 import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -26,17 +25,16 @@ public class DebugToolbarTerminateAction extends DebugToolbarAction {
 
     private static final Logger logger = LoggerFactory.getLogger(DebugToolbarTerminateAction.class);
 
-    public DebugToolbarTerminateAction(String text, String description, Icon icon, Tkn tkn, Supplier<DebugModel> model) {
+    public DebugToolbarTerminateAction(String text, String description, Icon icon, Tkn tkn, DebugModel model) {
         super(text, description, icon, tkn, model);
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         try {
-            DebugModel debugModel = model.get();
-            tkn.cancelTaskRun(debugModel.getPod().getMetadata().getNamespace(), debugModel.getResource());
-            debugModel.setResourceStatus(DebugResourceState.COMPLETE_FAILED);
-            DebugPanelBuilder.instance(tkn).addContent(debugModel);
+            tkn.cancelTaskRun(model.getPod().getMetadata().getNamespace(), model.getResource());
+            model.updateResourceStatus(DebugResourceState.COMPLETE_FAILED);
+            DebugPanelBuilder.instance(tkn).addContent(model);
         } catch (IOException ex) {
             logger.warn(ex.getLocalizedMessage(), ex);
         }
@@ -44,8 +42,8 @@ public class DebugToolbarTerminateAction extends DebugToolbarAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        boolean isCompleted = model.get().getResourceStatus().equals(DebugResourceState.COMPLETE_SUCCESS) ||
-                model.get().getResourceStatus().equals(DebugResourceState.COMPLETE_FAILED);
+        boolean isCompleted = model.getResourceStatus().equals(DebugResourceState.COMPLETE_SUCCESS) ||
+                model.getResourceStatus().equals(DebugResourceState.COMPLETE_FAILED);
         e.getPresentation().setEnabled(!isCompleted);
     }
 }

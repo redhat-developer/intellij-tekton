@@ -201,7 +201,7 @@
   <depends>org.jetbrains.plugins.yaml</depends>
   <depends>org.intellij.plugins.markdown</depends>
   <depends>com.redhat.devtools.intellij.telemetry</depends>
-  <depends>com.redhat.devtools.intellij.kubernetes</depends>
+  <!-- <depends>com.redhat.devtools.intellij.kubernetes</depends> -->
   <depends optional="true" config-file="plugin-json.xml">com.intellij.modules.json</depends>
   <depends optional="true" config-file="plugin-kubernetes.xml">com.intellij.kubernetes</depends>
 
@@ -251,6 +251,7 @@
       <action id="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" class="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" text="Mirror Start"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" text="Start Last Run"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.debug.DebugTaskRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.debug.DebugTaskRunAction" text="Start in Debug Mode"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.debug.ConnectDebugTaskRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.debug.ConnectDebugTaskRunAction" text="Open Debug Panel"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" text="Find Usages" />
       <action id="com.redhat.devtools.intellij.tektoncd.actions.clustertask.FindClusterTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.FindClusterTaskRefAction" text="Find Usages" />
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTaskRunTemplateAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskRunTemplateAction" text="Create Run Template"/>

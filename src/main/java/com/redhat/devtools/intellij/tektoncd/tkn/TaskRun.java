@@ -19,12 +19,15 @@ public class TaskRun extends Run {
     private String triggeredBy;
     private String stepName;
     private String failedReason;
+    private boolean isStartedOnDebug;
 
-    public TaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime, Instant completionTime, List<TaskRun> conditionChecks, String failedReason) {
+    public TaskRun(String name, String triggeredBy, String stepName, Optional<Boolean> completed, Instant startTime,
+                   Instant completionTime, List<TaskRun> conditionChecks, String failedReason, boolean isStartedOnDebug) {
         super(name, completed, startTime, completionTime, conditionChecks);
         this.triggeredBy = triggeredBy;
         this.stepName = stepName;
         this.failedReason = failedReason;
+        this.isStartedOnDebug = isStartedOnDebug;
     }
 
     public String getTriggeredBy() { return triggeredBy; }
@@ -32,4 +35,8 @@ public class TaskRun extends Run {
     public String getStepName() { return stepName; }
 
     public String getFailedReason() { return failedReason; }
+
+    public boolean isStartedOnDebug() {
+        return isStartedOnDebug;
+    }
 }
