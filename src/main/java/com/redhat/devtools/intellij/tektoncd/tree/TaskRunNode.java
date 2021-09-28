@@ -26,13 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class TaskRunNode extends RunNode {
+public class TaskRunNode extends RunNode<ParentableNode, TaskRun> {
     public TaskRunNode(TektonRootNode root, ParentableNode parent, TaskRun run) {
         super(root, parent, run);
     }
 
     public String getDisplayName() {
-        TaskRun run = (TaskRun)getRun();
+        TaskRun run = getRun();
         String displayName = "";
         String triggeredBy = run.getMetadata().getLabels().getOrDefault("tekton.dev/pipeline", "");
         String stepName = run.getMetadata().getLabels().getOrDefault("tekton.dev/pipelineTask", "");
@@ -48,63 +48,44 @@ public class TaskRunNode extends RunNode {
 
     @Override
     public String getFailedReason() {
-        TaskRun run = (TaskRun)getRun();
+        TaskRun run = getRun();
         List<Condition> conditionsList = run.getStatus() != null ? run.getStatus().getConditions() : Collections.emptyList();
-        if (conditionsList.size() > 0) {
-            return conditionsList.get(0).getReason();
-        }
-        return "";
+        return getFailedReason(conditionsList);
     }
 
     @Override
     public Instant getStartTime() {
-        TaskRun run = (TaskRun)getRun();
-        Instant startTime = null;
-        try {
-            String startTimeText = run.getStatus() == null ? null : run.getStatus().getStartTime();
-            if (startTimeText != null && !startTimeText.isEmpty()) {
-                startTime = Instant.parse(startTimeText);
-            }
-        } catch (NullPointerException ignored) { }
-        return startTime;
+        TaskRun run = getRun();
+        return getStartTime(run);
+    }
+
+    public static Instant getStartTime(TaskRun run) {
+        String startTimeText = run.getStatus() == null ? null : run.getStatus().getStartTime();
+        return getStartTime(startTimeText);
     }
 
     @Override
     public Optional<Boolean> isCompleted() {
-        Optional<Boolean> completed = Optional.empty();
-        TaskRun run = (TaskRun)getRun();
-        try {
-            List<Condition> conditionsList = run.getStatus() != null ? run.getStatus().getConditions() : Collections.emptyList();
-            if (conditionsList.size() > 0) {
-                if (conditionsList.get(0).getStatus().equalsIgnoreCase("True")) {
-                    completed = Optional.of(true);
-                } else if (conditionsList.get(0).getStatus().equalsIgnoreCase("False")) {
-                    completed = Optional.of(false);
-                }
-            }
-        } catch (Exception e) {}
-        return completed;
+        TaskRun run = getRun();
+        List<Condition> conditionsList = run.getStatus() != null ? run.getStatus().getConditions() : Collections.emptyList();
+        return isCompleted(conditionsList);
     }
 
     @Override
     public Instant getCompletionTime() {
-        TaskRun run = (TaskRun)getRun();
-        Instant completionTime = null;
-        try {
-            String completionTimeText = run.getStatus() == null ? null : run.getStatus().getCompletionTime();
-            if (completionTimeText != null && !completionTimeText.isEmpty()) completionTime = Instant.parse(completionTimeText);
-        } catch (NullPointerException ne) { }
-        return completionTime;
+        TaskRun run = getRun();
+        String completionTimeText = run.getStatus() == null ? null : run.getStatus().getCompletionTime();
+        return getCompletionTime(completionTimeText);
     }
 
     public boolean isStartedOnDebug() {
-        TaskRun run = (TaskRun)getRun();
+        TaskRun run = getRun();
         return run.getSpec() != null && (run.getSpec().getAdditionalProperties() != null && run.getSpec().getAdditionalProperties().get("debug") != null);
     }
 
     public List<TaskRun> getConditionsAsTaskRunChildren(PipelineRun pipelineRunParent) {
         List<TaskRun> conditions = new ArrayList<>();
-        TaskRun run = (TaskRun)getRun();
+        TaskRun run = getRun();
         PipelineRunTaskRunStatus pipelineRunTaskRunStatus = pipelineRunParent.getStatus().getTaskRuns().get(run.getMetadata().getName());
         if (pipelineRunTaskRunStatus != null && !pipelineRunTaskRunStatus.getConditionChecks().isEmpty()) {
             for (PipelineRunConditionCheckStatus pipelineRunConditionCheckStatus: pipelineRunTaskRunStatus.getConditionChecks().values()) {

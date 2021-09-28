@@ -32,47 +32,28 @@ public class PipelineRunNode extends RunNode<ParentableNode, PipelineRun> {
     public String getFailedReason() {
         PipelineRun run = getRun();
         List<Condition> conditionsList = run.getStatus() != null ? run.getStatus().getConditions() : Collections.emptyList();
-        if (conditionsList.size() > 0) {
-            return conditionsList.get(0).getReason();
-        }
-        return "";
+        return getFailedReason(conditionsList);
     }
 
     @Override
     public Instant getStartTime() {
         PipelineRun run = getRun();
-        Instant startTime = null;
-        try {
-            String startTimeText = run.getStatus() == null ? null : run.getStatus().getStartTime();
-            if (startTimeText != null && !startTimeText.isEmpty()) {
-                startTime = Instant.parse(startTimeText);
-            }
-        } catch (NullPointerException ignored) { }
-        return startTime;
+        String startTimeText = run.getStatus() == null ? null : run.getStatus().getStartTime();
+        return getStartTime(startTimeText);
     }
 
     @Override
     public Optional<Boolean> isCompleted() {
-        Optional<Boolean> completed = Optional.empty();
         PipelineRun run = getRun();
-        try {
-            List<Condition> conditionsList = run.getStatus() != null ? run.getStatus().getConditions() : Collections.emptyList();
-            if (conditionsList.size() > 0) {
-                completed = Optional.of(conditionsList.get(0).getStatus().equalsIgnoreCase("true"));
-            }
-        } catch (Exception e) {}
-        return completed;
+        List<Condition> conditionsList = run.getStatus() != null ? run.getStatus().getConditions() : Collections.emptyList();
+        return isCompleted(conditionsList);
     }
 
     @Override
     public Instant getCompletionTime() {
         PipelineRun run = getRun();
-        Instant completionTime = null;
-        try {
-            String completionTimeText = run.getStatus() == null ? null : run.getStatus().getCompletionTime();
-            if (completionTimeText != null && !completionTimeText.isEmpty()) completionTime = Instant.parse(completionTimeText);
-        } catch (NullPointerException ne) { }
-        return completionTime;
+        String completionTimeText = run.getStatus() == null ? null : run.getStatus().getCompletionTime();
+        return getCompletionTime(completionTimeText);
     }
 
     public List<TaskRun> getPipelineRunTaskRunAsTaskRun() {

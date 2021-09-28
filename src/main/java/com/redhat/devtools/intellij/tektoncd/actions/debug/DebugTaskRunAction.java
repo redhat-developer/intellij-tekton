@@ -22,12 +22,11 @@ import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+
+import static com.redhat.devtools.intellij.tektoncd.utils.Utils.isActiveTektonVersionOlder;
 
 public class DebugTaskRunAction extends MirrorStartAction {
-
-    private static final Logger logger = LoggerFactory.getLogger(DebugTaskRunAction.class);
 
     public DebugTaskRunAction() {
         super(TaskRunNode.class);
@@ -59,22 +58,5 @@ public class DebugTaskRunAction extends MirrorStartAction {
                     tkn.isTektonAlphaFeatureEnabled();
         }
         return false;
-    }
-
-
-    private boolean isActiveTektonVersionOlder(String activeVersion, String version) {
-        String[] activeVersionSplitted = activeVersion.replace("v", "").split(".");
-        String[] versionSplitted = version.split(".");
-        int size = Math.max(versionSplitted.length, activeVersionSplitted.length);
-        for (int i=0; i<size; i++) {
-            int activeVersionNumber = activeVersionSplitted.length > i ? Integer.parseInt(activeVersionSplitted[i]) : -1;
-            int versionNumber = versionSplitted.length > i ? Integer.parseInt(versionSplitted[i]) : -1;
-            if (activeVersionNumber > versionNumber) {
-                return true;
-            } else if (activeVersionNumber < versionNumber) {
-                return false;
-            }
-        }
-        return true;
     }
 }

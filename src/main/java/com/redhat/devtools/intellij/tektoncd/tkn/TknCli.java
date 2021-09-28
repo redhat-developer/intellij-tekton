@@ -75,7 +75,6 @@ import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -126,8 +125,8 @@ public class TknCli implements Tkn {
 
     private Map<String, String> envVars;
 
-    private String tektonVersion;
-    private boolean hasAlphaFeaturesEnabled;
+    private volatile String tektonVersion;
+    private volatile boolean hasAlphaFeaturesEnabled;
 
 
     TknCli(Project project, String command) {
@@ -310,7 +309,6 @@ public class TknCli implements Tkn {
         }
     }
 
-
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
         try {
             TaskRunList taskRunList;
@@ -325,12 +323,6 @@ public class TknCli implements Tkn {
             throw new IOException(e);
         }
     }
-
-    /*@Override
-    public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
-        String json = ExecHelper.execute(command, envVars, "taskrun", "ls", task, "-n", namespace, "-o", "json");
-        return getCustomCollection(json, TaskRun.class);
-    }*/
 
     @Override
     public List<Condition> getConditions(String namespace) throws IOException, NullPointerException {
@@ -354,7 +346,6 @@ public class TknCli implements Tkn {
 
     @Override
     public List<String> getTriggerBindings(String namespace) throws IOException {
-
         String output = ExecHelper.execute(command, envVars, "triggerbindings", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
@@ -646,11 +637,6 @@ public class TknCli implements Tkn {
         return startTaskAndGetRunName(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
     }
 
-    public String startTaskDryRun(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
-        List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace, "--dry-run"));
-        return startTask(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
-    }
-
     public String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("clustertask", "start", clusterTask, "-n", namespace)); // -n is used to retreive input/output resources
         return startTaskAndGetRunName(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
@@ -883,16 +869,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public Watch watchTaskRun(String namespace, String name, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException {
-        try {
-            return client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).withName(name).watch(watcher);
-        } catch (KubernetesClientException e) {
-            throw new IOException(e);
-        }
-    }
-
-    @Override
-    public Watch watchTaskRuns(String namespace, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException {
+    public Watch watchTaskRuns(String namespace, Watcher<TaskRun> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).watch(watcher);
         } catch (KubernetesClientException e) {
@@ -1015,30 +992,15 @@ public class TknCli implements Tkn {
         // This is a hack to prevent from displaying error messages in the IDE Fatal Errors panel
         // regarding a container already closed during command execution
         LogManager.getLogger(ExecWebSocketListener.class).setLevel(Level.FATAL);
-        try(ExecWatch watch = client.pods().inNamespace(namespace).withName(name).inContainer(container)
-                .redirectingInput()
-                .redirectingOutput()
-                .writingError(new OutputStream() {
-                    @Override
-                    public void write(int b) throws IOException {
-                    }
-                })
-                .exec("sh", "-c", "cat tekton/termination")) {
-            boolean isEmpty = watch.getOutput().read() == -1;
-            watch.close();
-            return !isEmpty;
+        try(ExecWatch watch = execCommandInContainer(resource, container, "sh", "-c", "cat tekton/termination")) {
+            return watch.getOutput().read() != -1;
         } catch(Throwable e) {
             throw new IOException(e);
         }
     }
 
-
-    public ExecWatch execCommandInContainer(Pod pod, String containerId) {
-        return execCommandInContainer(pod, containerId, "sh");
-    }
-
     public ExecWatch execCommandInContainer(Pod pod, String containerId, String... command) {
-        ExecWatch watch = client.pods().inNamespace(pod.getMetadata().getNamespace())
+        return client.pods().inNamespace(pod.getMetadata().getNamespace())
                 .withName(pod.getMetadata().getName())
                 .inContainer(containerId)
                 .redirectingInput()
@@ -1046,9 +1008,6 @@ public class TknCli implements Tkn {
                 .redirectingError()
                 .withTTY()
                 .exec(command);
-
-
-        return watch;
     }
 
     @Override

@@ -29,7 +29,6 @@ import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -163,7 +162,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getTaskRuns((TaskNode) element, ((TaskNode) element).getName());
             }
             if (element instanceof TaskRunNode) {
-                ParentableNode parent = (ParentableNode) ((TaskRunNode) element).getParent();
+                ParentableNode parent = ((TaskRunNode) element).getParent();
                 if (parent instanceof PipelineRunNode) {
                     return getTaskRuns((TaskRunNode)element, ((TaskRunNode) element).getConditionsAsTaskRunChildren(((PipelineRunNode)parent).getRun()), false);
                 } else {
@@ -280,24 +279,13 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> taskRunsNodes = new ArrayList<>();
         if (taskRuns != null) {
             if (orderNewestToOldest) {
-                taskRuns.stream().sorted(Comparator.comparing(this::getStartTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                taskRuns.stream().sorted(Comparator.comparing(TaskRunNode::getStartTime, Comparator.nullsLast(Comparator.reverseOrder())))
                         .forEachOrdered(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
             } else {
                 taskRuns.forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
             }
         }
         return taskRunsNodes.toArray(new Object[taskRunsNodes.size()]);
-    }
-
-    private Instant getStartTime(TaskRun run) {
-        Instant startTime = null;
-        try {
-            String startTimeText = run.getStatus() == null ? null : run.getStatus().getStartTime();
-            if (startTimeText != null && !startTimeText.isEmpty()) {
-                startTime = Instant.parse(startTimeText);
-            }
-        } catch (NullPointerException ignored) { }
-        return startTime;
     }
 
     private Object[] getPipelineRuns(ParentableNode element, String pipeline) {

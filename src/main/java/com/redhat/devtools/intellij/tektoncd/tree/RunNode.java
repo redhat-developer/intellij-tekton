@@ -11,8 +11,10 @@
 package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.redhat.devtools.intellij.common.utils.DateHelper;
+import io.fabric8.knative.internal.pkg.apis.Condition;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public abstract class RunNode<T, R extends HasMetadata> extends ParentableNode<T> {
@@ -56,6 +58,45 @@ public abstract class RunNode<T, R extends HasMetadata> extends ParentableNode<T
             }
         }
         return text;
+    }
+
+    protected String getFailedReason(List<Condition> conditionsList) {
+        if (conditionsList.size() > 0) {
+            return conditionsList.get(0).getReason();
+        }
+        return "";
+    }
+
+    protected static Instant getStartTime(String startTimeText) {
+        Instant startTime = null;
+        try {
+            if (startTimeText != null && !startTimeText.isEmpty()) {
+                startTime = Instant.parse(startTimeText);
+            }
+        } catch (NullPointerException ignored) { }
+        return startTime;
+    }
+
+    protected Optional<Boolean> isCompleted(List<Condition> conditionsList) {
+        Optional<Boolean> completed = Optional.empty();
+        try {
+            if (conditionsList.size() > 0) {
+                if (conditionsList.get(0).getStatus().equalsIgnoreCase("True")) {
+                    completed = Optional.of(true);
+                } else if (conditionsList.get(0).getStatus().equalsIgnoreCase("False")) {
+                    completed = Optional.of(false);
+                }
+            }
+        } catch (Exception e) {}
+        return completed;
+    }
+
+    protected Instant getCompletionTime(String completionTimeText) {
+        Instant completionTime = null;
+        try {
+            if (completionTimeText != null && !completionTimeText.isEmpty()) completionTime = Instant.parse(completionTimeText);
+        } catch (NullPointerException ne) { }
+        return completionTime;
     }
 
     public abstract String getFailedReason();

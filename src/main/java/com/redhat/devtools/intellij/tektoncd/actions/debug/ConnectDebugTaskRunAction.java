@@ -10,52 +10,33 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions.debug;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.DebugHelper;
-import java.io.IOException;
 import javax.swing.tree.TreePath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ConnectDebugTaskRunAction extends TektonAction {
-    private static final Logger logger = LoggerFactory.getLogger(ConnectDebugTaskRunAction.class);
 
     public ConnectDebugTaskRunAction() { super(TaskRunNode.class); }
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
-        ExecHelper.submit(() -> {
-            ParentableNode<?> element = getElement(selected);
-            try {
-                String yaml = tkncli.getTaskRunYAML(element.getNamespace(), element.getName());
-                JsonNode debugNode = YAMLHelper.getValueFromYAML(yaml, new String[] { "spec", "debug" });
-                if (debugNode != null) {
-                    DebugHelper.doDebugTaskRun(tkncli, element.getNamespace(), element.getName());
-                }
-            } catch (IOException e) {
-                logger.warn(e.getLocalizedMessage(), e);
-            }
-        });
-
+        ParentableNode<?> element = getElement(selected);
+        DebugHelper.doDebugTaskRun(tkncli, element.getNamespace(), element.getName());
     }
 
     @Override
     public boolean isVisible(Object selected) {
-        // action should be visibile if taskrun is not completed and debug panel for it is not opened yet
-        // and the taskrun has been started in debug mode
+        // action should be visibile if taskrun is running, it is started in debug mode
+        // and debug panel for it is not opened yet
         Object element = getElement(selected);
         if (element instanceof TaskRunNode) {
             Tkn tkn = ((ParentableNode)element).getRoot().getTkn();
-            return (((TaskRunNode) element).isCompleted().isPresent()
-                && !((TaskRunNode) element).isCompleted().get()
+            return (!((TaskRunNode) element).isCompleted().isPresent()
                 && DebugPanelBuilder.instance(tkn).getResourceDebugPanel(((TaskRunNode) element).getName()) == null
                 && ((TaskRunNode) element).isStartedOnDebug());
         }

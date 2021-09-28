@@ -40,4 +40,20 @@ public class Utils {
         }
         return Pair.empty();
     }
+
+    public static boolean isActiveTektonVersionOlder(String activeVersion, String version) {
+        String[] activeVersionSplitted = activeVersion.replace("v", "").split(".");
+        String[] versionSplitted = version.split(".");
+        int size = Math.max(versionSplitted.length, activeVersionSplitted.length);
+        for (int i=0; i<size; i++) {
+            int activeVersionNumber = activeVersionSplitted.length > i ? Integer.parseInt(activeVersionSplitted[i]) : -1;
+            int versionNumber = versionSplitted.length > i ? Integer.parseInt(versionSplitted[i]) : -1;
+            if (activeVersionNumber > versionNumber) {
+                return true;
+            } else if (activeVersionNumber < versionNumber) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

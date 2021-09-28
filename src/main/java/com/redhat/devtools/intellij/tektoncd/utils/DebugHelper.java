@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Pair;
+import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
@@ -34,16 +35,18 @@ public class DebugHelper {
     private static final Logger logger = LoggerFactory.getLogger(DebugHelper.class);
 
     public static void doDebugTaskRun(Tkn tkncli, String namespace, String nameTaskRun) {
-        DebugModel debugModel = new DebugModel(nameTaskRun);
-        UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkncli).addContent(debugModel));
-        String keyLabel = "tekton.dev/taskRun";
-        WatchHandler.get().setWatchByLabel(tkncli,
-                namespace,
-                KIND_POD,
-                keyLabel,
-                nameTaskRun,
-                createWatcher(tkncli, debugModel, keyLabel, nameTaskRun),
-                true);
+        ExecHelper.submit(() -> {
+            DebugModel debugModel = new DebugModel(nameTaskRun);
+            UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkncli).addContent(debugModel));
+            String keyLabel = "tekton.dev/taskRun";
+            WatchHandler.get().setWatchByLabel(tkncli,
+                    namespace,
+                    KIND_POD,
+                    keyLabel,
+                    nameTaskRun,
+                    createWatcher(tkncli, debugModel, keyLabel, nameTaskRun),
+                    true);
+        });
     }
 
     private static Watcher<Pod> createWatcher(Tkn tkn, DebugModel debugModel, String key, String value) {
@@ -65,7 +68,6 @@ public class DebugHelper {
                             : DebugResourceState.COMPLETE_SUCCESS);
                     updateDebugPanel(tkn, debugModel);
                 }
-
             }
 
             @Override
