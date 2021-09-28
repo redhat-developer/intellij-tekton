@@ -11,12 +11,14 @@
 package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.redhat.devtools.intellij.common.utils.DateHelper;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
+import io.fabric8.kubernetes.api.model.HasMetadata;
+import java.time.Instant;
+import java.util.Optional;
 
-public class RunNode<T, R extends Run> extends ParentableNode<T> {
+public abstract class RunNode<T, R extends HasMetadata> extends ParentableNode<T> {
     private final R run;
     public RunNode(TektonRootNode root, T parent, R run) {
-        super(root, parent, run.getName());
+        super(root, parent, run.getMetadata().getName());
         this.run = run;
     }
 
@@ -27,29 +29,41 @@ public class RunNode<T, R extends Run> extends ParentableNode<T> {
     public String getInfoText() {
         String text = getTimeInfoText();
         if (text.isEmpty()) {
-            text = run.getFailedReason();
+            text = getFailedReason();
         }
         return text;
     }
 
     private String getTimeInfoText() {
         String text = "";
-        if (run.getStartTime() == null) {
+        Instant startTime = getStartTime();
+        if (startTime == null) {
             return text;
         }
-        if (!run.isCompleted().isPresent()) {
-            text = "running " + DateHelper.humanizeDate(run.getStartTime());
+        Optional<Boolean> isCompleted = isCompleted();
+        if (!isCompleted.isPresent()) {
+            text = "running " + DateHelper.humanizeDate(startTime);
             return text;
         }
 
-        if (run.isCompleted().get()) {
-            text = "started " + DateHelper.humanizeDate(run.getStartTime()) + " ago, finished in " + DateHelper.humanizeDate(run.getStartTime(), run.getCompletionTime());
+        Instant completionTime = getCompletionTime();
+        if (isCompleted.get()) {
+            text = "started " + DateHelper.humanizeDate(startTime) + " ago, finished in " + DateHelper.humanizeDate(startTime, completionTime);
         } else {
-            text = "started " + DateHelper.humanizeDate(run.getStartTime()) + " ago";
-            if (run.getCompletionTime() != null) {
-                text += ", finished in " + DateHelper.humanizeDate(run.getStartTime(), run.getCompletionTime());
+            text = "started " + DateHelper.humanizeDate(startTime) + " ago";
+            if (completionTime != null) {
+                text += ", finished in " + DateHelper.humanizeDate(startTime, completionTime);
             }
         }
         return text;
     }
+
+    public abstract String getFailedReason();
+
+    public abstract Instant getStartTime();
+
+    public abstract Optional<Boolean> isCompleted();
+
+    public abstract Instant getCompletionTime();
+
 }

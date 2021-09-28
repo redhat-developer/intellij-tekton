@@ -216,7 +216,7 @@ public class AddTriggerAction extends TektonAction {
 
     private Map<String, String> getTriggerBindings(String namespace, Tkn tkncli) {
         Map<String, String> triggerBindingsOnCluster = new HashMap<>();
-        GenericKubernetesResourceList allTriggerBindings = tkncli.getCustomResources(namespace, CRDHelper.getCRDContext("triggers.tekton.dev/v1alpha1", "triggerbindings"));
+        GenericKubernetesResourceList allTriggerBindings = tkncli.getCustomResources(namespace, CRDHelper.getCRDContext("triggers.tekton.dev/v1beta1", "triggerbindings"));
         if (allTriggerBindings == null) {
             return triggerBindingsOnCluster;
         }
@@ -228,7 +228,6 @@ public class AddTriggerAction extends TektonAction {
                 logger.warn(e.getLocalizedMessage(), e);
             }
         });
-
         return triggerBindingsOnCluster;
     }
 

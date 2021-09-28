@@ -13,16 +13,16 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
-
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_START_STOP;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
@@ -38,7 +38,7 @@ public class MirrorStartAction extends StartAction {
     @Override
     protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "", runConfiguration = "";
-        List<? extends Run> runs = new ArrayList<>();
+        List<? extends HasMetadata> runs = new ArrayList<>();
         if (element instanceof PipelineRunNode) {
             runConfiguration = tkncli.getPipelineRunYAML(namespace, element.getName());
             String pipeline = YAMLHelper.getStringValueFromYAML(runConfiguration, new String[] {"metadata", "labels", "tekton.dev/pipeline"});

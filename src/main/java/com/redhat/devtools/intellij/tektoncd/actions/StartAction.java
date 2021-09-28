@@ -26,7 +26,6 @@ import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
@@ -42,6 +41,7 @@ import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -164,7 +164,7 @@ public class StartAction extends TektonAction {
 
     protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "";
-        List<? extends Run> runs = new ArrayList<>();
+        List<? extends HasMetadata> runs = new ArrayList<>();
         if (element instanceof PipelineNode) {
             telemetry.property(PROP_RESOURCE_KIND, KIND_PIPELINE);
             configuration = tkncli.getPipelineYAML(namespace, element.getName());

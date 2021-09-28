@@ -49,7 +49,7 @@ public class CancelAction extends TektonAction {
     public boolean isVisible(Object selected) {
         Object element = getElement(selected);
         if (element instanceof ParentableNode) {
-            return element instanceof RunNode && ((RunNode) element).getRun().getCompletionTime() == null;
+            return element instanceof RunNode && ((RunNode) element).getCompletionTime() == null;
         }
         return false;
     }

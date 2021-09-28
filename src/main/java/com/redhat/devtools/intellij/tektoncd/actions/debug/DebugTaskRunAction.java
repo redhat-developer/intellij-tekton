@@ -53,7 +53,7 @@ public class DebugTaskRunAction extends MirrorStartAction {
     @Override
     public boolean isVisible(Object selected) {
         Object element = getElement(selected);
-        if (element instanceof ParentableNode) {
+        if (element instanceof TaskRunNode) {
             Tkn tkn = ((ParentableNode)element).getRoot().getTkn();
             return isActiveTektonVersionOlder(tkn.getTektonVersion(), "0.26.0") &&
                     tkn.isTektonAlphaFeatureEnabled();

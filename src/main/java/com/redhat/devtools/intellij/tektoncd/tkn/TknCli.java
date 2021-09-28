@@ -55,12 +55,15 @@ import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.kubernetes.client.dsl.internal.ExecWebSocketListener;
+import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTaskList;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineList;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRunList;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskList;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
@@ -266,8 +269,19 @@ public class TknCli implements Tkn {
 
     @Override
     public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
-        String json = ExecHelper.execute(command, envVars, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
-        return getCustomCollection(json, PipelineRun.class);
+        try {
+            PipelineRunList pipelineRunList;
+            if (!pipeline.isEmpty()) {
+                pipelineRunList = client.adapt(TektonClient.class).v1beta1().pipelineRuns()
+                        .inNamespace(namespace).withLabel("tekton.dev/pipeline", pipeline).list();
+            } else {
+                pipelineRunList = client.adapt(TektonClient.class).v1beta1().pipelineRuns()
+                        .inNamespace(namespace).list();
+            }
+            return pipelineRunList.getItems();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
@@ -298,8 +312,18 @@ public class TknCli implements Tkn {
 
 
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
-        TaskRunList taskRunList = client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).list();
-        return taskRunList.getItems();
+        try {
+            TaskRunList taskRunList;
+            if (!task.isEmpty()) {
+                taskRunList = client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace)
+                        .withLabel("tekton.dev/task", task).list();
+            } else {
+                taskRunList = client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).list();
+            }
+            return taskRunList.getItems();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     /*@Override
@@ -553,12 +577,11 @@ public class TknCli implements Tkn {
         } catch(KubernetesClientException e) {
             throw new IOException(e.getLocalizedMessage(), e);
         }
-
     }
 
     private String getResourceNameFromMap(GenericKubernetesResource resource) {
         if (resource == null
-                || resource.getMetadata() == null) {
+            || resource.getMetadata() == null) {
             return "";
         }
         return resource.getMetadata().getName();

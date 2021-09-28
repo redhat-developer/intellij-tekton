@@ -150,7 +150,7 @@ public class StartWizard extends BaseWizard {
                 }
             });
             cmbPickRunToImportData.addItem("Please choose");
-            ((StartResourceModel)model).getRuns().forEach(run -> cmbPickRunToImportData.addItem(run.getName()));
+            ((StartResourceModel)model).getRuns().forEach(run -> cmbPickRunToImportData.addItem(run.getMetadata().getName()));
 
             cmbPickRunToImportData.addItemListener(itemEvent -> {
                 // when combo box value change

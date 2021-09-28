@@ -21,16 +21,17 @@ import com.redhat.devtools.intellij.common.tree.MutableModelSupport;
 import com.redhat.devtools.intellij.common.utils.ConfigHelper;
 import com.redhat.devtools.intellij.common.utils.ConfigWatcher;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
-import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import io.fabric8.kubernetes.api.model.Config;
 import io.fabric8.kubernetes.api.model.NamedContext;
 import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -153,7 +154,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getPipelineRuns((PipelineRunsNode) element, "");
             }
             if (element instanceof PipelineRunNode) {
-                return getTaskRuns((PipelineRunNode)element, ((PipelineRunNode) element).getRun().getChildren(), false);
+                return getTaskRuns((PipelineRunNode)element, ((PipelineRunNode) element).getPipelineRunTaskRunAsTaskRun(), false);
             }
             if (element instanceof TasksNode) {
                 return getTasks((TasksNode) element);
@@ -162,7 +163,12 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getTaskRuns((TaskNode) element, ((TaskNode) element).getName());
             }
             if (element instanceof TaskRunNode) {
-                return getTaskRuns((TaskRunNode)element, ((TaskRunNode) element).getRun().getChildren(), false);
+                ParentableNode parent = (ParentableNode) ((TaskRunNode) element).getParent();
+                if (parent instanceof PipelineRunNode) {
+                    return getTaskRuns((TaskRunNode)element, ((TaskRunNode) element).getConditionsAsTaskRunChildren(((PipelineRunNode)parent).getRun()), false);
+                } else {
+                    return getTaskRuns((TaskRunNode)element, Collections.emptyList(), false);
+                }
             }
             if (element instanceof ClusterTasksNode) {
                 return getClusterTasks((ClusterTasksNode) element);
@@ -274,12 +280,24 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> taskRunsNodes = new ArrayList<>();
         if (taskRuns != null) {
             if (orderNewestToOldest) {
-                taskRuns.stream().forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+                taskRuns.stream().sorted(Comparator.comparing(this::getStartTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .forEachOrdered(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
             } else {
-                taskRuns.stream().sorted(Comparator.comparing(Run::getStartTime, Comparator.nullsLast(Comparator.naturalOrder()))).forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+                taskRuns.forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
             }
         }
         return taskRunsNodes.toArray(new Object[taskRunsNodes.size()]);
+    }
+
+    private Instant getStartTime(TaskRun run) {
+        Instant startTime = null;
+        try {
+            String startTimeText = run.getStatus() == null ? null : run.getStatus().getStartTime();
+            if (startTimeText != null && !startTimeText.isEmpty()) {
+                startTime = Instant.parse(startTimeText);
+            }
+        } catch (NullPointerException ignored) { }
+        return startTime;
     }
 
     private Object[] getPipelineRuns(ParentableNode element, String pipeline) {
@@ -391,7 +409,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             return new LabelAndIconDescriptor(project, element, ((PipelineNode)element).getName(), PIPELINE_ICON, parentDescriptor);
         }
         if (element instanceof PipelineRunNode) {
-            return new LabelAndIconDescriptor(project, element, ((PipelineRunNode)element).getName(), ((PipelineRunNode)element).getInfoText(), getIcon(((PipelineRunNode)element).getRun()), parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((PipelineRunNode)element).getName(), ((PipelineRunNode)element).getInfoText(), getIcon((PipelineRunNode) element), parentDescriptor);
         }
         if (element instanceof PipelineRunsNode) {
             return new LabelAndIconDescriptor(project, element, ((PipelineRunsNode)element).getName(), PIPELINE_RUN_ICON, parentDescriptor);
@@ -403,7 +421,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             return new LabelAndIconDescriptor(project, element, ((TaskNode)element).getName(), TASK_ICON, parentDescriptor);
         }
         if (element instanceof TaskRunNode) {
-            return new LabelAndIconDescriptor(project, element, ((TaskRunNode)element).getDisplayName(), ((TaskRunNode)element).getInfoText(), getIcon(((TaskRunNode)element).getRun()), parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((TaskRunNode)element).getDisplayName(), ((TaskRunNode)element).getInfoText(), getIcon((TaskRunNode) element), parentDescriptor);
         }
         if (element instanceof TaskRunsNode) {
             return new LabelAndIconDescriptor(project, element, ((TaskRunsNode) element).getName(), TASK_RUN_ICON, parentDescriptor);
@@ -462,8 +480,10 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return null;
     }
 
-    private Icon getIcon(Run run) {
-        return run.isCompleted().isPresent()?run.isCompleted().get()?SUCCESS_ICON:FAILED_ICON:RUNNING_ICON;
+    private Icon getIcon(RunNode run) {
+        return run.isCompleted().isPresent()?
+                ((boolean)run.isCompleted().get()) ? SUCCESS_ICON:FAILED_ICON
+                :RUNNING_ICON;
     }
 
     @Override

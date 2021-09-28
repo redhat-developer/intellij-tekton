@@ -12,8 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ConfigWatcher;
-import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
-import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
 import io.fabric8.kubernetes.api.model.AuthInfo;

@@ -25,6 +25,7 @@ import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
@@ -413,7 +414,7 @@ public interface Tkn {
      *
      * @param namespace the namespace to use
      * @param crdContext the custom resource definition context of the resource kind
-     * @return Object as HashMap, null if no resource was found
+     * @return GenericKubernetesResourceList or null if no resource was found
      */
     GenericKubernetesResourceList getCustomResources(String namespace, CustomResourceDefinitionContext crdContext);
 
@@ -423,7 +424,7 @@ public interface Tkn {
      * @param namespace the namespace to use
      * @param name name of custom resource
      * @param crdContext the custom resource definition context of the resource kind
-     * @return Object as HashMap, null if no resource was found
+     * @return GenericKubernetesResource or null if no resource was found
      */
     GenericKubernetesResource getCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext);
 

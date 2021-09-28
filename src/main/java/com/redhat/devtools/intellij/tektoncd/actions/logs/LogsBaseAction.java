@@ -17,22 +17,21 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
-import com.redhat.devtools.intellij.tektoncd.tkn.PipelineRun;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
-import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.RunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.RunPickerDialog;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.tree.TreePath;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
@@ -93,7 +92,7 @@ public abstract class LogsBaseAction extends TektonAction {
                 });
                 return null;
             }
-            pipelineRunsNames = pipelineRuns.stream().map(Run::getName).collect(Collectors.toList());
+            pipelineRunsNames = pipelineRuns.stream().map(run -> run.getMetadata().getName()).collect(Collectors.toList());
             return pickRunWithDialogHelper(pipelineRunsNames, "pipelinerun", actionName);
         } catch (IOException e) {
             String errorMessage = "An error occurred while requesting logs for " + name + "\n" + e.getLocalizedMessage();
@@ -119,7 +118,7 @@ public abstract class LogsBaseAction extends TektonAction {
                 UIHelper.executeInUI(() -> Messages.showWarningDialog("Task " + name + "doesn't have any taskRun to be selected", actionName));
                 return null;
             }
-            taskRunsNames = taskRuns.stream().map(Run::getName).collect(Collectors.toList());
+            taskRunsNames = taskRuns.stream().map(run -> run.getMetadata().getName()).collect(Collectors.toList());
             return pickRunWithDialogHelper(taskRunsNames, "taskrun", actionName);
         } catch (IOException e) {
             UIHelper.executeInUI(() ->

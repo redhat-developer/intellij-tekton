@@ -15,7 +15,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
-import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
@@ -55,10 +54,10 @@ public class ConnectDebugTaskRunAction extends TektonAction {
         Object element = getElement(selected);
         if (element instanceof TaskRunNode) {
             Tkn tkn = ((ParentableNode)element).getRoot().getTkn();
-            return (((TaskRunNode) element).getRun().isCompleted().isPresent()
-                && !((TaskRunNode) element).getRun().isCompleted().get()
+            return (((TaskRunNode) element).isCompleted().isPresent()
+                && !((TaskRunNode) element).isCompleted().get()
                 && DebugPanelBuilder.instance(tkn).getResourceDebugPanel(((TaskRunNode) element).getName()) == null
-                && ((TaskRun) ((TaskRunNode) element).getRun()).isStartedOnDebug());
+                && ((TaskRunNode) element).isStartedOnDebug());
         }
         return false;
     }
