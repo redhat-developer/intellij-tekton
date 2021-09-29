@@ -75,7 +75,7 @@ public class PollingHelper {
                         stopTimer(updatedPod);
                         execute(tkn,
                                 model,
-                                DebugHelper.isPodInPhase(updatedPod, "Failed")
+                                DebugHelper.isPodFailed(updatedPod)
                                         ? DebugResourceState.COMPLETE_FAILED
                                         : DebugResourceState.COMPLETE_SUCCESS,
                                 doExecute);

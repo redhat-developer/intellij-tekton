@@ -18,6 +18,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
+import io.fabric8.kubernetes.api.model.ContainerState;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Watcher;
@@ -63,7 +64,7 @@ public class DebugHelper {
                             DebugHelper::updateDebugPanel);
                 } else if (isPodCompleted(resource)) {
                     closeWatch(resource.getMetadata().getNamespace(), key, value);
-                    debugModel.updateResourceStatus(isPodInPhase(resource, "Failed")
+                    debugModel.updateResourceStatus(isPodFailed(resource)
                             ? DebugResourceState.COMPLETE_FAILED
                             : DebugResourceState.COMPLETE_SUCCESS);
                     updateDebugPanel(tkn, debugModel);
@@ -72,7 +73,7 @@ public class DebugHelper {
 
             @Override
             public void onClose(WatcherException cause) {
-
+                String e = cause.getLocalizedMessage();
             }
 
         };
@@ -81,7 +82,23 @@ public class DebugHelper {
     public static boolean isPodCompleted(Pod pod) {
         return pod == null
                 || isPodInPhase(pod, "Succeeded")
-                || isPodInPhase(pod, "Failed");
+                || isPodInPhase(pod, "Failed")
+                || isPodContainerFailed(pod);
+    }
+
+    public static boolean isPodContainerFailed(Pod pod) {
+        if (pod != null
+                && pod.getStatus() != null
+                && pod.getStatus().getContainerStatuses() != null) {
+            for (ContainerStatus containerStatus: pod.getStatus().getContainerStatuses()) {
+                ContainerState state = containerStatus.getState();
+                if (state.getWaiting() != null
+                        && state.getWaiting().getReason().equalsIgnoreCase("CreateContainerConfigError")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static boolean isPodInPhase(Pod pod, String phase) {
@@ -91,6 +108,11 @@ public class DebugHelper {
             return pod.getStatus().getPhase().equalsIgnoreCase(phase);
         }
         return false;
+    }
+
+    public static boolean isPodFailed(Pod pod) {
+        return isPodInPhase(pod, "Failed")
+                || isPodContainerFailed(pod);
     }
 
     private static void closeWatch(String namespace, String key, String value) {
