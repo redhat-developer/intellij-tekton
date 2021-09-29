@@ -16,6 +16,7 @@ import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.client.TektonClient;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,13 +100,12 @@ public class TknCliPipelineTest extends TknCliTest {
         try {
             tkn.cancelPipelineRun(NAMESPACE, namePipelineRun[0]); //pipelinerun may have already finished its execution
         } catch(IOException ignored){}
-
         // clean up and verify cleaning succeed
         tkn.deletePipelines(NAMESPACE, Arrays.asList(PIPELINE_NAME), true);
         pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
         assertFalse(pipelines.contains(PIPELINE_NAME));
         List<PipelineRun> pipelineRuns = tkn.getPipelineRuns(NAMESPACE, PIPELINE_NAME);
-        assertTrue(pipelineRuns.stream().noneMatch(run -> run.getName().equals(PIPELINE_RUN_NAME)));
+        assertTrue(pipelineRuns.stream().noneMatch(run -> run.getMetadata().getName().equals(PIPELINE_RUN_NAME)));
     }
 
     @Test

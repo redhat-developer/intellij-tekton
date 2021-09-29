@@ -23,15 +23,18 @@ import io.fabric8.kubernetes.api.model.NamedCluster;
 import io.fabric8.kubernetes.api.model.NamedContext;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRunStatus;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 
 
@@ -185,7 +188,7 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkifTaskHasOneRunReturnsOneElementArray() throws IOException {
-        TaskRun taskRun = new TaskRun("test", "", "", Optional.of(true), Instant.now(), Instant.now(), null, "");
+        TaskRun taskRun = createTaskRun("test", "");
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun);
@@ -201,9 +204,9 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkIfTaskWithMultipleRunsReturnOrderedMultipleItemsArray() throws IOException {
-        TaskRun taskRun1 = new TaskRun("test1", "", "", Optional.of(true), Instant.now().minusMillis(1000), Instant.now().minusMillis(999), null, "");
-        TaskRun taskRun2 = new TaskRun("test2", "", "", Optional.of(true), Instant.now().minusMillis(900), Instant.now().minusMillis(899), null, "");
-        TaskRun taskRun3 = new TaskRun("test3", "", "", Optional.of(true), Instant.now().minusMillis(800), Instant.now().minusMillis(799), null, "");
+        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString());
+        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString());
+        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString());
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
@@ -253,7 +256,7 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkifClusterHasOneRunReturnsOneElementArray() throws IOException {
-        TaskRun taskRun = new TaskRun("test", "", "", Optional.of(true), Instant.now(), Instant.now(), null, "");
+        TaskRun taskRun = createTaskRun("test", "");
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun);
@@ -269,9 +272,9 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkIfClusterWithMultipleRunsReturnOrderedMultipleItemsArray() throws IOException {
-        TaskRun taskRun1 = new TaskRun("test1", "", "", Optional.of(true), Instant.now().minusMillis(1000), Instant.now().minusMillis(999), null, "");
-        TaskRun taskRun2 = new TaskRun("test2", "", "", Optional.of(true), Instant.now().minusMillis(900), Instant.now().minusMillis(899), null, "");
-        TaskRun taskRun3 = new TaskRun("test3", "", "", Optional.of(true), Instant.now().minusMillis(800), Instant.now().minusMillis(799), null, "");
+        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString());
+        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString());
+        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString());
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
@@ -310,7 +313,7 @@ public class TektonTreeStructureTest {
      */
     @Test
     public void checkIfTaskRunHasNoTaskRunsReturnsEmptyArray() {
-        TaskRun run = new TaskRun("run", "", "", Optional.of(true), Instant.now(), Instant.now(), null, "");
+        TaskRun run = createTaskRun("test", "");
         TaskRunNode node = new TaskRunNode(root, parent, run);
         Object[] taskruns = structure.getChildElements(node);
 
@@ -319,38 +322,36 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkifTaskRunHasOneRunReturnsOneElementArray() {
-        TaskRun taskRun = new TaskRun("test", "", "", Optional.of(true), Instant.now(), Instant.now(), null, "");
+        TaskRun taskRun = createTaskRun("test", "");
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun);
 
-        TaskRun run = new TaskRun("run", "", "", Optional.of(true), Instant.now(), Instant.now(), resultTaskRuns, "");
-        TaskRunNode node = new TaskRunNode(root, parent, run);
+        TaskRunNode node = createTaskRunNode(resultTaskRuns);
         Object[] taskruns = structure.getChildElements(node);
 
-        assertTrue(taskruns.length == 1);
+        assertEquals(1, taskruns.length);
         assertEquals(((ParentableNode) taskruns[0]).getName(), "test");
     }
 
     @Test
     public void checkIfTaskRunWithMultipleRunsReturnOrderedMultipleItemsArray() {
-        TaskRun taskRun1 = new TaskRun("test1", "", "", Optional.of(true), Instant.now().minusMillis(1000), Instant.now().minusMillis(999), null, "");
-        TaskRun taskRun2 = new TaskRun("test2", "", "", Optional.of(true), Instant.now().minusMillis(900), Instant.now().minusMillis(899), null, "");
-        TaskRun taskRun3 = new TaskRun("test3", "", "", Optional.of(true), Instant.now().minusMillis(800), Instant.now().minusMillis(799), null, "");
+        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString());
+        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString());
+        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString());
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
         resultTaskRuns.add(taskRun2);
         resultTaskRuns.add(taskRun1);
 
-        TaskRun run = new TaskRun("run", "", "", Optional.of(true), Instant.now(), Instant.now(), resultTaskRuns, "");
-        TaskRunNode node = new TaskRunNode(root, parent, run);
+        TaskRunNode node = createTaskRunNode(resultTaskRuns);
         Object[] taskruns = structure.getChildElements(node);
 
-        assertTrue(taskruns.length == 3);
-        assertEquals(((ParentableNode) taskruns[0]).getName(), "test1");
+        assertEquals(3, taskruns.length);
+        assertEquals(((ParentableNode) taskruns[0]).getName(), "test3");
         assertEquals(((ParentableNode) taskruns[1]).getName(), "test2");
-        assertEquals(((ParentableNode) taskruns[2]).getName(), "test3");
+        assertEquals(((ParentableNode) taskruns[2]).getName(), "test1");
     }
 
     /*  ////////////////////////////////////////////////////////////
@@ -360,47 +361,45 @@ public class TektonTreeStructureTest {
      */
     @Test
     public void checkIfPipelineRunHasNoTaskRunsReturnsEmptyArray() {
-        PipelineRun run = new PipelineRun("run", Optional.of(true), Instant.now(), Instant.now(), null);
+        PipelineRun run = createPipelineRun("prun");
         PipelineRunNode node = new PipelineRunNode(root, parent, run);
         Object[] taskruns = structure.getChildElements(node);
 
-        assertTrue(taskruns.length == 0);
+        assertEquals(0, taskruns.length);
     }
 
     @Test
     public void checkifPipelineRunHasOneRunReturnsOneElementArray() {
-        TaskRun taskRun = new TaskRun("test", "", "", Optional.of(true), Instant.now(), Instant.now(), null, "");
+        TaskRun taskRun = createTaskRun("test", "");
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun);
 
-        PipelineRun run = new PipelineRun("run", Optional.of(true), Instant.now(), Instant.now(), resultTaskRuns);
-        PipelineRunNode node = new PipelineRunNode(root, parent, run);
+        PipelineRunNode node = createPipelineRunNode(resultTaskRuns);
         Object[] taskruns = structure.getChildElements(node);
 
-        assertTrue(taskruns.length == 1);
+        assertEquals(1, taskruns.length);
         assertEquals(((ParentableNode) taskruns[0]).getName(), "test");
     }
 
     @Test
     public void checkIfPipelineRunWithMultipleRunsReturnOrderedMultipleItemsArray() {
-        TaskRun taskRun1 = new TaskRun("test1", "", "", Optional.of(true), Instant.now().minusMillis(1000), Instant.now().minusMillis(999), null, "");
-        TaskRun taskRun2 = new TaskRun("test2", "", "", Optional.of(true), Instant.now().minusMillis(900), Instant.now().minusMillis(899), null, "");
-        TaskRun taskRun3 = new TaskRun("test3", "", "", Optional.of(true), Instant.now().minusMillis(800), Instant.now().minusMillis(799), null, "");
+        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString());
+        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString());
+        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString());
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
         resultTaskRuns.add(taskRun2);
         resultTaskRuns.add(taskRun1);
 
-        PipelineRun run = new PipelineRun("run", Optional.of(true), Instant.now(), Instant.now(), resultTaskRuns);
-        PipelineRunNode node = new PipelineRunNode(root, parent, run);
+        PipelineRunNode node = createPipelineRunNode(resultTaskRuns);
         Object[] taskruns = structure.getChildElements(node);
 
         assertTrue(taskruns.length == 3);
-        assertEquals(((ParentableNode) taskruns[0]).getName(), "test1");
+        assertEquals(((ParentableNode) taskruns[0]).getName(), "test3");
         assertEquals(((ParentableNode) taskruns[1]).getName(), "test2");
-        assertEquals(((ParentableNode) taskruns[2]).getName(), "test3");
+        assertEquals(((ParentableNode) taskruns[2]).getName(), "test1");
     }
 
     @Test
@@ -492,5 +491,46 @@ public class TektonTreeStructureTest {
         config.setCurrentContext("test");
 
         return config;
+    }
+
+    private TaskRun createTaskRun(String name, String startTime) {
+        TaskRun taskRun = new TaskRun();
+
+        TaskRunStatus taskRunStatus = new TaskRunStatus();
+        taskRunStatus.setStartTime(startTime);
+
+        taskRun.setMetadata(createMetadata(name));
+        taskRun.setStatus(taskRunStatus);
+
+        return taskRun;
+    }
+
+    private PipelineRun createPipelineRun(String name) {
+        PipelineRun pipelineRun = new PipelineRun();
+        pipelineRun.setMetadata(createMetadata(name));
+        return pipelineRun;
+    }
+
+    private ObjectMeta createMetadata(String name) {
+        ObjectMeta meta = new ObjectMeta();
+        meta.setName(name);
+        return meta;
+    }
+
+    private PipelineRunNode createPipelineRunNode(List<TaskRun> taskRuns) {
+        PipelineRunNode node = mock(PipelineRunNode.class);
+        when(node.getRoot()).thenReturn(root);
+        when(node.getParent()).thenReturn(parent);
+        when(node.getPipelineRunTaskRunAsTaskRun()).thenReturn(taskRuns);
+        return node;
+    }
+
+    private TaskRunNode createTaskRunNode(List<TaskRun> taskRuns) {
+        TaskRunNode node = mock(TaskRunNode.class);
+        when(node.getRoot()).thenReturn(root);
+        PipelineRunNode parent = mock(PipelineRunNode.class);
+        when(node.getParent()).thenReturn(parent);
+        when(node.getConditionsAsTaskRunChildren(ArgumentMatchers.any())).thenReturn(taskRuns);
+        return node;
     }
 }

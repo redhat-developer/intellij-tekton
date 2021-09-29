@@ -76,31 +76,6 @@ public class WatchHandler {
         return instance;
     }
 
-    public void setWatchByResourceKind(Tkn tkn, String namespace, String kind, Watcher watcher) {
-        String watchId = getWatchId(namespace, kind + "list");
-        Watch watch = null;
-        WatchNodes wn = null;
-
-        if (this.watches.containsKey(watchId)) {
-            return;
-        }
-
-        try {
-            if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
-                watch = tkn.watchPipelines(namespace, watcher);
-            } else if (kind.equalsIgnoreCase(KIND_TASK)) {
-                watch = tkn.watchTasks(namespace, watcher);
-            }
-            wn = new WatchNodes(watch);
-        } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage(), e);
-        }
-
-        if (wn != null) {
-            watches.put(watchId, wn);
-        }
-    }
-
     public void setWatchByResourceName(Tkn tkn, String namespace, String kind, String resourceName, Watcher watcher) {
         String watchId = getWatchId(namespace, kind + "-" + resourceName);
         Supplier<Watch> watchSupplier = () -> {
@@ -117,10 +92,6 @@ public class WatchHandler {
             return watch;
         };
         setWatch(watchId, watchSupplier, false);
-    }
-
-    public void setWatchByLabel(Tkn tkn, String namespace, String kind, String keyLabel, String valueLabel, Watcher watcher) {
-        setWatchByLabel(tkn, namespace, kind, keyLabel, valueLabel, watcher, false);
     }
 
     public void setWatchByLabel(Tkn tkn, String namespace, String kind, String keyLabel, String valueLabel, Watcher watcher, boolean updateIfAlreadyExisting) {

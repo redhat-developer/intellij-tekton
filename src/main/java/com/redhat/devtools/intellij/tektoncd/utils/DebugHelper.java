@@ -78,13 +78,13 @@ public class DebugHelper {
         };
     }
 
-    private static boolean isPodCompleted(Pod pod) {
+    public static boolean isPodCompleted(Pod pod) {
         return pod == null
                 || isPodInPhase(pod, "Succeeded")
                 || isPodInPhase(pod, "Failed");
     }
 
-    private static boolean isPodInPhase(Pod pod, String phase) {
+    public static boolean isPodInPhase(Pod pod, String phase) {
         if (pod != null
                 && pod.getStatus() != null
                 && pod.getStatus().getPhase() != null) {

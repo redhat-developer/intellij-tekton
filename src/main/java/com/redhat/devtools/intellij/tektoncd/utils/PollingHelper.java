@@ -71,29 +71,21 @@ public class PollingHelper {
                 try {
                     Pod updatedPod = tkn.getPod(model.getPod().getMetadata().getNamespace(), model.getPod().getMetadata().getName());
                     model.setPod(updatedPod);
-                    if (isPodCompleted(updatedPod)) {
+                    if (DebugHelper.isPodCompleted(updatedPod)) {
                         stopTimer(updatedPod);
                         execute(tkn,
                                 model,
-                                isPodInPhase(updatedPod, "Failed")
+                                DebugHelper.isPodInPhase(updatedPod, "Failed")
                                         ? DebugResourceState.COMPLETE_FAILED
                                         : DebugResourceState.COMPLETE_SUCCESS,
                                 doExecute);
                     } else {
                         isReadyForExecution.apply(tkn, model)
                                 .whenComplete((isReadyForExecutionResult, t) -> {
-                                    if (t != null) {
-                                        String o = "";
-                                    }
                                     if (isReadyForExecutionResult.getFirst()) {
                                         execute(tkn, isReadyForExecutionResult.getSecond(), DebugResourceState.DEBUG, doExecute);
                                     }
                                 });
-
-                        /*Pair<Boolean, DebugModel> isReadyForExecutionResult = isReadyForExecution.apply(tkn, model).get();
-                        if (isReadyForExecutionResult.getFirst()) {
-                            execute(tkn, isReadyForExecutionResult.getSecond(), DebugResourceState.DEBUG, doExecute);
-                        }*/
                     }
                 } catch (IOException | RuntimeException e) {
                     logger.warn(e.getLocalizedMessage(), e);
@@ -104,9 +96,6 @@ public class PollingHelper {
     }
 
     private boolean canDoPolling(DebugModel model) {
-        /*if (model.getResourceStatus().equals(DebugResourceState.DEBUG)) {
-            return false;
-        }*/
         if (model.getResourceStatus().equals(DebugResourceState.COMPLETE_SUCCESS)
             || model.getResourceStatus().equals(DebugResourceState.COMPLETE_FAILED)) {
             stopTimer(model.getPod());
@@ -132,20 +121,5 @@ public class PollingHelper {
     private void execute(Tkn tkn, DebugModel model, DebugResourceState state, BiConsumer<Tkn, DebugModel> doExecute) {
         model.updateResourceStatus(state);
         doExecute.accept(tkn, model);
-    }
-
-    private boolean isPodCompleted(Pod pod) {
-        return pod == null
-                || isPodInPhase(pod, "Succeeded")
-                || isPodInPhase(pod, "Failed");
-    }
-
-    private boolean isPodInPhase(Pod pod, String phase) {
-        if (pod != null
-                && pod.getStatus() != null
-                && pod.getStatus().getPhase() != null) {
-            return pod.getStatus().getPhase().equalsIgnoreCase(phase);
-        }
-        return false;
     }
 }
