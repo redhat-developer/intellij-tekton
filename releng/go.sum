@@ -771,8 +771,8 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/tektoncd/pipeline v0.24.1/go.mod h1:ChFD/vfu14VOtCVlLWdtlvOwXfBfVotULoNV6yz+CKY=
-github.com/tektoncd/pipeline v0.28.0 h1:UCc18Y67iKbc5PFyeq2nuPUPWPYlwDKIHz74jIDEfUo=
-github.com/tektoncd/pipeline v0.28.0/go.mod h1:1HkN3SdbP8Dm3AYcdv3zqf+7F4xWqVcEugFijva0x2I=
+github.com/tektoncd/pipeline v0.28.1 h1:wQ5a/JYDbE3+l/OyccsfE3ezncOwoL+VE2fR6W76Qa0=
+github.com/tektoncd/pipeline v0.28.1/go.mod h1:1HkN3SdbP8Dm3AYcdv3zqf+7F4xWqVcEugFijva0x2I=
 github.com/tektoncd/plumbing v0.0.0-20210420200944-17170d5e7bc9/go.mod h1:WTWwsg91xgm+jPOKoyKVK/yRYxnVDlUYeDlypB1lDdQ=
 github.com/tektoncd/plumbing v0.0.0-20210514044347-f8a9689d5bd5/go.mod h1:WTWwsg91xgm+jPOKoyKVK/yRYxnVDlUYeDlypB1lDdQ=
 github.com/tektoncd/triggers v0.15.0 h1:NrEhEVuTZUyY6WZ5x2WHorRA1kKsTwxTs3x+Ar4vPRc=
