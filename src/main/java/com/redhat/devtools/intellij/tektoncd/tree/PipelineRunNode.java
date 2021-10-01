@@ -11,16 +11,10 @@
 package com.redhat.devtools.intellij.tektoncd.tree;
 
 import io.fabric8.knative.internal.pkg.apis.Condition;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
-import io.fabric8.tekton.pipeline.v1beta1.PipelineRunTaskRunStatus;
-import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class PipelineRunNode extends RunNode<ParentableNode, PipelineRun> {
@@ -38,6 +32,10 @@ public class PipelineRunNode extends RunNode<ParentableNode, PipelineRun> {
     @Override
     public Instant getStartTime() {
         PipelineRun run = getRun();
+        return getStartTime(run);
+    }
+
+    public static Instant getStartTime(PipelineRun run) {
         String startTimeText = run.getStatus() == null ? null : run.getStatus().getStartTime();
         return getStartTime(startTimeText);
     }
@@ -56,23 +54,4 @@ public class PipelineRunNode extends RunNode<ParentableNode, PipelineRun> {
         return getCompletionTime(completionTimeText);
     }
 
-    public List<TaskRun> getPipelineRunTaskRunAsTaskRun() {
-        List<TaskRun> taskRuns = new ArrayList<>();
-        PipelineRun run = getRun();
-        Map<String, PipelineRunTaskRunStatus> pipelineRunTaskRunStatusMap = run.getStatus() != null ? run.getStatus().getTaskRuns() : Collections.emptyMap();
-        for (PipelineRunTaskRunStatus pipelineRunTaskRunStatus: pipelineRunTaskRunStatusMap.values()) {
-            TaskRun taskRun = new TaskRun();
-            taskRun.setStatus(pipelineRunTaskRunStatus.getStatus());
-            ObjectMeta taskRunMetadata = new ObjectMeta();
-            taskRunMetadata.setName(pipelineRunTaskRunStatus.getPipelineTaskName());
-            Map<String, String> labels = new HashMap<>();
-            labels.put("tekton.dev/pipeline", run.getMetadata().getLabels().get("tekton.dev/pipeline"));
-            labels.put("tekton.dev/pipelineRun", run.getMetadata().getName());
-            labels.put("tekton.dev/pipelineTask", pipelineRunTaskRunStatus.getPipelineTaskName());
-            taskRunMetadata.setLabels(labels);
-            taskRun.setMetadata(taskRunMetadata);
-            taskRuns.add(taskRun);
-        }
-        return taskRuns;
-    }
 }

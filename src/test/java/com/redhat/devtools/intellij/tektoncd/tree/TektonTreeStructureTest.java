@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 
 
@@ -327,7 +326,7 @@ public class TektonTreeStructureTest {
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun);
 
-        TaskRunNode node = createTaskRunNode(resultTaskRuns);
+        TaskRunNode node = createTaskRunNode();
         Object[] taskruns = structure.getChildElements(node);
 
         assertEquals(1, taskruns.length);
@@ -345,7 +344,7 @@ public class TektonTreeStructureTest {
         resultTaskRuns.add(taskRun2);
         resultTaskRuns.add(taskRun1);
 
-        TaskRunNode node = createTaskRunNode(resultTaskRuns);
+        TaskRunNode node = createTaskRunNode();
         Object[] taskruns = structure.getChildElements(node);
 
         assertEquals(3, taskruns.length);
@@ -375,7 +374,7 @@ public class TektonTreeStructureTest {
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun);
 
-        PipelineRunNode node = createPipelineRunNode(resultTaskRuns);
+        PipelineRunNode node = createPipelineRunNode();
         Object[] taskruns = structure.getChildElements(node);
 
         assertEquals(1, taskruns.length);
@@ -393,7 +392,7 @@ public class TektonTreeStructureTest {
         resultTaskRuns.add(taskRun2);
         resultTaskRuns.add(taskRun1);
 
-        PipelineRunNode node = createPipelineRunNode(resultTaskRuns);
+        PipelineRunNode node = createPipelineRunNode();
         Object[] taskruns = structure.getChildElements(node);
 
         assertTrue(taskruns.length == 3);
@@ -517,20 +516,22 @@ public class TektonTreeStructureTest {
         return meta;
     }
 
-    private PipelineRunNode createPipelineRunNode(List<TaskRun> taskRuns) {
+    private PipelineRunNode createPipelineRunNode() {
         PipelineRunNode node = mock(PipelineRunNode.class);
         when(node.getRoot()).thenReturn(root);
         when(node.getParent()).thenReturn(parent);
-        when(node.getPipelineRunTaskRunAsTaskRun()).thenReturn(taskRuns);
+        PipelineRun pipelineRun = createPipelineRun("test");
+        when(node.getRun()).thenReturn(pipelineRun);
         return node;
     }
 
-    private TaskRunNode createTaskRunNode(List<TaskRun> taskRuns) {
+    private TaskRunNode createTaskRunNode() {
         TaskRunNode node = mock(TaskRunNode.class);
         when(node.getRoot()).thenReturn(root);
         PipelineRunNode parent = mock(PipelineRunNode.class);
         when(node.getParent()).thenReturn(parent);
-        when(node.getConditionsAsTaskRunChildren(ArgumentMatchers.any())).thenReturn(taskRuns);
+        TaskRun taskRun = createTaskRun("test", Instant.now().minusMillis(1000).toString());
+        when(node.getRun()).thenReturn(taskRun);
         return node;
     }
 }

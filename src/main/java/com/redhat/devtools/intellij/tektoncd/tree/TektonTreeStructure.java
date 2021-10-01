@@ -25,14 +25,21 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import io.fabric8.kubernetes.api.model.Config;
 import io.fabric8.kubernetes.api.model.NamedContext;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRunConditionCheckStatus;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRunTaskRunStatus;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRunStatus;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Icon;
 import org.apache.commons.codec.binary.StringUtils;
@@ -153,7 +160,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getPipelineRuns((PipelineRunsNode) element, "");
             }
             if (element instanceof PipelineRunNode) {
-                return getTaskRuns((PipelineRunNode)element, ((PipelineRunNode) element).getPipelineRunTaskRunAsTaskRun(), false);
+                return getTaskRuns((PipelineRunNode) element);
             }
             if (element instanceof TasksNode) {
                 return getTasks((TasksNode) element);
@@ -164,7 +171,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             if (element instanceof TaskRunNode) {
                 ParentableNode parent = ((TaskRunNode) element).getParent();
                 if (parent instanceof PipelineRunNode) {
-                    return getTaskRuns((TaskRunNode)element, ((TaskRunNode) element).getConditionsAsTaskRunChildren(((PipelineRunNode)parent).getRun()), false);
+                    return getTaskRuns((TaskRunNode)element);
                 } else {
                     return getTaskRuns((TaskRunNode)element, Collections.emptyList(), false);
                 }
@@ -275,6 +282,53 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return taskRunsNodes;
     }
 
+    private Object[] getTaskRuns(PipelineRunNode element) {
+        List<TaskRun> taskRuns = new ArrayList<>();
+        PipelineRun run = element.getRun();
+        Map<String, PipelineRunTaskRunStatus> pipelineRunTaskRunStatusMap = run.getStatus() != null ? run.getStatus().getTaskRuns() : Collections.emptyMap();
+        pipelineRunTaskRunStatusMap.forEach((nameTaskRun, pipelineRunTaskRunStatus) -> {
+            TaskRun taskRun = new TaskRun();
+            taskRun.setStatus(pipelineRunTaskRunStatus.getStatus());
+            ObjectMeta taskRunMetadata = new ObjectMeta();
+            taskRunMetadata.setName(nameTaskRun);
+            Map<String, String> labels = new HashMap<>();
+            labels.put("tekton.dev/pipeline", run.getMetadata().getLabels().get("tekton.dev/pipeline"));
+            labels.put("tekton.dev/pipelineRun", run.getMetadata().getName());
+            labels.put("tekton.dev/pipelineTask", pipelineRunTaskRunStatus.getPipelineTaskName());
+            taskRunMetadata.setLabels(labels);
+            taskRun.setMetadata(taskRunMetadata);
+            Map<String, PipelineRunConditionCheckStatus> pipelineRunConditionCheckStatusMap = pipelineRunTaskRunStatus.getConditionChecks();
+            taskRun.setAdditionalProperty("conditions", pipelineRunConditionCheckStatusMap);
+            taskRuns.add(taskRun);
+        });
+        return getTaskRuns(element, taskRuns, true);
+    }
+
+    private Object[] getTaskRuns(TaskRunNode element) {
+        List<TaskRun> taskRuns = new ArrayList<>();
+        TaskRun taskRun = element.getRun();
+        if (taskRun.getAdditionalProperties() != null
+                && taskRun.getAdditionalProperties().containsKey("conditions")
+                && taskRun.getAdditionalProperties().get("conditions") != null) {
+            ((Map<String, PipelineRunConditionCheckStatus>) taskRun.getAdditionalProperties().get("conditions")).forEach((nameTaskRun, pipelineRunTaskRunStatus) -> {
+                TaskRun taskRunObj = new TaskRun();
+                TaskRunStatus taskRunStatus = new TaskRunStatus();
+                taskRunStatus.setCompletionTime(pipelineRunTaskRunStatus.getStatus().getCompletionTime());
+                taskRunStatus.setConditions(pipelineRunTaskRunStatus.getStatus().getConditions());
+                taskRunStatus.setStartTime(pipelineRunTaskRunStatus.getStatus().getStartTime());
+                ObjectMeta taskRunMetadata = new ObjectMeta();
+                taskRunMetadata.setName(nameTaskRun);
+                Map<String, String> labels = new HashMap<>();
+                labels.put("tekton.dev/pipelineTask", pipelineRunTaskRunStatus.getConditionName());
+                taskRunMetadata.setLabels(labels);
+                taskRunObj.setMetadata(taskRunMetadata);
+                taskRunObj.setStatus(taskRunStatus);
+                taskRuns.add(taskRunObj);
+            });
+        }
+        return getTaskRuns(element, taskRuns, true);
+    }
+
     private Object[] getTaskRuns(ParentableNode element, List<TaskRun> taskRuns, boolean orderNewestToOldest)  {
         List<Object> taskRunsNodes = new ArrayList<>();
         if (taskRuns != null) {
@@ -292,7 +346,10 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> pipelineRuns = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getPipelineRuns(element.getNamespace(), pipeline).forEach(pipelinerun -> pipelineRuns.add(new PipelineRunNode(element.getRoot(), element, pipelinerun)));
+            tkn.getPipelineRuns(element.getNamespace(), pipeline)
+                    .stream()
+                    .sorted(Comparator.comparing(PipelineRunNode::getStartTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .forEachOrdered(pipelinerun -> pipelineRuns.add(new PipelineRunNode(element.getRoot(), element, pipelinerun)));
             watchNodes(pipelineRuns.toArray());
         } catch (IOException e) {
             pipelineRuns.add(new MessageNode(element.getRoot(), element, "Failed to load pipeline runs"));
