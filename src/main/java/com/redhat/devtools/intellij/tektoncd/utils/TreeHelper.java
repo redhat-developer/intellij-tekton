@@ -171,11 +171,13 @@ public class TreeHelper {
         }
 
         Object node = path.getLastPathComponent();
-        ParentableNode<?> element = StructureTreeAction.getElement(node);
-        if (element instanceof ConfigurationNode) {
-            openTektonConfigurationInEditor(element);
-        } else {
-            openTektonResourceInEditor(element);
+        Object element = StructureTreeAction.getElement(node);
+        if (element instanceof ParentableNode) {
+            if (element instanceof ConfigurationNode) {
+                openTektonConfigurationInEditor((ParentableNode) element);
+            } else {
+                openTektonResourceInEditor((ParentableNode) element);
+            }
         }
     }
 
