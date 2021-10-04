@@ -12,6 +12,9 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.TestUtils;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
+import io.fabric8.kubernetes.client.Watch;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.client.TektonClient;
 import java.io.IOException;
 import java.util.Arrays;
@@ -20,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.junit.Test;
 
@@ -75,9 +78,14 @@ public class TknCliTaskTest extends TknCliTest {
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // verify taskrun has been created
-        CompletableFuture<List<io.fabric8.tekton.pipeline.v1beta1.TaskRun>> completableFuture = tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
-                .informOnCondition(taskRuns -> taskRuns.stream().anyMatch(tr -> tr.getMetadata().getName().equalsIgnoreCase(TASK_RUN_NAME)));
-        completableFuture.join();
+        final String[] nameTaskRun = {""};
+        Watch watch = tkn.getClient(TektonClient.class)
+                .v1beta1().taskRuns().inNamespace(NAMESPACE).withName(TASK_RUN_NAME)
+                .watch(createWatcher((resource) -> {
+                    nameTaskRun[0] = resource.getMetadata().getName();
+                }));
+        stopAndWaitOnConditionOrTimeout(watch, () -> nameTaskRun[0].isEmpty());
+        assertFalse(nameTaskRun[0].isEmpty());
         tkn.cancelTaskRun(NAMESPACE, TASK_RUN_NAME);
         // clean up and verify cleaning succeed
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);
@@ -102,16 +110,33 @@ public class TknCliTaskTest extends TknCliTest {
         params.put("first", new Input("name", "string", Input.Kind.PARAMETER, "value", Optional.empty(), Optional.empty()));
         params.put("second", new Input("name2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
         tkn.startTask(NAMESPACE, TASK_NAME, params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
-        CompletableFuture<List<io.fabric8.tekton.pipeline.v1beta1.TaskRun>> completableFuture = tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
-                .informOnCondition(taskRuns -> taskRuns.stream().anyMatch(tr -> tr.getMetadata().getLabels().get("tekton.dev/task").equalsIgnoreCase(TASK_NAME)));
-        List<io.fabric8.tekton.pipeline.v1beta1.TaskRun> taskRuns = completableFuture.join();
-        Optional<String> nameTaskRun = taskRuns.stream().filter(tr -> tr.getMetadata().getLabels().get("tekton.dev/task").equalsIgnoreCase(TASK_NAME))
-                .map(tr -> tr.getMetadata().getName()).findFirst();
-        assertTrue(nameTaskRun.isPresent());
+        final String[] nameTaskRun = {""};
+        Watch watch = tkn.getClient(TektonClient.class)
+                .v1beta1().taskRuns().inNamespace(NAMESPACE).withLabel("tekton.dev/task", TASK_NAME)
+                .watch(createWatcher((resource) -> {
+                    nameTaskRun[0] = resource.getMetadata().getName();
+                }));
+        stopAndWaitOnConditionOrTimeout(watch, () -> nameTaskRun[0].isEmpty());
+        assertFalse(nameTaskRun[0].isEmpty());
         try {
-            tkn.cancelTaskRun(NAMESPACE, nameTaskRun.get()); //taskrun may have already finished its execution
+            tkn.cancelTaskRun(NAMESPACE, nameTaskRun[0]); //taskrun may have already finished its execution
         } catch (IOException ignored) {}
         // clean up
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);
     }
+
+    private static Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> createWatcher(Consumer<io.fabric8.tekton.pipeline.v1beta1.TaskRun> consumer) {
+        return new Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun>() {
+            @Override
+            public void eventReceived(Action action, io.fabric8.tekton.pipeline.v1beta1.TaskRun resource) {
+                consumer.accept(resource);
+            }
+
+            @Override
+            public void onClose(WatcherException cause) {
+
+            }
+        };
+    }
+
 }

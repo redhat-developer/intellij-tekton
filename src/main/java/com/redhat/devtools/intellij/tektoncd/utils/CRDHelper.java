@@ -33,13 +33,22 @@ public class CRDHelper {
         }
         String group = groupVersion[0];
         String version = groupVersion.length > 1 ? groupVersion[1]: "v1alpha1";
-        return new CustomResourceDefinitionContext.Builder()
-                .withName(plural + "." + group)
-                .withGroup(group)
-                .withScope("Namespaced")
-                .withVersion(version)
-                .withPlural(plural)
-                .build();
+        if (isClusterScopedResource(plural)) {
+            return new CustomResourceDefinitionContext.Builder()
+                    .withName(plural + "." + group)
+                    .withGroup(group)
+                    .withVersion(version)
+                    .withPlural(plural)
+                    .build();
+        } else {
+            return new CustomResourceDefinitionContext.Builder()
+                    .withName(plural + "." + group)
+                    .withGroup(group)
+                    .withScope("Namespaced")
+                    .withVersion(version)
+                    .withPlural(plural)
+                    .build();
+        }
     }
 
     public static boolean isClusterScopedResource(String kind) {

@@ -12,8 +12,10 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.TestUtils;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
+import io.fabric8.kubernetes.client.Watch;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.client.TektonClient;
-import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,7 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.junit.Test;
 
@@ -71,6 +75,7 @@ public class TknCliPipelineTest extends TknCliTest {
         String taskConfig = TestUtils.load("task1.yaml").replace("taskfoo", TASK_NAME);
         String pipelineConfig = TestUtils.load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME).replace("taskfoo", TASK_NAME);
         String pipelineRunConfig = TestUtils.load("pipelinerun1.yaml").replace("pipelinerunfoo", PIPELINE_RUN_NAME).replace("pipelinefoo", PIPELINE_NAME);
+
         TestUtils.saveResource(tkn, taskConfig, NAMESPACE, "tasks");
         TestUtils.saveResource(tkn, pipelineConfig, NAMESPACE, "pipelines");
         TestUtils.saveResource(tkn, pipelineRunConfig, NAMESPACE, "pipelineruns");
@@ -82,13 +87,19 @@ public class TknCliPipelineTest extends TknCliTest {
         List<String> pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
         assertTrue(pipelines.contains(PIPELINE_NAME));
         // verify pipelinerun has been created
-        CompletableFuture<List<io.fabric8.tekton.pipeline.v1beta1.PipelineRun>> completableFuture = tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE).
-                informOnCondition(pipelineRuns -> pipelineRuns.stream().anyMatch(pr -> !pr.getMetadata().getName().equals(PIPELINE_RUN_NAME)));
-        completableFuture.join();
+        final String[] namePipelineRun = {""};
+        Watch watch = tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE)
+                .withName(PIPELINE_RUN_NAME)
+                .watch(createWatcher((resource) -> {
+                            namePipelineRun[0] = resource.getMetadata().getName();
+                        }));
+        stopAndWaitOnConditionOrTimeout(watch, () -> namePipelineRun[0].isEmpty());
+        assertFalse(namePipelineRun[0].isEmpty());
+
         try {
-            tkn.cancelPipelineRun(NAMESPACE, PIPELINE_RUN_NAME); //pipelinerun may have already finished its execution
-        } catch (IOException ignored) {}
-        tkn.cancelPipelineRun(NAMESPACE, PIPELINE_RUN_NAME);
+            tkn.cancelPipelineRun(NAMESPACE, namePipelineRun[0]); //pipelinerun may have already finished its execution
+        } catch(IOException ignored){}
+
         // clean up and verify cleaning succeed
         tkn.deletePipelines(NAMESPACE, Arrays.asList(PIPELINE_NAME), true);
         pipelines = tkn.getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
@@ -98,7 +109,7 @@ public class TknCliPipelineTest extends TknCliTest {
     }
 
     @Test
-    public void verifyStartPipelineCreateRuns() throws IOException, InterruptedException {
+    public void verifyStartPipelineCreateRuns() throws IOException, InterruptedException, TimeoutException, ExecutionException {
         String TASK_NAME = "add-task";
         String PIPELINE_NAME = "sum-three-pipeline";
         String taskConfig = TestUtils.load("start/add-task.yaml");
@@ -117,21 +128,39 @@ public class TknCliPipelineTest extends TknCliTest {
         params.put("first", new Input("name", "string", Input.Kind.PARAMETER, "value", Optional.empty(), Optional.empty()));
         params.put("second", new Input("name2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
         params.put("third", new Input("name3", "string", Input.Kind.PARAMETER, "value3", Optional.empty(), Optional.empty()));
+
         tkn.startPipeline(NAMESPACE, PIPELINE_NAME, params, Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
-        CompletableFuture<List<io.fabric8.tekton.pipeline.v1beta1.PipelineRun>> prCompletableFuture = tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE).
-                informOnCondition(pipelineRuns -> pipelineRuns.stream().anyMatch(pr -> pr.getMetadata().getLabels().get("tekton.dev/pipeline").equals(PIPELINE_NAME)));
-        CompletableFuture<List<TaskRun>> trCompletableFuture = tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE).
-                informOnCondition(taskruns -> taskruns.stream().anyMatch(tr -> tr.getMetadata().getLabels().get("tekton.dev/pipeline").equals(PIPELINE_NAME)));
-        List<io.fabric8.tekton.pipeline.v1beta1.PipelineRun> pipelineRunList = prCompletableFuture.join();
-        trCompletableFuture.join();
-        Optional<String> namePipelineRun = pipelineRunList.stream().filter(pr -> pr.getMetadata().getLabels().get("tekton.dev/pipeline").equals(PIPELINE_NAME))
-                .map(pr -> pr.getMetadata().getName()).findFirst();
-        assertTrue(namePipelineRun.isPresent());
+        final String[] namePipelineRun = {""};
+        Watch watch = tkn.getClient(TektonClient.class).v1beta1().pipelineRuns().inNamespace(NAMESPACE)
+                    .withLabel("tekton.dev/pipeline", PIPELINE_NAME)
+                    .watch(createWatcher((resource) -> {
+                        namePipelineRun[0] = resource.getMetadata().getName();
+                    }));
+        stopAndWaitOnConditionOrTimeout(watch, () -> namePipelineRun[0].isEmpty());
+        assertFalse(namePipelineRun[0].isEmpty());
+
         try {
-            tkn.cancelPipelineRun(NAMESPACE, namePipelineRun.get()); //pipelinerun may have already finished its execution
-        } catch(IOException ignored){}
+            tkn.cancelPipelineRun(NAMESPACE, namePipelineRun[0]); //pipelinerun may have already finished its execution
+        } catch(IOException ignored){
+        }
         // clean up
         tkn.deletePipelines(NAMESPACE, Arrays.asList(PIPELINE_NAME), true);
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), false);
     }
+
+    private static Watcher<io.fabric8.tekton.pipeline.v1beta1.PipelineRun> createWatcher(Consumer<io.fabric8.tekton.pipeline.v1beta1.PipelineRun> consumer) {
+        return new Watcher<io.fabric8.tekton.pipeline.v1beta1.PipelineRun>() {
+            @Override
+            public void eventReceived(Action action, io.fabric8.tekton.pipeline.v1beta1.PipelineRun resource) {
+                consumer.accept(resource);
+            }
+
+            @Override
+            public void onClose(WatcherException cause) {
+
+            }
+        };
+    }
+
+
 }
