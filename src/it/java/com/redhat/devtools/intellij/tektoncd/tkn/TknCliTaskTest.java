@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import org.junit.Test;
 
@@ -75,8 +75,9 @@ public class TknCliTaskTest extends TknCliTest {
         List<String> tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // verify taskrun has been created
-        tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
-                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().equals(TASK_RUN_NAME), 10, TimeUnit.MINUTES);
+        CompletableFuture<List<io.fabric8.tekton.pipeline.v1beta1.TaskRun>> completableFuture = tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
+                .informOnCondition(taskRuns -> taskRuns.stream().anyMatch(tr -> tr.getMetadata().getName().equalsIgnoreCase(TASK_RUN_NAME)));
+        completableFuture.join();
         tkn.cancelTaskRun(NAMESPACE, TASK_RUN_NAME);
         // clean up and verify cleaning succeed
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);
@@ -101,9 +102,15 @@ public class TknCliTaskTest extends TknCliTest {
         params.put("first", new Input("name", "string", Input.Kind.PARAMETER, "value", Optional.empty(), Optional.empty()));
         params.put("second", new Input("name2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
         tkn.startTask(NAMESPACE, TASK_NAME, params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
-        io.fabric8.tekton.pipeline.v1beta1.TaskRun tRun = tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
-                .waitUntilCondition(taskRun -> taskRun.getMetadata().getName() != null && taskRun.getMetadata().getName().startsWith(TASK_NAME), 10, TimeUnit.MINUTES);
-        tkn.cancelTaskRun(NAMESPACE, tRun.getMetadata().getName());
+        CompletableFuture<List<io.fabric8.tekton.pipeline.v1beta1.TaskRun>> completableFuture = tkn.getClient(TektonClient.class).v1beta1().taskRuns().inNamespace(NAMESPACE)
+                .informOnCondition(taskRuns -> taskRuns.stream().anyMatch(tr -> tr.getMetadata().getLabels().get("tekton.dev/task").equalsIgnoreCase(TASK_NAME)));
+        List<io.fabric8.tekton.pipeline.v1beta1.TaskRun> taskRuns = completableFuture.join();
+        Optional<String> nameTaskRun = taskRuns.stream().filter(tr -> tr.getMetadata().getLabels().get("tekton.dev/task").equalsIgnoreCase(TASK_NAME))
+                .map(tr -> tr.getMetadata().getName()).findFirst();
+        assertTrue(nameTaskRun.isPresent());
+        try {
+            tkn.cancelTaskRun(NAMESPACE, nameTaskRun.get()); //taskrun may have already finished its execution
+        } catch (IOException ignored) {}
         // clean up
         tkn.deleteTasks(NAMESPACE, Arrays.asList(TASK_NAME), true);
     }

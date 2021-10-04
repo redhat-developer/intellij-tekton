@@ -10,8 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
+import java.io.IOException;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
@@ -46,5 +49,10 @@ public class CRDHelper {
 
     public static boolean isRunResource(String kind) {
         return kind.equalsIgnoreCase(KIND_PIPELINERUN) || kind.equalsIgnoreCase(KIND_TASKRUN);
+    }
+
+    public static JsonNode convertToJsonNode(GenericKubernetesResource resource) throws IOException {
+        String resourceAsYAML = YAMLBuilder.writeValueAsString(resource);
+        return YAMLBuilder.convertToObjectNode(resourceAsYAML);
     }
 }

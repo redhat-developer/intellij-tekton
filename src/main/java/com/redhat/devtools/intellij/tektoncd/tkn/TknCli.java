@@ -29,6 +29,8 @@ import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import com.twelvemonkeys.lang.Platform;
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResourceList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimSpec;
@@ -48,6 +50,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
+import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
@@ -73,7 +76,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
@@ -140,7 +142,7 @@ public class TknCli implements Tkn {
     @Override
     public boolean isTektonAware() throws IOException {
         try {
-            return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("tekton.dev")).findFirst().isPresent();
+            return client.rootPaths().getPaths().stream().anyMatch(path -> path.endsWith("tekton.dev"));
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }
@@ -149,7 +151,7 @@ public class TknCli implements Tkn {
     @Override
     public boolean isTektonTriggersAware() {
         try {
-            return client.rootPaths().getPaths().stream().filter(path -> path.endsWith("triggers.tekton.dev")).findFirst().isPresent();
+            return client.rootPaths().getPaths().stream().anyMatch(path -> path.endsWith("triggers.tekton.dev"));
         } catch (KubernetesClientException e) {
             return false;
         }
@@ -437,12 +439,12 @@ public class TknCli implements Tkn {
         return args.toArray(new String[0]);
     }
 
-    public Map<String, Object> getCustomResources(String namespace, CustomResourceDefinitionContext crdContext) {
+    public GenericKubernetesResourceList getCustomResources(String namespace, CustomResourceDefinitionContext crdContext) {
         try {
             if (namespace.isEmpty()) {
-                return client.customResource(crdContext).list();
+                return client.genericKubernetesResources(crdContext).list();
             }
-            return client.customResource(crdContext).list(namespace);
+            return client.genericKubernetesResources(crdContext).inNamespace(namespace).list();
         } catch(KubernetesClientException e) {
             // call failed bc resource doesn't exist - 404
             return null;
@@ -450,12 +452,12 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public Map<String, Object> getCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext) {
+    public GenericKubernetesResource getCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext) {
         try {
             if (namespace.isEmpty()) {
-                return new TreeMap<>(client.customResource(crdContext).get(name));
+                return client.genericKubernetesResources(crdContext).withName(name).get();
             }
-            return new TreeMap<>(client.customResource(crdContext).get(namespace, name));
+            return client.genericKubernetesResources(crdContext).inNamespace(namespace).withName(name).get();
         } catch(KubernetesClientException e) {
             // call failed bc resource doesn't exist - 404
             return null;
@@ -464,19 +466,29 @@ public class TknCli implements Tkn {
 
     @Override
     public void editCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
-        if (namespace.isEmpty()) {
-            client.customResource(crdContext).edit(name, objectAsString);
-        } else {
-            client.customResource(crdContext).edit(namespace, name, objectAsString);
+        try {
+            GenericKubernetesResource genericKubernetesResource = Serialization.unmarshal(objectAsString , GenericKubernetesResource.class);
+            if (namespace.isEmpty()) {
+                client.genericKubernetesResources(crdContext).replace(genericKubernetesResource);
+            } else {
+                client.genericKubernetesResources(crdContext).inNamespace(namespace).replace(genericKubernetesResource);
+            }
+        } catch(KubernetesClientException e) {
+            throw new IOException(e.getLocalizedMessage(), e);
         }
     }
 
     @Override
     public void createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
-        if (namespace.isEmpty()) {
-            client.customResource(crdContext).create(objectAsString);
-        } else {
-            client.customResource(crdContext).create(namespace, objectAsString);
+        try {
+            GenericKubernetesResource genericKubernetesResource = Serialization.unmarshal(objectAsString , GenericKubernetesResource.class);
+            if (namespace.isEmpty()) {
+                client.genericKubernetesResources(crdContext).create(genericKubernetesResource);
+            } else {
+                client.genericKubernetesResources(crdContext).inNamespace(namespace).create(genericKubernetesResource);
+            }
+        } catch(KubernetesClientException e) {
+            throw new IOException(e.getLocalizedMessage(), e);
         }
     }
 

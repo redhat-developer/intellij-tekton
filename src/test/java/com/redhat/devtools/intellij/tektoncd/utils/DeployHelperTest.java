@@ -14,13 +14,13 @@ import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.FixtureBaseTest;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCli;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
+
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
 import static org.junit.Assert.assertEquals;
@@ -28,7 +28,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -144,10 +143,8 @@ public class DeployHelperTest extends FixtureBaseTest {
             try(MockedStatic<CRDHelper> crdHelperMockedStatic = mockStatic(CRDHelper.class)) {
                 crdHelperMockedStatic.when(() -> CRDHelper.isClusterScopedResource(anyString())).thenReturn(true);
                 crdHelperMockedStatic.when(() -> CRDHelper.isRunResource(anyString())).thenReturn(false);
-                Map<String, Object> customResourceMap = new HashMap<>();
-                customResourceMap.put("apiVersion", "api");
-                customResourceMap.put("spec", null);
-                when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(customResourceMap);
+                GenericKubernetesResource genericKubernetesResource = mock(GenericKubernetesResource.class);
+                when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(genericKubernetesResource);
                 boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, true);
                 assertTrue(returningValue);
                 verify(tkn).getCustomResource(anyString(), anyString(), any());
@@ -206,9 +203,8 @@ public class DeployHelperTest extends FixtureBaseTest {
     @Test
     public void SaveOnCluster_ResourceExists_UpdateExisting() throws IOException {
         String yaml = load(RESOURCE_PATH + "pipeline.yaml");
-        Map<String, Object> resourceAsMap = new HashMap<>();
-        resourceAsMap.put("spec", null);
-        when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(resourceAsMap);
+        GenericKubernetesResource genericKubernetesResource = mock(GenericKubernetesResource.class);
+        when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(genericKubernetesResource);
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
                 treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
