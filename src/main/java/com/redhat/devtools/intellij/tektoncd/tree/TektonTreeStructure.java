@@ -308,7 +308,6 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<TaskRun> taskRuns = new ArrayList<>();
         TaskRun taskRun = element.getRun();
         if (taskRun.getAdditionalProperties() != null
-                && taskRun.getAdditionalProperties().containsKey("conditions")
                 && taskRun.getAdditionalProperties().get("conditions") != null) {
             ((Map<String, PipelineRunConditionCheckStatus>) taskRun.getAdditionalProperties().get("conditions")).forEach((nameTaskRun, pipelineRunTaskRunStatus) -> {
                 TaskRun taskRunObj = new TaskRun();
