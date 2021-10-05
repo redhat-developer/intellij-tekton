@@ -13,6 +13,9 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
+import io.fabric8.kubernetes.client.Watch;
+import java.util.function.Supplier;
+import org.apache.commons.lang.time.StopWatch;
 import org.junit.After;
 import org.junit.Before;
 
@@ -38,5 +41,16 @@ public class TknCliTest extends BaseTest {
         Messages.setTestDialog(previousTestDialog);
     }
 
-
+    protected static void stopAndWaitOnConditionOrTimeout(Watch watch, Supplier<Boolean> condition) throws InterruptedException {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        while (condition.get()) {
+            Thread.sleep(200);
+            if ( stopWatch.getTime() > 10000 ) {
+                break;
+            }
+        }
+        stopWatch.stop();
+        watch.close();
+    }
 }

@@ -12,15 +12,14 @@ package com.redhat.devtools.intellij.tektoncd;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import org.apache.commons.io.IOUtils;
 
 public class TestUtils {
@@ -37,11 +36,11 @@ public class TestUtils {
 
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(kind_plural) ? "" : namespace;
-            Map<String, Object> resource = tkn.getCustomResource(resourceNamespace, name, crdContext);
+            GenericKubernetesResource resource = tkn.getCustomResource(resourceNamespace, name, crdContext);
             if (resource == null) {
                 tkn.createCustomResource(resourceNamespace, crdContext, resourceBody);
             } else {
-                JsonNode customResource = JSONHelper.MapToJSON(resource);
+                JsonNode customResource = CRDHelper.convertToJsonNode(resource);
                 ((ObjectNode) customResource).set("spec", spec);
                 tkn.editCustomResource(resourceNamespace, name, crdContext, customResource.toString());
             }

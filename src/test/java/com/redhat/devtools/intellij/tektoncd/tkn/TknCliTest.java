@@ -41,9 +41,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -562,12 +562,12 @@ public class TknCliTest {
 
     @Test
     public void CreatePVC_CreateSucceed_Nothing() throws IOException {
-        PersistentVolumeClaim claim = createPVC("name", "mode", "1", "unit");
-        MixedOperation<PersistentVolumeClaim, PersistentVolumeClaimList, Resource<PersistentVolumeClaim>> mixedOperation = mock(MixedOperation.class);
+        PersistentVolumeClaim claim = createPVC("name", "mode", "1", "Mi");
+        MixedOperation mixedOperation = mock(MixedOperation.class);
         when(kubernetesClient.persistentVolumeClaims()).thenReturn(mixedOperation);
         when(mixedOperation.create(any(PersistentVolumeClaim.class))).thenReturn(claim);
-        tkn.createPVC("name", "mode", "1", "unit");
-        verify(mixedOperation, times(1)).create(claim);
+        tkn.createPVC("name", "mode", "1", "Mi");
+        verify(mixedOperation, atLeastOnce()).create(claim);
     }
 
     private PersistentVolumeClaim createPVC(String name, String accessMode, String size, String unit) {

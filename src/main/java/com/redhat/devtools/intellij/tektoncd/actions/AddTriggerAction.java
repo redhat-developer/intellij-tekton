@@ -18,7 +18,6 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
@@ -35,9 +34,10 @@ import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.Utils;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResourceList;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -198,11 +198,11 @@ public class AddTriggerAction extends TektonAction {
 
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(kind_plural) ? "" : namespace;
-            Map<String, Object> resource = tkncli.getCustomResource(resourceNamespace, name, crdContext);
+            GenericKubernetesResource resource = tkncli.getCustomResource(resourceNamespace, name, crdContext);
             if (resource == null) {
                 tkncli.createCustomResource(resourceNamespace, crdContext, resourceBody);
             } else {
-                JsonNode customResource = JSONHelper.MapToJSON(resource);
+                JsonNode customResource = CRDHelper.convertToJsonNode(resource);
                 ((ObjectNode) customResource).set("spec", spec);
                 tkncli.editCustomResource(resourceNamespace, name, crdContext, customResource.toString());
             }
@@ -213,15 +213,14 @@ public class AddTriggerAction extends TektonAction {
 
     private Map<String, String> getTriggerBindings(String namespace, Tkn tkncli) {
         Map<String, String> triggerBindingsOnCluster = new HashMap<>();
-        Map<String, Object> allTriggerBindings = tkncli.getCustomResources(namespace, CRDHelper.getCRDContext("triggers.tekton.dev/v1alpha1", "triggerbindings"));
+        GenericKubernetesResourceList allTriggerBindings = tkncli.getCustomResources(namespace, CRDHelper.getCRDContext("triggers.tekton.dev/v1alpha1", "triggerbindings"));
         if (allTriggerBindings == null) {
             return triggerBindingsOnCluster;
         }
-        List<Map<String, Object>> triggerBindingsItems = (List<Map<String, Object>>) allTriggerBindings.get("items");
-        triggerBindingsItems.forEach(binding -> {
+        allTriggerBindings.getItems().forEach(binding -> {
             try {
                 String bindingAsYAML = YAMLBuilder.writeValueAsString(binding);
-                triggerBindingsOnCluster.put(((Map<String, Object>)binding.get("metadata")).get("name").toString(), bindingAsYAML);
+                triggerBindingsOnCluster.put(binding.getMetadata().getName(), bindingAsYAML);
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage(), e);
             }

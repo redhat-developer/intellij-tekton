@@ -10,8 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
+import java.io.IOException;
 
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
@@ -30,13 +33,22 @@ public class CRDHelper {
         }
         String group = groupVersion[0];
         String version = groupVersion.length > 1 ? groupVersion[1]: "v1alpha1";
-        return new CustomResourceDefinitionContext.Builder()
-                .withName(plural + "." + group)
-                .withGroup(group)
-                .withScope("Namespaced")
-                .withVersion(version)
-                .withPlural(plural)
-                .build();
+        if (isClusterScopedResource(plural)) {
+            return new CustomResourceDefinitionContext.Builder()
+                    .withName(plural + "." + group)
+                    .withGroup(group)
+                    .withVersion(version)
+                    .withPlural(plural)
+                    .build();
+        } else {
+            return new CustomResourceDefinitionContext.Builder()
+                    .withName(plural + "." + group)
+                    .withGroup(group)
+                    .withScope("Namespaced")
+                    .withVersion(version)
+                    .withPlural(plural)
+                    .build();
+        }
     }
 
     public static boolean isClusterScopedResource(String kind) {
@@ -46,5 +58,10 @@ public class CRDHelper {
 
     public static boolean isRunResource(String kind) {
         return kind.equalsIgnoreCase(KIND_PIPELINERUN) || kind.equalsIgnoreCase(KIND_TASKRUN);
+    }
+
+    public static JsonNode convertToJsonNode(GenericKubernetesResource resource) throws IOException {
+        String resourceAsYAML = YAMLBuilder.writeValueAsString(resource);
+        return YAMLBuilder.convertToObjectNode(resourceAsYAML);
     }
 }

@@ -14,6 +14,8 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResourceList;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
@@ -397,7 +399,7 @@ public interface Tkn {
      * @param crdContext the custom resource definition context of the resource kind
      * @return Object as HashMap, null if no resource was found
      */
-    Map<String, Object> getCustomResources(String namespace, CustomResourceDefinitionContext crdContext);
+    GenericKubernetesResourceList getCustomResources(String namespace, CustomResourceDefinitionContext crdContext);
 
     /**
      * Get a custom resource from the cluster which is namespaced.
@@ -407,7 +409,7 @@ public interface Tkn {
      * @param crdContext the custom resource definition context of the resource kind
      * @return Object as HashMap, null if no resource was found
      */
-    Map<String, Object> getCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext);
+    GenericKubernetesResource getCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext);
 
     /**
      * Edit a custom resource object which is a namespaced object

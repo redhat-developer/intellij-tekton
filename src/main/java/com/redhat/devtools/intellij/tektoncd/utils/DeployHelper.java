@@ -18,15 +18,14 @@ import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.model.GenericResource;
-import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import java.io.IOException;
-import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +114,7 @@ public class DeployHelper {
         if (tknCli == null) {
             return false;
         }
-        Map<String, Object> resource = tknCli.getCustomResource(tknCli.getNamespace(), name, crdContext);
+        GenericKubernetesResource resource = tknCli.getCustomResource(tknCli.getNamespace(), name, crdContext);
         return resource != null;
     }
 
@@ -139,11 +138,11 @@ public class DeployHelper {
         if (CRDHelper.isRunResource(resource.getKind())) {
             tknCli.createCustomResource(namespace, crdContext, yaml);
         } else {
-            Map<String, Object> customResourceMap = tknCli.getCustomResource(namespace, resource.getName(), crdContext);
+            GenericKubernetesResource customResourceMap = tknCli.getCustomResource(namespace, resource.getName(), crdContext);
             if (customResourceMap == null) {
                 tknCli.createCustomResource(namespace, crdContext, yaml);
             } else {
-                JsonNode customResource = JSONHelper.MapToJSON(customResourceMap);
+                JsonNode customResource = CRDHelper.convertToJsonNode(customResourceMap);
                 JsonNode labels = resource.getMetadata().get("labels");
                 if (updateLabels && labels != null) {
                     ((ObjectNode) customResource.get("metadata")).set("labels", labels);
