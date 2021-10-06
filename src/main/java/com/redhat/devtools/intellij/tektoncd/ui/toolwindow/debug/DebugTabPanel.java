@@ -252,7 +252,7 @@ public class DebugTabPanel {
     }
 
     private JComponent createTerminalComponent() {
-        activeContainerExecWatch = tkn.execCommandInContainer(model.getPod(), model.getContainerId(), "sh");
+        activeContainerExecWatch = tkn.customExecCommandInContainer(model.getPod(), model.getContainerId(), "sh");
         activeDebugProcess = createDebugProcess(activeContainerExecWatch);
 
         ExecProcessHandler processHandler = new ExecProcessHandler(activeDebugProcess, "Ready for Debugging. The container is running and ready to be browsed ...", Charset.defaultCharset());

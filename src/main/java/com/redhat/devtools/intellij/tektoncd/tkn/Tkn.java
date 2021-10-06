@@ -791,6 +791,16 @@ public interface Tkn {
     ExecWatch execCommandInContainer(Pod pod, String containerId, String... command);
 
     /**
+     * Execute a command within the container by using a custom execWebSocketListener which
+     * prevents lagging within the embedded terminal
+     * @param pod pod where the container exists
+     * @param containerId container where to execute the command
+     * @param command command to execute
+     * @return watch to check command execution
+     */
+    ExecWatch customExecCommandInContainer(Pod pod, String containerId, String... command);
+
+    /**
      * Install task from Tekton Hub
      * @param task task name
      * @param version version of the task
