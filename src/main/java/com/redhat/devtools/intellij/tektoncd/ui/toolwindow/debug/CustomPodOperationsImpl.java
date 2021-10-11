@@ -74,6 +74,11 @@ import okhttp3.ResponseBody;
 
 import static io.fabric8.kubernetes.client.utils.OptionalDependencyWrapper.wrapRunWithOptionalDependency;
 
+/**
+ * This is a temporary custom implementation to solve a lagging issue in the embedded terminal used to debug taskruns.
+ * A fix has been submitted to the Fabric8 api https://github.com/fabric8io/kubernetes-client/pull/3510
+ * As soon as a new release with the fix is released, this class can be removed.
+ */
 public class CustomPodOperationsImpl extends HasMetadataOperation<Pod, PodList, PodResource<Pod>> implements PodResource<Pod>, CopyOrReadable<Boolean,InputStream, Boolean> {
 
     public static final int HTTP_TOO_MANY_REQUESTS = 429;

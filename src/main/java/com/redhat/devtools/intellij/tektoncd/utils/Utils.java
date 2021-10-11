@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.Version;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,19 +42,12 @@ public class Utils {
         return Pair.empty();
     }
 
-    public static boolean isActiveTektonVersionOlder(String activeVersion, String version) {
-        String[] activeVersionSplitted = activeVersion.replace("v", "").split(".");
-        String[] versionSplitted = version.split(".");
-        int size = Math.max(versionSplitted.length, activeVersionSplitted.length);
-        for (int i=0; i<size; i++) {
-            int activeVersionNumber = activeVersionSplitted.length > i ? Integer.parseInt(activeVersionSplitted[i]) : -1;
-            int versionNumber = versionSplitted.length > i ? Integer.parseInt(versionSplitted[i]) : -1;
-            if (activeVersionNumber > versionNumber) {
-                return true;
-            } else if (activeVersionNumber < versionNumber) {
-                return false;
-            }
+    public static boolean isActiveTektonVersionOlder(String activeVersionS, String versionS) {
+        Version activeVersion = Version.parseVersion(activeVersionS);
+        Version version = Version.parseVersion(versionS);
+        if (activeVersion == null || version == null) {
+            return false;
         }
-        return true;
+        return activeVersion.compareTo(version) > 0;
     }
 }

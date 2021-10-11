@@ -55,7 +55,6 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
-import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.kubernetes.client.dsl.internal.ExecWebSocketListener;
 import io.fabric8.kubernetes.client.utils.HttpClientUtils;
 import io.fabric8.kubernetes.client.utils.Serialization;
@@ -190,7 +189,9 @@ public class TknCli implements Tkn {
 
     @Override
     public String getTektonVersion() {
-        return tektonVersion;
+        return tektonVersion.indexOf("v") == 0
+                ? tektonVersion.substring(1)
+                : tektonVersion;
     }
 
     @Override
@@ -1082,9 +1083,5 @@ public class TknCli implements Tkn {
             }
         }
         return null;
-    }
-
-    public Project getProject() {
-        return project;
     }
 }

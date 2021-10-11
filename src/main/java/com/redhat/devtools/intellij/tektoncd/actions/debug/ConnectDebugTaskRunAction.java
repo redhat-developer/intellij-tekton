@@ -15,7 +15,7 @@ import com.redhat.devtools.intellij.tektoncd.actions.TektonAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.DebugHelper;
 import javax.swing.tree.TreePath;
 
@@ -26,7 +26,7 @@ public class ConnectDebugTaskRunAction extends TektonAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
         ParentableNode<?> element = getElement(selected);
-        DebugHelper.doDebugTaskRun(tkncli, element.getNamespace(), element.getName());
+        DebugHelper.doDebugTaskRun(getEventProject(anActionEvent), tkncli, element.getNamespace(), element.getName());
     }
 
     @Override
@@ -35,9 +35,8 @@ public class ConnectDebugTaskRunAction extends TektonAction {
         // and debug panel for it is not opened yet
         Object element = getElement(selected);
         if (element instanceof TaskRunNode) {
-            Tkn tkn = ((ParentableNode)element).getRoot().getTkn();
             return (!((TaskRunNode) element).isCompleted().isPresent()
-                && DebugPanelBuilder.instance(tkn).getResourceDebugPanel(((TaskRunNode) element).getName()) == null
+                && DebugTabPanelFactory.instance().getResourceDebugPanel(((TaskRunNode) element).getName()) == null
                 && ((TaskRunNode) element).isStartedOnDebug());
         }
         return false;

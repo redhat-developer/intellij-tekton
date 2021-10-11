@@ -12,7 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
@@ -32,7 +32,7 @@ public class DebugToolbarContinueAction extends DebugToolbarAction {
             model.updateResourceStatus(DebugResourceState.RUNNING);
             ExecWatch execWatch = tkn.execCommandInContainer(model.getPod(), model.getContainerId(), "sh", getScript());
             execWatch.close();
-            DebugPanelBuilder.instance(tkn).addContent(model);
+            DebugTabPanelFactory.instance().addContent(e.getProject(), tkn, model);
         }
     }
 

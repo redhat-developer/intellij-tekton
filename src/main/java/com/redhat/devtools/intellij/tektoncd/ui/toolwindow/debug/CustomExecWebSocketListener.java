@@ -48,6 +48,11 @@ import org.slf4j.LoggerFactory;
 import static io.fabric8.kubernetes.client.utils.Utils.closeQuietly;
 
 /**
+ * This is a temporary custom implementation to solve a lagging issue in the embedded terminal used to debug taskruns.
+ * A fix has been submitted to the Fabric8 api https://github.com/fabric8io/kubernetes-client/pull/3510
+ * As soon as a new release with the fix is released, this class can be removed.
+ *
+ *
  * A {@link WebSocketListener} for exec operations.
  *
  * This listener, is only responsible for the resources it creates. Externally passed resource, will not get closed,

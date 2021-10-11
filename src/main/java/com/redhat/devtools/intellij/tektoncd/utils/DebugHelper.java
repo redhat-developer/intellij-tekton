@@ -11,11 +11,12 @@
 package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import io.fabric8.kubernetes.api.model.ContainerState;
@@ -35,22 +36,22 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_POD;
 public class DebugHelper {
     private static final Logger logger = LoggerFactory.getLogger(DebugHelper.class);
 
-    public static void doDebugTaskRun(Tkn tkncli, String namespace, String nameTaskRun) {
+    public static void doDebugTaskRun(Project project, Tkn tkncli, String namespace, String nameTaskRun) {
         ExecHelper.submit(() -> {
             DebugModel debugModel = new DebugModel(nameTaskRun);
-            UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkncli).addContent(debugModel));
+            UIHelper.executeInUI(() -> DebugTabPanelFactory.instance().addContent(project, tkncli, debugModel));
             String keyLabel = "tekton.dev/taskRun";
             WatchHandler.get().setWatchByLabel(tkncli,
                     namespace,
                     KIND_POD,
                     keyLabel,
                     nameTaskRun,
-                    createWatcher(tkncli, debugModel, keyLabel, nameTaskRun),
+                    createWatcher(project, tkncli, debugModel, keyLabel, nameTaskRun),
                     true);
         });
     }
 
-    private static Watcher<Pod> createWatcher(Tkn tkn, DebugModel debugModel, String key, String value) {
+    private static Watcher<Pod> createWatcher(Project project, Tkn tkn, DebugModel debugModel, String key, String value) {
         final boolean[] isFirst = {true};
         return new Watcher<Pod>() {
             @Override
@@ -58,7 +59,8 @@ public class DebugHelper {
                 if (isFirst[0]) {
                     isFirst[0] = false;
                     debugModel.setPod(resource);
-                    PollingHelper.get().doPolling(tkn,
+                    PollingHelper.get().doPolling(project,
+                            tkn,
                             debugModel,
                             DebugHelper::isReadyForDebuggingAsync,
                             DebugHelper::updateDebugPanel);
@@ -67,7 +69,7 @@ public class DebugHelper {
                     debugModel.updateResourceStatus(isPodFailed(resource)
                             ? DebugResourceState.COMPLETE_FAILED
                             : DebugResourceState.COMPLETE_SUCCESS);
-                    updateDebugPanel(tkn, debugModel);
+                    updateDebugPanel(project, tkn, debugModel);
                 }
             }
 
@@ -153,7 +155,7 @@ public class DebugHelper {
         return Pair.create(false, model);
     }
 
-    private static void updateDebugPanel(Tkn tkn, DebugModel model) {
-        UIHelper.executeInUI(() -> DebugPanelBuilder.instance(tkn).addContent(model));
+    private static void updateDebugPanel(Project project, Tkn tkn, DebugModel model) {
+        UIHelper.executeInUI(() -> DebugTabPanelFactory.instance().addContent(project, tkn, model));
     }
 }

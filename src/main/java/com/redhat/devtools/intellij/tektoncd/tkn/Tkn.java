@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
-import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
@@ -830,7 +829,5 @@ public interface Tkn {
     public URL getMasterUrl();
 
     public <T> T getClient(Class<T> clazz);
-
-    Project getProject();
 
 }

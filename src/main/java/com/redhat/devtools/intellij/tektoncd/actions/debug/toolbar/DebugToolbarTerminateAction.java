@@ -12,7 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugPanelBuilder;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class DebugToolbarTerminateAction extends DebugToolbarAction {
         try {
             tkn.cancelTaskRun(model.getPod().getMetadata().getNamespace(), model.getResource());
             model.updateResourceStatus(DebugResourceState.COMPLETE_FAILED);
-            DebugPanelBuilder.instance(tkn).addContent(model);
+            DebugTabPanelFactory.instance().addContent(e.getProject(), tkn, model);
         } catch (IOException ex) {
             logger.warn(ex.getLocalizedMessage(), ex);
         }

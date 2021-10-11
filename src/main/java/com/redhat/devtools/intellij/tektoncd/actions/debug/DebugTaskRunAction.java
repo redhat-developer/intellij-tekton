@@ -38,14 +38,14 @@ public class DebugTaskRunAction extends MirrorStartAction {
     }
 
     @Override
-    protected String doStart(Tkn tkncli, String namespace, StartResourceModel model) throws IOException {
+    protected String doStart(Project project, Tkn tkncli, String namespace, StartResourceModel model) throws IOException {
         ObjectNode run = YAMLBuilder.createRun(model, true);
         if (run == null) {
             throw new IOException("Unable to debug task" + model.getName());
         }
         String runAsYAML = YAMLHelper.JSONToYAML(run, false);
         String runName = DeployHelper.saveResource(runAsYAML, namespace, tkncli);
-        DebugHelper.doDebugTaskRun(tkncli, namespace, runName);
+        DebugHelper.doDebugTaskRun(project, tkncli, namespace, runName);
         return null;
     }
 

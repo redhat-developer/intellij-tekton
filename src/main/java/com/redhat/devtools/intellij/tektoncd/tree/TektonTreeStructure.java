@@ -110,7 +110,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
     @Override
     public Object getRootElement() {
         if (!initialized.getAndSet(true)) {
-            root.initializeTkn().thenAccept(tkn -> fireModified(root));
+            root.load().thenAccept(tkn -> fireModified(root));
         }
         return root;
     }

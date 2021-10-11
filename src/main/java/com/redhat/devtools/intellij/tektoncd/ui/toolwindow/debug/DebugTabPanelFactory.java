@@ -21,21 +21,19 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DebugPanelBuilder {
+public class DebugTabPanelFactory {
 
     private static final String TEKTONDEBUGTOOLWINDOW_ID = "TektonDebug";
-    private static DebugPanelBuilder instance;
+    private static DebugTabPanelFactory instance;
     private Map<String, DebugTabPanel> resourceXTab;
-    private Tkn tkn;
 
-    private DebugPanelBuilder(Tkn tkn) {
+    private DebugTabPanelFactory() {
         this.resourceXTab = new HashMap<>();
-        this.tkn = tkn;
     }
 
-    public static DebugPanelBuilder instance(Tkn tkn) {
+    public static DebugTabPanelFactory instance() {
         if (instance == null) {
-            instance = new DebugPanelBuilder(tkn);
+            instance = new DebugTabPanelFactory();
         }
         return instance;
     }
@@ -43,12 +41,12 @@ public class DebugPanelBuilder {
     public Content getResourceDebugPanel(String resource) {
         DebugTabPanel debugTabPanel = resourceXTab.getOrDefault(resource, null);
         if (debugTabPanel != null) {
-            return getContentManager().findContent(debugTabPanel.getDisplayName());
+            return getContentManager(debugTabPanel.getProject()).findContent(debugTabPanel.getDisplayName());
         }
         return null;
     }
 
-    public void addContent(DebugModel model) {
+    public void addContent(Project project, Tkn tkn, DebugModel model) {
         DebugTabPanel debugTabPanel = resourceXTab.getOrDefault(model.getResource(), null);
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         Content panel = getResourceDebugPanel(model.getResource());
@@ -59,34 +57,33 @@ public class DebugPanelBuilder {
             }
             debugTabPanel.updateModel(model);
         } else {
-            debugTabPanel = new DebugTabPanel(model.getResource(), model, tkn);
+            debugTabPanel = new DebugTabPanel(model.getResource(), model, project, tkn);
             panel = contentFactory.createContent(debugTabPanel.getComponent(), debugTabPanel.getDisplayName(), true);
             resourceXTab.put(model.getResource(), debugTabPanel);
         }
 
         panel.setCloseable(true);
-        getContentManager().addContent(panel);
-        ensureTabIsSelected(debugTabPanel.getDisplayName());
-        ensureToolWindowOpened();
+        getContentManager(project).addContent(panel);
+        ensureTabIsSelected(project, debugTabPanel.getDisplayName());
+        ensureToolWindowOpened(project);
     }
 
-    private ToolWindow getDebugToolWindow() {
-        Project project = tkn.getProject();
+    private ToolWindow getDebugToolWindow(Project project) {
         return ToolWindowManager.getInstance(project).getToolWindow(TEKTONDEBUGTOOLWINDOW_ID);
     }
 
-    private ContentManager getContentManager() {
-        return getDebugToolWindow().getContentManager();
+    private ContentManager getContentManager(Project project) {
+        return getDebugToolWindow(project).getContentManager();
     }
 
-    private void ensureTabIsSelected(String tabName) {
-        ContentManager contentManager = getContentManager();
+    private void ensureTabIsSelected(Project project, String tabName) {
+        ContentManager contentManager = getContentManager(project);
         Content content = contentManager.findContent(tabName);
         contentManager.setSelectedContent(content);
     }
 
-    private void ensureToolWindowOpened() {
-        ToolWindow toolWindow = getDebugToolWindow();
+    private void ensureToolWindowOpened(Project project) {
+        ToolWindow toolWindow = getDebugToolWindow(project);
         if (toolWindow.isVisible()
                 && toolWindow.isActive()
                 && toolWindow.isAvailable()) {

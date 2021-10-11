@@ -70,13 +70,19 @@ public class DebugTabPanel {
     private ExecWatch activeContainerExecWatch;
     private Process activeDebugProcess;
     private TerminalExecutionConsole terminalExecutionConsole;
+    private Project project;
 
     private DebugToolbarAction debugContinueAction, debugContinueWithFailureAction, debugTerminateAction;
 
-    public DebugTabPanel(String displayName, DebugModel model, Tkn tkn) {
+    public DebugTabPanel(String displayName, DebugModel model, Project project, Tkn tkn) {
         this.displayName = displayName;
         this.model = model;
         this.tkn = tkn;
+        this.project = project;
+    }
+
+    public Project getProject() {
+        return project;
     }
 
     public String getDisplayName() {
@@ -143,7 +149,7 @@ public class DebugTabPanel {
                 return divider;
             }
         };
-        tabPanel.setFirstComponent(buildDebugTree(tkn, model));
+        tabPanel.setFirstComponent(buildDebugTree(project, model));
         tabPanel.setSecondComponent(buildTerminalPanel());
         return tabPanel;
     }
@@ -168,9 +174,9 @@ public class DebugTabPanel {
         terminalPanel.repaint();
     }
 
-    private JComponent buildDebugTree(Tkn tkn, DebugModel model) {
+    private JComponent buildDebugTree(Project project, DebugModel model) {
         updateRoot();
-        DefaultTreeModel treeModel = getTreeModel(tkn.getProject(), model);
+        DefaultTreeModel treeModel = getTreeModel(project, model);
         tree = new Tree(treeModel);
         UIUtil.putClientProperty(tree, ANIMATION_IN_RENDERER_ALLOWED, true);
         tree.setCellRenderer(getTreeCellRenderer());
@@ -220,7 +226,7 @@ public class DebugTabPanel {
 
         if (model.getResourceStatus().equals(DebugResourceState.DEBUG)) {
             DefaultMutableTreeNode stepNode = new DefaultMutableTreeNode(
-                    new LabelAndIconDescriptor(tkn.getProject(),
+                    new LabelAndIconDescriptor(project,
                             null,
                             model.getStep(),
                             "(" + model.getImage() + ")",
@@ -256,7 +262,7 @@ public class DebugTabPanel {
         activeDebugProcess = createDebugProcess(activeContainerExecWatch);
 
         ExecProcessHandler processHandler = new ExecProcessHandler(activeDebugProcess, "Ready for Debugging. The container is running and ready to be browsed ...", Charset.defaultCharset());
-        terminalExecutionConsole = new TerminalExecutionConsole(tkn.getProject(), processHandler);
+        terminalExecutionConsole = new TerminalExecutionConsole(project, processHandler);
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(terminalExecutionConsole.getComponent(), BorderLayout.CENTER);
         processHandler.startNotify();
