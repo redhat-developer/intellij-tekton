@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
@@ -826,8 +827,11 @@ public interface Tkn {
      */
     String getPipelineYAMLFromHub(String pipeline, String version) throws IOException;
 
-    public URL getMasterUrl();
+    URL getMasterUrl();
 
-    public <T> T getClient(Class<T> clazz);
+    <T> T getClient(Class<T> clazz);
 
+    DebugTabPanelFactory getDebugTabPanelFactory();
+
+    void dispose();
 }

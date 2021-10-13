@@ -25,6 +25,7 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.CustomPodOperationsImpl;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
@@ -124,17 +125,20 @@ public class TknCli implements Tkn {
     private String command;
     private final Project project;
     private final KubernetesClient client;
+    private final DebugTabPanelFactory debugTabPanelFactory;
 
     private Map<String, String> envVars;
 
-    private volatile String tektonVersion;
-    private volatile boolean hasAlphaFeaturesEnabled;
+    private volatile String tektonVersion = "0.0.0";
+    private volatile boolean hasAlphaFeaturesEnabled = false;
+
 
 
     TknCli(Project project, String command) {
         this.command = command;
         this.project = project;
         this.client = new DefaultKubernetesClient(new ConfigBuilder().build());
+        this.debugTabPanelFactory = new DebugTabPanelFactory(project, this);
         try {
             this.envVars = NetworkUtils.buildEnvironmentVariables(client.getMasterUrl().toString());
         } catch (URISyntaxException e) {
@@ -206,7 +210,7 @@ public class TknCli implements Tkn {
             ConfigMap alphaMap = getConfigMap("tekton-pipelines", "feature-flags");
             hasAlphaFeaturesEnabled = alphaMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha");
             initConfigMapWatchers();
-        } catch (KubernetesClientException e) {
+        } catch (Exception e) {
             logger.warn(e.getLocalizedMessage(), e);
         }
     }
@@ -1083,5 +1087,13 @@ public class TknCli implements Tkn {
             }
         }
         return null;
+    }
+
+    public DebugTabPanelFactory getDebugTabPanelFactory() {
+        return debugTabPanelFactory;
+    }
+
+    public void dispose() {
+        debugTabPanelFactory.closeTabPanels();
     }
 }

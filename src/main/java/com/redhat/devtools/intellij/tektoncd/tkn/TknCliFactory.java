@@ -10,12 +10,17 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
+import java.util.concurrent.ExecutionException;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
 import java.util.concurrent.CompletableFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TknCliFactory {
+    private static final Logger logger = LoggerFactory.getLogger(TknCliFactory.class);
     private static TknCliFactory INSTANCE;
+    private Project lastProject;
 
     public static TknCliFactory getInstance() {
         if (INSTANCE == null) {
@@ -30,13 +35,27 @@ public class TknCliFactory {
     }
 
     public CompletableFuture<Tkn> getTkn(Project project) {
-        if (future == null) {
+        if (future == null
+                || !lastProject.equals(project)) {
+            lastProject = project;
             future = DownloadHelper.getInstance().downloadIfRequiredAsync("tkn", TknCliFactory.class.getResource("/tkn.json")).thenApply(command -> new TknCli(project, command));
         }
         return future;
     }
 
     public void resetTkn() {
+        disposeTkn();
         future = null;
+    }
+
+    private void disposeTkn() {
+        try {
+            if (future != null) {
+                Tkn tkn = future.get();
+                tkn.dispose();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.warn(e.getLocalizedMessage(), e);
+        }
     }
 }

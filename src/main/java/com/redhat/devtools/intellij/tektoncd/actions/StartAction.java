@@ -95,7 +95,7 @@ public class StartAction extends TektonAction {
 
             try {
                 createNewVolumes(model.getWorkspaces(), tkncli);
-                String runName = doStart(project, tkncli, namespace, model);
+                String runName = doStart(tkncli, namespace, model);
                 FollowLogsAction.run(namespace, runName, element.getClass(), tkncli);
                 refreshTreeNode(anActionEvent, element);
                 telemetry.send();
@@ -189,7 +189,7 @@ public class StartAction extends TektonAction {
         ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(nodeToRefresh);
     }
 
-    protected String doStart(Project project, Tkn tkncli, String namespace, StartResourceModel model) throws IOException {
+    protected String doStart(Tkn tkncli, String namespace, StartResourceModel model) throws IOException {
         String serviceAccount = model.getServiceAccount();
         Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
         Map<String, Input> params = model.getParams().stream().collect(Collectors.toMap(Input::name, param -> param));

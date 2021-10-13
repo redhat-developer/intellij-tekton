@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionToolbar;
@@ -35,6 +36,7 @@ import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarC
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarContinueWithFailureAction;
 import com.redhat.devtools.intellij.tektoncd.actions.debug.toolbar.DebugToolbarTerminateAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.utils.DebugHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
@@ -58,7 +60,7 @@ import javax.swing.tree.TreePath;
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
 
-public class DebugTabPanel {
+public class DebugTabPanel implements Disposable {
 
     private DebugModel model;
     private String displayName, rootLocation;
@@ -353,5 +355,11 @@ public class DebugTabPanel {
 
     private Icon getIcon(String path) {
         return IconLoader.findIcon(path, DebugTabPanel.class);
+    }
+
+    @Override
+    public void dispose() {
+        closeDebugProcess();
+        DebugHelper.disposeResource(tkn, model);
     }
 }
