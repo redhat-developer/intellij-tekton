@@ -14,12 +14,12 @@ import com.redhat.devtools.alizer.api.Language;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Tag;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.Test;
-
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -29,8 +29,8 @@ public class HubItemScoreTest {
 
     @Test
     public void Compare_2HubItems_VerifyCalculatedScoreWithOnlyName() {
-        Language lang = new Language("First", Collections.emptyList(), 99.0);
-        Language lang2 = new Language("Second", Collections.emptyList(), 1.0);
+        Language lang = new Language("First", Collections.emptyList(), 99.0, false);
+        Language lang2 = new Language("Second", Collections.emptyList(), 1.0, false);
         List<Language> languages = Arrays.asList(lang, lang2);
 
         HubItem hubItem1 = buildHubItem("Second", "", Collections.emptyList());
@@ -43,8 +43,8 @@ public class HubItemScoreTest {
 
     @Test
     public void Compare_1HubItemAndValue_VerifyCalculatedScoreWithOnlyName() {
-        Language lang = new Language("First", Collections.emptyList(), 99.0);
-        Language lang2 = new Language("Second", Collections.emptyList(), 1.0);
+        Language lang = new Language("First", Collections.emptyList(), 99.0, false);
+        Language lang2 = new Language("Second", Collections.emptyList(), 1.0, false);
         List<Language> languages = Arrays.asList(lang, lang2);
 
         HubItem hubItem1 = buildHubItem("Second", "", Collections.emptyList());
@@ -56,8 +56,8 @@ public class HubItemScoreTest {
 
     @Test
     public void Compare_2HubItems_VerifyCalculatedScoreWithAliases() {
-        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0);
-        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0);
+        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, false);
+        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, false);
         List<Language> languages = Arrays.asList(lang, lang2);
 
         HubItem hubItem1 = buildHubItem("alias1", "", Collections.emptyList());
@@ -70,8 +70,8 @@ public class HubItemScoreTest {
 
     @Test
     public void Compare_1HubItemAndValue_VerifyCalculatedScoreWithAliases() {
-        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0);
-        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0);
+        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, false);
+        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, false);
         List<Language> languages = Arrays.asList(lang, lang2);
 
         HubItem hubItem1 = buildHubItem("alias1", "", Collections.emptyList());
@@ -83,8 +83,8 @@ public class HubItemScoreTest {
 
     @Test
     public void Compare_2HubItems_VerifyCalculatedScoreWithFrameworks() {
-        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList());
-        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList());
+        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList(), false);
+        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList(), false);
         List<Language> languages = Arrays.asList(lang, lang2);
 
         Tag tag = buildTag("framework1");
@@ -101,8 +101,8 @@ public class HubItemScoreTest {
 
     @Test
     public void Compare_1HubItemAndValue_VerifyCalculatedScoreWithFrameworks() {
-        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList());
-        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList());
+        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList(), false);
+        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList(), false);
         List<Language> languages = Arrays.asList(lang, lang2);
 
         Tag tag = buildTag("framework1");
@@ -116,8 +116,8 @@ public class HubItemScoreTest {
 
     @Test
     public void Compare_2HubItems_VerifyCalculatedScoreWithDescription() {
-        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList());
-        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList());
+        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList(), false);
+        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList(), false);
         List<Language> languages = Arrays.asList(lang, lang2);
 
         Tag tag2 = buildTag("framework2");
@@ -133,8 +133,8 @@ public class HubItemScoreTest {
 
     @Test
     public void Compare_1HubItemAndValue_VerifyCalculatedScoreWithDescription() {
-        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList());
-        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList());
+        Language lang = new Language("First", Arrays.asList("alias1", "alias2"), 99.0, Arrays.asList("framework1"), Collections.emptyList(), false);
+        Language lang2 = new Language("Second", Arrays.asList("alias3", "alias4"), 1.0, Arrays.asList("framework2"), Collections.emptyList(), false);
         List<Language> languages = Arrays.asList(lang, lang2);
 
         HubItem hubItem1 = buildHubItem("name", "this is the first item for the first language", Collections.emptyList());
@@ -146,9 +146,9 @@ public class HubItemScoreTest {
 
     @Test
     public void Compare_ListWith3HubItems_OrderedList() {
-        Language lang = new Language("First", Collections.emptyList(), 50.0);
-        Language lang2 = new Language("Second", Collections.emptyList(), 1.0);
-        Language lang3 = new Language("Third", Collections.emptyList(), 49.0);
+        Language lang = new Language("First", Collections.emptyList(), 50.0, false);
+        Language lang2 = new Language("Second", Collections.emptyList(), 1.0, false);
+        Language lang3 = new Language("Third", Collections.emptyList(), 49.0, false);
         List<Language> languages = Arrays.asList(lang, lang2, lang3);
 
         HubItem hubItem1 = buildHubItem("Second", "", Collections.emptyList());
