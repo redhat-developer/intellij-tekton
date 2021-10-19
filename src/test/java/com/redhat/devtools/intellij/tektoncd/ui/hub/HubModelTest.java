@@ -32,9 +32,15 @@ import java.util.List;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.when;
 
 public class HubModelTest extends BaseTest {
 

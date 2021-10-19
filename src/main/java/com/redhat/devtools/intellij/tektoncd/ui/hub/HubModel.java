@@ -42,11 +42,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.*;
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.APP_K8S_IO_VERSION;
+import static com.redhat.devtools.intellij.tektoncd.Constants.HUB_CATALOG_TAG;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 
 public class HubModel {
     private Logger logger = LoggerFactory.getLogger(HubModel.class);
