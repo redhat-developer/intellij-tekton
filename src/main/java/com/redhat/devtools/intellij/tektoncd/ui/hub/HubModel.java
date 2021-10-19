@@ -13,7 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.alizer.api.Language;
-import com.redhat.devtools.alizer.api.LanguageRecognizerBuilder;
+import com.redhat.devtools.alizer.api.RecognizerFactory;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
@@ -35,27 +35,18 @@ import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-
-import static com.redhat.devtools.intellij.tektoncd.Constants.APP_K8S_IO_VERSION;
-import static com.redhat.devtools.intellij.tektoncd.Constants.HUB_CATALOG_TAG;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.*;
 
 public class HubModel {
     private Logger logger = LoggerFactory.getLogger(HubModel.class);
@@ -115,7 +106,7 @@ public class HubModel {
 
     private List<HubItem> getHubItems(Predicate<ResourceData> filter) {
         try {
-            List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
+            List<Language> languages = new RecognizerFactory().createLanguageRecognizer().analyze(project.getBasePath());
             return retrieveAllResources().stream()
                     .filter(filter)
                     .map(HubItem::new)
@@ -141,7 +132,7 @@ public class HubModel {
 
     public List<HubItem> getRecommendedHubItems() {
         try {
-            List<Language> languages = new LanguageRecognizerBuilder().build().analyze(project.getBasePath());
+            List<Language> languages = new RecognizerFactory().createLanguageRecognizer().analyze(project.getBasePath());
             List<String> hubItemsAlreadyInstalled = getAllInstalledHubItems().stream()
                     .map(task -> task.getMetadata().getName())
                     .collect(Collectors.toList());

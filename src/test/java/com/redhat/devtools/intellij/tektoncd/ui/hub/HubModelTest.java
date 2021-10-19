@@ -12,7 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.hub;
 
 import com.redhat.devtools.alizer.api.Language;
 import com.redhat.devtools.alizer.api.LanguageRecognizer;
-import com.redhat.devtools.alizer.api.LanguageRecognizerBuilder;
+import com.redhat.devtools.alizer.api.RecognizerFactory;
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import com.redhat.devtools.intellij.tektoncd.hub.api.ResourceApi;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
@@ -21,32 +21,26 @@ import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import io.fabric8.kubernetes.client.Watch;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedConstruction;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 public class HubModelTest extends BaseTest {
 
     private PipelinesNode pipelinesNode;
     private ClusterTasksNode clusterTasksNode;
-    private LanguageRecognizerBuilder languageRecognizerBuilder;
+    private RecognizerFactory recognizerFactory;
     private LanguageRecognizer languageRecognizer;
     private Language languageJAVA, languageUnknown;
     private ResourceData resourceDataJAVA, resourceDataGO, resourceDataNET;
@@ -64,11 +58,11 @@ public class HubModelTest extends BaseTest {
         when(tkn.watchClusterTasks(any())).thenReturn(watch);
         pipelinesNode = mock(PipelinesNode.class);
         clusterTasksNode = mock(ClusterTasksNode.class);
-        languageRecognizerBuilder = mock(LanguageRecognizerBuilder.class);
+        recognizerFactory = mock(RecognizerFactory.class);
         languageRecognizer = mock(LanguageRecognizer.class);
-        when(languageRecognizerBuilder.build()).thenReturn(languageRecognizer);
-        languageJAVA = new Language("java", Collections.emptyList(), 1.0);
-        languageUnknown = new Language("Unknown", Collections.emptyList(), 1.0);
+        when(recognizerFactory.createLanguageRecognizer()).thenReturn(languageRecognizer);
+        languageJAVA = new Language("java", Collections.emptyList(), 1.0, true);
+        languageUnknown = new Language("Unknown", Collections.emptyList(), 1.0, false);
         resourceApi = mock(ResourceApi.class);
 
         resourceDataJAVA = mock(ResourceData.class);
@@ -104,8 +98,8 @@ public class HubModelTest extends BaseTest {
         resources.addDataItem(resourceDataNET);
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
-            try(MockedConstruction<LanguageRecognizerBuilder> languageRecognizerBuilderMockedConstruction = mockConstruction(LanguageRecognizerBuilder.class,
-                    (mock, context) -> when(mock.build()).thenReturn(languageRecognizer))) {
+            try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
+                    (mock, context) -> when(mock.createLanguageRecognizer()).thenReturn(languageRecognizer))) {
 
                 List<Language> languages = Arrays.asList(languageJAVA);
                 when(languageRecognizer.analyze(anyString())).thenReturn(languages);
@@ -122,8 +116,8 @@ public class HubModelTest extends BaseTest {
     public void GetAllPipelineHubItems_RemoteHubHasNoPipelineResources_EmptyList() throws IOException {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
-            try(MockedConstruction<LanguageRecognizerBuilder> languageRecognizerBuilderMockedConstruction = mockConstruction(LanguageRecognizerBuilder.class,
-                    (mock, context) -> when(mock.build()).thenReturn(languageRecognizer))) {
+            try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
+                    (mock, context) -> when(mock.createLanguageRecognizer()).thenReturn(languageRecognizer))) {
 
                 List<Language> languages = Arrays.asList(languageJAVA);
                 when(languageRecognizer.analyze(anyString())).thenReturn(languages);
@@ -139,8 +133,8 @@ public class HubModelTest extends BaseTest {
     public void GetAllTaskHubItems_RemoteHubContainsTaskResources_ListWithAllTasks() throws IOException {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
-            try(MockedConstruction<LanguageRecognizerBuilder> languageRecognizerBuilderMockedConstruction = mockConstruction(LanguageRecognizerBuilder.class,
-                    (mock, context) -> when(mock.build()).thenReturn(languageRecognizer))) {
+            try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
+                    (mock, context) -> when(mock.createLanguageRecognizer()).thenReturn(languageRecognizer))) {
 
                 List<Language> languages = Arrays.asList(languageJAVA);
                 when(languageRecognizer.analyze(anyString())).thenReturn(languages);
@@ -160,8 +154,8 @@ public class HubModelTest extends BaseTest {
         resources.addDataItem(resourceDataNET);
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
-            try(MockedConstruction<LanguageRecognizerBuilder> languageRecognizerBuilderMockedConstruction = mockConstruction(LanguageRecognizerBuilder.class,
-                    (mock, context) -> when(mock.build()).thenReturn(languageRecognizer))) {
+            try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
+                    (mock, context) -> when(mock.createLanguageRecognizer()).thenReturn(languageRecognizer))) {
 
                 List<Language> languages = Arrays.asList(languageJAVA);
                 when(languageRecognizer.analyze(anyString())).thenReturn(languages);
@@ -177,8 +171,8 @@ public class HubModelTest extends BaseTest {
     public void GetRecommendedHubItems_LanguagesHasHubItemsRelated_FilteredList() throws IOException {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
-            try(MockedConstruction<LanguageRecognizerBuilder> languageRecognizerBuilderMockedConstruction = mockConstruction(LanguageRecognizerBuilder.class,
-                    (mock, context) -> when(mock.build()).thenReturn(languageRecognizer))) {
+            try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
+                    (mock, context) -> when(mock.createLanguageRecognizer()).thenReturn(languageRecognizer))) {
 
                 List<Language> languages = Arrays.asList(languageJAVA);
                 when(languageRecognizer.analyze(anyString())).thenReturn(languages);
@@ -195,8 +189,8 @@ public class HubModelTest extends BaseTest {
     public void GetRecommendedHubItems_LanguagesHasNoHubItemsRelated_EmptyList() throws IOException {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
-            try(MockedConstruction<LanguageRecognizerBuilder> languageRecognizerBuilderMockedConstruction = mockConstruction(LanguageRecognizerBuilder.class,
-                    (mock, context) -> when(mock.build()).thenReturn(languageRecognizer))) {
+            try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
+                    (mock, context) -> when(mock.createLanguageRecognizer()).thenReturn(languageRecognizer))) {
 
                 List<Language> languages = Arrays.asList(languageUnknown);
                 when(languageRecognizer.analyze(anyString())).thenReturn(languages);
@@ -212,9 +206,9 @@ public class HubModelTest extends BaseTest {
     public void GetInstalledHubItems_NoInstalledItems_EmptyList() {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
-                HubModel model = new HubModel(project, tkn, null);
-                List<HubItem> recommendedItems = model.getInstalledHubItems();
-                assertEquals(0, recommendedItems.size());
+            HubModel model = new HubModel(project, tkn, null);
+            List<HubItem> recommendedItems = model.getInstalledHubItems();
+            assertEquals(0, recommendedItems.size());
         }
     }
 
