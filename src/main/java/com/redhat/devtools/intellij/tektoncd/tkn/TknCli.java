@@ -27,6 +27,7 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.CustomPodOperationsImpl;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
+import com.redhat.devtools.intellij.tektoncd.utils.PollingHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
@@ -76,6 +77,12 @@ import io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.EventListener;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -90,12 +97,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
@@ -126,6 +127,8 @@ public class TknCli implements Tkn {
     private final Project project;
     private final KubernetesClient client;
     private final DebugTabPanelFactory debugTabPanelFactory;
+    private final WatchHandler watchHandler;
+    private final PollingHelper pollingHelper;
 
     private Map<String, String> envVars;
 
@@ -144,6 +147,8 @@ public class TknCli implements Tkn {
         } catch (URISyntaxException e) {
             this.envVars = Collections.emptyMap();
         }
+        this.watchHandler = new WatchHandler(this);
+        this.pollingHelper = new PollingHelper(this);
         reportTelemetry();
         updateTektonInfos();
     }
@@ -221,7 +226,7 @@ public class TknCli implements Tkn {
     }
 
     private void initConfigMapWatcher(String namespace, String resource, Consumer<ConfigMap> doUpdate) {
-        WatchHandler.get().setWatchByResourceName(this, namespace, KIND_CONFIGMAP, resource,
+        this.watchHandler.setWatchByResourceName(namespace, KIND_CONFIGMAP, resource,
                 new Watcher<ConfigMap>() {
                     @Override
                     public void eventReceived(Action action, ConfigMap resource) {
@@ -1093,7 +1098,16 @@ public class TknCli implements Tkn {
         return debugTabPanelFactory;
     }
 
+    public WatchHandler getWatchHandler() {
+        return watchHandler;
+    }
+
+    public PollingHelper getPollingHelper() {
+        return pollingHelper;
+    }
+
     public void dispose() {
+        watchHandler.removeAll();
         debugTabPanelFactory.closeTabPanels();
     }
 }

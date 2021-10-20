@@ -38,6 +38,9 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -49,9 +52,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
@@ -62,21 +62,16 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
 public class WatchHandler {
     private static final Logger logger = LoggerFactory.getLogger(WatchHandler.class);
     private Map<String, WatchNodes> watches;
+    private Tkn tkn;
+    private RefreshQueue refreshQueue;
 
-    private static WatchHandler instance;
-
-    private WatchHandler() {
+    public WatchHandler(Tkn tkn) {
+        this.tkn = tkn;
+        this.refreshQueue = new RefreshQueue();
         watches = new HashMap<>();
     }
 
-    public static WatchHandler get() {
-        if (instance == null) {
-            instance = new WatchHandler();
-        }
-        return instance;
-    }
-
-    public void setWatchByResourceName(Tkn tkn, String namespace, String kind, String resourceName, Watcher watcher) {
+    public void setWatchByResourceName(String namespace, String kind, String resourceName, Watcher watcher) {
         String watchId = getWatchId(namespace, kind + "-" + resourceName);
         Supplier<Watch> watchSupplier = () -> {
             Watch watch = null;
@@ -94,7 +89,7 @@ public class WatchHandler {
         setWatch(watchId, watchSupplier, false);
     }
 
-    public void setWatchByLabel(Tkn tkn, String namespace, String kind, String keyLabel, String valueLabel, Watcher watcher, boolean updateIfAlreadyExisting) {
+    public void setWatchByLabel(String namespace, String kind, String keyLabel, String valueLabel, Watcher watcher, boolean updateIfAlreadyExisting) {
         String watchId = getWatchId(namespace, kind + "-" + keyLabel + "-" + valueLabel);
         Supplier<Watch> watchSupplier = () -> {
             try {
@@ -124,8 +119,6 @@ public class WatchHandler {
     }
 
     public void setWatchByNode(ParentableNode<?> element) {
-        Tkn tkn = element.getRoot().getTkn();
-
         String namespace = element.getNamespace();
         String watchId = getWatchId(element);
         Watch watch = null;
@@ -273,7 +266,7 @@ public class WatchHandler {
                     nodesToRefresh.add(pNode.get());
                 }
             }
-            RefreshQueue.get().addAll(nodesToRefresh);
+            this.refreshQueue.addAll(nodesToRefresh);
         } else if (resource instanceof TaskRun) {
             List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodes.get(0)));
             String task = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/task");
@@ -290,9 +283,9 @@ public class WatchHandler {
                     }
                 }
             }
-            RefreshQueue.get().addAll(nodesToRefresh);
+            this.refreshQueue.addAll(nodesToRefresh);
         } else {
-            RefreshQueue.get().addAll(nodes);
+            this.refreshQueue.addAll(nodes);
         }
     }
 

@@ -15,6 +15,9 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugResourceState;
 import io.fabric8.kubernetes.api.model.Pod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,33 +26,25 @@ import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PollingHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(PollingHelper.class);
-    private static PollingHelper instance;
     private Map<String, Timer> resourceInPolling;
+    private Tkn tkn;
 
-    private PollingHelper() {
+    public PollingHelper(Tkn tkn) {
+        this.tkn = tkn;
         resourceInPolling = new HashMap<>();
     }
 
-    public static PollingHelper get() {
-        if (instance == null) {
-            instance = new PollingHelper();
-        }
-        return instance;
-    }
-
-    public void doPolling(Tkn tkn, DebugModel model, BiFunction<Tkn, DebugModel, CompletableFuture<Pair<Boolean, DebugModel>>> isReadyForExecution, BiConsumer<Tkn, DebugModel> doExecute) {
+    public void doPolling(DebugModel model, BiFunction<Tkn, DebugModel, CompletableFuture<Pair<Boolean, DebugModel>>> isReadyForExecution, BiConsumer<Tkn, DebugModel> doExecute) {
         Pod resource = model.getPod();
         if (isPollingActiveOnResource(resource)) {
             stopTimer(resource);
         }
 
-        startPolling(tkn, model, isReadyForExecution, doExecute);
+        startPolling(model, isReadyForExecution, doExecute);
     }
 
     public void stopPolling(DebugModel model) {
@@ -67,7 +62,7 @@ public class PollingHelper {
         return resource.getMetadata().getNamespace() + "-" + resource.getMetadata().getName();
     }
 
-    private void startPolling(Tkn tkn, DebugModel model, BiFunction<Tkn, DebugModel, CompletableFuture<Pair<Boolean, DebugModel>>> isReadyForExecution, BiConsumer<Tkn, DebugModel> doExecute) {
+    private void startPolling(DebugModel model, BiFunction<Tkn, DebugModel, CompletableFuture<Pair<Boolean, DebugModel>>> isReadyForExecution, BiConsumer<Tkn, DebugModel> doExecute) {
         TimerTask pollTask = new TimerTask() {
             @Override
             public void run() {
@@ -79,8 +74,7 @@ public class PollingHelper {
                     model.setPod(updatedPod);
                     if (DebugHelper.isPodCompleted(updatedPod)) {
                         stopTimer(updatedPod);
-                        execute(tkn,
-                                model,
+                        execute(model,
                                 DebugHelper.isPodFailed(updatedPod)
                                         ? DebugResourceState.COMPLETE_FAILED
                                         : DebugResourceState.COMPLETE_SUCCESS,
@@ -89,7 +83,7 @@ public class PollingHelper {
                         isReadyForExecution.apply(tkn, model)
                                 .whenComplete((isReadyForExecutionResult, t) -> {
                                     if (isReadyForExecutionResult.getFirst()) {
-                                        execute(tkn, isReadyForExecutionResult.getSecond(), DebugResourceState.DEBUG, doExecute);
+                                        execute(isReadyForExecutionResult.getSecond(), DebugResourceState.DEBUG, doExecute);
                                     }
                                 });
                     }
@@ -124,7 +118,7 @@ public class PollingHelper {
         timer.purge();
     }
 
-    private void execute(Tkn tkn, DebugModel model, DebugResourceState state, BiConsumer<Tkn, DebugModel> doExecute) {
+    private void execute(DebugModel model, DebugResourceState state, BiConsumer<Tkn, DebugModel> doExecute) {
         model.updateResourceStatus(state);
         doExecute.accept(tkn, model);
     }

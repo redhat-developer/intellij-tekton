@@ -14,6 +14,8 @@ import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
+import com.redhat.devtools.intellij.tektoncd.utils.PollingHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResourceList;
@@ -832,6 +834,10 @@ public interface Tkn {
     <T> T getClient(Class<T> clazz);
 
     DebugTabPanelFactory getDebugTabPanelFactory();
+
+    WatchHandler getWatchHandler();
+
+    PollingHelper getPollingHelper();
 
     void dispose();
 }

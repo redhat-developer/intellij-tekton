@@ -22,12 +22,12 @@ import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_POD;
 
@@ -39,8 +39,7 @@ public class DebugHelper {
             DebugModel debugModel = new DebugModel(nameTaskRun);
             UIHelper.executeInUI(() -> tkncli.getDebugTabPanelFactory().addContent(debugModel));
             String keyLabel = "tekton.dev/taskRun";
-            WatchHandler.get().setWatchByLabel(tkncli,
-                    namespace,
+            tkncli.getWatchHandler().setWatchByLabel(namespace,
                     KIND_POD,
                     keyLabel,
                     nameTaskRun,
@@ -57,12 +56,11 @@ public class DebugHelper {
                 if (isFirst[0]) {
                     isFirst[0] = false;
                     debugModel.setPod(resource);
-                    PollingHelper.get().doPolling(tkn,
-                            debugModel,
+                    tkn.getPollingHelper().doPolling(debugModel,
                             DebugHelper::isReadyForDebuggingAsync,
                             DebugHelper::updateDebugPanel);
                 } else if (isPodCompleted(resource)) {
-                    closeWatch(resource.getMetadata().getNamespace(), key, value);
+                    closeWatch(tkn, resource.getMetadata().getNamespace(), key, value);
                     debugModel.updateResourceStatus(isPodFailed(resource)
                             ? DebugResourceState.COMPLETE_FAILED
                             : DebugResourceState.COMPLETE_SUCCESS);
@@ -71,9 +69,7 @@ public class DebugHelper {
             }
 
             @Override
-            public void onClose(WatcherException cause) {
-                String e = cause.getLocalizedMessage();
-            }
+            public void onClose(WatcherException cause) { }
 
         };
     }
@@ -114,8 +110,8 @@ public class DebugHelper {
                 || isPodContainerFailed(pod);
     }
 
-    private static void closeWatch(String namespace, String key, String value) {
-        WatchHandler.get().removeWatchByLabel(namespace, KIND_POD, key, value);
+    private static void closeWatch(Tkn tkn, String namespace, String key, String value) {
+        tkn.getWatchHandler().removeWatchByLabel(namespace, KIND_POD, key, value);
     }
 
     private static CompletableFuture<Pair<Boolean, DebugModel>> isReadyForDebuggingAsync(Tkn tkn, DebugModel model) {
@@ -158,7 +154,7 @@ public class DebugHelper {
 
     public static void disposeResource(Tkn tkn, DebugModel model) {
         try {
-            PollingHelper.get().stopPolling(model);
+            tkn.getPollingHelper().stopPolling(model);
             tkn.cancelTaskRun(model.getPod().getMetadata().getNamespace(), model.getResource());
         } catch (IOException ex) {
             logger.warn(ex.getLocalizedMessage(), ex);

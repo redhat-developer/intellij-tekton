@@ -38,13 +38,13 @@ import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDetailsDialog;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItem;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemPanelsBoard;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import javax.swing.JPanel;
-import org.jetbrains.annotations.NotNull;
-
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
 
@@ -66,7 +66,7 @@ public class WindowToolFactory implements ToolWindowFactory {
 
             new TektonTreeDoubleClickListener(tree);
 
-            ((TektonRootNode) structure.getRootElement()).load().whenComplete((tkn, err) -> {
+            ((TektonRootNode) structure.getRootElement()).loadTkn().whenComplete((tkn, err) -> {
                 HubModel hubModel = new HubModel(project, tkn, null);
 
                 JPanel hubItemsListPanel = new HubItemPanelsBoard(hubModel, getDoSelectAction(project, hubModel))

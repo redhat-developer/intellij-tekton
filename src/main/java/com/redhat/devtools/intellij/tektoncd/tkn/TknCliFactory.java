@@ -10,17 +10,16 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
-import java.util.concurrent.ExecutionException;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.DownloadHelper;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TknCliFactory {
-    private static final Logger logger = LoggerFactory.getLogger(TknCliFactory.class);
     private static TknCliFactory INSTANCE;
-    private Project lastProject;
+    private Map<Project, CompletableFuture<Tkn>> projectFutureMap;
 
     public static TknCliFactory getInstance() {
         if (INSTANCE == null) {
@@ -29,33 +28,26 @@ public class TknCliFactory {
         return INSTANCE;
     }
 
-    private CompletableFuture<Tkn> future;
-
     private TknCliFactory() {
+        projectFutureMap = new HashMap<>();
     }
 
     public CompletableFuture<Tkn> getTkn(Project project) {
-        if (future == null
-                || !lastProject.equals(project)) {
-            lastProject = project;
-            future = DownloadHelper.getInstance().downloadIfRequiredAsync("tkn", TknCliFactory.class.getResource("/tkn.json")).thenApply(command -> new TknCli(project, command));
+        if (projectFutureMap.containsKey(project)) {
+            return projectFutureMap.get(project);
+        } {
+            CompletableFuture<Tkn> tknCompletableFuture = DownloadHelper.getInstance()
+                    .downloadIfRequiredAsync("tkn", TknCliFactory.class.getResource("/tkn.json"))
+                    .thenApply(command -> new TknCli(project, command));
+            projectFutureMap.put(project, tknCompletableFuture);
+            return tknCompletableFuture;
         }
-        return future;
     }
 
-    public void resetTkn() {
-        disposeTkn();
-        future = null;
-    }
-
-    private void disposeTkn() {
-        try {
-            if (future != null) {
-                Tkn tkn = future.get();
-                tkn.dispose();
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn(e.getLocalizedMessage(), e);
+    public void resetTkn(Project project) {
+        CompletableFuture<Tkn> tknCompletableFuture = projectFutureMap.remove(project);
+        if (tknCompletableFuture != null) {
+            tknCompletableFuture.whenComplete((tkn, throwable) -> tkn.dispose());
         }
     }
 }

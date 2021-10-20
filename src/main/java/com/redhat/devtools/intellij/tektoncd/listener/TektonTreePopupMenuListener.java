@@ -11,12 +11,10 @@
 package com.redhat.devtools.intellij.tektoncd.listener;
 
 import com.redhat.devtools.intellij.common.listener.TreePopupMenuListener;
-import com.redhat.devtools.intellij.tektoncd.utils.RefreshQueue;
+
 import javax.swing.event.PopupMenuEvent;
 
 public class TektonTreePopupMenuListener extends TreePopupMenuListener {
-    private static final RefreshQueue queue = RefreshQueue.get();
-
     public TektonTreePopupMenuListener() {
         super();
     }
@@ -24,12 +22,10 @@ public class TektonTreePopupMenuListener extends TreePopupMenuListener {
     @Override
     public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
         super.popupMenuWillBecomeInvisible(popupMenuEvent);
-        queue.update();
     }
 
     @Override
     public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
         super.popupMenuCanceled(popupMenuEvent);
-        queue.update();
     }
 }
