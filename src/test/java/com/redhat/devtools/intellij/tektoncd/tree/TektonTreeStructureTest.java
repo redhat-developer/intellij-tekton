@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.common.utils.ConfigWatcher;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
+import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import io.fabric8.kubernetes.api.model.AuthInfo;
 import io.fabric8.kubernetes.api.model.Cluster;
 import io.fabric8.kubernetes.api.model.Config;
@@ -30,6 +31,10 @@ import io.fabric8.tekton.pipeline.v1beta1.PipelineRunStatus;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRunTaskRunStatus;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRunStatus;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.MockedStatic;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.Instant;
@@ -39,13 +44,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.MockedStatic;
-
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -69,6 +71,7 @@ public class TektonTreeStructureTest {
     private TknCliFactory tknCliFactory;
     private ConfigWatcher configWatcher;
     private Config config;
+    private WatchHandler watchHandler;
 
     @Before
     public void before() throws Exception {
@@ -98,6 +101,10 @@ public class TektonTreeStructureTest {
 
         this.metadata3 = new ObjectMeta();
         this.metadata3.setName("test3");
+
+        this.watchHandler = mock(WatchHandler.class);
+        when(tkn.getWatchHandler()).thenReturn(watchHandler);
+        when(watchHandler.canBeWatched(any())).thenReturn(false);
 
     }
 
