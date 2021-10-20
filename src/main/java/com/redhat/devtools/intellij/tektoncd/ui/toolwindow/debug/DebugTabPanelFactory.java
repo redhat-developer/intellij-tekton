@@ -16,6 +16,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import java.util.HashMap;
@@ -94,7 +95,7 @@ public class DebugTabPanelFactory {
     public void closeTabPanels() {
         resourceXTab.entrySet().forEach(item -> {
             item.getValue().dispose();
-            getContentManager().removeContent(getResourceDebugPanel(item.getKey()), true);
+            UIHelper.executeInUI(() -> getContentManager().removeContent(getResourceDebugPanel(item.getKey()), true));
         });
     }
 }
