@@ -40,7 +40,7 @@ import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemPanelsBoard;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
+import javax.swing.JPanel;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;

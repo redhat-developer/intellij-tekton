@@ -3,8 +3,11 @@ package com.redhat.devtools.intellij.tektoncd.ui;
 import com.intellij.openapi.ui.DialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.Component;
 import java.util.List;
 
 public class RunPickerDialog extends DialogWrapper {
