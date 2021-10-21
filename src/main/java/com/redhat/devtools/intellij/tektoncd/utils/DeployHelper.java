@@ -17,6 +17,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.messages.MessageDialog;
 import com.redhat.devtools.intellij.common.model.GenericResource;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
@@ -25,12 +26,14 @@ import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
-import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 
+import static com.intellij.openapi.ui.Messages.NO_BUTTON;
+import static com.intellij.openapi.ui.Messages.YES_BUTTON;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_ABORTED;
@@ -119,12 +122,16 @@ public class DeployHelper {
     }
 
     private static boolean isSaveConfirmed(String confirmationMessage) {
-        int resultDialog = UIHelper.executeInUI(() ->
-                Messages.showYesNoDialog(
-                        confirmationMessage,
-                        "Save to cluster",
-                        null
-                ));
+
+        int resultDialog = UIHelper.executeInUI(() -> {
+            MessageDialog messageDialog = new MessageDialog(confirmationMessage,
+                    "Save to Cluster",
+                    new String[]{YES_BUTTON, NO_BUTTON},
+                    -1,
+                    null);
+            messageDialog.show();
+            return messageDialog.getExitCode();
+        });
 
         return resultDialog == Messages.OK;
     }
