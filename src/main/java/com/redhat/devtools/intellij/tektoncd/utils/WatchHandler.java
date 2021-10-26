@@ -53,11 +53,14 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_POD;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
 
 public class WatchHandler {
     private static final Logger logger = LoggerFactory.getLogger(WatchHandler.class);
@@ -95,6 +98,26 @@ public class WatchHandler {
             try {
                 if (kind.equalsIgnoreCase(KIND_POD)) {
                     return tkn.watchPodsWithLabel(namespace, keyLabel, valueLabel, watcher);
+                }
+            } catch (IOException e) {
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
+            }
+            return null;
+        };
+        setWatch(watchId, watchSupplier, updateIfAlreadyExisting);
+    }
+
+    public void setWatchByKind(String namespace, String kind, Watcher watcher, boolean updateIfAlreadyExisting) {
+        String watchId = getWatchId(namespace, kind);
+        Supplier<Watch> watchSupplier = () -> {
+            try {
+                switch(kind) {
+                    case KIND_PIPELINES:
+                        return tkn.watchPipelines(namespace, watcher);
+                    case KIND_TASKS:
+                        return tkn.watchTasks(namespace, watcher);
+                    case KIND_CLUSTERTASKS:
+                        return tkn.watchClusterTasks(watcher);
                 }
             } catch (IOException e) {
                 logger.warn("Error: " + e.getLocalizedMessage(), e);

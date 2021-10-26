@@ -17,6 +17,8 @@ import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.ui.Divider;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -31,8 +33,8 @@ import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.listener.TektonTreeDoubleClickListener;
 import com.redhat.devtools.intellij.tektoncd.listener.TektonTreePopupMenuListener;
+import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
 import com.redhat.devtools.intellij.tektoncd.tree.MutableTektonModelSynchronizer;
-import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDetailsDialog;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItem;
@@ -40,6 +42,7 @@ import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemPanelsBoard;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -66,7 +69,7 @@ public class WindowToolFactory implements ToolWindowFactory {
 
             new TektonTreeDoubleClickListener(tree);
 
-            ((TektonRootNode) structure.getRootElement()).loadTkn().whenComplete((tkn, err) -> {
+            TknCliFactory.getInstance().getTkn(project).whenComplete((tkn, err) -> {
                 HubModel hubModel = new HubModel(project, tkn, null);
 
                 JPanel hubItemsListPanel = new HubItemPanelsBoard(hubModel, getDoSelectAction(project, hubModel))
@@ -74,21 +77,39 @@ public class WindowToolFactory implements ToolWindowFactory {
                         .withInstalled()
                         .build(Optional.empty());
 
-                OnePixelSplitter tabPanel = new OnePixelSplitter(true, 0.37F) {
-                    protected Divider createDivider() {
-                        Divider divider = super.createDivider();
-                        divider.setBackground(SEARCH_FIELD_BORDER_COLOR);
-                        return divider;
-                    }
-                };
-                tabPanel.setFirstComponent(new JBScrollPane(tree));
-                tabPanel.setSecondComponent(hubItemsListPanel);
+                OnePixelSplitter tabPanel = createTabPanel(new JBScrollPane(tree), hubItemsListPanel);
 
                 toolWindow.getContentManager().addContent(contentFactory.createContent(tabPanel, "", false));
+                executeOnProjectClosing(project, () -> {
+                    structure.dispose();
+                    hubModel.dispose();
+                });
             });
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             throw new RuntimeException((e));
         }
+    }
+
+    private OnePixelSplitter createTabPanel(JComponent firstComp, JComponent secondComp) {
+        OnePixelSplitter tabPanel = new OnePixelSplitter(true, 0.37F) {
+            protected Divider createDivider() {
+                Divider divider = super.createDivider();
+                divider.setBackground(SEARCH_FIELD_BORDER_COLOR);
+                return divider;
+            }
+        };
+        tabPanel.setFirstComponent(firstComp);
+        tabPanel.setSecondComponent(secondComp);
+        return tabPanel;
+    }
+
+    private void executeOnProjectClosing(Project project, Runnable runnable) {
+        ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
+            @Override
+            public void projectClosing(@NotNull Project project) {
+                runnable.run();
+            }
+        });
     }
 
     private BiConsumer<HubItem, TriConsumer<HubItem, String, String>> getDoSelectAction(Project project, HubModel model) {

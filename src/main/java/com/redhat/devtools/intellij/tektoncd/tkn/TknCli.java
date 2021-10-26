@@ -125,8 +125,8 @@ public class TknCli implements Tkn {
 
     private String command;
     private final Project project;
-    private final KubernetesClient client;
-    private final DebugTabPanelFactory debugTabPanelFactory;
+    private KubernetesClient client;
+    private DebugTabPanelFactory debugTabPanelFactory;
     private final WatchHandler watchHandler;
     private final PollingHelper pollingHelper;
 
@@ -135,13 +135,17 @@ public class TknCli implements Tkn {
     private volatile String tektonVersion = "0.0.0";
     private volatile boolean hasAlphaFeaturesEnabled = false;
 
-
-
     TknCli(Project project, String command) {
         this.command = command;
         this.project = project;
-        this.client = new DefaultKubernetesClient(new ConfigBuilder().build());
-        this.debugTabPanelFactory = new DebugTabPanelFactory(project, this);
+        try {
+            this.client = new DefaultKubernetesClient(new ConfigBuilder().build());
+            this.debugTabPanelFactory = new DebugTabPanelFactory(project, this);
+        } catch(Exception e) {
+            String t = "";
+        }
+
+
         try {
             this.envVars = NetworkUtils.buildEnvironmentVariables(client.getMasterUrl().toString());
         } catch (URISyntaxException e) {

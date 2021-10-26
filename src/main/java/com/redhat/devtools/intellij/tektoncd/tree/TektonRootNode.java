@@ -25,16 +25,11 @@ public class TektonRootNode {
   }
 
   public CompletableFuture<Tkn> initializeTkn() {
-    TknCliFactory.getInstance().resetTkn(project);
     return TknCliFactory.getInstance().getTkn(project).whenComplete((tkn, err) -> this.tkn = tkn);
   }
 
   public Tkn getTkn() {
     return tkn;
-  }
-
-  public CompletableFuture<Tkn> loadTkn() {
-    return TknCliFactory.getInstance().getTkn(project);
   }
 
   public Project getProject() {

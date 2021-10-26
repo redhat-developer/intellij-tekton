@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.alizer.api.Language;
 import com.redhat.devtools.alizer.api.RecognizerFactory;
+import com.redhat.devtools.intellij.common.utils.ConfigHelper;
+import com.redhat.devtools.intellij.common.utils.ConfigWatcher;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
@@ -24,11 +26,13 @@ import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
+import io.fabric8.kubernetes.api.model.Config;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
@@ -42,6 +46,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,14 +56,16 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-
 import static com.redhat.devtools.intellij.tektoncd.Constants.APP_K8S_IO_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.HUB_CATALOG_TAG;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
 
-public class HubModel {
+public class HubModel implements ConfigWatcher.Listener {
     private Logger logger = LoggerFactory.getLogger(HubModel.class);
 
     private Tkn tkn;
@@ -68,20 +75,32 @@ public class HubModel {
     private List<HasMetadata> tasksInstalled, clusterTasksInstalled, pipelinesInstalled;
     private HubPanelCallback hubPanelCallback;
     private ParentableNode caller;
+    private Config config;
 
     public HubModel(Project project, Tkn tkn, ParentableNode caller) {
         this.allHubItems = new ArrayList<>();
         this.resourcesYaml = new HashMap<>();
+        this.project = project;
+        this.caller = caller;
+        this.config = loadConfig();
+        initConfigWatcher();
+        init(tkn);
+    }
+
+
+    private void initConfigWatcher() {
+        ExecHelper.submit(new ConfigWatcher(Paths.get(ConfigHelper.getKubeConfigPath()), this));
+    }
+
+    protected Config loadConfig() {
+        return ConfigHelper.safeLoadKubeConfig();
+    }
+
+    private void init(Tkn tkn) {
         this.tkn = tkn;
         this.tasksInstalled = Collections.synchronizedList(new ArrayList<>());
         this.clusterTasksInstalled = Collections.synchronizedList(new ArrayList<>());
         this.pipelinesInstalled = Collections.synchronizedList(new ArrayList<>());
-        this.project = project;
-        this.caller = caller;
-        init();
-    }
-
-    private void init() {
         ExecHelper.submit(() -> {
             try {
                 initWatch();
@@ -315,9 +334,9 @@ public class HubModel {
 
     private void initWatch() throws IOException {
         String namespace = tkn.getNamespace();
-        tkn.watchPipelines(namespace, getWatcher());
-        tkn.watchTasks(namespace, getWatcher());
-        tkn.watchClusterTasks(getWatcher());
+        tkn.getWatchHandler().setWatchByKind(namespace, KIND_PIPELINES, getWatcher(), true);
+        tkn.getWatchHandler().setWatchByKind(namespace, KIND_TASKS, getWatcher(), true);
+        tkn.getWatchHandler().setWatchByKind(namespace, KIND_CLUSTERTASKS, getWatcher(), true);
     }
 
     private <T extends HasMetadata> Watcher<T> getWatcher() {
@@ -386,4 +405,23 @@ public class HubModel {
         return caller != null && caller instanceof PipelinesNode;
     }
 
+    @Override
+    public void onUpdate(ConfigWatcher source, Config config) {
+        if (!ConfigHelper.areEqualCurrentContext(this.config, config)) {
+            refresh();
+        }
+        this.config = config;
+    }
+
+    private void refresh() {
+        dispose();
+        TknCliFactory.getInstance().getTkn(project).whenComplete((tkn, err) -> {
+            init(tkn);
+            refreshHubPanel();
+        });
+    }
+
+    public void dispose() {
+        tkn.dispose();
+    }
 }
