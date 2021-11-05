@@ -695,9 +695,6 @@
       "type": "object"
     },
     "EventListenerSpec": {
-      "required": [
-        "triggers"
-      ],
       "properties": {
         "serviceAccountName": {
           "type": "string"
@@ -709,12 +706,17 @@
           },
           "type": "array"
         },
+        "triggerGroups": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/EventListenerTriggerGroup"
+          },
+          "type": "array"
+        },
         "namespaceSelector": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/NamespaceSelector"
         },
         "labelSelector": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/LabelSelector"
         },
         "resources": {
@@ -788,6 +790,44 @@
         },
         "serviceAccountName": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EventListenerTriggerGroup": {
+      "required": [
+        "name",
+        "interceptors",
+        "triggerSelector"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "interceptors": {
+          "items": {
+            "$ref": "#/definitions/TriggerInterceptor"
+          },
+          "type": "array"
+        },
+        "triggerSelector": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/EventListenerTriggerSelector"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EventListenerTriggerSelector": {
+      "properties": {
+        "namespaceSelector": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/NamespaceSelector"
+        },
+        "labelSelector": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/LabelSelector"
         }
       },
       "additionalProperties": false,
