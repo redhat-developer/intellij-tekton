@@ -250,6 +250,7 @@
       <action id="com.redhat.devtools.intellij.tektoncd.actions.StartAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartAction" text="Start"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" class="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" text="Mirror Start"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" text="Start Last Run"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.debug.DebugTaskAction" class="com.redhat.devtools.intellij.tektoncd.actions.debug.DebugTaskAction" text="Start in Debug Mode" />
       <action id="com.redhat.devtools.intellij.tektoncd.actions.debug.DebugTaskRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.debug.DebugTaskRunAction" text="Start in Debug Mode"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.debug.ConnectDebugTaskRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.debug.ConnectDebugTaskRunAction" text="Open Debug Panel"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" text="Find Usages" />

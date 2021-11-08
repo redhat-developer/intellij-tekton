@@ -12,10 +12,10 @@ package com.redhat.devtools.intellij.tektoncd.utils.model;
 
 import com.google.common.base.Strings;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 
@@ -37,7 +37,7 @@ public abstract class ConfigurationModel {
         try {
             this.name = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"metadata", "name"});
             this.kind = YAMLHelper.getStringValueFromYAML(configuration, new String[] {"kind"});
-            if (!this.kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+            if (!KIND_CLUSTERTASK.equalsIgnoreCase(this.kind)) {
                 this.namespace = YAMLHelper.getStringValueFromYAML(configuration, new String[]{"metadata", "namespace"});
             }
         } catch (IOException e) {
