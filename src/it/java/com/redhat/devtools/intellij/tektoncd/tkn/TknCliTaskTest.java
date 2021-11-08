@@ -16,6 +16,7 @@ import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.client.TektonClient;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -92,7 +93,7 @@ public class TknCliTaskTest extends TknCliTest {
         tasks = tkn.getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertFalse(tasks.contains(TASK_NAME));
         List<TaskRun> taskRuns = tkn.getTaskRuns(NAMESPACE, TASK_NAME);
-        assertTrue(taskRuns.stream().noneMatch(run -> run.getName().equals(TASK_RUN_NAME)));
+        assertTrue(taskRuns.stream().noneMatch(run -> run.getMetadata().getName().equals(TASK_RUN_NAME)));
 
     }
 

@@ -38,6 +38,9 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -47,87 +50,98 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_POD;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
 
 public class WatchHandler {
     private static final Logger logger = LoggerFactory.getLogger(WatchHandler.class);
     private Map<String, WatchNodes> watches;
+    private Tkn tkn;
+    private RefreshQueue refreshQueue;
 
-    private static WatchHandler instance;
-
-    private WatchHandler() {
+    public WatchHandler(Tkn tkn) {
+        this.tkn = tkn;
+        this.refreshQueue = new RefreshQueue();
         watches = new HashMap<>();
     }
 
-    public static WatchHandler get() {
-        if (instance == null) {
-            instance = new WatchHandler();
-        }
-        return instance;
-    }
-
-    public void setWatchByResourceKind(Tkn tkn, String namespace, String kind, Watcher watcher) {
-        String watchId = getWatchId(namespace, kind + "list");
-        Watch watch = null;
-        WatchNodes wn = null;
-
-        if (this.watches.containsKey(watchId)) {
-            return;
-        }
-
-        try {
-            if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
-                watch = tkn.watchPipelines(namespace, watcher);
-            } else if (kind.equalsIgnoreCase(KIND_TASK)) {
-                watch = tkn.watchTasks(namespace, watcher);
-            }
-            wn = new WatchNodes(watch);
-        } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage(), e);
-        }
-
-        if (wn != null) {
-            watches.put(watchId, wn);
-        }
-    }
-
-    public void setWatchByResourceName(Tkn tkn, String namespace, String kind, String resourceName, Watcher watcher) {
+    public void setWatchByResourceName(String namespace, String kind, String resourceName, Watcher watcher) {
         String watchId = getWatchId(namespace, kind + "-" + resourceName);
-        Watch watch = null;
-        WatchNodes wn = null;
+        Supplier<Watch> watchSupplier = () -> {
+            Watch watch = null;
+            try {
+                if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
+                    watch = tkn.watchPipeline(namespace, resourceName, watcher);
+                } else if (kind.equalsIgnoreCase(KIND_TASK)) {
+                    watch = tkn.watchTask(namespace, resourceName, watcher);
+                }
+            } catch (IOException e) {
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
+            }
+            return watch;
+        };
+        setWatch(watchId, watchSupplier, false);
+    }
 
-        if (this.watches.containsKey(watchId)) {
+    public void setWatchByLabel(String namespace, String kind, String keyLabel, String valueLabel, Watcher watcher, boolean updateIfAlreadyExisting) {
+        String watchId = getWatchId(namespace, kind + "-" + keyLabel + "-" + valueLabel);
+        Supplier<Watch> watchSupplier = () -> {
+            try {
+                if (kind.equalsIgnoreCase(KIND_POD)) {
+                    return tkn.watchPodsWithLabel(namespace, keyLabel, valueLabel, watcher);
+                }
+            } catch (IOException e) {
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
+            }
+            return null;
+        };
+        setWatch(watchId, watchSupplier, updateIfAlreadyExisting);
+    }
+
+    public void setWatchByKind(String namespace, String kind, Watcher watcher, boolean updateIfAlreadyExisting) {
+        String watchId = getWatchId(namespace, kind);
+        Supplier<Watch> watchSupplier = () -> {
+            try {
+                switch(kind) {
+                    case KIND_PIPELINES:
+                        return tkn.watchPipelines(namespace, watcher);
+                    case KIND_TASKS:
+                        return tkn.watchTasks(namespace, watcher);
+                    case KIND_CLUSTERTASKS:
+                        return tkn.watchClusterTasks(watcher);
+                }
+            } catch (IOException e) {
+                logger.warn("Error: " + e.getLocalizedMessage(), e);
+            }
+            return null;
+        };
+        setWatch(watchId, watchSupplier, updateIfAlreadyExisting);
+    }
+
+    private void setWatch(String watchId, Supplier<Watch> watchSupplier, boolean updateIfAlreadyExisting) {
+        if (!updateIfAlreadyExisting && this.watches.containsKey(watchId)) {
             return;
         }
 
-        try {
-            if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
-                watch = tkn.watchPipeline(namespace, resourceName, watcher);
-            } else if (kind.equalsIgnoreCase(KIND_TASK)) {
-                watch = tkn.watchTask(namespace, resourceName, watcher);
-            }
-            wn = new WatchNodes(watch);
-        } catch (IOException e) {
-            logger.warn("Error: " + e.getLocalizedMessage(), e);
-        }
+        Watch watch = watchSupplier.get();
 
-        if (wn != null) {
+        if (watch != null) {
+            removeWatch(watchId);
+            WatchNodes wn = new WatchNodes(watch);
             watches.put(watchId, wn);
         }
-
     }
 
     public void setWatchByNode(ParentableNode<?> element) {
-        Tkn tkn = element.getRoot().getTkn();
-
         String namespace = element.getNamespace();
         String watchId = getWatchId(element);
         Watch watch = null;
@@ -137,7 +151,7 @@ public class WatchHandler {
         // (e.g a taskRuns watcher, when a change happens, could update multiple nodes such as a single Task node and the TaskRuns node)
         if (this.watches.containsKey(watchId)) {
             wn = this.watches.get(watchId);
-            if (!wn.getNodes().stream().anyMatch(item -> item.getName().equalsIgnoreCase(element.getName()) &&
+            if (wn.getNodes().stream().noneMatch(item -> item.getName().equalsIgnoreCase(element.getName()) &&
                     ((ParentableNode)item.getParent()).getName().equalsIgnoreCase(((ParentableNode)element.getParent()).getName()))) {
                 wn.getNodes().add(element);
             }
@@ -197,6 +211,18 @@ public class WatchHandler {
         this.watches.clear();
     }
 
+    public void removeWatchByLabel(String namespace, String kind, String keyLabel, String valueLabel) {
+        String watchId = getWatchId(namespace, kind + "-" + keyLabel + "-" + valueLabel);
+        removeWatch(watchId);
+    }
+
+    public void removeWatch(String watchId) {
+        if (watches.containsKey(watchId)) {
+            WatchNodes watchNodes = watches.remove(watchId);
+            watchNodes.getWatch().close();
+        }
+    }
+
     private String getWatchId(ParentableNode<?> element) {
         String name = element.getName();
         if (element instanceof TaskNode || element instanceof PipelineRunNode) {
@@ -221,7 +247,9 @@ public class WatchHandler {
                 WatchNodes watchNode = watches.get(watchId);
                 if (watchNode != null) {
                     List<ParentableNode> nodesById = watches.get(watchId).getNodes();
-                    refreshNodesByType(resource, nodesById);
+                    if (!nodesById.isEmpty()) {
+                        refreshNodesByType(resource, nodesById);
+                    }
                 }
 
                 if (resource instanceof PipelineRun) {
@@ -261,7 +289,7 @@ public class WatchHandler {
                     nodesToRefresh.add(pNode.get());
                 }
             }
-            RefreshQueue.get().addAll(nodesToRefresh);
+            this.refreshQueue.addAll(nodesToRefresh);
         } else if (resource instanceof TaskRun) {
             List<ParentableNode> nodesToRefresh = new ArrayList<>(Arrays.asList(nodes.get(0)));
             String task = resource.getMetadata().getLabels() == null ? null : resource.getMetadata().getLabels().get("tekton.dev/task");
@@ -278,9 +306,9 @@ public class WatchHandler {
                     }
                 }
             }
-            RefreshQueue.get().addAll(nodesToRefresh);
+            this.refreshQueue.addAll(nodesToRefresh);
         } else {
-            RefreshQueue.get().addAll(nodes);
+            this.refreshQueue.addAll(nodes);
         }
     }
 

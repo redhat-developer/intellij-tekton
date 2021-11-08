@@ -12,17 +12,24 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
+import com.redhat.devtools.intellij.tektoncd.utils.PollingHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResourceList;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
 import java.io.IOException;
 import java.net.URL;
@@ -51,6 +58,18 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     String getTektonTriggersApiVersion() throws IOException;
+
+    /**
+     * Return the tekton version used on active cluster
+     * @return tekton version
+     */
+    String getTektonVersion();
+
+    /**
+     * Check if alpha features are enabled on active cluster
+     * @return true if alpha features are enabled
+     */
+    boolean isTektonAlphaFeatureEnabled();
 
     /**
      * Return the name of the current active namespace (project for OpenShift).
@@ -397,7 +416,7 @@ public interface Tkn {
      *
      * @param namespace the namespace to use
      * @param crdContext the custom resource definition context of the resource kind
-     * @return Object as HashMap, null if no resource was found
+     * @return GenericKubernetesResourceList or null if no resource was found
      */
     GenericKubernetesResourceList getCustomResources(String namespace, CustomResourceDefinitionContext crdContext);
 
@@ -407,7 +426,7 @@ public interface Tkn {
      * @param namespace the namespace to use
      * @param name name of custom resource
      * @param crdContext the custom resource definition context of the resource kind
-     * @return Object as HashMap, null if no resource was found
+     * @return GenericKubernetesResource or null if no resource was found
      */
     GenericKubernetesResource getCustomResource(String namespace, String name, CustomResourceDefinitionContext crdContext);
 
@@ -429,8 +448,9 @@ public interface Tkn {
      * @param crdContext the custom resource definition context of the resource kind
      * @param objectAsString new object as a JSON string
      * @throws IOException
+     * @return resource name
      */
-    void createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
+    String createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException;
 
     /**
      * Create a PVC
@@ -652,7 +672,7 @@ public interface Tkn {
      * @return the watch object
      * @throws IOException if communication errored
      */
-    Watch watchTaskRuns(String namespace, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException;
+    Watch watchTaskRuns(String namespace, Watcher<TaskRun> watcher) throws IOException;
 
     /**
      * Set a watch on PipelineResource resources
@@ -735,6 +755,54 @@ public interface Tkn {
     boolean getDiagnosticData(String namespace, String keyLabel, String valueLabel) throws IOException;
 
     /**
+     * Set a watch on a pod by using a label ket-value
+     * @param namespace namespace where the pod exists
+     * @param key key of the label
+     * @param value value of the label
+     * @return the watch object
+     * @throws IOException if communication errored
+     */
+    Watch watchPodsWithLabel(String namespace, String key, String value, Watcher<Pod> watcher) throws IOException;
+
+    /**
+     * Get  the pod with name
+     * @param namespace namesapce where the pod exists
+     * @param name pod name
+     * @return pod resource
+     * @throws IOException if communication errored
+     */
+    Pod getPod(String namespace, String name) throws IOException;
+
+    /**
+     * Check if container is stopped in debug mode
+     * @param namespace namespace where the pod exists
+     * @param name name of the pod
+     * @param container container name
+     * @return true if the container is stopped in debug mode, false otherwise
+     * @throws IOException if communication errored
+     */
+    boolean isContainerStoppedOnDebug(String namespace, String name, String container, Pod resource) throws IOException;
+
+    /**
+     * Execute a command within the container
+     * @param pod pod where the container exists
+     * @param containerId container where to execute the command
+     * @param command command to execute
+     * @return watch to check command execution
+     */
+    ExecWatch execCommandInContainer(Pod pod, String containerId, String... command);
+
+    /**
+     * Execute a command within the container by using a custom execWebSocketListener which
+     * prevents lagging within the embedded terminal
+     * @param pod pod where the container exists
+     * @param containerId container where to execute the command
+     * @param command command to execute
+     * @return watch to check command execution
+     */
+    ExecWatch customExecCommandInContainer(Pod pod, String containerId, String... command);
+
+    /**
      * Install task from Tekton Hub
      * @param task task name
      * @param version version of the task
@@ -761,8 +829,15 @@ public interface Tkn {
      */
     String getPipelineYAMLFromHub(String pipeline, String version) throws IOException;
 
-    public URL getMasterUrl();
+    URL getMasterUrl();
 
-    public <T> T getClient(Class<T> clazz);
+    <T> T getClient(Class<T> clazz);
 
+    DebugTabPanelFactory getDebugTabPanelFactory();
+
+    WatchHandler getWatchHandler();
+
+    PollingHelper getPollingHelper();
+
+    void dispose();
 }

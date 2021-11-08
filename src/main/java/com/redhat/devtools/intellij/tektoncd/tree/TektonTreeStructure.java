@@ -21,24 +21,28 @@ import com.redhat.devtools.intellij.common.tree.MutableModelSupport;
 import com.redhat.devtools.intellij.common.utils.ConfigHelper;
 import com.redhat.devtools.intellij.common.utils.ConfigWatcher;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
-import com.redhat.devtools.intellij.tektoncd.tkn.TaskRun;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import io.fabric8.kubernetes.api.model.Config;
-import io.fabric8.kubernetes.api.model.NamedContext;
-import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.Icon;
-import org.apache.commons.codec.binary.StringUtils;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRunConditionCheckStatus;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRunTaskRunStatus;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRunStatus;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.Icon;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TektonTreeStructure extends AbstractTreeStructure implements MutableModel<Object>, ConfigWatcher.Listener {
     private final Project project;
@@ -126,7 +130,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                         new ConditionsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
                 if (!tkn.isTektonTriggersAware()) {
-                    watchNodes(generalNodes);
+                    watchNodes(tkn, generalNodes);
                     return generalNodes;
                 }
                 Object[] triggersNode = new Object[] {
@@ -136,7 +140,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                         new EventListenersNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
                 Object[] secondLevelNodes = ArrayUtils.addAll(generalNodes, triggersNode);
-                watchNodes(secondLevelNodes);
+                watchNodes(tkn, secondLevelNodes);
                 return secondLevelNodes;
 
             }
@@ -153,7 +157,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getPipelineRuns((PipelineRunsNode) element, "");
             }
             if (element instanceof PipelineRunNode) {
-                return getTaskRuns((PipelineRunNode)element, ((PipelineRunNode) element).getRun().getChildren(), false);
+                return getTaskRuns((PipelineRunNode) element);
             }
             if (element instanceof TasksNode) {
                 return getTasks((TasksNode) element);
@@ -162,7 +166,12 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                 return getTaskRuns((TaskNode) element, ((TaskNode) element).getName());
             }
             if (element instanceof TaskRunNode) {
-                return getTaskRuns((TaskRunNode)element, ((TaskRunNode) element).getRun().getChildren(), false);
+                ParentableNode parent = ((TaskRunNode) element).getParent();
+                if (parent instanceof PipelineRunNode) {
+                    return getTaskRuns((TaskRunNode)element);
+                } else {
+                    return getTaskRuns((TaskRunNode)element, Collections.emptyList(), false);
+                }
             }
             if (element instanceof ClusterTasksNode) {
                 return getClusterTasks((ClusterTasksNode) element);
@@ -192,11 +201,11 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return new Object[0];
     }
 
-    private void watchNodes(Object[] nodes) {
+    private void watchNodes(Tkn tkn, Object[] nodes) {
         for (Object node: nodes) {
             if (node instanceof ParentableNode) {
-                if (WatchHandler.get().canBeWatched((ParentableNode<?>) node)) {
-                    WatchHandler.get().setWatchByNode((ParentableNode<?>) node);
+                if (tkn.getWatchHandler().canBeWatched((ParentableNode<?>) node)) {
+                    tkn.getWatchHandler().setWatchByNode((ParentableNode<?>) node);
                 }
             }
         }
@@ -263,20 +272,67 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             Tkn tkn = element.getRoot().getTkn();
             List<TaskRun> taskRuns = tkn.getTaskRuns(element.getNamespace(), task);
             taskRunsNodes = getTaskRuns(element, taskRuns, true);
-            watchNodes(taskRunsNodes);
+            watchNodes(tkn, taskRunsNodes);
         } catch (IOException e) {
             taskRunsNodes = new Object[] { new MessageNode(element.getRoot(), element, "Failed to load task runs") };
         }
         return taskRunsNodes;
     }
 
+    private Object[] getTaskRuns(PipelineRunNode element) {
+        List<TaskRun> taskRuns = new ArrayList<>();
+        PipelineRun run = element.getRun();
+        Map<String, PipelineRunTaskRunStatus> pipelineRunTaskRunStatusMap = run.getStatus() != null ? run.getStatus().getTaskRuns() : Collections.emptyMap();
+        pipelineRunTaskRunStatusMap.forEach((nameTaskRun, pipelineRunTaskRunStatus) -> {
+            TaskRun taskRun = new TaskRun();
+            taskRun.setStatus(pipelineRunTaskRunStatus.getStatus());
+            ObjectMeta taskRunMetadata = new ObjectMeta();
+            taskRunMetadata.setName(nameTaskRun);
+            Map<String, String> labels = new HashMap<>();
+            labels.put("tekton.dev/pipeline", run.getMetadata().getLabels().get("tekton.dev/pipeline"));
+            labels.put("tekton.dev/pipelineRun", run.getMetadata().getName());
+            labels.put("tekton.dev/pipelineTask", pipelineRunTaskRunStatus.getPipelineTaskName());
+            taskRunMetadata.setLabels(labels);
+            taskRun.setMetadata(taskRunMetadata);
+            Map<String, PipelineRunConditionCheckStatus> pipelineRunConditionCheckStatusMap = pipelineRunTaskRunStatus.getConditionChecks();
+            taskRun.setAdditionalProperty("conditions", pipelineRunConditionCheckStatusMap);
+            taskRuns.add(taskRun);
+        });
+        return getTaskRuns(element, taskRuns, true);
+    }
+
+    private Object[] getTaskRuns(TaskRunNode element) {
+        List<TaskRun> taskRuns = new ArrayList<>();
+        TaskRun taskRun = element.getRun();
+        if (taskRun.getAdditionalProperties() != null
+                && taskRun.getAdditionalProperties().get("conditions") != null) {
+            ((Map<String, PipelineRunConditionCheckStatus>) taskRun.getAdditionalProperties().get("conditions")).forEach((nameTaskRun, pipelineRunTaskRunStatus) -> {
+                TaskRun taskRunObj = new TaskRun();
+                TaskRunStatus taskRunStatus = new TaskRunStatus();
+                taskRunStatus.setCompletionTime(pipelineRunTaskRunStatus.getStatus().getCompletionTime());
+                taskRunStatus.setConditions(pipelineRunTaskRunStatus.getStatus().getConditions());
+                taskRunStatus.setStartTime(pipelineRunTaskRunStatus.getStatus().getStartTime());
+                ObjectMeta taskRunMetadata = new ObjectMeta();
+                taskRunMetadata.setName(nameTaskRun);
+                Map<String, String> labels = new HashMap<>();
+                labels.put("tekton.dev/pipelineTask", pipelineRunTaskRunStatus.getConditionName());
+                taskRunMetadata.setLabels(labels);
+                taskRunObj.setMetadata(taskRunMetadata);
+                taskRunObj.setStatus(taskRunStatus);
+                taskRuns.add(taskRunObj);
+            });
+        }
+        return getTaskRuns(element, taskRuns, true);
+    }
+
     private Object[] getTaskRuns(ParentableNode element, List<TaskRun> taskRuns, boolean orderNewestToOldest)  {
         List<Object> taskRunsNodes = new ArrayList<>();
         if (taskRuns != null) {
             if (orderNewestToOldest) {
-                taskRuns.stream().forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+                taskRuns.stream().sorted(Comparator.comparing(TaskRunNode::getStartTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .forEachOrdered(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
             } else {
-                taskRuns.stream().sorted(Comparator.comparing(Run::getStartTime, Comparator.nullsLast(Comparator.naturalOrder()))).forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
+                taskRuns.forEach(run -> taskRunsNodes.add(new TaskRunNode(element.getRoot(), (ParentableNode) element, run)));
             }
         }
         return taskRunsNodes.toArray(new Object[taskRunsNodes.size()]);
@@ -286,8 +342,11 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         List<Object> pipelineRuns = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
-            tkn.getPipelineRuns(element.getNamespace(), pipeline).forEach(pipelinerun -> pipelineRuns.add(new PipelineRunNode(element.getRoot(), element, pipelinerun)));
-            watchNodes(pipelineRuns.toArray());
+            tkn.getPipelineRuns(element.getNamespace(), pipeline)
+                    .stream()
+                    .sorted(Comparator.comparing(PipelineRunNode::getStartTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .forEachOrdered(pipelinerun -> pipelineRuns.add(new PipelineRunNode(element.getRoot(), element, pipelinerun)));
+            watchNodes(tkn, pipelineRuns.toArray());
         } catch (IOException e) {
             pipelineRuns.add(new MessageNode(element.getRoot(), element, "Failed to load pipeline runs"));
         }
@@ -310,7 +369,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         try {
             Tkn tkn = element.getRoot().getTkn();
             tkn.getClusterTasks().forEach(clusterTask -> tasks.add(new ClusterTaskNode(element.getRoot(), element, clusterTask.getMetadata().getName())));
-            watchNodes(tasks.toArray());
+            watchNodes(tkn, tasks.toArray());
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load cluster tasks"));
         }
@@ -322,7 +381,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         try {
             Tkn tkn = element.getRoot().getTkn();
             tkn.getPipelines(element.getParent().getName()).forEach(pipeline -> pipelines.add(new PipelineNode(element.getRoot(), element, pipeline.getMetadata().getName())));
-            watchNodes(pipelines.toArray());
+            watchNodes(tkn, pipelines.toArray());
         } catch (IOException e) {
             pipelines.add(new MessageNode(element.getRoot(), element, "Failed to load pipelines"));
         }
@@ -334,7 +393,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         try {
             Tkn tkn = element.getRoot().getTkn();
             tkn.getTasks(element.getParent().getName()).forEach(task -> tasks.add(new TaskNode(element.getRoot(), element, task.getMetadata().getName(), false)));
-            watchNodes(tasks.toArray());
+            watchNodes(tkn, tasks.toArray());
         } catch (IOException e) {
             tasks.add(new MessageNode(element.getRoot(), element, "Failed to load tasks"));
         }
@@ -391,7 +450,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             return new LabelAndIconDescriptor(project, element, ((PipelineNode)element).getName(), PIPELINE_ICON, parentDescriptor);
         }
         if (element instanceof PipelineRunNode) {
-            return new LabelAndIconDescriptor(project, element, ((PipelineRunNode)element).getName(), ((PipelineRunNode)element).getInfoText(), getIcon(((PipelineRunNode)element).getRun()), parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((PipelineRunNode)element).getName(), ((PipelineRunNode)element).getInfoText(), getIcon((PipelineRunNode) element), parentDescriptor);
         }
         if (element instanceof PipelineRunsNode) {
             return new LabelAndIconDescriptor(project, element, ((PipelineRunsNode)element).getName(), PIPELINE_RUN_ICON, parentDescriptor);
@@ -403,7 +462,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
             return new LabelAndIconDescriptor(project, element, ((TaskNode)element).getName(), TASK_ICON, parentDescriptor);
         }
         if (element instanceof TaskRunNode) {
-            return new LabelAndIconDescriptor(project, element, ((TaskRunNode)element).getDisplayName(), ((TaskRunNode)element).getInfoText(), getIcon(((TaskRunNode)element).getRun()), parentDescriptor);
+            return new LabelAndIconDescriptor(project, element, ((TaskRunNode)element).getDisplayName(), ((TaskRunNode)element).getInfoText(), getIcon((TaskRunNode) element), parentDescriptor);
         }
         if (element instanceof TaskRunsNode) {
             return new LabelAndIconDescriptor(project, element, ((TaskRunsNode) element).getName(), TASK_RUN_ICON, parentDescriptor);
@@ -462,8 +521,10 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return null;
     }
 
-    private Icon getIcon(Run run) {
-        return run.isCompleted().isPresent()?run.isCompleted().get()?SUCCESS_ICON:FAILED_ICON:RUNNING_ICON;
+    private Icon getIcon(RunNode run) {
+        return run.isCompleted().isPresent()?
+                ((boolean)run.isCompleted().get()) ? SUCCESS_ICON:FAILED_ICON
+                :RUNNING_ICON;
     }
 
     @Override
@@ -503,50 +564,23 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
 
     @Override
     public void onUpdate(ConfigWatcher source, Config config) {
-        if (hasContextChanged(config, this.config)) {
+        if (!ConfigHelper.areEqualCurrentContext(this.config, config)) {
             refresh();
         }
         this.config = config;
     }
 
-    private boolean hasContextChanged(Config newConfig, Config currentConfig) {
-        NamedContext currentContext = KubeConfigUtils.getCurrentContext(currentConfig);
-        NamedContext newContext = KubeConfigUtils.getCurrentContext(newConfig);
-        return hasServerChanged(newContext, currentContext)
-                || hasNewToken(newContext, newConfig, currentContext, currentConfig);
-    }
-
-    private boolean hasServerChanged(NamedContext newContext, NamedContext currentContext) {
-        return newContext == null
-                || currentContext == null
-                || !StringUtils.equals(currentContext.getContext().getCluster(), newContext.getContext().getCluster())
-                || !StringUtils.equals(currentContext.getContext().getUser(), newContext.getContext().getUser())
-                || !StringUtils.equals(currentContext.getContext().getNamespace(), newContext.getContext().getNamespace());
-    }
-
-    private boolean hasNewToken(NamedContext newContext, Config newConfig, NamedContext currentContext, Config currentConfig) {
-        if (newContext == null) {
-            return false;
-        }
-        if (currentContext == null) {
-            return true;
-        }
-        String newToken = KubeConfigUtils.getUserToken(newConfig, newContext.getContext());
-        if (newToken == null) {
-            // logout, do not refresh, LogoutAction already refreshes
-            return false;
-        }
-        String currentToken = KubeConfigUtils.getUserToken(currentConfig, currentContext.getContext());
-        return !StringUtils.equals(newToken, currentToken);
-    }
-
     protected void refresh() {
         try {
-            WatchHandler.get().removeAll();
-            root.load().whenComplete((tkn, err) ->
+            dispose();
+            root.initializeTkn().whenComplete((tkn, err) ->
                     mutableModelSupport.fireModified(root)
             );
         } catch (Exception e) {
         }
+    }
+
+    public void dispose() {
+        root.getTkn().dispose();
     }
 }

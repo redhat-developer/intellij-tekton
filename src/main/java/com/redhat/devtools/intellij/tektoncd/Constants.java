@@ -48,6 +48,7 @@ public class Constants {
     public static final String KIND_CONFIGMAP = "configMap";
     public static final String KIND_SECRET = "secret";
     public static final String KIND_EMPTYDIR =  "emptyDir";
+    public static final String KIND_POD = "pod";
 
     public static final String FLAG_SERVICEACCOUNT = "-s";
     public static final String FLAG_TASKSERVICEACCOUNT = "--task-serviceaccount";

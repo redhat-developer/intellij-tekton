@@ -19,12 +19,12 @@ import gnu.trove.THashMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
-import java.io.IOException;
-import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
@@ -61,7 +61,7 @@ public class TektonVirtualFileManager {
         VirtualFile file = tektonFiles.get(id);
         if (file == null) {
             file = getResourceRemotely(namespace, kind, resourceName);
-            WatchHandler.get().setWatchByResourceName(tkncli, namespace, kind, resourceName, getWatcher(namespace, kind, resourceName));
+            tkncli.getWatchHandler().setWatchByResourceName(namespace, kind, resourceName, getWatcher(namespace, kind, resourceName));
             tektonFiles.put(id, file);
         }
         return file;

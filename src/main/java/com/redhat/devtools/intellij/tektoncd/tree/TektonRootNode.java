@@ -32,11 +32,6 @@ public class TektonRootNode {
     return tkn;
   }
 
-  public CompletableFuture<Tkn> load() {
-    TknCliFactory.getInstance().resetTkn();
-    return initializeTkn();
-  }
-
   public Project getProject() {
     return project;
   }

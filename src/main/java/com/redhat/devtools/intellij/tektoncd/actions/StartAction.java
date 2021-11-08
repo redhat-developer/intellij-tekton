@@ -15,6 +15,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
@@ -25,9 +26,9 @@ import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
@@ -40,6 +41,7 @@ import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,37 +88,14 @@ public class StartAction extends TektonAction {
                 return;
             }
 
-            boolean hasNoInputs = model.getParams().isEmpty()
-                    && model.getInputResources().isEmpty()
-                    && model.getOutputResources().isEmpty()
-                    && model.getWorkspaces().isEmpty();
-            boolean showWizard = SettingsState.getInstance().showStartWizardWithNoInputs || !hasNoInputs;
-
-            if (showWizard) {
-                StartWizard startWizard = UIHelper.executeInUI(() -> {
-                    String titleDialog = ((element instanceof PipelineNode) ? "Pipeline " : "Task ") + element.getName();
-                    StartWizard wizard = new StartWizard(titleDialog, element, getEventProject(anActionEvent), model);
-                    wizard.show();
-                    return wizard;
-                });
-                if (startWizard != null && !startWizard.isOK()) {
-                    telemetry
-                            .result(VALUE_ABORTED)
-                            .send();
-                    return;
-                }
+            Project project = getEventProject(anActionEvent);
+            if (!canBeStarted(project, element, model)) {
+                return;
             }
 
             try {
-                String serviceAccount = model.getServiceAccount();
-                Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
                 createNewVolumes(model.getWorkspaces(), tkncli);
-                Map<String, Input> params = model.getParams().stream().collect(Collectors.toMap(param -> param.name(), param -> param));
-                Map<String, Workspace> workspaces = model.getWorkspaces();
-                Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(input -> input.name(), input -> input.value()));
-                Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(output -> output.name(), output -> output.value()));
-                String runPrefixName = model.getRunPrefixName();
-                String runName = start(tkncli, namespace, model, serviceAccount, taskServiceAccount, params, workspaces, inputResources, outputResources, runPrefixName);
+                String runName = doStart(tkncli, namespace, model);
                 FollowLogsAction.run(namespace, runName, element.getClass(), tkncli);
                 refreshTreeNode(anActionEvent, element);
                 telemetry.send();
@@ -133,6 +112,31 @@ public class StartAction extends TektonAction {
                 logger.warn("Error: " + e.getLocalizedMessage(), e);
             }
         });
+    }
+
+    protected boolean canBeStarted(Project project, ParentableNode element, StartResourceModel model) {
+        boolean hasNoInputs = model.getParams().isEmpty()
+                && model.getInputResources().isEmpty()
+                && model.getOutputResources().isEmpty()
+                && model.getWorkspaces().isEmpty();
+        boolean showWizard = SettingsState.getInstance().showStartWizardWithNoInputs || !hasNoInputs;
+
+        if (showWizard) {
+            StartWizard startWizard = UIHelper.executeInUI(() -> {
+                String titleDialog = ((element instanceof PipelineNode) ? "Pipeline " : "Task ") + element.getName();
+                StartWizard wizard = new StartWizard(titleDialog, element, project, model);
+                wizard.show();
+                return wizard;
+            });
+            if (startWizard != null && !startWizard.isOK()) {
+                telemetry
+                        .result(VALUE_ABORTED)
+                        .send();
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private StartResourceModel createModel(Tkn tkncli, ParentableNode element, String namespace) {
@@ -161,7 +165,7 @@ public class StartAction extends TektonAction {
 
     protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "";
-        List<? extends Run> runs = new ArrayList<>();
+        List<? extends HasMetadata> runs = new ArrayList<>();
         if (element instanceof PipelineNode) {
             telemetry.property(PROP_RESOURCE_KIND, KIND_PIPELINE);
             configuration = tkncli.getPipelineYAML(namespace, element.getName());
@@ -185,16 +189,14 @@ public class StartAction extends TektonAction {
         ((TektonTreeStructure)getTree(anActionEvent).getClientProperty(Constants.STRUCTURE_PROPERTY)).fireModified(nodeToRefresh);
     }
 
-    private String start(Tkn tkncli,
-                         String namespace,
-                         StartResourceModel model,
-                         String serviceAccount,
-                         Map<String, String> taskServiceAccount,
-                         Map<String, Input> params,
-                         Map<String, Workspace> workspaces,
-                         Map<String, String> inputResources,
-                         Map<String, String> outputResources,
-                         String runPrefixName) throws IOException {
+    protected String doStart(Tkn tkncli, String namespace, StartResourceModel model) throws IOException {
+        String serviceAccount = model.getServiceAccount();
+        Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
+        Map<String, Input> params = model.getParams().stream().collect(Collectors.toMap(Input::name, param -> param));
+        Map<String, Workspace> workspaces = model.getWorkspaces();
+        Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(Input::name, Input::value));
+        Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(Output::name, Output::value));
+        String runPrefixName = model.getRunPrefixName();
         String runName = null;
         if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
             runName = tkncli.startPipeline(namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
@@ -205,8 +207,6 @@ public class StartAction extends TektonAction {
         }
         return runName;
     }
-
-
 
     private void createNewVolumes(Map<String, Workspace> workspaces, Tkn tkn) throws IOException{
         int counter = 0;

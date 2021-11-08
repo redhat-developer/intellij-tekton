@@ -51,6 +51,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
@@ -108,7 +111,7 @@ public class AddTriggerAction extends TektonAction {
                 ObjectNode run = createNode(element, model);
                 String triggerApiVersion = tkncli.getTektonTriggersApiVersion();
                 ObjectNode triggerTemplate = YAMLBuilder.createTriggerTemplate(triggerTemplateName, triggerApiVersion, new ArrayList<>(paramsFromBindings), Arrays.asList(run));
-                saveResource(YAMLHelper.JSONToYAML(triggerTemplate), namespace, "triggertemplates", tkncli);
+                saveResource(YAMLHelper.JSONToYAML(triggerTemplate), namespace, KIND_TRIGGERTEMPLATES, tkncli);
                 notifySuccessOperation("TriggerTemplate " + triggerTemplateName);
 
                 // create the eventListener
@@ -117,7 +120,7 @@ public class AddTriggerAction extends TektonAction {
                 ObjectNode eventListener = YAMLBuilder.createEventListener(eventListenerName, triggerApiVersion, "pipeline", triggerBindingsSelected.keySet().stream()
                         .map(binding -> binding.replace(" NEW", ""))
                         .collect(Collectors.toList()), triggerTemplateName);
-                saveResource(YAMLHelper.JSONToYAML(eventListener), namespace, "eventlisteners", tkncli);
+                saveResource(YAMLHelper.JSONToYAML(eventListener), namespace, KIND_EVENTLISTENERS, tkncli);
                 telemetry.result("bindings and resources created")
                         .send();
                 notifySuccessOperation("EventListener " + eventListenerName);
@@ -150,7 +153,7 @@ public class AddTriggerAction extends TektonAction {
         triggerBindingsSelected.keySet().stream().filter(binding -> binding.endsWith(" NEW")).forEach(binding -> {
             try {
                 String bindingBody = triggerBindingsSelected.get(binding);
-                saveResource(bindingBody, namespace, "triggerbindings", tkncli);
+                saveResource(bindingBody, namespace, KIND_TRIGGERBINDINGS, tkncli);
                 String nameBinding = YAMLHelper.getStringValueFromYAML(bindingBody, new String[] {"metadata", "name"});
                 notifySuccessOperation("TriggerBinding " + nameBinding);
             } catch (IOException e) {
@@ -213,7 +216,7 @@ public class AddTriggerAction extends TektonAction {
 
     private Map<String, String> getTriggerBindings(String namespace, Tkn tkncli) {
         Map<String, String> triggerBindingsOnCluster = new HashMap<>();
-        GenericKubernetesResourceList allTriggerBindings = tkncli.getCustomResources(namespace, CRDHelper.getCRDContext("triggers.tekton.dev/v1alpha1", "triggerbindings"));
+        GenericKubernetesResourceList allTriggerBindings = tkncli.getCustomResources(namespace, CRDHelper.getCRDContext("triggers.tekton.dev/v1beta1", "triggerbindings"));
         if (allTriggerBindings == null) {
             return triggerBindingsOnCluster;
         }
@@ -225,7 +228,6 @@ public class AddTriggerAction extends TektonAction {
                 logger.warn(e.getLocalizedMessage(), e);
             }
         });
-
         return triggerBindingsOnCluster;
     }
 

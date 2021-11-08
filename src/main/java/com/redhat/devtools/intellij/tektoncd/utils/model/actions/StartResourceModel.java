@@ -11,17 +11,17 @@
 package com.redhat.devtools.intellij.tektoncd.utils.model.actions;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.RunConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.runs.PipelineRunConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.runs.TaskRunConfigurationModel;
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.util.List;
 
 public class StartResourceModel extends ActionToRunModel {
 
-    private List<? extends Run> runs;
+    private List<? extends HasMetadata> runs;
     private String runPrefixName;
 
     public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
@@ -29,12 +29,12 @@ public class StartResourceModel extends ActionToRunModel {
         this.runPrefixName = "";
     }
 
-    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<? extends Run> runs) {
+    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<? extends HasMetadata> runs) {
         this(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
         this.runs = runs;
     }
 
-    public List<? extends Run> getRuns() {
+    public List<? extends HasMetadata> getRuns() {
         return this.runs;
     }
 

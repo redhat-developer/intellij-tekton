@@ -33,6 +33,14 @@ import com.redhat.devtools.intellij.tektoncd.hub.invoker.ApiException;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import com.redhat.devtools.intellij.tektoncd.utils.NotificationHelper;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.event.DocumentEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -51,14 +59,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.event.DocumentEvent;
-import org.jetbrains.annotations.NotNull;
-
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.GRAY_COLOR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MAIN_BG_COLOR;
@@ -195,7 +195,7 @@ public class HubItemPanelsBoard {
 
             @Override
             public void onSuccess(Resources result, int statusCode, Map<String, List<String>> responseHeaders) {
-                 build(Optional.of(result.getData().stream().map(resource -> new HubItem(resource)).collect(Collectors.toList())));
+                 build(Optional.of(result.getData().stream().map(HubItem::new).collect(Collectors.toList())));
             }
 
             @Override

@@ -24,8 +24,12 @@ import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.CustomPodOperationsImpl;
+import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
+import com.redhat.devtools.intellij.tektoncd.utils.PollingHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.WatchHandler;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import com.twelvemonkeys.lang.Platform;
 import io.fabric8.kubernetes.api.model.ConfigMap;
@@ -43,13 +47,18 @@ import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetCondition;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetList;
+import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
+import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
+import io.fabric8.kubernetes.client.dsl.internal.ExecWebSocketListener;
+import io.fabric8.kubernetes.client.utils.HttpClientUtils;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
@@ -57,13 +66,23 @@ import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTaskList;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineList;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
+import io.fabric8.tekton.pipeline.v1beta1.PipelineRunList;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskList;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
+import io.fabric8.tekton.pipeline.v1beta1.TaskRunList;
 import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
 import io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.EventListener;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerTemplate;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -78,10 +97,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
@@ -91,6 +106,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PREFIXNAME;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
@@ -109,21 +125,36 @@ public class TknCli implements Tkn {
 
     private String command;
     private final Project project;
-    private final KubernetesClient client;
+    private KubernetesClient client;
+    private DebugTabPanelFactory debugTabPanelFactory;
+    private final WatchHandler watchHandler;
+    private final PollingHelper pollingHelper;
 
     private Map<String, String> envVars;
 
+    private volatile String tektonVersion = "0.0.0";
+    private volatile boolean hasAlphaFeaturesEnabled = false;
 
     TknCli(Project project, String command) {
         this.command = command;
         this.project = project;
-        this.client = new DefaultKubernetesClient(new ConfigBuilder().build());
+        try {
+            this.client = new DefaultKubernetesClient(new ConfigBuilder().build());
+            this.debugTabPanelFactory = new DebugTabPanelFactory(project, this);
+        } catch(Exception e) {
+            String t = "";
+        }
+
+
         try {
             this.envVars = NetworkUtils.buildEnvironmentVariables(client.getMasterUrl().toString());
         } catch (URISyntaxException e) {
             this.envVars = Collections.emptyMap();
         }
+        this.watchHandler = new WatchHandler(this);
+        this.pollingHelper = new PollingHelper(this);
         reportTelemetry();
+        updateTektonInfos();
     }
 
     private void reportTelemetry() {
@@ -170,6 +201,50 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public String getTektonVersion() {
+        return tektonVersion.indexOf("v") == 0
+                ? tektonVersion.substring(1)
+                : tektonVersion;
+    }
+
+    @Override
+    public boolean isTektonAlphaFeatureEnabled() {
+        return hasAlphaFeaturesEnabled;
+    }
+
+    private void updateTektonInfos() {
+        try {
+            ConfigMap pipelineInfoMap = getConfigMap("tekton-pipelines", "pipelines-info");
+            tektonVersion = pipelineInfoMap.getData().get("version");
+            ConfigMap alphaMap = getConfigMap("tekton-pipelines", "feature-flags");
+            hasAlphaFeaturesEnabled = alphaMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha");
+            initConfigMapWatchers();
+        } catch (Exception e) {
+            logger.warn(e.getLocalizedMessage(), e);
+        }
+    }
+
+    private void initConfigMapWatchers() {
+        initConfigMapWatcher("tekton-pipelines", "pipelines-info", (configMap -> tektonVersion = configMap.getData().get("version")));
+        initConfigMapWatcher("tekton-pipelines", "feature-flags", (configMap -> hasAlphaFeaturesEnabled = configMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha")));
+    }
+
+    private void initConfigMapWatcher(String namespace, String resource, Consumer<ConfigMap> doUpdate) {
+        this.watchHandler.setWatchByResourceName(namespace, KIND_CONFIGMAP, resource,
+                new Watcher<ConfigMap>() {
+                    @Override
+                    public void eventReceived(Action action, ConfigMap resource) {
+                        doUpdate.accept(resource);
+                    }
+
+                    @Override
+                    public void onClose(WatcherException cause) {
+
+                    }
+                });
+    }
+
+    @Override
     public String getNamespace() {
         String namespace = client.getNamespace();
         if (Strings.isNullOrEmpty(namespace)) {
@@ -210,8 +285,19 @@ public class TknCli implements Tkn {
 
     @Override
     public List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException {
-        String json = ExecHelper.execute(command, envVars, "pipelinerun", "ls", pipeline, "-n", namespace, "-o", "json");
-        return getCustomCollection(json, PipelineRun.class);
+        try {
+            PipelineRunList pipelineRunList;
+            if (!pipeline.isEmpty()) {
+                pipelineRunList = client.adapt(TektonClient.class).v1beta1().pipelineRuns()
+                        .inNamespace(namespace).withLabel("tekton.dev/pipeline", pipeline).list();
+            } else {
+                pipelineRunList = client.adapt(TektonClient.class).v1beta1().pipelineRuns()
+                        .inNamespace(namespace).list();
+            }
+            return pipelineRunList.getItems();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
@@ -240,10 +326,19 @@ public class TknCli implements Tkn {
         }
     }
 
-    @Override
     public List<TaskRun> getTaskRuns(String namespace, String task) throws IOException {
-        String json = ExecHelper.execute(command, envVars, "taskrun", "ls", task, "-n", namespace, "-o", "json");
-        return getCustomCollection(json, TaskRun.class);
+        try {
+            TaskRunList taskRunList;
+            if (!task.isEmpty()) {
+                taskRunList = client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace)
+                        .withLabel("tekton.dev/task", task).list();
+            } else {
+                taskRunList = client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).list();
+            }
+            return taskRunList.getItems();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
@@ -268,7 +363,6 @@ public class TknCli implements Tkn {
 
     @Override
     public List<String> getTriggerBindings(String namespace) throws IOException {
-
         String output = ExecHelper.execute(command, envVars, "triggerbindings", "ls", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}");
         return Arrays.stream(output.split("\\s+")).filter(item -> !item.isEmpty()).collect(Collectors.toList());
     }
@@ -479,17 +573,26 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public void createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
+    public String createCustomResource(String namespace, CustomResourceDefinitionContext crdContext, String objectAsString) throws IOException {
         try {
             GenericKubernetesResource genericKubernetesResource = Serialization.unmarshal(objectAsString , GenericKubernetesResource.class);
             if (namespace.isEmpty()) {
-                client.genericKubernetesResources(crdContext).create(genericKubernetesResource);
+                genericKubernetesResource = client.genericKubernetesResources(crdContext).create(genericKubernetesResource);
             } else {
-                client.genericKubernetesResources(crdContext).inNamespace(namespace).create(genericKubernetesResource);
+                genericKubernetesResource = client.genericKubernetesResources(crdContext).inNamespace(namespace).create(genericKubernetesResource);
             }
+            return getResourceNameFromMap(genericKubernetesResource);
         } catch(KubernetesClientException e) {
             throw new IOException(e.getLocalizedMessage(), e);
         }
+    }
+
+    private String getResourceNameFromMap(GenericKubernetesResource resource) {
+        if (resource == null
+            || resource.getMetadata() == null) {
+            return "";
+        }
+        return resource.getMetadata().getName();
     }
 
     @Override
@@ -548,15 +651,15 @@ public class TknCli implements Tkn {
 
     public String startTask(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
-        return startTaskInternal(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+        return startTaskAndGetRunName(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
     }
 
     public String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("clustertask", "start", clusterTask, "-n", namespace)); // -n is used to retreive input/output resources
-        return startTaskInternal(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+        return startTaskAndGetRunName(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
     }
 
-    private String startTaskInternal(List<String> args, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    private String startTask(List<String> args, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
         }
@@ -567,7 +670,11 @@ public class TknCli implements Tkn {
         if (!runPrefixName.isEmpty()) {
             args.add(FLAG_PREFIXNAME + "=" + runPrefixName);
         }
-        String output = ExecHelper.execute(command, envVars, args.toArray(new String[0]));
+        return ExecHelper.execute(command, envVars, args.toArray(new String[0]));
+    }
+
+    private String startTaskAndGetRunName(List<String> args, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+        String output = startTask(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
         return getTektonRunName(output);
     }
 
@@ -779,7 +886,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public Watch watchTaskRuns(String namespace, Watcher<io.fabric8.tekton.pipeline.v1beta1.TaskRun> watcher) throws IOException {
+    public Watch watchTaskRuns(String namespace, Watcher<TaskRun> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1beta1().taskRuns().inNamespace(namespace).watch(watcher);
         } catch (KubernetesClientException e) {
@@ -882,6 +989,59 @@ public class TknCli implements Tkn {
         return true;
     }
 
+    public Watch watchPodsWithLabel(String namespace, String key, String value, Watcher<Pod> watcher) throws IOException {
+        try {
+            return client.pods().inNamespace(namespace).withLabel(key, value).watch(watcher);
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public Pod getPod(String namespace, String name) throws IOException {
+        try {
+            return client.pods().inNamespace(namespace).withName(name).get();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public boolean isContainerStoppedOnDebug(String namespace, String name, String container, Pod resource) throws IOException {
+        // This is a hack to prevent from displaying error messages in the IDE Fatal Errors panel
+        // regarding a container already closed during command execution
+        LogManager.getLogger(ExecWebSocketListener.class).setLevel(Level.FATAL);
+        try(ExecWatch watch = execCommandInContainer(resource, container, "sh", "-c", "cat tekton/termination")) {
+            return watch.getOutput().read() != -1;
+        } catch(Throwable e) {
+            throw new IOException(e);
+        }
+    }
+
+    public ExecWatch execCommandInContainer(Pod pod, String containerId, String... command) {
+        return client.pods().inNamespace(pod.getMetadata().getNamespace())
+                .withName(pod.getMetadata().getName())
+                .inContainer(containerId)
+                .redirectingInput()
+                .redirectingOutput()
+                .redirectingError()
+                .withTTY()
+                .exec(command);
+
+    }
+
+    public ExecWatch customExecCommandInContainer(Pod pod, String containerId, String... command) {
+        Config config = new ConfigBuilder().build();
+        CustomPodOperationsImpl podOperations = new CustomPodOperationsImpl(HttpClientUtils.createHttpClient(config), config);
+        return podOperations.inNamespace(pod.getMetadata().getNamespace())
+                .withName(pod.getMetadata().getName())
+                .inContainer(containerId)
+                .redirectingInput()
+                .redirectingOutput()
+                .redirectingError()
+                .withTTY()
+                .exec(command);
+
+    }
+
     @Override
     public void installTaskFromHub(String task, String version, boolean overwrite) throws IOException {
         String installType = overwrite ? "reinstall" : "install";
@@ -936,5 +1096,22 @@ public class TknCli implements Tkn {
             }
         }
         return null;
+    }
+
+    public DebugTabPanelFactory getDebugTabPanelFactory() {
+        return debugTabPanelFactory;
+    }
+
+    public WatchHandler getWatchHandler() {
+        return watchHandler;
+    }
+
+    public PollingHelper getPollingHelper() {
+        return pollingHelper;
+    }
+
+    public void dispose() {
+        watchHandler.removeAll();
+        debugTabPanelFactory.closeTabPanels();
     }
 }

@@ -218,6 +218,7 @@
                             language="any" implementationClass="com.redhat.devtools.intellij.tektoncd.completion.DictionaryContributor"/>
     <toolWindow id="Tekton" anchor="left" factoryClass="com.redhat.devtools.intellij.tektoncd.ui.toolwindow.WindowToolFactory" icon="/images/cluster.png"/>
     <toolWindow id="FindTaskRef" anchor="bottom" factoryClass="com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.FindWindowToolFactory" canCloseContents="true" />
+    <toolWindow id="TektonDebug" anchor="bottom" factoryClass="com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugWindowToolFactory" canCloseContents="true" />
     <fileEditorProvider id="com.redhat.devtools.intellij.tektoncd.editors.TektonFileEditorProvider"
                         implementation="com.redhat.devtools.intellij.tektoncd.ui.editors.TektonFileEditorProvider"/>
     <localInspection id="com.redhat.devtools.intellij.tektoncd.inspector.VariableReferencesInspector"
@@ -249,6 +250,8 @@
       <action id="com.redhat.devtools.intellij.tektoncd.actions.StartAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartAction" text="Start"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" class="com.redhat.devtools.intellij.tektoncd.actions.MirrorStartAction" text="Mirror Start"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.StartLastRunAction" text="Start Last Run"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.debug.DebugTaskRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.debug.DebugTaskRunAction" text="Start in Debug Mode"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.debug.ConnectDebugTaskRunAction" class="com.redhat.devtools.intellij.tektoncd.actions.debug.ConnectDebugTaskRunAction" text="Open Debug Panel"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.FindTaskRefAction" text="Find Usages" />
       <action id="com.redhat.devtools.intellij.tektoncd.actions.clustertask.FindClusterTaskRefAction" class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.FindClusterTaskRefAction" text="Find Usages" />
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTaskRunTemplateAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskRunTemplateAction" text="Create Run Template"/>

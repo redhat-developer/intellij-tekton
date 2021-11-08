@@ -28,15 +28,8 @@ public class RefreshQueue {
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private ScheduledFuture scheduler;
 
-    private RefreshQueue() {
+    public RefreshQueue() {
         queue = new ConcurrentLinkedQueue<>();
-    }
-
-    public static RefreshQueue get() {
-        if (instance == null) {
-            instance = new RefreshQueue();
-        }
-        return instance;
     }
 
     public void addAll(List<ParentableNode> nodes) {

@@ -11,12 +11,16 @@
 package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.redhat.devtools.intellij.common.utils.DateHelper;
-import com.redhat.devtools.intellij.tektoncd.tkn.Run;
+import io.fabric8.knative.internal.pkg.apis.Condition;
+import io.fabric8.kubernetes.api.model.HasMetadata;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 
-public class RunNode<T, R extends Run> extends ParentableNode<T> {
+public abstract class RunNode<T, R extends HasMetadata> extends ParentableNode<T> {
     private final R run;
     public RunNode(TektonRootNode root, T parent, R run) {
-        super(root, parent, run.getName());
+        super(root, parent, run.getMetadata().getName());
         this.run = run;
     }
 
@@ -27,29 +31,80 @@ public class RunNode<T, R extends Run> extends ParentableNode<T> {
     public String getInfoText() {
         String text = getTimeInfoText();
         if (text.isEmpty()) {
-            text = run.getFailedReason();
+            text = getFailedReason();
         }
         return text;
     }
 
     private String getTimeInfoText() {
         String text = "";
-        if (run.getStartTime() == null) {
+        Instant startTime = getStartTime();
+        if (startTime == null) {
             return text;
         }
-        if (!run.isCompleted().isPresent()) {
-            text = "running " + DateHelper.humanizeDate(run.getStartTime());
+        Optional<Boolean> isCompleted = isCompleted();
+        if (!isCompleted.isPresent()) {
+            text = "running " + DateHelper.humanizeDate(startTime);
             return text;
         }
 
-        if (run.isCompleted().get()) {
-            text = "started " + DateHelper.humanizeDate(run.getStartTime()) + " ago, finished in " + DateHelper.humanizeDate(run.getStartTime(), run.getCompletionTime());
+        Instant completionTime = getCompletionTime();
+        if (isCompleted.get()) {
+            text = "started " + DateHelper.humanizeDate(startTime) + " ago, finished in " + DateHelper.humanizeDate(startTime, completionTime);
         } else {
-            text = "started " + DateHelper.humanizeDate(run.getStartTime()) + " ago";
-            if (run.getCompletionTime() != null) {
-                text += ", finished in " + DateHelper.humanizeDate(run.getStartTime(), run.getCompletionTime());
+            text = "started " + DateHelper.humanizeDate(startTime) + " ago";
+            if (completionTime != null) {
+                text += ", finished in " + DateHelper.humanizeDate(startTime, completionTime);
             }
         }
         return text;
     }
+
+    protected String getFailedReason(List<Condition> conditionsList) {
+        if (conditionsList.size() > 0) {
+            return conditionsList.get(0).getReason();
+        }
+        return "";
+    }
+
+    protected static Instant getStartTime(String startTimeText) {
+        Instant startTime = null;
+        try {
+            if (startTimeText != null && !startTimeText.isEmpty()) {
+                startTime = Instant.parse(startTimeText);
+            }
+        } catch (NullPointerException ignored) { }
+        return startTime;
+    }
+
+    protected Optional<Boolean> isCompleted(List<Condition> conditionsList) {
+        Optional<Boolean> completed = Optional.empty();
+        try {
+            if (conditionsList.size() > 0) {
+                if (conditionsList.get(0).getStatus().equalsIgnoreCase("True")) {
+                    completed = Optional.of(true);
+                } else if (conditionsList.get(0).getStatus().equalsIgnoreCase("False")) {
+                    completed = Optional.of(false);
+                }
+            }
+        } catch (Exception e) {}
+        return completed;
+    }
+
+    protected Instant getCompletionTime(String completionTimeText) {
+        Instant completionTime = null;
+        try {
+            if (completionTimeText != null && !completionTimeText.isEmpty()) completionTime = Instant.parse(completionTimeText);
+        } catch (NullPointerException ne) { }
+        return completionTime;
+    }
+
+    public abstract String getFailedReason();
+
+    public abstract Instant getStartTime();
+
+    public abstract Optional<Boolean> isCompleted();
+
+    public abstract Instant getCompletionTime();
+
 }

@@ -18,6 +18,7 @@ import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.messages.MessageDialog;
+import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.common.model.GenericResource;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
@@ -75,8 +76,8 @@ public class DeployHelper {
 
         try {
             String resourceNamespace = CRDHelper.isClusterScopedResource(resource.getKind()) ? "" : namespace;
-            boolean isNewResource = executeTkn(resourceNamespace, yaml, updateLabels, resource, tknCli);
-            telemetry.property(PROP_RESOURCE_CRUD, (isNewResource ? VALUE_RESOURCE_CRUD_CREATE : VALUE_RESOURCE_CRUD_UPDATE))
+            Pair<String, Boolean> saveResult = doSave(resourceNamespace, yaml, updateLabels, resource, tknCli);
+            telemetry.property(PROP_RESOURCE_CRUD, (saveResult.getSecond() ? VALUE_RESOURCE_CRUD_CREATE : VALUE_RESOURCE_CRUD_UPDATE))
                     .send();
         } catch (KubernetesClientException e) {
             String errorMsg = createErrorMessage(resource, e);
@@ -136,18 +137,20 @@ public class DeployHelper {
         return resultDialog == Messages.OK;
     }
 
-    private static boolean executeTkn(String namespace, String yaml, boolean updateLabels, GenericResource resource, Tkn tknCli) throws IOException {
+    private static Pair<String, Boolean> doSave(String namespace, String yaml, boolean updateLabels, GenericResource resource, Tkn tknCli) throws KubernetesClientException, IOException {
         CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(resource.getApiVersion(), TreeHelper.getPluralKind(resource.getKind()));
         if (crdContext == null) {
             throw new IOException("Tekton file has not a valid format. ApiVersion field contains an invalid value.");
         }
         boolean newResource = true;
+        String name = resource.getName();
         if (CRDHelper.isRunResource(resource.getKind())) {
-            tknCli.createCustomResource(namespace, crdContext, yaml);
+            name = tknCli.createCustomResource(namespace, crdContext, yaml);
         } else {
+            namespace = CRDHelper.isClusterScopedResource(resource.getKind()) ? "" : namespace;
             GenericKubernetesResource customResourceMap = tknCli.getCustomResource(namespace, resource.getName(), crdContext);
             if (customResourceMap == null) {
-                tknCli.createCustomResource(namespace, crdContext, yaml);
+                name = tknCli.createCustomResource(namespace, crdContext, yaml);
             } else {
                 JsonNode customResource = CRDHelper.convertToJsonNode(customResourceMap);
                 JsonNode labels = resource.getMetadata().get("labels");
@@ -159,7 +162,17 @@ public class DeployHelper {
                 newResource = false;
             }
         }
-        return newResource;
+        return Pair.create(name, newResource);
+    }
+
+    public static String saveResource(String resourceAsYAML, String namespace, Tkn tkncli) throws IOException {
+        try {
+            GenericResource resource = getResource(resourceAsYAML);
+            Pair<String, Boolean> saveResult = doSave(namespace, resourceAsYAML, false, resource, tkncli);
+            return saveResult.getFirst();
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
     }
 
     private static String createErrorMessage(GenericResource resource, KubernetesClientException e) {
