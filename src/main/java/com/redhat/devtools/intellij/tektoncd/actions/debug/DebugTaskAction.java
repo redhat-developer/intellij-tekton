@@ -1,7 +1,5 @@
 package com.redhat.devtools.intellij.tektoncd.actions.debug;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.StartAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
@@ -35,10 +33,7 @@ public class DebugTaskAction extends StartAction {
         if (runAsYAML == null) {
             throw new IOException("Unable to debug task" + model.getName());
         }
-        ObjectNode run = (ObjectNode) YAMLHelper.YAMLToJsonNode(runAsYAML);
-        ObjectNode breakpoint = YAMLBuilder.createBreakpointSection();
-        ((ObjectNode)run.get("spec")).set("debug", breakpoint);
-        runAsYAML = YAMLHelper.JSONToYAML(run);
+        runAsYAML = YAMLBuilder.addBreakPointToResource(runAsYAML);
         String runName = DeployHelper.saveResource(runAsYAML, namespace, tkncli);
         DebugHelper.doDebugTaskRun(tkncli, namespace, runName);
         return null;

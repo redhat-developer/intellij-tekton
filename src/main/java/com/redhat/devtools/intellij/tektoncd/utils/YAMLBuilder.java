@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
@@ -372,6 +373,13 @@ public class YAMLBuilder {
         }
 
         return specNode;
+    }
+
+    public static String addBreakPointToResource(String resourceAsYAML) throws IOException {
+        ObjectNode run = YAMLBuilder.convertToObjectNode(resourceAsYAML);
+        ObjectNode breakpoint = YAMLBuilder.createBreakpointSection();
+        ((ObjectNode)run.get("spec")).set("debug", breakpoint);
+        return YAMLHelper.JSONToYAML(run);
     }
 
     public static ObjectNode createTriggerTemplate(String name, String apiVersion, List<String> params, List<ObjectNode> runs) {
