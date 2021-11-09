@@ -63,7 +63,7 @@ public abstract class ActionToRunModel extends ConfigurationModel {
             errorMessage += " * Kind field is missing or its value is not valid.\n";
             isValid = false;
         }
-        if (Strings.isNullOrEmpty(namespace) && !kind.equalsIgnoreCase(KIND_CLUSTERTASK)) {
+        if (Strings.isNullOrEmpty(namespace) && !KIND_CLUSTERTASK.equalsIgnoreCase(kind)) {
             errorMessage += " * Namespace field is missing or its value is not valid.\n";
             isValid = false;
         }

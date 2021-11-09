@@ -654,9 +654,21 @@ public class TknCli implements Tkn {
         return startTaskAndGetRunName(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
     }
 
+    @Override
+    public String createRunFromTask(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+        List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace, "--dry-run"));
+        return startTask(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+    }
+
     public String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("clustertask", "start", clusterTask, "-n", namespace)); // -n is used to retreive input/output resources
         return startTaskAndGetRunName(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+    }
+
+    @Override
+    public String createRunFromClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+        List<String> args = new ArrayList<>(Arrays.asList("clustertask", "start", clusterTask, "-n", namespace, "--dry-run")); // -n is used to retreive input/output resources
+        return startTask(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
     }
 
     private String startTask(List<String> args, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
