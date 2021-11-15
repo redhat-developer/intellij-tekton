@@ -212,7 +212,9 @@ public class StartAction extends TektonAction {
         int counter = 0;
         for(Map.Entry<String, Workspace> entry: workspaces.entrySet()) {
             Workspace workspace = entry.getValue();
-            if (workspace != null && workspace.getKind() == Workspace.Kind.PVC) {
+            if (workspace != null
+                    && workspace.getKind() == Workspace.Kind.PVC
+                    && workspace.getItems().size() > 0) {
                 if (!workspace.getResource().isEmpty()) {
                     String name = createNewPVC(workspace.getItems(), tkn);
                     workspace.setResource(name);

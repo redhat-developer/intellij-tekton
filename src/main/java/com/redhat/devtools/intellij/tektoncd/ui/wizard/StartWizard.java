@@ -19,14 +19,8 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
+
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -36,8 +30,14 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
-import org.jetbrains.annotations.Nullable;
-
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
@@ -240,5 +240,9 @@ public class StartWizard extends BaseWizard {
         if (!runPrefixName.trim().isEmpty()) {
             ((StartResourceModel)model).setRunPrefixName(runPrefixName);
         }
+    }
+
+    public ActionToRunModel getModel() {
+        return model;
     }
 }
