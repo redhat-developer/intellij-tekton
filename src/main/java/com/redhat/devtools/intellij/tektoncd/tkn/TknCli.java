@@ -725,20 +725,22 @@ public class TknCli implements Tkn {
     private List<String> workspaceArgsToList(Map<String, Workspace> argMap) {
         List<String> args = new ArrayList<>();
         if (argMap != null) {
-            argMap.values().stream().forEach(item -> {
+            argMap.entrySet().forEach(item -> {
+                String name = item.getKey();
+                Workspace workspace = item.getValue();
                 args.add(FLAG_WORKSPACE);
-                if (item.getKind() == Workspace.Kind.PVC) {
-                    if (item.getItems() != null && item.getItems().containsKey("file")) {
-                        args.add("name=" + item.getName() + ",volumeClaimTemplateFile=" + item.getItems().get("file"));
+                if (workspace == null || workspace.getKind() == Workspace.Kind.EMPTYDIR) {
+                    args.add("name=" + name + ",emptyDir=");
+                } else if (workspace.getKind() == Workspace.Kind.PVC) {
+                    if (workspace.getItems() != null && workspace.getItems().containsKey("file")) {
+                        args.add("name=" + workspace.getName() + ",volumeClaimTemplateFile=" + workspace.getItems().get("file"));
                     } else {
-                        args.add("name=" + item.getName() + ",claimName=" + item.getResource());
+                        args.add("name=" + workspace.getName() + ",claimName=" + workspace.getResource());
                     }
-                } else if (item.getKind() == Workspace.Kind.CONFIGMAP) {
-                    args.add("name=" + item.getName() + ",config=" + item.getResource());
-                } else if (item.getKind() == Workspace.Kind.SECRET) {
-                    args.add("name=" + item.getName() + ",secret=" + item.getResource());
-                } else if (item.getKind() == Workspace.Kind.EMPTYDIR) {
-                    args.add("name=" + item.getName() + ",emptyDir=");
+                } else if (workspace.getKind() == Workspace.Kind.CONFIGMAP) {
+                    args.add("name=" + workspace.getName() + ",config=" + workspace.getResource());
+                } else if (workspace.getKind() == Workspace.Kind.SECRET) {
+                    args.add("name=" + workspace.getName() + ",secret=" + workspace.getResource());
                 }
             });
         }

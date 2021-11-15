@@ -30,35 +30,24 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
-import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
-import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
-import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
+import com.redhat.devtools.intellij.tektoncd.tree.*;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.swing.tree.TreePath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_START_STOP;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_ABORTED;
+import static com.redhat.devtools.intellij.tektoncd.Constants.*;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
@@ -212,7 +201,7 @@ public class StartAction extends TektonAction {
         int counter = 0;
         for(Map.Entry<String, Workspace> entry: workspaces.entrySet()) {
             Workspace workspace = entry.getValue();
-            if (workspace.getKind() == Workspace.Kind.PVC) {
+            if (workspace != null && workspace.getKind() == Workspace.Kind.PVC) {
                 if (!workspace.getResource().isEmpty()) {
                     String name = createNewPVC(workspace.getItems(), tkn);
                     workspace.setResource(name);
