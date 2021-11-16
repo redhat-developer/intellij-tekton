@@ -141,7 +141,7 @@ public class TknCli implements Tkn {
         this.project = project;
         createConfig();
         this.debugTabPanelFactory = new DebugTabPanelFactory(project, this);
-        
+
         try {
             this.envVars = NetworkUtils.buildEnvironmentVariables(client.getMasterUrl().toString());
         } catch (URISyntaxException e) {

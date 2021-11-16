@@ -151,7 +151,6 @@ public class WorkspacesStep extends BaseStep {
         values.put("unit", ((Pair)sizeUnitComboBox.getSelectedItem()).getSecond().toString());
         Workspace workspace = new Workspace(workspaceName, kind, "", values);
         model.getWorkspaces().replace(workspaceName, workspace);
-        //model.getWorkspaces().put(workspaceName, workspace);
     }
 
     @Override

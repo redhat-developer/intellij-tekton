@@ -241,8 +241,4 @@ public class StartWizard extends BaseWizard {
             ((StartResourceModel)model).setRunPrefixName(runPrefixName);
         }
     }
-
-    public ActionToRunModel getModel() {
-        return model;
-    }
 }
