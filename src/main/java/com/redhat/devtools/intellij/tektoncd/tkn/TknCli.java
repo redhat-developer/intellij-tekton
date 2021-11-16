@@ -60,6 +60,7 @@ import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.kubernetes.client.dsl.internal.ExecWebSocketListener;
 import io.fabric8.kubernetes.client.utils.HttpClientUtils;
 import io.fabric8.kubernetes.client.utils.Serialization;
+import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
@@ -138,14 +139,9 @@ public class TknCli implements Tkn {
     TknCli(Project project, String command) {
         this.command = command;
         this.project = project;
-        try {
-            this.client = new DefaultKubernetesClient(new ConfigBuilder().build());
-            this.debugTabPanelFactory = new DebugTabPanelFactory(project, this);
-        } catch(Exception e) {
-            String t = "";
-        }
-
-
+        createConfig();
+        this.debugTabPanelFactory = new DebugTabPanelFactory(project, this);
+        
         try {
             this.envVars = NetworkUtils.buildEnvironmentVariables(client.getMasterUrl().toString());
         } catch (URISyntaxException e) {
@@ -155,6 +151,17 @@ public class TknCli implements Tkn {
         this.pollingHelper = new PollingHelper(this);
         reportTelemetry();
         updateTektonInfos();
+    }
+
+    private void createConfig() {
+        try {
+            this.client = new DefaultKubernetesClient(new ConfigBuilder().build());
+            if (this.client.isAdaptable(OpenShiftClient.class)) {
+                this.client = this.client.adapt(OpenShiftClient.class);
+            }
+        } catch(Exception e) {
+            logger.warn(e.getLocalizedMessage(), e);
+        }
     }
 
     private void reportTelemetry() {
