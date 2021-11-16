@@ -282,7 +282,11 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
     private Object[] getTaskRuns(PipelineRunNode element) {
         List<TaskRun> taskRuns = new ArrayList<>();
         PipelineRun run = element.getRun();
-        Map<String, PipelineRunTaskRunStatus> pipelineRunTaskRunStatusMap = run.getStatus() != null ? run.getStatus().getTaskRuns() : Collections.emptyMap();
+        Map<String, PipelineRunTaskRunStatus> pipelineRunTaskRunStatusMap = run.getStatus() != null ?
+                run.getStatus().getTaskRuns() != null ?
+                    run.getStatus().getTaskRuns() :
+                    Collections.emptyMap() :
+                Collections.emptyMap();
         pipelineRunTaskRunStatusMap.forEach((nameTaskRun, pipelineRunTaskRunStatus) -> {
             TaskRun taskRun = new TaskRun();
             taskRun.setStatus(pipelineRunTaskRunStatus.getStatus());

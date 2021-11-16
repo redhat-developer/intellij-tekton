@@ -18,18 +18,8 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.ui.DocumentAdapter;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.jetbrains.annotations.NotNull;
+
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -47,8 +37,18 @@ import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.text.NumberFormatter;
-import org.jetbrains.annotations.NotNull;
-
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.EMPTYDIR;
@@ -233,7 +233,11 @@ public class WorkspacesStep extends BaseStep {
             spinnerNewVolumeSize.setName("txtSize");
             spinnerNewVolumeSize.setEditor(new JSpinner.NumberEditor(spinnerNewVolumeSize, "#"));
             JTextField spinnerTextFieldNewVolumeSize = ((JSpinner.NumberEditor)spinnerNewVolumeSize.getEditor()).getTextField();
-            spinnerTextFieldNewVolumeSize.addPropertyChangeListener(evt -> updateFormByTextFieldContent(workspaceName, spinnerTextFieldNewVolumeSize, spinnerNewVolumeSize));
+            spinnerTextFieldNewVolumeSize.addPropertyChangeListener(evt -> {
+                if (evt.getPropertyName().equals("value")) {
+                    updateFormByTextFieldContent(workspaceName, spinnerTextFieldNewVolumeSize, spinnerNewVolumeSize);
+                }
+            });
             ((NumberFormatter)((JFormattedTextField) spinnerTextFieldNewVolumeSize).getFormatter()).setAllowsInvalid(false);
 
             JComboBox cmbNewVolumeSizeMeasureUnit = createCustomCombo("cmbSizeMeasureUnit",

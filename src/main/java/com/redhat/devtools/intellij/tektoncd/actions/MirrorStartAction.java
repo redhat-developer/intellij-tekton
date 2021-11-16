@@ -10,6 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
+import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
@@ -19,10 +20,10 @@ import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_START_STOP;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
@@ -46,13 +47,29 @@ public class MirrorStartAction extends StartAction {
             runs = tkncli.getPipelineRuns(namespace, pipeline);
         } else if (element instanceof TaskRunNode) {
             runConfiguration = tkncli.getTaskRunYAML(namespace, element.getName());
-            String task = YAMLHelper.getStringValueFromYAML(runConfiguration, new String[] {"metadata", "labels", "tekton.dev/task"});
-            configuration = tkncli.getTaskYAML(namespace, task);
-            runs = tkncli.getTaskRuns(namespace, task);
+            Pair<String, String> taskNameAndConfiguration = getTaskConfiguration(namespace, tkncli, runConfiguration);
+            if (taskNameAndConfiguration == null) {
+                throw new IOException("Error: Unable to retrieve task from this taskrun");
+            }
+            configuration = taskNameAndConfiguration.getSecond();
+            runs = tkncli.getTaskRuns(namespace, taskNameAndConfiguration.getFirst());
         }
         StartResourceModel model = new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
         model.adaptsToRun(runConfiguration);
         return model;
+    }
+
+    private Pair<String, String> getTaskConfiguration(String namespace, Tkn tkncli, String taskRunYAML) throws IOException {
+        String task = YAMLHelper.getStringValueFromYAML(taskRunYAML, new String[] {"metadata", "labels", "tekton.dev/task"});
+        String clusterTask = YAMLHelper.getStringValueFromYAML(taskRunYAML, new String[] {"metadata", "labels", "tekton.dev/clusterTask"});
+        if (task != null && !task.isEmpty()) {
+            String configuration = tkncli.getTaskYAML(namespace, task);
+            return new Pair<>(task, configuration);
+        } else if (clusterTask != null && !clusterTask.isEmpty()) {
+            String configuration = tkncli.getClusterTaskYAML(clusterTask);
+            return new Pair<>(clusterTask, configuration);
+        }
+        return null;
     }
 
     @Override
