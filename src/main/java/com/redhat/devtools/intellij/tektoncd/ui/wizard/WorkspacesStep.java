@@ -150,7 +150,7 @@ public class WorkspacesStep extends BaseStep {
         values.put("size", size);
         values.put("unit", ((Pair)sizeUnitComboBox.getSelectedItem()).getSecond().toString());
         Workspace workspace = new Workspace(workspaceName, kind, "", values);
-        model.getWorkspaces().replace(workspaceName, workspace);
+        model.getWorkspaces().put(workspaceName, workspace);
     }
 
     @Override
@@ -489,10 +489,10 @@ public class WorkspacesStep extends BaseStep {
 
     private void updateWorkspaceModel(String workspaceName, Workspace.Kind kind, String resource) {
         if (resource.isEmpty() && kind != EMPTYDIR) {
-            model.getWorkspaces().replace(workspaceName, null);
+            model.getWorkspaces().put(workspaceName, null);
         } else {
             Workspace workspace = new Workspace(workspaceName, kind, resource);
-            model.getWorkspaces().replace(workspaceName, workspace);
+            model.getWorkspaces().put(workspaceName, workspace);
         }
     }
 
