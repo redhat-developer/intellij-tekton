@@ -2636,6 +2636,12 @@
           },
           "type": "array"
         },
+        "retriesStatus": {
+          "items": {
+            "$ref": "#/definitions/RunStatus"
+          },
+          "type": "array"
+        },
         "extraFields": {
           "properties": {},
           "additionalProperties": true,
