@@ -10,21 +10,30 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.SnippetHelper;
-import java.io.IOException;
-import java.util.Map;
-import javax.swing.tree.TreePath;
+import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
+import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.swing.tree.TreePath;
+import java.io.IOException;
+import java.util.Map;
+
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_VCT;
 
 public class TektonAction extends StructureTreeAction {
     Logger logger = LoggerFactory.getLogger(TektonAction.class);
@@ -94,5 +103,36 @@ public class TektonAction extends StructureTreeAction {
             }
         }
         return content;
+    }
+
+    protected void createNewVolumes(Map<String, Workspace> workspaces, Tkn tkn) throws IOException{
+        int counter = 0;
+        for(Map.Entry<String, Workspace> entry: workspaces.entrySet()) {
+            Workspace workspace = entry.getValue();
+            if (workspace != null
+                    && workspace.getKind() == Workspace.Kind.PVC
+                    && workspace.getResource().isEmpty()
+                    && workspace.getItems().size() > 0) {
+                if (KIND_VCT.equals(workspace.getItems().get("type"))) {
+                    VirtualFile vf = createVCT(workspace.getItems(), counter);
+                    workspace.getItems().put("file", vf.getPath());
+                    counter++;
+                } else {
+                    String name = createNewPVC(workspace.getItems(), tkn);
+                    workspace.setResource(name);
+                }
+            }
+        }
+    }
+
+    private String createNewPVC(Map<String, String> items, Tkn tkn) throws IOException {
+        String name = items.get("name");
+        tkn.createPVC(name, items.get("accessMode"), items.get("size"), items.get("unit"));
+        return name;
+    }
+
+    private VirtualFile createVCT(Map<String, String> items, int counter) throws IOException {
+        ObjectNode newVCT = YAMLBuilder.createVCT(items.get("name"), items.get("accessMode"), items.get("size"), items.get("unit"));
+        return VirtualFileHelper.createVirtualFile("vct-" + counter + ".yaml", YAMLHelper.JSONToYAML(newVCT), false);
     }
 }

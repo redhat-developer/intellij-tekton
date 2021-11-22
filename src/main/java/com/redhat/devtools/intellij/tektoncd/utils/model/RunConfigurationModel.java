@@ -19,6 +19,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PVC;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_SECRET;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_VCT;
+
 public abstract class RunConfigurationModel extends ConfigurationModel {
     private String serviceAccountName;
     private Map<String, String> parameters, taskServiceAccountNames;
@@ -105,15 +110,15 @@ public abstract class RunConfigurationModel extends ConfigurationModel {
                 for(JsonNode workspaceNode : workspacesNode) {
                     if (!workspaceNode.has("name")) continue;
                     String name = workspaceNode.get("name").asText();
-                    Workspace.Kind kind = workspaceNode.has("persistentVolumeClaim") || workspaceNode.has("volumeClaimTemplate") ? Workspace.Kind.PVC :
-                                          workspaceNode.has("configMap") ? Workspace.Kind.CONFIGMAP :
-                                          workspaceNode.has("secret") ? Workspace.Kind.SECRET :
+                    Workspace.Kind kind = workspaceNode.has(KIND_PVC) || workspaceNode.has(KIND_VCT) ? Workspace.Kind.PVC :
+                                          workspaceNode.has(KIND_CONFIGMAP) ? Workspace.Kind.CONFIGMAP :
+                                          workspaceNode.has(KIND_SECRET) ? Workspace.Kind.SECRET :
                                           Workspace.Kind.EMPTYDIR;
                     String resource = kind.equals(Workspace.Kind.PVC) ? workspaceNode.has("persistentVolumeClaim")
                                                     ? workspaceNode.get("persistentVolumeClaim").get("claimName").asText()
                                                     : ""
-                                    : kind.equals(Workspace.Kind.CONFIGMAP) ? workspaceNode.get("configMap").get("name").asText()
-                                    : kind.equals(Workspace.Kind.SECRET) ? workspaceNode.get("secret").get("secretName").asText()
+                                    : kind.equals(Workspace.Kind.CONFIGMAP) ? workspaceNode.get(KIND_CONFIGMAP).get("name").asText()
+                                    : kind.equals(Workspace.Kind.SECRET) ? workspaceNode.get(KIND_SECRET).get("secretName").asText()
                                     : "";
                     Map<String, String> values = extractValuesFromVCTNode(workspaceNode);
                     workspaces.put(name, new Workspace(name, kind, resource, values));
@@ -127,9 +132,9 @@ public abstract class RunConfigurationModel extends ConfigurationModel {
 
     private Map<String, String> extractValuesFromVCTNode(JsonNode workspaceNode) {
         Map<String, String> values = new HashMap<>();
-        if (workspaceNode.has("volumeClaimTemplate")) {
-            values.put("type", "volumeClaimTemplate");
-            JsonNode vctNode = workspaceNode.get("volumeClaimTemplate");
+        if (workspaceNode.has(KIND_VCT)) {
+            values.put("type", KIND_VCT);
+            JsonNode vctNode = workspaceNode.get(KIND_VCT);
             if (vctNode.has("metadata") && vctNode.get("metadata").has("name")) {
                 values.put("name", vctNode.get("metadata").get("name").asText());
             }

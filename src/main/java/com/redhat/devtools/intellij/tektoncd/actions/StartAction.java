@@ -10,17 +10,14 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.actions;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
-import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.logs.FollowLogsAction;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
@@ -38,8 +35,6 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.StartWizard;
-import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
-import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.StartResourceModel;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import org.slf4j.Logger;
@@ -207,37 +202,6 @@ public class StartAction extends TektonAction {
         }
         return runName;
     }
-
-    private void createNewVolumes(Map<String, Workspace> workspaces, Tkn tkn) throws IOException{
-        int counter = 0;
-        for(Map.Entry<String, Workspace> entry: workspaces.entrySet()) {
-            Workspace workspace = entry.getValue();
-            if (workspace != null
-                    && workspace.getKind() == Workspace.Kind.PVC
-                    && workspace.getItems().size() > 0) {
-                if (!workspace.getResource().isEmpty()) {
-                    String name = createNewPVC(workspace.getItems(), tkn);
-                    workspace.setResource(name);
-                } else {
-                    VirtualFile vf = createVCT(workspace.getItems(), counter);
-                    workspace.getItems().put("file", vf.getPath());
-                    counter++;
-                }
-            }
-        }
-    }
-
-    private String createNewPVC(Map<String, String> items, Tkn tkn) throws IOException {
-        String name = items.get("name");
-        tkn.createPVC(name, items.get("accessMode"), items.get("size"), items.get("unit"));
-        return name;
-    }
-
-    private VirtualFile createVCT(Map<String, String> items, int counter) throws IOException {
-        ObjectNode newVCT = YAMLBuilder.createVCT(items.get("name"), items.get("accessMode"), items.get("size"), items.get("unit"));
-        return VirtualFileHelper.createVirtualFile("vct-" + counter + ".yaml", YAMLHelper.JSONToYAML(newVCT), false);
-    }
-
 
     protected ActionMessage createTelemetry() {
          return TelemetryService.instance().action(NAME_PREFIX_START_STOP + "start");

@@ -38,6 +38,10 @@ import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResourceList;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,10 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.swing.tree.TreePath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
@@ -81,7 +81,8 @@ public class AddTriggerAction extends TektonAction {
         String namespace = element.getNamespace();
         ExecHelper.submit(() -> {
             try {
-                Map<String, String> triggerBindingTemplates = SnippetHelper.getTriggerBindingTemplates();
+                String triggerVersion = tkncli.getTektonTriggersApiVersion();
+                Map<String, String> triggerBindingTemplates = SnippetHelper.getTriggerBindingTemplates(triggerVersion);
                 AddTriggerModel model = createModel(element, namespace, tkncli);
 
                 if (!model.isValid()) {
@@ -97,6 +98,7 @@ public class AddTriggerAction extends TektonAction {
                             .send();
                     return;
                 }
+                createNewVolumes(model.getWorkspaces(), tkncli);
                 // take/create all triggerBindings
                 Map<String, String> triggerBindingsSelected = model.getBindingsSelectedByUser();
                 saveTriggerBindings(triggerBindingsSelected, namespace, tkncli);

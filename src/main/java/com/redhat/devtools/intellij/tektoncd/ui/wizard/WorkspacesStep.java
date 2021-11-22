@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_VCT;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.EMPTYDIR;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.PVC;
@@ -144,7 +145,7 @@ public class WorkspacesStep extends BaseStep {
         Map<String, String> values = new HashMap<>();
         values.put("name", name);
         if (isVCT) {
-            values.put("type", "volumeClaimTemplate");
+            values.put("type", KIND_VCT);
         }
         values.put("accessMode", ((Pair)accessModeComboBox.getSelectedItem()).getSecond().toString());
         values.put("size", size);
@@ -409,8 +410,7 @@ public class WorkspacesStep extends BaseStep {
 
     private boolean isVCT(Workspace workspace) {
         return workspace != null
-                && workspace.getItems().containsKey("type")
-                && workspace.getItems().get("type").equals("volumeClaimTemplate");
+                && KIND_VCT.equals(workspace.getItems().get("type"));
     }
 
     private String getVCTItemValue(Workspace workspace, String key) {
@@ -474,8 +474,7 @@ public class WorkspacesStep extends BaseStep {
             if (Strings.isNullOrEmpty(resource)) {
                 if (kind.equals(PVC)
                         && !workspace.getItems().isEmpty()
-                        && workspace.getItems().containsKey("type")
-                        && workspace.getItems().get("type").equals("volumeClaimTemplates")) {
+                        && KIND_VCT.equals(workspace.getItems().get("type"))) {
                     cmbWorkspaceTypeValues.setSelectedItem(NEW_VCT_TEXT);
                     return;
                 }
