@@ -377,7 +377,7 @@ public class WorkspacesStep extends BaseStep {
                 // when cmbWorkspaceTypes combo box value changes, a type (secret, emptyDir, pvcs ..) is chosen and cmbWorkspaceTypeValues combo box is filled with all existing resources of that kind
                 Workspace.Kind kindSelected = cmbWorkspaceTypes.getSelectedItem().equals("") ? null : (Workspace.Kind) cmbWorkspaceTypes.getSelectedItem();
                 setCmbWorkspaceTypeValues(workspace, kindSelected, cmbWorkspaceTypeValues, row);
-                String resource = cmbWorkspaceTypeValues.isVisible() && cmbWorkspaceTypeValues.getItemCount() > 0 ? cmbWorkspaceTypeValues.getSelectedItem().toString() : "";
+                String resource = getSelectedWorkspaceType(cmbWorkspaceTypeValues);
                 updateWorkspaceModel(workspace, kindSelected, resource);
                 // reset error graphics if error occurred earlier
                 if (isValid(cmbWorkspaceTypes)) {
@@ -406,6 +406,17 @@ public class WorkspacesStep extends BaseStep {
                 fireStateChanged();
             }
         });
+    }
+
+    private String getSelectedWorkspaceType(JComboBox cmbWorkspaceTypeValues) {
+        if (cmbWorkspaceTypeValues.isVisible()
+                && cmbWorkspaceTypeValues.getItemCount() > 0
+                && cmbWorkspaceTypeValues.getSelectedItem() != null
+                && !cmbWorkspaceTypeValues.getSelectedItem().toString().equals(NEW_VCT_TEXT)
+                && !cmbWorkspaceTypeValues.getSelectedItem().toString().equals(NEW_PVC_TEXT)) {
+            return cmbWorkspaceTypeValues.getSelectedItem().toString();
+        }
+        return "";
     }
 
     private boolean isVCT(Workspace workspace) {
