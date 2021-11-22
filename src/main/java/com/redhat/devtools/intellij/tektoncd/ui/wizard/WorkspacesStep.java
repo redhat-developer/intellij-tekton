@@ -229,8 +229,8 @@ public class WorkspacesStep extends BaseStep {
             JLabel lblNewVolumeSize = createLabel("Size:", 9, "lblSize", lblNewPVCName.getPreferredSize());
 
             String sizeDefaultValue = getVCTItemValue(workspace, "size");
-            int sizeDefaultValueAsInteger = sizeDefaultValue.isEmpty() ?  0 : Integer.parseInt(sizeDefaultValue);
-            JSpinner spinnerNewVolumeSize = new JSpinner(new SpinnerNumberModel(sizeDefaultValueAsInteger,0, Integer.MAX_VALUE,1));
+            int sizeDefaultValueAsInteger = sizeDefaultValue.isEmpty() ?  1 : Integer.parseInt(sizeDefaultValue);
+            JSpinner spinnerNewVolumeSize = new JSpinner(new SpinnerNumberModel(sizeDefaultValueAsInteger,1, Integer.MAX_VALUE,1));
             spinnerNewVolumeSize.setName("txtSize");
             spinnerNewVolumeSize.setEditor(new JSpinner.NumberEditor(spinnerNewVolumeSize, "#"));
             JTextField spinnerTextFieldNewVolumeSize = ((JSpinner.NumberEditor)spinnerNewVolumeSize.getEditor()).getTextField();
