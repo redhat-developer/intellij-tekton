@@ -13,12 +13,12 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.JSONHelper;
 import com.redhat.devtools.intellij.tektoncd.completion.TknDictionary;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Map;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -66,7 +66,7 @@ public class SnippetHelperTest {
         MockedStatic<JSONHelper> jsonHelper = mockStatic(JSONHelper.class);
         jsonHelper.when(() -> JSONHelper.getJSONFromURL(any())).thenReturn(resultNode);
 
-        Map<String, String> bindingTemplates = SnippetHelper.getTriggerBindingTemplates();
+        Map<String, String> bindingTemplates = SnippetHelper.getTriggerBindingTemplates("triggers.tekton.dev/v1beta1");
 
         assertTrue(bindingTemplates.containsKey("github-pullreq"));
         assertTrue(bindingTemplates.containsKey("github-push"));
@@ -87,7 +87,7 @@ public class SnippetHelperTest {
         MockedStatic<JSONHelper> jsonHelper = mockStatic(JSONHelper.class);
         jsonHelper.when(() -> JSONHelper.getJSONFromURL(any())).thenReturn(null);
 
-        Map<String, String> bindingTemplates = SnippetHelper.getTriggerBindingTemplates();
+        Map<String, String> bindingTemplates = SnippetHelper.getTriggerBindingTemplates("triggers.tekton.dev/v1beta1");
 
         assertTrue(bindingTemplates.isEmpty());
         jsonHelper.close();

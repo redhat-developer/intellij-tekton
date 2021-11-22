@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
@@ -24,15 +25,17 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import static com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature.WRITE_DOC_START_MARKER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PVC;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_VCT;
 
 public class YAMLBuilder {
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new com.fasterxml.jackson.dataformat.yaml.YAMLFactory());
@@ -101,8 +104,8 @@ public class YAMLBuilder {
                 break;
             }
             case PVC: {
-                workspaceResourceNode.put("claimName", workspace.getResource());
-                workspaceNode.set(workspace.getKind().toString(), workspaceResourceNode);
+                Pair<String, ObjectNode> workspaceNodeValues = createPVCNode(workspace);
+                workspaceNode.set(workspaceNodeValues.getFirst(), workspaceNodeValues.getSecond());
                 break;
             }
             case EMPTYDIR: {
@@ -114,6 +117,18 @@ public class YAMLBuilder {
                 break;
         }
         return workspaceNode;
+    }
+
+    private static Pair<String, ObjectNode> createPVCNode(Workspace workspace) {
+        Map<String, String> items = workspace.getItems();
+        if (items.size() > 0
+            && KIND_VCT.equals(items.get("type"))) {
+            ObjectNode vctNode = createVCT(items.get("name"), items.get("accessMode"), items.get("size"), items.get("unit"));
+            return new Pair<>(KIND_VCT, vctNode);
+        }
+        ObjectNode workspaceResourceNode = YAML_MAPPER.createObjectNode();
+        workspaceResourceNode.put("claimName", workspace.getResource());
+        return new Pair<>(KIND_PVC, workspaceResourceNode);
     }
 
     private static ArrayNode createTaskServiceAccountNode(Map<String, String> tsa) {

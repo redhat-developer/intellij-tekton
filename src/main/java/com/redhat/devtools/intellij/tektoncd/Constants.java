@@ -45,6 +45,7 @@ public class Constants {
     public static final String KIND_EVENTLISTENER = "eventlistener";
 
     public static final String KIND_PVC = "persistentVolumeClaim";
+    public static final String KIND_VCT = "volumeClaimTemplate";
     public static final String KIND_CONFIGMAP = "configMap";
     public static final String KIND_SECRET = "secret";
     public static final String KIND_EMPTYDIR =  "emptyDir";

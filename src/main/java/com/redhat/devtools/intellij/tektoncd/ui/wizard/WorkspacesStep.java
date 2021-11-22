@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_VCT;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.EMPTYDIR;
 import static com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace.Kind.PVC;
@@ -144,7 +145,7 @@ public class WorkspacesStep extends BaseStep {
         Map<String, String> values = new HashMap<>();
         values.put("name", name);
         if (isVCT) {
-            values.put("type", "volumeClaimTemplate");
+            values.put("type", KIND_VCT);
         }
         values.put("accessMode", ((Pair)accessModeComboBox.getSelectedItem()).getSecond().toString());
         values.put("size", size);
@@ -228,8 +229,8 @@ public class WorkspacesStep extends BaseStep {
             JLabel lblNewVolumeSize = createLabel("Size:", 9, "lblSize", lblNewPVCName.getPreferredSize());
 
             String sizeDefaultValue = getVCTItemValue(workspace, "size");
-            int sizeDefaultValueAsInteger = sizeDefaultValue.isEmpty() ?  0 : Integer.parseInt(sizeDefaultValue);
-            JSpinner spinnerNewVolumeSize = new JSpinner(new SpinnerNumberModel(sizeDefaultValueAsInteger,0, Integer.MAX_VALUE,1));
+            int sizeDefaultValueAsInteger = sizeDefaultValue.isEmpty() ?  1 : Integer.parseInt(sizeDefaultValue);
+            JSpinner spinnerNewVolumeSize = new JSpinner(new SpinnerNumberModel(sizeDefaultValueAsInteger,1, Integer.MAX_VALUE,1));
             spinnerNewVolumeSize.setName("txtSize");
             spinnerNewVolumeSize.setEditor(new JSpinner.NumberEditor(spinnerNewVolumeSize, "#"));
             JTextField spinnerTextFieldNewVolumeSize = ((JSpinner.NumberEditor)spinnerNewVolumeSize.getEditor()).getTextField();
@@ -376,7 +377,7 @@ public class WorkspacesStep extends BaseStep {
                 // when cmbWorkspaceTypes combo box value changes, a type (secret, emptyDir, pvcs ..) is chosen and cmbWorkspaceTypeValues combo box is filled with all existing resources of that kind
                 Workspace.Kind kindSelected = cmbWorkspaceTypes.getSelectedItem().equals("") ? null : (Workspace.Kind) cmbWorkspaceTypes.getSelectedItem();
                 setCmbWorkspaceTypeValues(workspace, kindSelected, cmbWorkspaceTypeValues, row);
-                String resource = cmbWorkspaceTypeValues.isVisible() && cmbWorkspaceTypeValues.getItemCount() > 0 ? cmbWorkspaceTypeValues.getSelectedItem().toString() : "";
+                String resource = getSelectedWorkspaceType(cmbWorkspaceTypeValues);
                 updateWorkspaceModel(workspace, kindSelected, resource);
                 // reset error graphics if error occurred earlier
                 if (isValid(cmbWorkspaceTypes)) {
@@ -407,10 +408,20 @@ public class WorkspacesStep extends BaseStep {
         });
     }
 
+    private String getSelectedWorkspaceType(JComboBox cmbWorkspaceTypeValues) {
+        if (cmbWorkspaceTypeValues.isVisible()
+                && cmbWorkspaceTypeValues.getItemCount() > 0
+                && cmbWorkspaceTypeValues.getSelectedItem() != null
+                && !cmbWorkspaceTypeValues.getSelectedItem().toString().equals(NEW_VCT_TEXT)
+                && !cmbWorkspaceTypeValues.getSelectedItem().toString().equals(NEW_PVC_TEXT)) {
+            return cmbWorkspaceTypeValues.getSelectedItem().toString();
+        }
+        return "";
+    }
+
     private boolean isVCT(Workspace workspace) {
         return workspace != null
-                && workspace.getItems().containsKey("type")
-                && workspace.getItems().get("type").equals("volumeClaimTemplate");
+                && KIND_VCT.equals(workspace.getItems().get("type"));
     }
 
     private String getVCTItemValue(Workspace workspace, String key) {
@@ -474,8 +485,7 @@ public class WorkspacesStep extends BaseStep {
             if (Strings.isNullOrEmpty(resource)) {
                 if (kind.equals(PVC)
                         && !workspace.getItems().isEmpty()
-                        && workspace.getItems().containsKey("type")
-                        && workspace.getItems().get("type").equals("volumeClaimTemplates")) {
+                        && KIND_VCT.equals(workspace.getItems().get("type"))) {
                     cmbWorkspaceTypeValues.setSelectedItem(NEW_VCT_TEXT);
                     return;
                 }
