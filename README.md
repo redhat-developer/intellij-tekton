@@ -22,7 +22,7 @@ This new release is based on v1beta1. Although it still supports v1alpha1 resour
 A Task and/or a TaskRun can now be started in debug mode. The container where the taskrun will be executed
 will be kept running even when the run fails. A terminal connected to the container will be opened so you can 
 interact with it and identify any possible misbehavior/error.
-To use the debug feature you must have access to a kubernetes or openshift cluster with Tekton installed with a version 
+To use the debug feature, you must have access to a Kubernetes or OpenShift cluster with Tekton installed with a version 
 greater than 0.26.0 and enable alpha mode.
 
 To enable alpha mode you can run this command
