@@ -15,7 +15,7 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 ## New and Noteworthy
 
-This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
+We support `v1beta1` API. Previous version `v1alpha1` may work, but we cannot guarantee that all features will work properly. If you have `v1alpha1` pipelines/tasks please use [migrating document](https://github.com/tektoncd/pipeline/blob/main/docs/migrating-v1alpha1-to-v1beta1.md) to migrate to `v1beta1`.
 
 ### Debug task/taskrun
 
