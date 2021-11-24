@@ -13,6 +13,12 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>1.0.0</b></p>
+  <p>Start debug session for tasks and taskruns</p>
+  <p>Enhance creation new pvc/vct when starting a pipeline or adding a trigger<p>
+  <p>Fix bug when following logs when starting pipeline</p>
+  <p>Fix bug when mirroring pipeline containing clusterTasks</p>
+  <p>Schemas for validation and code assist have been updated to Tekton Pipeline 0.30.0 and Tekton Triggers 0.17.1</p>
   <p><b>0.13.0</b></p>
   <p>UI</p>
   <p><ul>

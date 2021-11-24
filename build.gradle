@@ -23,7 +23,7 @@ intellij {
     version = ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName = 'com.redhat.devtools.intellij.tekton'
     // use '<git repo clone>/build/idea-sandbox/plugins/Telemetry by Red Hat' if working from source
-    plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.2.18", 'com.redhat.devtools.intellij.kubernetes:0.2.4.65']
+    plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.2.18", 'com.redhat.devtools.intellij.kubernetes:0.3.0.83']
     updateSinceUntilBuild = false
 }
 
@@ -38,7 +38,7 @@ runIdeForUiTests {
 dependencies {
     compile 'io.fabric8:openshift-client:5.7.2'
     compile 'io.fabric8:tekton-client:5.7.2'
-    compile 'com.redhat.devtools.intellij:intellij-common:1.4.0-SNAPSHOT'
+    compile 'com.redhat.devtools.intellij:intellij-common:1.4.0'
     compile 'com.redhat.devtools.alizer:alizer-api:0.1.0-SNAPSHOT'
     testCompile 'org.mockito:mockito-inline:3.8.0'
     compile 'com.github.vlsi.mxgraph:jgraphx:4.1.0'

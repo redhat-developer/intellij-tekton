@@ -15,7 +15,37 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 ## New and Noteworthy
 
-This new release is based on v1beta1. Although it still supports v1alpha1 resources (resources, conditions), we do not support v1alpha1 version for resources that have v1beta1.
+We support `v1beta1` API. Previous version `v1alpha1` may work, but we cannot guarantee that all features will work properly. If you have `v1alpha1` pipelines/tasks please use [migrating document](https://github.com/tektoncd/pipeline/blob/main/docs/migrating-v1alpha1-to-v1beta1.md) to migrate to `v1beta1`.
+
+### Debug task/taskrun
+
+A Task and/or a TaskRun can now be started in debug mode. The container where the taskrun will be executed
+will be kept running even when the run fails. A terminal connected to the container will be opened so you can 
+interact with it and identify any possible misbehavior/error.
+To use the debug feature, you must have access to a Kubernetes or OpenShift cluster with Tekton installed with a version 
+greater than 0.26.0 and enable alpha mode.
+
+To enable alpha mode you can run this command
+```
+kubectl patch configmap/feature-flags \
+  -n <namespace> \
+  --type merge \
+  -p '{"data":{"enable-api-fields":"alpha"}}'
+```
+
+![](images/1.0.0/tekton1.gif)
+
+N.B: By activating alpha mode, you will enable all features that are still in alpha and are not considered stable (e.g debug). 
+Be aware that you could meet some errors during commands execution.
+
+Known issues discovered by using IJ tekton plugin:
+- /tekton/debug scripts absent after step has failed [#4224](https://github.com/tektoncd/pipeline/issues/4224)
+- Params copied in all steps in saved pipeline in alpha mode on Openshift with tekton 0.29+ [#4388](https://github.com/tektoncd/pipeline/issues/4388)
+
+
+## Previous releases
+
+## 0.12.0
 
 The Tekton CLI in use has been upgrated to 0.20.0.
 
@@ -25,8 +55,6 @@ The Tekton Hub was integrated through a search dialog that allows users to searc
 The content from the Tekton Hub is now integrated into a new view that is displayed below the cluster Tekton resources and is automatically synced with the current IntelliJ project: if you working on a Java project, then only tasks and pipelines relevant for Java will be displayed:
 
 ![](images/0.12.0/tekton1.png)
-
-## Previous releases
 
 ## 0.11.0
 
