@@ -16,32 +16,28 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class FinallyReferencesInspector extends BaseInspector {
 
-    private static final String START_ROW = "\n\\s*";
     private static final String FINALLY_TAG = "finally:";
     private static final String RUN_AFTER_TAG = "runAfter:";
 
     @Nullable
     @Override
     public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
-        if (!file.getLanguage().getID().equalsIgnoreCase("yaml")) {
-            return ProblemDescriptor.EMPTY_ARRAY;
-        }
-
-        ConfigurationModel model = ConfigurationModelFactory.getModel(file.getText());
+        ConfigurationModel model = getTektonModelFromFile(file);
         if (model == null) {
             return ProblemDescriptor.EMPTY_ARRAY;
         }
+
 
         List<PsiElement> errorPsiElements = new ArrayList<>();
         if (model instanceof PipelineConfigurationModel) {

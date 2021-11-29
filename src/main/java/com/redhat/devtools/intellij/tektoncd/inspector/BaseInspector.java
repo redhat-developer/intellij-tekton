@@ -12,12 +12,18 @@ package com.redhat.devtools.intellij.tektoncd.inspector;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.psi.PsiFile;
+import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
+import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BaseInspector extends LocalInspectionTool {
+
+    protected static final String START_ROW = "\n\\s*";
 
     protected boolean isPipeline(PsiFile file) {
         List<Integer> pipelineIndex = indexesOfByPattern(Pattern.compile("kind:\\s*Pipeline"), file.getText());
@@ -31,5 +37,18 @@ public class BaseInspector extends LocalInspectionTool {
             indexes.add(matcher.start());
         }
         return indexes;
+    }
+
+    protected ConfigurationModel getTektonModelFromFile(@NotNull PsiFile file) {
+        if (!file.getLanguage().getID().equalsIgnoreCase("yaml")) {
+            return null;
+        }
+
+        ConfigurationModel model = ConfigurationModelFactory.getModel(file.getText());
+        if (model == null) {
+            return null;
+        }
+
+        return model;
     }
 }

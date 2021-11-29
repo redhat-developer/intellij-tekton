@@ -21,26 +21,22 @@ import com.intellij.psi.PsiFile;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class VariableReferencesInspector extends BaseInspector {
 
     @Nullable
     @Override
     public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
-        if (!file.getLanguage().getID().equalsIgnoreCase("yaml")) {
-            return ProblemDescriptor.EMPTY_ARRAY;
-        }
-
-        ConfigurationModel model = ConfigurationModelFactory.getModel(file.getText());
+        ConfigurationModel model = getTektonModelFromFile(file);
         if (model == null) {
             return ProblemDescriptor.EMPTY_ARRAY;
         }
