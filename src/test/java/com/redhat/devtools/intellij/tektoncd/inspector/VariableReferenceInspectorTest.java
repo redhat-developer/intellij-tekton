@@ -11,42 +11,23 @@
 package com.redhat.devtools.intellij.tektoncd.inspector;
 
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
-import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import com.redhat.devtools.intellij.common.utils.VfsRootAccessHelper;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class VariableReferenceInspectorTest {
+public class VariableReferenceInspectorTest extends InspectorTest{
 
-    private CodeInsightTestFixture myFixture;
-
-    @Before
-    public void setup() throws Exception {
-        IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
-        TestFixtureBuilder<IdeaProjectTestFixture> fixtureBuilder = factory.createLightFixtureBuilder(null);
-        IdeaProjectTestFixture fixture = fixtureBuilder.getFixture();
-
-        myFixture = IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(fixture, factory.createTempDirTestFixture());
-
-        myFixture.setTestDataPath("src/test/resources/utils/variableReferenceInspector/");
-        myFixture.setUp();
-        myFixture.enableInspections(VariableReferencesInspector.class);
-        VfsRootAccessHelper.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
+    @Override
+    public String getTestInspectorFolder() {
+        return "variableReferenceInspector";
     }
 
-    @After
-    public void tearDown() throws Exception {
-        myFixture.tearDown();
+    @Override
+    public void enableInspections() {
+        myFixture.enableInspections(VariableReferencesInspector.class);
     }
 
     @Test

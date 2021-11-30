@@ -84,13 +84,11 @@ public class TaskReferencesInspector extends BaseInspector {
         for (int index: nameNodeIndexMatches) {
             // if this name node is a direct child of taskRef
             ASTNode node = file.getNode().findLeafElementAt(index);
-            ASTNode parent = node.getTreeParent();
-            if (parent != null
-                    && parent.getText().startsWith(TASKREF_TAG)) {
-                String name = parent.getText().replaceAll("taskRef:\n\\s*name:\\s*", "");
-                if (!tasksOnCluster.contains(name)) {
-                    PsiElement taskNameElement = getTaskNameElement(parent);
-                    if (taskNameElement != null) {
+            if (isChildOfTaskRef(node)) {
+                PsiElement taskNameElement = getTaskNameElement(node);
+                if (taskNameElement != null) {
+                    String name = taskNameElement.getText();
+                    if (!tasksOnCluster.contains(name)) {
                         taskElementsNotFound.add(taskNameElement);
                     }
                 }
@@ -99,18 +97,50 @@ public class TaskReferencesInspector extends BaseInspector {
         return taskElementsNotFound;
     }
 
-    private PsiElement getTaskNameElement(ASTNode parent) {
-        ASTNode lastChildNode = parent.getLastChildNode();
-        if (lastChildNode != null) {
-            ASTNode firstChildParent = lastChildNode.getFirstChildNode();
-            if (firstChildParent != null) {
-                ASTNode lastChildNodeFromFirstChild = firstChildParent.getLastChildNode();
-                if (lastChildNodeFromFirstChild != null) {
-                    ASTNode lastChildFromLastChild = lastChildNodeFromFirstChild.getLastChildNode();
-                    if (lastChildFromLastChild != null) {
-                        return lastChildFromLastChild.getPsi();
+    private boolean isChildOfTaskRef(ASTNode node) {
+        if (node == null) {
+            return false;
+        }
+
+        // taskref can be direct parent of node -> taskRef:\n name: blabla
+        // or parent of parent of node -> taskRef:\n kind: bla\n name: blabla
+        ASTNode parent = node.getTreeParent();
+        if (parent != null) {
+            if (parent.getText().startsWith(TASKREF_TAG)) {
+                return true;
+            }
+            parent = parent.getTreeParent();
+            if (parent.getText().startsWith(TASKREF_TAG)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private PsiElement getTaskNameElement(ASTNode node) {
+        // starts from \n we need to go next two siblings (\n -> indent -> task)
+        PsiElement nextSibling = node.getPsi().getNextSibling();
+        if (nextSibling != null) {
+            nextSibling = nextSibling.getNextSibling();
+            if (nextSibling != null) {
+                PsiElement[] children = nextSibling.getChildren();
+                if (nextSibling.getText().startsWith(NAME_TAG)
+                    && children.length == 1) {
+                    PsiElement lastChild = nextSibling.getLastChild();
+                    if (lastChild != null
+                            && lastChild.getText().startsWith(NAME_TAG)) {
+                        lastChild = lastChild.getLastChild();
+                    }
+                    return lastChild;
+                }
+
+                for (PsiElement child: children) {
+                    if (child.getText().startsWith(NAME_TAG)) {
+                        return child.getLastChild();
                     }
                 }
+
+
             }
         }
         return null;
