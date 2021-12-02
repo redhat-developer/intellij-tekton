@@ -11,14 +11,16 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.intellij.openapi.ui.TestDialog;
-import com.intellij.openapi.ui.TestDialogManager;
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import io.fabric8.kubernetes.client.Watch;
 import org.apache.commons.lang.time.StopWatch;
-import org.junit.After;
 import org.junit.Before;
 
 import java.util.function.Supplier;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TknCliTest extends BaseTest {
 
@@ -28,18 +30,9 @@ public class TknCliTest extends BaseTest {
 
     @Before
     public void init() throws Exception {
-        previousTestDialog = TestDialogManager.setTestDialog(new TestDialog() {
-            @Override
-            public int show(String message) {
-                return 0;
-            }
-        });
+        previousTestDialog = mock(TestDialog.class);
+        when(previousTestDialog.show(anyString())).thenReturn(0);
         tkn = TknCliFactory.getInstance().getTkn(project).get();
-    }
-
-    @After
-    public void shutdown() {
-        TestDialogManager.setTestDialog(previousTestDialog);
     }
 
     protected static void stopAndWaitOnConditionOrTimeout(Watch watch, Supplier<Boolean> condition) throws InterruptedException {
