@@ -14,11 +14,12 @@ import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.redhat.devtools.intellij.common.tree.MutableModel;
 import com.redhat.devtools.intellij.common.tree.MutableModelSynchronizer;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
 
 public class MutableTektonModelSynchronizer<T> extends MutableModelSynchronizer<T> {
 
@@ -30,13 +31,10 @@ public class MutableTektonModelSynchronizer<T> extends MutableModelSynchronizer<
 
     @Override
     protected TreePath getTreePath(T element) {
-        TreePath path;
         if (isRootNode(element)) {
-            path = new TreePath(treeModel.getRoot());
-        } else {
-            path = findTreePath(element);
+            return new TreePath(treeModel.getRoot());
         }
-        return path!=null?path:new TreePath(treeModel.getRoot());
+        return findTreePath(element);
     }
 
     private TreePath findTreePath(T element) {
