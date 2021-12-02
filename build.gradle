@@ -17,7 +17,7 @@ repositories {
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-def versionsMap = ['IU-2019.3':'193.5233.144','IU-2020.1':'201.6668.99', 'IU-2020.2':'202.6397.93', 'IU-2020.3':'203.5981.152', 'IU-2021.1':'211.6693.108', 'IU-2021.2':'212.4746.57']
+def versionsMap = ['IU-2019.3':'193.5233.144','IU-2020.1':'201.6668.99', 'IU-2020.2':'202.6397.93', 'IU-2020.3':'203.5981.152', 'IU-2021.1':'211.6693.108', 'IU-2021.2':'212.4746.57', 'IU-2021.3':'213.5744.122']
 
 intellij {
     version = ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
