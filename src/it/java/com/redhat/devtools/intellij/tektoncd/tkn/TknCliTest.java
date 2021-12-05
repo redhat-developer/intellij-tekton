@@ -10,7 +10,6 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
-import com.intellij.openapi.ui.TestDialog;
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import io.fabric8.kubernetes.client.Watch;
 import org.apache.commons.lang.time.StopWatch;
@@ -18,20 +17,13 @@ import org.junit.Before;
 
 import java.util.function.Supplier;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 public class TknCliTest extends BaseTest {
 
-    private TestDialog previousTestDialog;
     protected Tkn tkn;
     protected static final String NAMESPACE = "testns";
 
     @Before
     public void init() throws Exception {
-        previousTestDialog = mock(TestDialog.class);
-        when(previousTestDialog.show(anyString())).thenReturn(0);
         tkn = TknCliFactory.getInstance().getTkn(project).get();
     }
 
