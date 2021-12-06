@@ -28,19 +28,14 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.ui.JBCardLayout;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.mac.TouchbarDataKeys;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.update.UiNotifyConnector;
 import com.redhat.devtools.intellij.tektoncd.utils.YAMLBuilder;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.ActionToRunModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -53,10 +48,14 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.BLUE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.MARGIN_10;
@@ -227,11 +226,7 @@ public abstract class BaseWizard extends DialogWrapper {
     protected JComponent createSouthPanel() {
         myFooterPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
 
-        if (SystemInfo.isMac) {
-            createFooterMac();
-        } else {
-            createFooter();
-        }
+        createFooter();
         setFooterButtonsListener();
 
         return myFooterPanel;
@@ -264,27 +259,6 @@ public abstract class BaseWizard extends DialogWrapper {
         myHelpButton.addActionListener(e -> helpAction());
     }
 
-    private void createFooterMac() {
-        JPanel buttonPanel = new JPanel();
-        myFooterPanel.add(buttonPanel, BorderLayout.EAST);
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-
-        if (!UIUtil.isUnderDarcula()) {
-            myHelpButton.putClientProperty("JButton.buttonType", "help");
-        }
-
-        int index = 0;
-        if (ApplicationInfo.contextHelpAvailable()) {
-            add(buttonPanel, myHelpButton, index++, false);
-        }
-        add(buttonPanel, myCancelButton, index++, false);
-
-        if (mySteps.size() > 1) {
-            add(buttonPanel, myPreviousButton, index++, false);
-        }
-        add(buttonPanel, myNextButton, index++, false);
-    }
-
     private void createFooter() {
         JPanel buttonPanel = new JPanel();
         myFooterPanel.add(buttonPanel, BorderLayout.CENTER);
@@ -309,12 +283,6 @@ public abstract class BaseWizard extends DialogWrapper {
         layout.setHorizontalGroup(hGroup);
         layout.setVerticalGroup(vGroup);
         layout.linkSize(buttons.toArray(new Component[0]));
-    }
-
-    private void add(JPanel panel, JButton button, int index, boolean isDefault) {
-        panel.add(Box.createHorizontalStrut(5));
-        panel.add(button);
-        TouchbarDataKeys.putDialogButtonDescriptor(button, index).setMainGroup(true).setDefault(isDefault);
     }
 
     private void add(final GroupLayout.Group hGroup,

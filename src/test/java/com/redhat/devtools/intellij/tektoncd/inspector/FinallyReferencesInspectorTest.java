@@ -11,17 +11,17 @@
 package com.redhat.devtools.intellij.tektoncd.inspector;
 
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import java.io.File;
-import java.util.List;
+import com.redhat.devtools.intellij.common.utils.VfsRootAccessHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,7 +40,7 @@ public class FinallyReferencesInspectorTest {
         myFixture.setTestDataPath("src/test/resources/inspector/finallyReferencesInspector/");
         myFixture.setUp();
         myFixture.enableInspections(FinallyReferencesInspector.class);
-        VfsRootAccess.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
+        VfsRootAccessHelper.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
     }
 
     @After
