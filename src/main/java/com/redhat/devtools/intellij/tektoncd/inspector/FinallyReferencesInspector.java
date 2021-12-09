@@ -29,6 +29,8 @@ public class FinallyReferencesInspector extends BaseInspector {
 
     private static final String FINALLY_TAG = "finally:";
     private static final String RUN_AFTER_TAG = "runAfter:";
+    private static final Pattern RUN_AFTER_TAG_PATTERN = Pattern.compile(START_ROW + RUN_AFTER_TAG);
+    private static final Pattern FINALLY_TAG_PATTERN = Pattern.compile(START_ROW + FINALLY_TAG);
 
     @Nullable
     @Override
@@ -54,7 +56,7 @@ public class FinallyReferencesInspector extends BaseInspector {
             return Collections.emptyList();
         }
 
-        List<Integer> finallyNodeIndexMatches = indexesOfByPattern(Pattern.compile(START_ROW + FINALLY_TAG), file.getText());
+        List<Integer> finallyNodeIndexMatches = indexesOfByPattern(FINALLY_TAG_PATTERN, file.getText());
         for (int index: finallyNodeIndexMatches) {
             // if this finally node is a direct child of spec
             if (file.getNode().findLeafElementAt(index).getTreeParent().getTreeParent().getText().startsWith("spec:")) {
@@ -71,7 +73,7 @@ public class FinallyReferencesInspector extends BaseInspector {
         }
 
         List<PsiElement> runAfterNodes = new ArrayList<>();
-        List<Integer> indexesRunAfterNodes = indexesOfByPattern(Pattern.compile(START_ROW + RUN_AFTER_TAG), textAfterFinally);
+        List<Integer> indexesRunAfterNodes = indexesOfByPattern(RUN_AFTER_TAG_PATTERN, textAfterFinally);
         for (int tmpIndex: indexesRunAfterNodes) {
             runAfterNodes.add(file.findElementAt(finallyNodeIndex + tmpIndex).getNextSibling().getNextSibling());
         }

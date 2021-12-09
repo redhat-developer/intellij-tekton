@@ -37,6 +37,7 @@ public class TaskReferencesInspector extends BaseInspector {
     private static final Logger logger = LoggerFactory.getLogger(TaskReferencesInspector.class);
     private static final String NAME_TAG = "name:";
     private static final String TASKREF_TAG = "taskRef:";
+    private static final Pattern NAME_TAG_PATTERN = Pattern.compile(START_ROW + NAME_TAG);
 
     @Nullable
     @Override
@@ -80,7 +81,7 @@ public class TaskReferencesInspector extends BaseInspector {
         }
 
         List<PsiElement> taskElementsNotFound = new ArrayList<>();
-        List<Integer> nameNodeIndexMatches = indexesOfByPattern(Pattern.compile(START_ROW + NAME_TAG), file.getText());
+        List<Integer> nameNodeIndexMatches = indexesOfByPattern(NAME_TAG_PATTERN, file.getText());
         for (int index: nameNodeIndexMatches) {
             // if this name node is a direct child of taskRef
             ASTNode node = file.getNode().findLeafElementAt(index);
