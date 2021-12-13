@@ -79,4 +79,20 @@ public class TaskReferencesInspectorTest extends InspectorTest {
         assertTrue(hightlightInfo.get(0).getDescription().equals("No task named foo found on cluster."));
         assertTrue(hightlightInfo.get(1).getDescription().equals("No task named foo1 found on cluster."));
     }
+
+    @Test
+    public void testPipelineWithQuotedTaskNotFoundOnCluster() {
+        myFixture.configureByFile("pipeline7.yaml");
+        List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
+        assertEquals(hightlightInfo.size(), 1);
+        assertTrue(hightlightInfo.get(0).getDescription().equals("No task named foo found on cluster."));
+    }
+
+    @Test
+    public void testPipelineWithSingleQuotedTaskNotFoundOnCluster() {
+        myFixture.configureByFile("pipeline8.yaml");
+        List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
+        assertEquals(hightlightInfo.size(), 1);
+        assertTrue(hightlightInfo.get(0).getDescription().equals("No task named foo found on cluster."));
+    }
 }

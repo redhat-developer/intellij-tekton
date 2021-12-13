@@ -12,10 +12,12 @@ package com.redhat.devtools.intellij.tektoncd.inspector;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.psi.PsiFile;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -44,7 +46,14 @@ public class BaseInspector extends LocalInspectionTool {
             return null;
         }
 
-        ConfigurationModel model = ConfigurationModelFactory.getModel(file.getText());
+        String content = file.getText();
+        try {
+            content = YAMLHelper.JSONToYAML(YAMLHelper.YAMLToJsonNode(content), true);
+        } catch (IOException e) {
+            return null;
+        }
+
+        ConfigurationModel model = ConfigurationModelFactory.getModel(content);
         if (model == null) {
             return null;
         }

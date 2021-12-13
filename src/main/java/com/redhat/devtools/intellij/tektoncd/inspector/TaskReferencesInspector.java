@@ -17,6 +17,7 @@ import com.intellij.lang.ASTNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.redhat.devtools.intellij.common.utils.StringHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
@@ -54,7 +55,7 @@ public class TaskReferencesInspector extends BaseInspector {
         }
 
         return tasKNotFoundPsiElements.stream().map(item ->
-                manager.createProblemDescriptor(item, item, "No task named " + item.getText() + " found on cluster.", ProblemHighlightType.GENERIC_ERROR, isOnTheFly)
+                manager.createProblemDescriptor(item, item, "No task named " + StringHelper.getUnquotedValueFromPsi(item) + " found on cluster.", ProblemHighlightType.GENERIC_ERROR, isOnTheFly)
         ).toArray(ProblemDescriptor[]::new);
     }
 
@@ -88,7 +89,7 @@ public class TaskReferencesInspector extends BaseInspector {
             if (isChildOfTaskRef(node)) {
                 PsiElement taskNameElement = getTaskNameElement(node);
                 if (taskNameElement != null) {
-                    String name = taskNameElement.getText();
+                    String name = StringHelper.getUnquotedValueFromPsi(taskNameElement);
                     if (!tasksOnCluster.contains(name)) {
                         taskElementsNotFound.add(taskNameElement);
                     }
