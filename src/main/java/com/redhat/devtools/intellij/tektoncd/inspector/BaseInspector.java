@@ -26,7 +26,7 @@ public class BaseInspector extends LocalInspectionTool {
     protected static final String START_ROW = "\n\\s*";
 
     protected boolean isPipeline(PsiFile file) {
-        List<Integer> pipelineIndex = indexesOfByPattern(Pattern.compile("kind:\\s*Pipeline"), file.getText());
+        List<Integer> pipelineIndex = indexesOfByPattern(Pattern.compile("kind:\\s+[\"\']?Pipeline(?=\\s|\"|')"), file.getText());
         return !pipelineIndex.isEmpty();
     }
 
