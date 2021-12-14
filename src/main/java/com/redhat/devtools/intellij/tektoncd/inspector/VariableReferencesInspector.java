@@ -98,7 +98,7 @@ public class VariableReferencesInspector extends BaseInspector {
         });
 
         inputResource.forEach(resource -> {
-            Pattern pattern = isPipeline(file) ? Pattern.compile("resource:\\s+[\"\']?\\b" + resource.name() + "\\b[\"\']?") : Pattern.compile("\\$\\(resources\\.inputs\\." + resource.name());
+            Pattern pattern = isPipeline(file) ? Pattern.compile("resource:\\s+[\"\']?" + resource.name() + "(?=\\s|\"|')") : Pattern.compile("\\$\\(resources\\.inputs\\." + resource.name());
             List<Integer> variableUsageIndexes = indexesOfByPattern(pattern, spec);
             if (variableUsageIndexes.isEmpty()) {
                 PsiElement psiNode;
@@ -124,7 +124,7 @@ public class VariableReferencesInspector extends BaseInspector {
         });
 
         workspaces.forEach(workspace -> {
-            Pattern pattern = isPipeline(file) ? Pattern.compile("workspace:\\s+[\"\']?\\b" + workspace + "\\b[\"\']?") : Pattern.compile("\\$\\(workspaces\\." + workspace);
+            Pattern pattern = isPipeline(file) ? Pattern.compile("workspace:\\s+[\"\']?" + workspace + "(?=\\s|\"|')") : Pattern.compile("\\$\\(workspaces\\." + workspace);
             List<Integer> variableUsageIndexes = indexesOfByPattern(pattern, spec);
             if (variableUsageIndexes.isEmpty()) {
                 PsiElement psiNode = getVariablePsiElement(file, "workspaces:", workspace);
@@ -149,7 +149,7 @@ public class VariableReferencesInspector extends BaseInspector {
         }
 
         String variableTypeSection = spec.substring(variableTypeIndex);
-        List<Integer> variableLineIndex = indexesOfByPattern(Pattern.compile("name:\\s*[\"\']?\\b" + variable + "\\b[\"\']?"), variableTypeSection);
+        List<Integer> variableLineIndex = indexesOfByPattern(Pattern.compile("name:\\s*[\"']?" + variable + "(?=\\s|\"|')"), variableTypeSection);
         if (variableLineIndex.isEmpty()) {
             return null;
         }

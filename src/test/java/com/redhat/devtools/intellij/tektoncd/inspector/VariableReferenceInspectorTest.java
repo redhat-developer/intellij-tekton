@@ -80,7 +80,7 @@ public class VariableReferenceInspectorTest extends InspectorTest{
         assertEquals(hightlightInfo.size(), 3);
         assertTrue(hightlightInfo.get(0).getDescription().equals("Variable p1 is never used"));
         assertTrue(hightlightInfo.get(1).getDescription().equals("Variable source-repo is never used"));
-        assertTrue(hightlightInfo.get(2).getDescription().equals("Variable password is never used"));
+        assertTrue(hightlightInfo.get(2).getDescription().equals("Variable password-vault is never used"));
     }
 
     @Test
