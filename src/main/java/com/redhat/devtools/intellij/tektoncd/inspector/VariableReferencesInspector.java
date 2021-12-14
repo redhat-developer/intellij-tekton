@@ -18,6 +18,7 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.FileASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.redhat.devtools.intellij.common.utils.StringHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
@@ -49,7 +50,7 @@ public class VariableReferencesInspector extends BaseInspector {
         }
 
         return unusedPsiElements.stream().map(item ->
-                manager.createProblemDescriptor(item, item, "Variable " + item.getText() + " is never used", ProblemHighlightType.LIKE_UNUSED_SYMBOL, isOnTheFly, LocalQuickFix.EMPTY_ARRAY)
+                manager.createProblemDescriptor(item, item, "Variable " + StringHelper.getUnquotedValueFromPsi(item.getContext()) + " is never used", ProblemHighlightType.WEAK_WARNING, isOnTheFly, LocalQuickFix.EMPTY_ARRAY)
         ).toArray(ProblemDescriptor[]::new);
     }
 
@@ -97,7 +98,7 @@ public class VariableReferencesInspector extends BaseInspector {
         });
 
         inputResource.forEach(resource -> {
-            Pattern pattern = isPipeline(file) ? Pattern.compile("resource:\\s+" + resource.name()) : Pattern.compile("\\$\\(resources\\.inputs\\." + resource.name());
+            Pattern pattern = isPipeline(file) ? Pattern.compile("resource:\\s+[\"\']?\\b" + resource.name() + "\\b[\"\']?") : Pattern.compile("\\$\\(resources\\.inputs\\." + resource.name());
             List<Integer> variableUsageIndexes = indexesOfByPattern(pattern, spec);
             if (variableUsageIndexes.isEmpty()) {
                 PsiElement psiNode;
@@ -123,7 +124,7 @@ public class VariableReferencesInspector extends BaseInspector {
         });
 
         workspaces.forEach(workspace -> {
-            Pattern pattern = isPipeline(file) ? Pattern.compile("workspace:\\s+" + workspace) : Pattern.compile("\\$\\(workspaces\\." + workspace);
+            Pattern pattern = isPipeline(file) ? Pattern.compile("workspace:\\s+[\"\']?\\b" + workspace + "\\b[\"\']?") : Pattern.compile("\\$\\(workspaces\\." + workspace);
             List<Integer> variableUsageIndexes = indexesOfByPattern(pattern, spec);
             if (variableUsageIndexes.isEmpty()) {
                 PsiElement psiNode = getVariablePsiElement(file, "workspaces:", workspace);
@@ -148,7 +149,7 @@ public class VariableReferencesInspector extends BaseInspector {
         }
 
         String variableTypeSection = spec.substring(variableTypeIndex);
-        List<Integer> variableLineIndex = indexesOfByPattern(Pattern.compile("name:\\s*" + variable), variableTypeSection);
+        List<Integer> variableLineIndex = indexesOfByPattern(Pattern.compile("name:\\s*[\"\']?\\b" + variable + "\\b[\"\']?"), variableTypeSection);
         if (variableLineIndex.isEmpty()) {
             return null;
         }

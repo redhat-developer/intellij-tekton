@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: app-deploy
+spec:
+  params:
+    - name: p1
+      default: value1
+  resources:
+    - name: source-repo
+      type: git
+  workspaces:
+    - name: password
+  tasks:
+    - name: foo
+      taskRef:
+        kind: Task
+        name: foo
+      workspaces:
+        - name: test
+          workspace: "passwordtest"
