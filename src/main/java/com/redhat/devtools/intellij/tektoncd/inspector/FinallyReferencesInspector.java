@@ -16,32 +16,30 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class FinallyReferencesInspector extends BaseInspector {
 
-    private static final String START_ROW = "\n\\s*";
     private static final String FINALLY_TAG = "finally:";
     private static final String RUN_AFTER_TAG = "runAfter:";
+    private static final Pattern RUN_AFTER_TAG_PATTERN = Pattern.compile(START_ROW + RUN_AFTER_TAG);
+    private static final Pattern FINALLY_TAG_PATTERN = Pattern.compile(START_ROW + FINALLY_TAG);
 
     @Nullable
     @Override
     public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
-        if (!file.getLanguage().getID().equalsIgnoreCase("yaml")) {
-            return ProblemDescriptor.EMPTY_ARRAY;
-        }
-
-        ConfigurationModel model = ConfigurationModelFactory.getModel(file.getText());
+        ConfigurationModel model = getTektonModelFromFile(file);
         if (model == null) {
             return ProblemDescriptor.EMPTY_ARRAY;
         }
+
 
         List<PsiElement> errorPsiElements = new ArrayList<>();
         if (model instanceof PipelineConfigurationModel) {
@@ -58,7 +56,7 @@ public class FinallyReferencesInspector extends BaseInspector {
             return Collections.emptyList();
         }
 
-        List<Integer> finallyNodeIndexMatches = indexesOfByPattern(Pattern.compile(START_ROW + FINALLY_TAG), file.getText());
+        List<Integer> finallyNodeIndexMatches = indexesOfByPattern(FINALLY_TAG_PATTERN, file.getText());
         for (int index: finallyNodeIndexMatches) {
             // if this finally node is a direct child of spec
             if (file.getNode().findLeafElementAt(index).getTreeParent().getTreeParent().getText().startsWith("spec:")) {
@@ -75,7 +73,7 @@ public class FinallyReferencesInspector extends BaseInspector {
         }
 
         List<PsiElement> runAfterNodes = new ArrayList<>();
-        List<Integer> indexesRunAfterNodes = indexesOfByPattern(Pattern.compile(START_ROW + RUN_AFTER_TAG), textAfterFinally);
+        List<Integer> indexesRunAfterNodes = indexesOfByPattern(RUN_AFTER_TAG_PATTERN, textAfterFinally);
         for (int tmpIndex: indexesRunAfterNodes) {
             runAfterNodes.add(file.findElementAt(finallyNodeIndex + tmpIndex).getNextSibling().getNextSibling());
         }
