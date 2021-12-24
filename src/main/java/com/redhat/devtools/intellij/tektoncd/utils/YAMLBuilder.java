@@ -394,7 +394,7 @@ public class YAMLBuilder {
         ObjectNode run = YAMLBuilder.convertToObjectNode(resourceAsYAML);
         ObjectNode breakpoint = YAMLBuilder.createBreakpointSection();
         ((ObjectNode)run.get("spec")).set("debug", breakpoint);
-        return YAMLHelper.JSONToYAML(run);
+        return YAMLHelper.JSONToYAML(run, false);
     }
 
     public static ObjectNode createTriggerTemplate(String name, String apiVersion, List<String> params, List<ObjectNode> runs) {
