@@ -84,11 +84,11 @@ public class WorkspacesStep extends BaseStep {
         return isComplete;
     }
 
-    private void saveNewVolume(String workspaceName, String name, Workspace.Kind kind, JPanel panel) {
-        saveNewVolume(workspaceName, name, kind, panel, false);
+    private Workspace saveNewVolume(String workspaceName, String name, Workspace.Kind kind, JPanel panel) {
+        return saveNewVolume(workspaceName, name, kind, panel, false);
     }
 
-    private void saveNewVolume(String workspaceName, String name, Workspace.Kind kind, JPanel panel, boolean isVCT) {
+    private Workspace saveNewVolume(String workspaceName, String name, Workspace.Kind kind, JPanel panel, boolean isVCT) {
         JPanel accessModePanel = (JPanel) Arrays.stream(panel.getComponents())
                                                 .filter(component -> "accessModePanel".equals(component.getName())).findFirst().get();
         JComboBox accessModeComboBox = (JComboBox) Arrays.stream(accessModePanel.getComponents())
@@ -107,8 +107,7 @@ public class WorkspacesStep extends BaseStep {
             sizeSpinner.setBorder(NO_BORDER);
         }
         if (!isNewItemFormValid) {
-            model.getWorkspaces().put(workspaceName, null);
-            return;
+            return null;
         }
 
         Map<String, String> values = new HashMap<>();
@@ -119,8 +118,7 @@ public class WorkspacesStep extends BaseStep {
         values.put("accessMode", ((Pair)accessModeComboBox.getSelectedItem()).getSecond().toString());
         values.put("size", size);
         values.put("unit", ((Pair)sizeUnitComboBox.getSelectedItem()).getSecond().toString());
-        Workspace workspace = new Workspace(workspaceName, kind, "", values);
-        model.getWorkspaces().put(workspaceName, workspace);
+        return new Workspace(workspaceName, kind, "", values);
     }
 
     @Override
@@ -471,6 +469,7 @@ public class WorkspacesStep extends BaseStep {
     }
 
     private void updateWorkspaceModel(JPanel panel, String workspaceName, Workspace.Kind kind, String resource) {
+        Workspace workspace = null;
         if (kind == PVC) {
             JComboBox cmbWorkspaceTypeValues = (JComboBox) Arrays.stream(panel.getComponents())
                     .filter(component -> "cmbWorkspaceTypeValues".equals(component.getName())).findFirst().get();
@@ -483,20 +482,20 @@ public class WorkspacesStep extends BaseStep {
                 String nameNewPVC = newPVCNameTextField.getText();
                 newPVCNameTextField.setBorder(nameNewPVC.isEmpty() ? RED_BORDER_SHOW_ERROR : NO_BORDER);
 
-                saveNewVolume(workspaceName, nameNewPVC, PVC, panel);
-                return;
+                workspace = saveNewVolume(workspaceName, nameNewPVC, PVC, panel);
             } else if (valueSelected.equals(NEW_VCT_TEXT)) {
-                saveNewVolume(workspaceName, workspaceName + "-vct", PVC, panel, true);
-                return;
+                workspace = saveNewVolume(workspaceName, workspaceName + "-vct", PVC, panel, true);
+            } else {
+                workspace = new Workspace(workspaceName, kind, resource);
             }
         } else if (resource.isEmpty() && kind != EMPTYDIR) {
-            model.getWorkspaces().put(workspaceName, null);
-            return;
+            workspace = null;
+        } else {
+            workspace = new Workspace(workspaceName, kind, resource);
         }
 
-        Workspace workspace = new Workspace(workspaceName, kind, resource);
         model.getWorkspaces().put(workspaceName, workspace);
-
+        fireStateChanged();
     }
 
     private boolean isValid(JComboBox component) {

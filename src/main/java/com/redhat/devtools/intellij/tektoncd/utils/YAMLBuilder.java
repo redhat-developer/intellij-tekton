@@ -121,13 +121,21 @@ public class YAMLBuilder {
 
     private static Pair<String, ObjectNode> createPVCNode(Workspace workspace) {
         Map<String, String> items = workspace.getItems();
-        if (items.size() > 0
-            && KIND_VCT.equals(items.get("type"))) {
-            ObjectNode vctNode = createVCT(items.get("name"), items.get("accessMode"), items.get("size"), items.get("unit"));
-            return new Pair<>(KIND_VCT, vctNode);
+        if (items.size() > 0) {
+            if (KIND_VCT.equals(items.get("type"))) {
+                ObjectNode vctNode = createVCT(items.get("name"), items.get("accessMode"), items.get("size"), items.get("unit"));
+                return new Pair<>(KIND_VCT, vctNode);
+            } else {
+                return createPVCNodeInternal(items.get("name"));
+            }
         }
+        return createPVCNodeInternal(workspace.getResource());
+
+    }
+
+    private static Pair<String, ObjectNode> createPVCNodeInternal(String resource) {
         ObjectNode workspaceResourceNode = YAML_MAPPER.createObjectNode();
-        workspaceResourceNode.put("claimName", workspace.getResource());
+        workspaceResourceNode.put("claimName", resource);
         return new Pair<>(KIND_PVC, workspaceResourceNode);
     }
 
