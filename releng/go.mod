@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0
 	github.com/tektoncd/pipeline v0.32.1
-	github.com/tektoncd/triggers v0.17.1
+	github.com/tektoncd/triggers v0.18.0
 	k8s.io/apiextensions-apiserver v0.22.5
 	k8s.io/apimachinery v0.22.5
 	knative.dev/pkg v0.0.0-20220104185830-52e42b760b54
