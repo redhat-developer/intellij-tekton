@@ -78,7 +78,7 @@ public class YAMLBuilder {
     private static ArrayNode createWorkspaceNode(Map<String, Workspace> workspaces) {
         ArrayNode workspacesNode = YAML_MAPPER.createArrayNode();
         for (Workspace workspace: workspaces.values()) {
-            if (workspace != null) {
+            if (workspace.getKind() != null) {
                 ObjectNode workspaceNode = createWorkspaceResourceNode(workspace);
                 // TODO need to add subpath and items
                 workspacesNode.add(workspaceNode);
@@ -299,9 +299,9 @@ public class YAMLBuilder {
             }
         } else if (model instanceof TaskConfigurationModel) {
             Map<String, Workspace> workspaces = new HashMap<>();
-            ((TaskConfigurationModel)model).getWorkspaces().stream().forEach(workspaceName -> {
-                Workspace workspace = new Workspace(workspaceName,  Workspace.Kind.EMPTYDIR, "");
-                workspaces.put(workspaceName, workspace);
+            ((TaskConfigurationModel)model).getWorkspaces().stream().forEach(workspace -> {
+                workspace.setKind(Workspace.Kind.EMPTYDIR);
+                workspaces.put(workspace.getName(), workspace);
             });
             spec = createTaskRunSpec(model.getName(),
                     ((TaskConfigurationModel)model).getParams(),

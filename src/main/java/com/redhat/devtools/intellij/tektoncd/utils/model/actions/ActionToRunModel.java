@@ -78,7 +78,7 @@ public abstract class ActionToRunModel extends ConfigurationModel {
 
             this.globalServiceAccount = "";
             this.workspaces = new HashMap<>();
-            resource.getWorkspaces().forEach(ws -> this.workspaces.put(ws, null));
+            resource.getWorkspaces().forEach(ws -> this.workspaces.put(ws.getName(), ws));
             this.taskServiceAccountNames = Collections.emptyMap();
 
             if (resource instanceof PipelineConfigurationModel) {

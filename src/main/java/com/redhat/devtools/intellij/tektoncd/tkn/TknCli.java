@@ -105,6 +105,7 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_OUTPUTRESOURC
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PREFIXNAME;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUNT;
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SKIP_OPTIONAL_WORKSPACES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
@@ -645,13 +646,14 @@ public class TknCli implements Tkn {
         if (!runPrefixName.isEmpty()) {
             args.add(FLAG_PREFIXNAME + "=" + runPrefixName);
         }
+        args.add(FLAG_SKIP_OPTIONAL_WORKSPACES);
         String output = ExecHelper.execute(command, envVars, args.toArray(new String[0]));
         return this.getTektonRunName(output);
     }
 
     @Override
     public String startLastPipeline(String namespace, String pipeline) throws IOException {
-        String output = ExecHelper.execute(command, envVars, "pipeline", "start", pipeline, "--last", "-n", namespace);
+        String output = ExecHelper.execute(command, envVars, "pipeline", "start", pipeline, "--last", "-n", namespace, FLAG_SKIP_OPTIONAL_WORKSPACES);
         return this.getTektonRunName(output);
     }
 
@@ -688,6 +690,7 @@ public class TknCli implements Tkn {
         if (!runPrefixName.isEmpty()) {
             args.add(FLAG_PREFIXNAME + "=" + runPrefixName);
         }
+        args.add(FLAG_SKIP_OPTIONAL_WORKSPACES);
         return ExecHelper.execute(command, envVars, args.toArray(new String[0]));
     }
 
@@ -698,7 +701,7 @@ public class TknCli implements Tkn {
 
     @Override
     public String startLastTask(String namespace, String task) throws IOException {
-        String output = ExecHelper.execute(command, envVars, "task", "start", task, "--last", "-n", namespace);
+        String output = ExecHelper.execute(command, envVars, "task", "start", task, "--last", "-n", namespace, FLAG_SKIP_OPTIONAL_WORKSPACES);
         return getTektonRunName(output);
     }
 
@@ -734,6 +737,9 @@ public class TknCli implements Tkn {
             argMap.entrySet().forEach(item -> {
                 String name = item.getKey();
                 Workspace workspace = item.getValue();
+                if (workspace.isOptional() && workspace.getKind() == null) {
+                    return;
+                }
                 args.add(FLAG_WORKSPACE);
                 if (workspace == null || workspace.getKind() == Workspace.Kind.EMPTYDIR) {
                     args.add("name=" + name + ",emptyDir=");

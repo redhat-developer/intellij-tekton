@@ -12,6 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.utils.model.resources;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ResourceConfigurationModel;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,7 @@ public class ConditionConfigurationModel extends ResourceConfigurationModel {
     }
 
     @Override
-    public List<String> getWorkspaces() {
+    public List<Workspace> getWorkspaces() {
         return Collections.emptyList();
     }
 }

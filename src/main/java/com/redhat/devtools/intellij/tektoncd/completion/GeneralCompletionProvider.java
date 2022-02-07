@@ -22,6 +22,7 @@ import com.intellij.util.ProcessingContext;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
@@ -30,6 +31,10 @@ import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfi
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,10 +44,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
@@ -335,7 +336,7 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
      * @param insertOffset the position where the lookup has to be copied on
      * @return
      */
-    private List<LookupElementBuilder> getWorkspaceLookups(List<String> workspaces, String prefix, String completionPrefix, int insertOffset) {
+    private List<LookupElementBuilder> getWorkspaceLookups(List<Workspace> workspaces, String prefix, String completionPrefix, int insertOffset) {
         List<LookupElementBuilder> lookups = new ArrayList<>();
         String headPrefix_13 = prefix.length() > 13 ? prefix.substring(0, 13) : prefix;
         if ("$(workspaces.".contains(headPrefix_13)) {
@@ -344,8 +345,8 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
             if (workspace != null) {
                 lookups.addAll(getLookupsByWorkspace("workspaces." + workspace, completionPrefix, insertOffset));
             } else {
-                workspaces.stream().forEach(workspaceName -> {
-                    lookups.add(createInnerLookup("workspaces." + workspaceName, completionPrefix, insertOffset));
+                workspaces.forEach(wk -> {
+                    lookups.add(createInnerLookup("workspaces." + wk.getName(), completionPrefix, insertOffset));
                 });
             }
         }

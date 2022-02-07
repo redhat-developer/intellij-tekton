@@ -14,10 +14,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 
@@ -33,7 +34,7 @@ public abstract class ResourceConfigurationModel extends ConfigurationModel {
 
     public abstract List<Output> getOutputResources();
 
-    public abstract List<String> getWorkspaces();
+    public abstract List<Workspace> getWorkspaces();
 
     protected List<Input> findInputResources(String configuration, String[] fieldNames) {
         List<Input> inputs = new ArrayList<>();
@@ -67,15 +68,15 @@ public abstract class ResourceConfigurationModel extends ConfigurationModel {
 
     }
 
-    protected List<String> findWorkspaces(String configuration) {
-        List<String> workspaces = new ArrayList<>();
+    protected List<Workspace> findWorkspaces(String configuration) {
+        List<Workspace> workspaces = new ArrayList<>();
         try {
             JsonNode workspacesNode = YAMLHelper.getValueFromYAML(configuration, new String[] {"spec", "workspaces"});
             if (workspacesNode != null) {
                 for(JsonNode item : workspacesNode) {
-                    if (item.has("name")) {
-                        workspaces.add(item.get("name").asText());
-                    }
+                    String name = item.has("name") ? item.get("name").asText() : "";
+                    boolean optional = item.has("optional") && item.get("optional").asBoolean();
+                    workspaces.add(new Workspace(name, null, null, optional));
                 }
             }
         } catch (IOException e) {

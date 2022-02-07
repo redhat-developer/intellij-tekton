@@ -10,10 +10,10 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.tkn.component.field;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EMPTYDIR;
@@ -38,7 +38,7 @@ public class WorkspaceTest {
     public void Constructor_WithItems_Workspace() {
         Map<String, String> items = new HashMap<>();
         items.put("test", "value");
-        Workspace workspace = new Workspace("name", Workspace.Kind.PVC, "resource", items);
+        Workspace workspace = new Workspace("name", Workspace.Kind.PVC, "resource", items, false);
         assertEquals("name", workspace.getName());
         assertEquals(Workspace.Kind.PVC, workspace.getKind());
         assertEquals("resource", workspace.getResource());
