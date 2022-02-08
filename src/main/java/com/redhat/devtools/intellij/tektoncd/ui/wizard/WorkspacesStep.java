@@ -79,7 +79,10 @@ public class WorkspacesStep extends BaseStep {
 
     @Override
     public boolean isComplete() {
-        boolean isComplete = model.getWorkspaces().values().stream().allMatch(workspace -> workspace != null);
+        boolean isComplete = model.getWorkspaces().values().stream().allMatch(workspace -> {
+            return workspace.getKind() != null
+                    || workspace.isOptional();
+        });
         changeErrorTextVisibility(!isComplete);
         return isComplete;
     }
@@ -470,8 +473,8 @@ public class WorkspacesStep extends BaseStep {
     }
 
     private void updateWorkspaceModel(JPanel panel, String workspaceName, Workspace.Kind kind, String resource) {
-        Workspace workspace = null;
-        boolean isOptional = model.getWorkspaces().get(workspaceName).isOptional();
+        Workspace workspace = model.getWorkspaces().get(workspaceName);
+        boolean isOptional = workspace.isOptional();
         if (kind == PVC) {
             JComboBox cmbWorkspaceTypeValues = (JComboBox) Arrays.stream(panel.getComponents())
                     .filter(component -> "cmbWorkspaceTypeValues".equals(component.getName())).findFirst().get();
@@ -491,9 +494,9 @@ public class WorkspacesStep extends BaseStep {
                 workspace = new Workspace(workspaceName, kind, resource);
             }
         } else if (resource.isEmpty() && !isOptional && kind != EMPTYDIR) {
-            workspace = null;
+            workspace = new Workspace(workspaceName, null, null, isOptional);
         } else {
-            workspace = new Workspace(workspaceName, kind, resource);
+            workspace = new Workspace(workspaceName, kind, resource, isOptional);
         }
 
         model.getWorkspaces().put(workspaceName, workspace);

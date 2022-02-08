@@ -741,7 +741,7 @@ public class TknCli implements Tkn {
                     return;
                 }
                 args.add(FLAG_WORKSPACE);
-                if (workspace == null || workspace.getKind() == Workspace.Kind.EMPTYDIR) {
+                if (workspace.getKind() == Workspace.Kind.EMPTYDIR) {
                     args.add("name=" + name + ",emptyDir=");
                 } else if (workspace.getKind() == Workspace.Kind.PVC) {
                     if (workspace.getItems() != null && workspace.getItems().containsKey("file")) {
