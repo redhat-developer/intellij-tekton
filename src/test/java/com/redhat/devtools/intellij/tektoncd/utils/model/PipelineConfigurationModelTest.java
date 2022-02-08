@@ -12,9 +12,9 @@ package com.redhat.devtools.intellij.tektoncd.utils.model;
 
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
-import java.io.IOException;
 import org.junit.Test;
 
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -74,8 +74,8 @@ public class PipelineConfigurationModelTest extends BaseTest {
         assertTrue(model.getInputResources().isEmpty());
         assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().size() == 2);
-        assertEquals(model.getWorkspaces().get(0), "password-vault");
-        assertEquals(model.getWorkspaces().get(1), "recipe-store");
+        assertEquals(model.getWorkspaces().get(0).getName(), "password-vault");
+        assertEquals(model.getWorkspaces().get(1).getName(), "recipe-store");
     }
 
     @Test
@@ -92,7 +92,7 @@ public class PipelineConfigurationModelTest extends BaseTest {
         assertEquals(model.getInputResources().get(0).type(), "git");
         assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().size() == 2);
-        assertEquals(model.getWorkspaces().get(0), "password-vault");
-        assertEquals(model.getWorkspaces().get(1), "recipe-store");
+        assertEquals(model.getWorkspaces().get(0).getName(), "password-vault");
+        assertEquals(model.getWorkspaces().get(1).getName(), "recipe-store");
     }
 }

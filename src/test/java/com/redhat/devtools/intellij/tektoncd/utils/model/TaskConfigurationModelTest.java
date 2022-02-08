@@ -12,9 +12,9 @@ package com.redhat.devtools.intellij.tektoncd.utils.model;
 
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
-import java.io.IOException;
 import org.junit.Test;
 
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -93,8 +93,8 @@ public class TaskConfigurationModelTest extends BaseTest {
         assertTrue(model.getInputResources().isEmpty());
         assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().size() == 2);
-        assertEquals(model.getWorkspaces().get(0), "write-allowed");
-        assertEquals(model.getWorkspaces().get(1), "write-disallowed");
+        assertEquals(model.getWorkspaces().get(0).getName(), "write-allowed");
+        assertEquals(model.getWorkspaces().get(1).getName(), "write-disallowed");
     }
 
     @Test
@@ -115,8 +115,8 @@ public class TaskConfigurationModelTest extends BaseTest {
         assertEquals(model.getOutputResources().get(1).name(), "resource2");
         assertEquals(model.getOutputResources().get(1).type(), "image");
         assertTrue(model.getWorkspaces().size() == 2);
-        assertEquals(model.getWorkspaces().get(0), "write-allowed");
-        assertEquals(model.getWorkspaces().get(1), "write-disallowed");
+        assertEquals(model.getWorkspaces().get(0).getName(), "write-allowed");
+        assertEquals(model.getWorkspaces().get(1).getName(), "write-disallowed");
     }
 
 }

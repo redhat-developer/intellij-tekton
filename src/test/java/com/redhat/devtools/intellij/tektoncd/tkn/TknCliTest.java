@@ -23,6 +23,10 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.MockedStatic;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -30,11 +34,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.MockedStatic;
 
-
+import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SKIP_OPTIONAL_WORKSPACES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -171,7 +172,7 @@ public class TknCliTest {
         tkn.startPipeline("ns", "name", params, Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2")));
+                        eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -186,7 +187,7 @@ public class TknCliTest {
         tkn.startPipeline("ns", "name", Collections.emptyMap(), resources, "", Collections.emptyMap(), Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-r"), eq("res1=value1"), eq("-r"), eq("res2=value2")));
+                        eq("-r"), eq("res1=value1"), eq("-r"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -204,7 +205,7 @@ public class TknCliTest {
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-w"), eq("name=work2,config=value2"), eq("-w"), eq("name=work1,claimName=value1"),
-                        eq("-w"), eq("name=work4,emptyDir="), eq("-w"), eq("name=work3,secret=value3")));
+                        eq("-w"), eq("name=work4,emptyDir="), eq("-w"), eq("name=work3,secret=value3"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -219,7 +220,7 @@ public class TknCliTest {
         tkn.startPipeline("ns", "name", Collections.emptyMap(), Collections.emptyMap(), "sa", taskServiceAccount, Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-s=sa"), eq("--task-serviceaccount"), eq("task1=value1"), eq("--task-serviceaccount"), eq("task2=value2")));
+                        eq("-s=sa"), eq("--task-serviceaccount"), eq("task1=value1"), eq("--task-serviceaccount"), eq("task2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -231,7 +232,7 @@ public class TknCliTest {
         tkn.startPipeline("ns", "name", Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "prefix");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("--prefix-name=prefix")));
+                        eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -258,7 +259,7 @@ public class TknCliTest {
                         eq("-w"), eq("name=work2,secret=value2"), eq("-w"), eq("name=work1,claimName=value1"),
                         eq("-p"), eq("param1=value1"),
                         eq("-r"), eq("res1=value1"), eq("-r"), eq("res2=value2"),
-                        eq("--prefix-name=prefix")));
+                        eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -269,7 +270,7 @@ public class TknCliTest {
 
         String output = tkn.startPipeline("ns", "name", Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
         exec.verify(() ->
-                ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns")));
+                ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
         assertEquals(output, "foo");
     }
@@ -281,7 +282,7 @@ public class TknCliTest {
 
         String output = tkn.startPipeline("ns", "name", Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
         exec.verify(() ->
-                ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns")));
+                ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
         assertNull(output);
     }
@@ -297,7 +298,7 @@ public class TknCliTest {
         tkn.startTask("ns", "name", params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2")));
+                        eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -312,7 +313,7 @@ public class TknCliTest {
         tkn.startTask("ns", "name", Collections.emptyMap(), resources, Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2")));
+                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -327,7 +328,7 @@ public class TknCliTest {
         tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), resources, "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-o"), eq("res1=value1"), eq("-o"), eq("res2=value2")));
+                        eq("-o"), eq("res1=value1"), eq("-o"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -345,7 +346,7 @@ public class TknCliTest {
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-w"), eq("name=work2,config=value2"), eq("-w"), eq("name=work1,claimName=value1"),
-                        eq("-w"), eq("name=work4,emptyDir="), eq("-w"), eq("name=work3,secret=value3")));
+                        eq("-w"), eq("name=work4,emptyDir="), eq("-w"), eq("name=work3,secret=value3"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -356,7 +357,7 @@ public class TknCliTest {
 
         tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "sa", Collections.emptyMap(), "");
         exec.verify(() ->
-                ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq("-s=sa")));
+                ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq("-s=sa"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -368,7 +369,7 @@ public class TknCliTest {
         tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "prefix");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("--prefix-name=prefix")));
+                        eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -395,7 +396,7 @@ public class TknCliTest {
                         eq("-p"), eq("param1=value1"),
                         eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2"),
                         eq("-o"), eq("out1=value1"),
-                        eq("--prefix-name=prefix")));
+                        eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -406,7 +407,7 @@ public class TknCliTest {
 
         String output = tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
-                ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns")));
+                ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
         assertEquals(output, "foo");
     }
@@ -418,7 +419,7 @@ public class TknCliTest {
 
         String output = tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
-                ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns")));
+                ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
         assertNull(output);
     }
@@ -434,7 +435,7 @@ public class TknCliTest {
         tkn.startClusterTask("ns", "name", params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2")));
+                        eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -449,7 +450,7 @@ public class TknCliTest {
         tkn.startClusterTask("ns", "name", Collections.emptyMap(), resources, Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2")));
+                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -464,7 +465,7 @@ public class TknCliTest {
         tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), resources, "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-o"), eq("res1=value1"), eq("-o"), eq("res2=value2")));
+                        eq("-o"), eq("res1=value1"), eq("-o"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -482,7 +483,7 @@ public class TknCliTest {
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-w"), eq("name=work2,config=value2"), eq("-w"), eq("name=work1,claimName=value1"),
-                        eq("-w"), eq("name=work4,emptyDir="), eq("-w"), eq("name=work3,secret=value3")));
+                        eq("-w"), eq("name=work4,emptyDir="), eq("-w"), eq("name=work3,secret=value3"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -493,7 +494,7 @@ public class TknCliTest {
 
         tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "sa", Collections.emptyMap(), "");
         exec.verify(() ->
-                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq("-s=sa")));
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq("-s=sa"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -505,7 +506,7 @@ public class TknCliTest {
         tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "prefix");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("--prefix-name=prefix")));
+                        eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -532,7 +533,7 @@ public class TknCliTest {
                         eq("-p"), eq("param1=value1"),
                         eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2"),
                         eq("-o"), eq("out1=value1"),
-                        eq("--prefix-name=prefix")));
+                        eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -543,7 +544,7 @@ public class TknCliTest {
 
         String output = tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
-                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns")));
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
         assertEquals(output, "foo");
     }
@@ -555,7 +556,7 @@ public class TknCliTest {
 
         String output = tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
-                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns")));
+                ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
         assertNull(output);
     }
