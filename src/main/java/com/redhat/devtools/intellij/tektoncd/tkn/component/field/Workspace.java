@@ -38,26 +38,39 @@ public class Workspace {
     private String name;
     private Kind kind;
     private String resource;
-    private String subPath;
+    private boolean optional;
     private Map<String, String> items;
 
     public Workspace(String name, Kind kind, String resource) {
-        this(name, kind, resource, Collections.emptyMap());
+        this(name, kind, resource, Collections.emptyMap(), false);
     }
 
-    public Workspace(String name, Kind kind, String resource, Map<String, String> items) {
+    public Workspace(String name, Kind kind, String resource, boolean optional) {
+        this(name, kind, resource, Collections.emptyMap(), optional);
+    }
+
+    public Workspace(String name, Kind kind, String resource, Map<String, String> items, boolean optional) {
         this.name = name;
         this.kind = kind;
         this.resource = resource;
         this.items = items;
+        this.optional = optional;
     }
 
     public String getName() {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Kind getKind() {
         return kind;
+    }
+
+    public void setKind(Kind kind) {
+        this.kind = kind;
     }
 
     public String getResource() {
@@ -68,8 +81,8 @@ public class Workspace {
         this.resource = resource;
     }
 
-    public String getSubPath() {
-        return subPath;
+    public boolean isOptional() {
+        return optional;
     }
 
     public Map<String, String> getItems() {

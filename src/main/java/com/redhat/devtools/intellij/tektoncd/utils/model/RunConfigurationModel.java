@@ -121,7 +121,8 @@ public abstract class RunConfigurationModel extends ConfigurationModel {
                                     : kind.equals(Workspace.Kind.SECRET) ? workspaceNode.get(KIND_SECRET).get("secretName").asText()
                                     : "";
                     Map<String, String> values = extractValuesFromVCTNode(workspaceNode);
-                    workspaces.put(name, new Workspace(name, kind, resource, values));
+                    boolean optional = workspaceNode.has("optional") && workspaceNode.get("optional").asBoolean(false);
+                    workspaces.put(name, new Workspace(name, kind, resource, values, optional));
                 }
             }
         } catch (IOException e) {

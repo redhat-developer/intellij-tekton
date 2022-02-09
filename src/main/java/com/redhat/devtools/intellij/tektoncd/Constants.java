@@ -59,6 +59,7 @@ public class Constants {
     public static final String FLAG_OUTPUTRESOURCE = "-o";
     public static final String FLAG_WORKSPACE = "-w";
     public static final String FLAG_PREFIXNAME = "--prefix-name";
+    public static final String FLAG_SKIP_OPTIONAL_WORKSPACES = "--skip-optional-workspace";
 
     public static final String TERMINAL_TITLE = "Tekton";
 

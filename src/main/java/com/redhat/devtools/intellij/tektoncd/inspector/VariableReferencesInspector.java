@@ -21,6 +21,7 @@ import com.intellij.psi.PsiFile;
 import com.redhat.devtools.intellij.common.utils.StringHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
@@ -57,7 +58,7 @@ public class VariableReferencesInspector extends BaseInspector {
     private List<PsiElement> highlightInPipeline(PsiFile file, PipelineConfigurationModel model) {
         List<Input> params = model.getParams();
         List<Input> inputResources = model.getInputResources();
-        List<String> workspaces = model.getWorkspaces();
+        List<Workspace> workspaces = model.getWorkspaces();
 
         if (params.isEmpty() && inputResources.isEmpty() && workspaces.isEmpty()) {
             return Collections.emptyList();
@@ -70,7 +71,7 @@ public class VariableReferencesInspector extends BaseInspector {
         List<Input> params = model.getParams();
         List<Input> inputResources = model.getInputResources();
         List<Output> outputResources = model.getOutputResources();
-        List<String> workspaces = model.getWorkspaces();
+        List<Workspace> workspaces = model.getWorkspaces();
 
         if (params.isEmpty() && inputResources.isEmpty() && outputResources.isEmpty() && workspaces.isEmpty()) {
             return Collections.emptyList();
@@ -79,7 +80,7 @@ public class VariableReferencesInspector extends BaseInspector {
         return findUnusedVariables(file, params, inputResources, outputResources, workspaces);
     }
 
-    private List<PsiElement> findUnusedVariables(PsiFile file, List<Input> params, List<Input> inputResource, List<Output> outputResources, List<String> workspaces) {
+    private List<PsiElement> findUnusedVariables(PsiFile file, List<Input> params, List<Input> inputResource, List<Output> outputResources, List<Workspace> workspaces) {
         if (!file.getText().contains("\nspec:")) {
             return Collections.emptyList();
         }
@@ -124,10 +125,10 @@ public class VariableReferencesInspector extends BaseInspector {
         });
 
         workspaces.forEach(workspace -> {
-            Pattern pattern = isPipeline(file) ? Pattern.compile("workspace:\\s*[\"\']?" + workspace + "(?=\\s|\"|')") : Pattern.compile("\\$\\(workspaces\\." + workspace);
+            Pattern pattern = isPipeline(file) ? Pattern.compile("workspace:\\s*[\"\']?" + workspace.getName() + "(?=\\s|\"|')") : Pattern.compile("\\$\\(workspaces\\." + workspace.getName());
             List<Integer> variableUsageIndexes = indexesOfByPattern(pattern, spec);
             if (variableUsageIndexes.isEmpty()) {
-                PsiElement psiNode = getVariablePsiElement(file, "workspaces:", workspace);
+                PsiElement psiNode = getVariablePsiElement(file, "workspaces:", workspace.getName());
                 if (psiNode != null) {
                     unusedPsiElements.add(psiNode);
                 }

@@ -14,19 +14,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
+import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ResourceConfigurationModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TaskConfigurationModel extends ResourceConfigurationModel {
     Logger logger = LoggerFactory.getLogger(TaskConfigurationModel.class);
     private List<Input> params;
     private List<Input> inputResources;
     private List<Output> outputResources;
-    private List<String> workspaces;
+    private List<Workspace> workspaces;
 
     public TaskConfigurationModel(String configuration) {
         super(configuration);
@@ -80,7 +82,7 @@ public class TaskConfigurationModel extends ResourceConfigurationModel {
     }
 
     @Override
-    public List<String> getWorkspaces() {
+    public List<Workspace> getWorkspaces() {
         return this.workspaces;
     }
 }
