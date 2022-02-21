@@ -1830,6 +1830,22 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "ResolverParam": {
+      "required": [
+        "Name",
+        "Value"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "ResourceFieldSelector": {
       "required": [
         "resource"
@@ -2455,6 +2471,16 @@
         },
         "bundle": {
           "type": "string"
+        },
+        "resolver": {
+          "type": "string"
+        },
+        "resource": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/ResolverParam"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -2614,6 +2640,22 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "TaskRunSidecarOverride": {
+      "required": [
+        "Name",
+        "Resources"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Resources": {
+          "$ref": "#/definitions/ResourceRequirements"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "TaskRunSpec": {
       "required": [
         "serviceAccountName"
@@ -2660,6 +2702,20 @@
           "items": {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "$ref": "#/definitions/WorkspaceBinding"
+          },
+          "type": "array"
+        },
+        "stepOverrides": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/TaskRunStepOverride"
+          },
+          "type": "array"
+        },
+        "sidecarOverrides": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/TaskRunSidecarOverride"
           },
           "type": "array"
         }
@@ -2744,6 +2800,22 @@
         },
         "taskSpec": {
           "$ref": "#/definitions/TaskSpec"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TaskRunStepOverride": {
+      "required": [
+        "Name",
+        "Resources"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Resources": {
+          "$ref": "#/definitions/ResourceRequirements"
         }
       },
       "additionalProperties": false,

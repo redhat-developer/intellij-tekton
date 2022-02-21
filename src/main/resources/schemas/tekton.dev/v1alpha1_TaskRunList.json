@@ -1885,6 +1885,22 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "ResolverParam": {
+      "required": [
+        "Name",
+        "Value"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "ResourceFieldSelector": {
       "required": [
         "resource"
@@ -2510,6 +2526,16 @@
         },
         "bundle": {
           "type": "string"
+        },
+        "resolver": {
+          "type": "string"
+        },
+        "resource": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/ResolverParam"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
