@@ -1621,6 +1621,16 @@
         },
         "bundle": {
           "type": "string"
+        },
+        "resolver": {
+          "type": "string"
+        },
+        "resource": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/ResolverParam"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -2259,6 +2269,20 @@
         },
         "taskPodTemplate": {
           "$ref": "#/definitions/Template"
+        },
+        "stepOverrides": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/TaskRunStepOverride"
+          },
+          "type": "array"
+        },
+        "sidecarOverrides": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/TaskRunSidecarOverride"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -2578,6 +2602,22 @@
         },
         "readOnly": {
           "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ResolverParam": {
+      "required": [
+        "Name",
+        "Value"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Value": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -3311,6 +3351,15 @@
         },
         "bundle": {
           "type": "string"
+        },
+        "resolver": {
+          "type": "string"
+        },
+        "resource": {
+          "items": {
+            "$ref": "#/definitions/ResolverParam"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -3387,6 +3436,22 @@
         },
         "value": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TaskRunSidecarOverride": {
+      "required": [
+        "Name",
+        "Resources"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Resources": {
+          "$ref": "#/definitions/ResourceRequirements"
         }
       },
       "additionalProperties": false,
@@ -3469,6 +3534,22 @@
         "taskSpec": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/TaskSpec"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TaskRunStepOverride": {
+      "required": [
+        "Name",
+        "Resources"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "Resources": {
+          "$ref": "#/definitions/ResourceRequirements"
         }
       },
       "additionalProperties": false,
