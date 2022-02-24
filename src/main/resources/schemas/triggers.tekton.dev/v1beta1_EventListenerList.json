@@ -748,6 +748,9 @@
         "resources": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/Resources"
+        },
+        "cloudEventURI": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -1248,6 +1251,9 @@
         },
         "serviceType": {
           "type": "string"
+        },
+        "servicePort": {
+          "type": "integer"
         },
         "spec": {
           "$schema": "http://json-schema.org/draft-04/schema#",
