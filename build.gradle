@@ -38,7 +38,7 @@ runIdeForUiTests {
 dependencies {
     compile 'io.fabric8:openshift-client:5.7.2'
     compile 'io.fabric8:tekton-client:5.7.2'
-    compile 'com.redhat.devtools.intellij:intellij-common:1.5.0-SNAPSHOT'
+    compile 'com.redhat.devtools.intellij:intellij-common:1.5.0'
     compile 'com.redhat.devtools.alizer:alizer-api:0.1.0-SNAPSHOT'
     testCompile 'org.mockito:mockito-inline:3.8.0'
     compile 'com.github.vlsi.mxgraph:jgraphx:4.1.0'
@@ -52,7 +52,7 @@ dependencies {
     compile 'com.squareup.okio:okio:1.15.0'
     // telemetry contributes annotations 13.0.0, so we need to declare newer version
     compile 'org.jetbrains:annotations:16.0.1'
-    testCompile 'com.redhat.devtools.intellij:intellij-common:1.5.0-SNAPSHOT:test'
+    testCompile 'com.redhat.devtools.intellij:intellij-common:1.5.0:test'
 }
 
 configurations {
