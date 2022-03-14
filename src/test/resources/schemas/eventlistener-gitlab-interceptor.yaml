@@ -7,15 +7,16 @@ spec:
   triggers:
     - name: foo-trig
       interceptors:
-        - ref:
+        - name: "validate GitHub payload and filter on eventType"
+          ref:
             name: "gitlab"
-        params:
-          - name: "secretRef"
-            value:
-              secretName: foo
-              secretKey: bar
-          - name: "eventTypes"
-            value: ["Push Hook"]
+          params:
+            - name: "secretRef"
+              value:
+                secretName: foo
+                secretKey: bar
+            - name: "eventTypes"
+              value: ["Push Hook"]
       bindings:
         - ref: pipeline-binding
       template:
