@@ -4,8 +4,9 @@
       "version": "0.22.0",
       "versionCmd": "version",
       "versionExtractRegExp": "Client version: (\\d+[\\.\\d+]*)",
-      "versionMatchRegExpr": "0\\..*",
+      "versionMatchRegExpr": "0.22.0",
       "baseDir": "$HOME/.tekton",
+      "silentMode": true,
       "platforms": {
         "win": {
           "url": "https://github.com/tektoncd/cli/releases/download/v0.22.0/tkn_0.22.0_Windows_x86_64.zip",
