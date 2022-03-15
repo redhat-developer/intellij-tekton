@@ -1430,8 +1430,8 @@ github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG
 github.com/tchap/go-patricia v2.2.6+incompatible/go.mod h1:bmLyhP68RS6kStMGxByiQ23RP/odRBOTVjwp2cDyi6I=
 github.com/tdakkota/asciicheck v0.0.0-20200416200610-e657995f937b/go.mod h1:yHp0ai0Z9gUljN3o0xMhYJnH/IcvkdTBOX2fmJ93JEM=
 github.com/tektoncd/pipeline v0.33.0/go.mod h1:FAxcjW5FRSBUDmNVXxv1Lq4YlT6Qjgh85TC9JKcxdX4=
-github.com/tektoncd/pipeline v0.33.1 h1:h6v0cu14yoJE4ARE7iHUBLx07dU8mp6Q1vvy5hsZoKs=
-github.com/tektoncd/pipeline v0.33.1/go.mod h1:5Re8byhcUd3afN6m6IKn0SfNvbJCRmQRyEOl7fz0OXo=
+github.com/tektoncd/pipeline v0.33.2 h1:PfU0yTXDp6FhEzqqC5dBFqmKH/xjv578x5QvRpAg244=
+github.com/tektoncd/pipeline v0.33.2/go.mod h1:5Re8byhcUd3afN6m6IKn0SfNvbJCRmQRyEOl7fz0OXo=
 github.com/tektoncd/plumbing v0.0.0-20211012143332-c7cc43d9bc0c/go.mod h1:b9esRuV1absBvaPzKkjYdKXjC5Tgs8/vh1sz++RiTdc=
 github.com/tektoncd/triggers v0.19.0 h1:/vIizEZCxc86/nM6/RSmSATaUOLqO8D9P0++nzaNxu0=
 github.com/tektoncd/triggers v0.19.0/go.mod h1:o1LZztX+exY/MbwRJbgbeTv1exn9rDnepX2vM2CD2q0=
