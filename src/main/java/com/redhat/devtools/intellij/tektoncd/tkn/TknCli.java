@@ -122,7 +122,7 @@ import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.P
 
 public class TknCli implements Tkn {
 
-    private static final Logger logger = LoggerFactory.getLogger(TknCli.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TknCli.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper(new JsonFactory());
 
     private String command;
@@ -160,7 +160,7 @@ public class TknCli implements Tkn {
                 this.client = this.client.adapt(OpenShiftClient.class);
             }
         } catch(Exception e) {
-            logger.warn(e.getLocalizedMessage(), e);
+            LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
@@ -173,7 +173,17 @@ public class TknCli implements Tkn {
             telemetry.property(OPENSHIFT_VERSION, info.getOpenshiftVersion());
             telemetry.send();
         } catch (RuntimeException e) {
-            telemetry.error(e).send();
+            // do not send telemetry when there is no context ( ie default kube URL as master URL )
+            try {
+                //workaround to not send null values
+                if (e.getMessage() != null) {
+                    telemetry.error(e).send();
+                } else {
+                    telemetry.error(e.toString()).send();
+                }
+            } catch (RuntimeException ex) {
+                LOGGER.warn(ex.getLocalizedMessage(), ex);
+            }
         }
     }
 
@@ -227,7 +237,7 @@ public class TknCli implements Tkn {
             hasAlphaFeaturesEnabled = alphaMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha");
             initConfigMapWatchers();
         } catch (Exception e) {
-            logger.warn(e.getLocalizedMessage(), e);
+            LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
@@ -824,7 +834,7 @@ public class TknCli implements Tkn {
                         .property(TelemetryService.PROP_RESOURCE_KIND, kind)
                         .error(errorMessage)
                         .send();
-                logger.warn(errorMessage, e);
+                LOGGER.warn(errorMessage, e);
             }
         };
     }
@@ -840,7 +850,7 @@ public class TknCli implements Tkn {
                                 .property(PROP_RESOURCE_KIND, kind)
                                 .error(errorMessage)
                                 .send();
-                        logger.warn(errorMessage, e);
+                        LOGGER.warn(errorMessage, e);
                     }
                 }
         );
