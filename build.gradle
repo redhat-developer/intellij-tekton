@@ -23,14 +23,8 @@ intellij {
     version = ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName = 'com.redhat.devtools.intellij.tekton'
     // use '<git repo clone>/build/idea-sandbox/plugins/Telemetry by Red Hat' if working from source
-    if(project.hasProperty('removeK8s')) {
-        plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.2.18"]
-    } else {
-        plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.2.18", 'com.redhat.devtools.intellij.kubernetes:0.4.0.106']
-    }
-
+    plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.2.18", 'com.redhat.devtools.intellij.kubernetes:0.3.0.83']
     updateSinceUntilBuild = false
-
 }
 
 runIde {
@@ -90,24 +84,6 @@ task integrationTest(type: Test) {
     mustRunAfter test
 }
 
-task updatePluginXmlForTesting() {
-    if(project.hasProperty('removeK8s')) {
-        doFirst {
-            copy {
-                from 'src/main/resources/META-INF/plugin.xml'
-                into 'src/main/resources/META-INF/test'
-                filter { line -> line.replace('<depends>com.redhat.devtools.intellij.kubernetes</depends>', '<depends optional="true">com.redhat.devtools.intellij.kubernetes</depends>') }
-            }
-        }
-        doLast {
-            copy {
-                from 'src/main/resources/META-INF/test/plugin.xml'
-                into 'src/main/resources/META-INF/'
-            }
-        }
-    }
-}
-
 publishPlugin {
     token    = jetBrainsToken
     channels = [jetBrainsChannel]
@@ -133,7 +109,6 @@ openApiGenerate {
     typeMappings = [ OffsetDateTime: "String"]
 }
 
-compileJava.dependsOn tasks.updatePluginXmlForTesting
 compileJava.dependsOn tasks.openApiGenerate
 
 group 'com.redhat.devtools.intellij'

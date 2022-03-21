@@ -25,5 +25,5 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew build -PremoveK8s=true -PideaVersion=${{ matrix.IJ }}
+      run: ./gradlew build -PideaVersion=${{ matrix.IJ }}
 
