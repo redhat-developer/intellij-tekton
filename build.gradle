@@ -84,7 +84,6 @@ task integrationTest(type: Test) {
     mustRunAfter test
 }
 
-
 publishPlugin {
     token    = jetBrainsToken
     channels = [jetBrainsChannel]
