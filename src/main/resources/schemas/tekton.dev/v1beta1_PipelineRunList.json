@@ -2180,6 +2180,12 @@
           },
           "type": "array"
         },
+        "matrix": {
+          "items": {
+            "$ref": "#/definitions/Param"
+          },
+          "type": "array"
+        },
         "workspaces": {
           "items": {
             "$schema": "http://json-schema.org/draft-04/schema#",
