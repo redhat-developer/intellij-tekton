@@ -1,5 +1,5 @@
 <idea-plugin>
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
-        <ProviderFactory implementation="com.redhat.devtools.intellij.common.validation.SchemasProviderFactory"/>
+        <ProviderFactory implementation="com.redhat.devtools.intellij.tektoncd.validation.TektonSchemasProviderFactory"/>
     </extensions>
 </idea-plugin>
