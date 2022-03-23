@@ -65,7 +65,7 @@ public class WindowToolFactory implements ToolWindowFactory {
             tree.setCellRenderer(new NodeRenderer());
             ActionManager actionManager = ActionManager.getInstance();
             ActionGroup group = (ActionGroup)actionManager.getAction("com.redhat.devtools.intellij.tektoncd.tree");
-            PopupHandler.installPopupHandler(tree, group, ActionPlaces.UNKNOWN, actionManager, new TektonTreePopupMenuListener());
+            PopupHandler.installPopupHandler(tree, group, ActionPlaces.POPUP, actionManager, new TektonTreePopupMenuListener());
 
             new TektonTreeDoubleClickListener(tree);
 
