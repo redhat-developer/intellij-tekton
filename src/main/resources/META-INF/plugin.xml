@@ -16,6 +16,7 @@
   <p><b>1.1.0</b></p>
   <p>Leverage the Kubernetes Plugin Push/Pull toolbar</p>
   <p>Enhanced editor content analysis<p>
+  <p>The Tekton CLI in use has been upgraded to 0.23.0</p>
   <p>Schemas for validation and code assist have been updated to Tekton Pipeline 0.34.0 and Tekton Triggers 0.19.0</p>
   <p><b>1.0.0</b></p>
   <p>Start debug session for tasks and taskruns</p>

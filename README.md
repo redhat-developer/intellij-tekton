@@ -17,6 +17,8 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 We support `v1beta1` API. Previous version `v1alpha1` may work, but we cannot guarantee that all features will work properly. If you have `v1alpha1` pipelines/tasks please use [migrating document](https://github.com/tektoncd/pipeline/blob/main/docs/migrating-v1alpha1-to-v1beta1.md) to migrate to `v1beta1`.
 
+The Tekton CLI in use has been upgraded to 0.23.0.
+
 ### Leverage the Kubernetes Plugin Push/Pull toolbar
 
 The Tekton plugin leverages the Kubernetes plugin's toolbar to push/pull resources 
@@ -25,7 +27,7 @@ The Tekton plugin leverages the Kubernetes plugin's toolbar to push/pull resourc
 
 ### Enhanced editor content analysis
 
-When creating/opening a pipeline in the editor, it analyze the yaml content to verify that all tasks/clustertasks used 
+When creating/opening a pipeline in the editor, it analyzes the yaml content to verify that all tasks/clustertasks used 
 actually exists on cluster. If not, the user is notified.
 
 ## Previous releases
