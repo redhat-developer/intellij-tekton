@@ -17,6 +17,21 @@ A JetBrains IntelliJ plugin for interacting with Tekton Pipelines. This plugin i
 
 We support `v1beta1` API. Previous version `v1alpha1` may work, but we cannot guarantee that all features will work properly. If you have `v1alpha1` pipelines/tasks please use [migrating document](https://github.com/tektoncd/pipeline/blob/main/docs/migrating-v1alpha1-to-v1beta1.md) to migrate to `v1beta1`.
 
+### Leverage the Kubernetes Plugin Push/Pull toolbar
+
+The Tekton plugin leverages the Kubernetes plugin's toolbar to push/pull resources 
+
+![](images/1.1.0/tekton1.gif)
+
+### Enhanced editor content analysis
+
+When creating/opening a pipeline in the editor, it analyze the yaml content to verify that all tasks/clustertasks used 
+actually exists on cluster. If not, the user is notified.
+
+## Previous releases
+
+## 1.0.0
+
 ### Debug task/taskrun
 
 A Task and/or a TaskRun can now be started in debug mode. The container where the taskrun will be executed
@@ -41,9 +56,6 @@ Be aware that you could meet some errors during commands execution.
 Known issues discovered by using IJ tekton plugin:
 - /tekton/debug scripts absent after step has failed [#4224](https://github.com/tektoncd/pipeline/issues/4224)
 - Params copied in all steps in saved pipeline in alpha mode on Openshift with tekton 0.29+ [#4388](https://github.com/tektoncd/pipeline/issues/4388)
-
-
-## Previous releases
 
 ## 0.12.0
 
