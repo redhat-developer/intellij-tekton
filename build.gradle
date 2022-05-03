@@ -36,8 +36,8 @@ runIdeForUiTests {
 }
 
 dependencies {
-    compile 'io.fabric8:openshift-client:5.7.2'
-    compile 'io.fabric8:tekton-client:5.7.2'
+    compile 'io.fabric8:openshift-client:5.7.4'
+    compile 'io.fabric8:tekton-client:5.7.4'
     compile 'com.redhat.devtools.intellij:intellij-common:1.5.0'
     compile 'com.redhat.devtools.alizer:alizer-api:0.1.0-SNAPSHOT'
     testCompile 'org.mockito:mockito-inline:3.8.0'
