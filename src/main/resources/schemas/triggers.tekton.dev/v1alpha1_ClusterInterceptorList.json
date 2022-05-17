@@ -189,6 +189,9 @@
           "properties": {},
           "additionalProperties": true,
           "type": "object"
+        },
+        "subresource": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
