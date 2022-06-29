@@ -237,102 +237,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "Container": {
-      "required": [
-        "name"
-      ],
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "image": {
-          "type": "string"
-        },
-        "command": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "args": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "workingDir": {
-          "type": "string"
-        },
-        "ports": {
-          "items": {
-            "$ref": "#/definitions/ContainerPort"
-          },
-          "type": "array"
-        },
-        "envFrom": {
-          "items": {
-            "$ref": "#/definitions/EnvFromSource"
-          },
-          "type": "array"
-        },
-        "env": {
-          "items": {
-            "$ref": "#/definitions/EnvVar"
-          },
-          "type": "array"
-        },
-        "resources": {
-          "$ref": "#/definitions/ResourceRequirements"
-        },
-        "volumeMounts": {
-          "items": {
-            "$ref": "#/definitions/VolumeMount"
-          },
-          "type": "array"
-        },
-        "volumeDevices": {
-          "items": {
-            "$ref": "#/definitions/VolumeDevice"
-          },
-          "type": "array"
-        },
-        "livenessProbe": {
-          "$ref": "#/definitions/Probe"
-        },
-        "readinessProbe": {
-          "$ref": "#/definitions/Probe"
-        },
-        "startupProbe": {
-          "$ref": "#/definitions/Probe"
-        },
-        "lifecycle": {
-          "$ref": "#/definitions/Lifecycle"
-        },
-        "terminationMessagePath": {
-          "type": "string"
-        },
-        "terminationMessagePolicy": {
-          "type": "string"
-        },
-        "imagePullPolicy": {
-          "type": "string"
-        },
-        "securityContext": {
-          "$ref": "#/definitions/SecurityContext"
-        },
-        "stdin": {
-          "type": "boolean"
-        },
-        "stdinOnce": {
-          "type": "boolean"
-        },
-        "tty": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
     "ContainerPort": {
       "required": [
         "containerPort"
@@ -1107,6 +1011,15 @@
         "description": {
           "type": "string"
         },
+        "properties": {
+          "patternProperties": {
+            ".*": {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "$ref": "#/definitions/PropertySpec"
+            }
+          },
+          "type": "object"
+        },
         "default": {
           "oneOf": [
             {
@@ -1277,6 +1190,15 @@
         },
         "defaultMode": {
           "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PropertySpec": {
+      "properties": {
+        "type": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -1825,6 +1747,102 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "StepTemplate": {
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "command": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "args": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "workingDir": {
+          "type": "string"
+        },
+        "ports": {
+          "items": {
+            "$ref": "#/definitions/ContainerPort"
+          },
+          "type": "array"
+        },
+        "envFrom": {
+          "items": {
+            "$ref": "#/definitions/EnvFromSource"
+          },
+          "type": "array"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/definitions/EnvVar"
+          },
+          "type": "array"
+        },
+        "resources": {
+          "$ref": "#/definitions/ResourceRequirements"
+        },
+        "volumeMounts": {
+          "items": {
+            "$ref": "#/definitions/VolumeMount"
+          },
+          "type": "array"
+        },
+        "volumeDevices": {
+          "items": {
+            "$ref": "#/definitions/VolumeDevice"
+          },
+          "type": "array"
+        },
+        "livenessProbe": {
+          "$ref": "#/definitions/Probe"
+        },
+        "readinessProbe": {
+          "$ref": "#/definitions/Probe"
+        },
+        "startupProbe": {
+          "$ref": "#/definitions/Probe"
+        },
+        "lifecycle": {
+          "$ref": "#/definitions/Lifecycle"
+        },
+        "terminationMessagePath": {
+          "type": "string"
+        },
+        "terminationMessagePolicy": {
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "type": "string"
+        },
+        "securityContext": {
+          "$ref": "#/definitions/SecurityContext"
+        },
+        "stdin": {
+          "type": "boolean"
+        },
+        "stdinOnce": {
+          "type": "boolean"
+        },
+        "tty": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "StorageOSVolumeSource": {
       "properties": {
         "volumeName": {
@@ -1964,6 +1982,9 @@
         "name": {
           "type": "string"
         },
+        "type": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         }
@@ -2003,7 +2024,7 @@
         },
         "stepTemplate": {
           "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/Container"
+          "$ref": "#/definitions/StepTemplate"
         },
         "sidecars": {
           "items": {

@@ -179,13 +179,6 @@
         "pipelineTaskName": {
           "type": "string"
         },
-        "conditionChecks": {
-          "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/PipelineRunChildConditionCheckStatus"
-          },
-          "type": "array"
-        },
         "whenExpressions": {
           "items": {
             "required": [
@@ -302,47 +295,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "ConditionCheckStatus": {
-      "required": [
-        "podName"
-      ],
-      "properties": {
-        "observedGeneration": {
-          "type": "integer"
-        },
-        "conditions": {
-          "items": {
-            "$ref": "#/definitions/Condition"
-          },
-          "type": "array"
-        },
-        "annotations": {
-          "patternProperties": {
-            ".*": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "podName": {
-          "type": "string"
-        },
-        "startTime": {
-          "type": "string",
-          "format": "data-time"
-        },
-        "completionTime": {
-          "type": "string",
-          "format": "data-time"
-        },
-        "check": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/ContainerState"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
     "ConfigMapEnvSource": {
       "properties": {
         "name": {
@@ -412,102 +364,6 @@
       "additionalProperties": false,
       "type": "object"
     },
-    "Container": {
-      "required": [
-        "name"
-      ],
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "image": {
-          "type": "string"
-        },
-        "command": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "args": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "workingDir": {
-          "type": "string"
-        },
-        "ports": {
-          "items": {
-            "$ref": "#/definitions/ContainerPort"
-          },
-          "type": "array"
-        },
-        "envFrom": {
-          "items": {
-            "$ref": "#/definitions/EnvFromSource"
-          },
-          "type": "array"
-        },
-        "env": {
-          "items": {
-            "$ref": "#/definitions/EnvVar"
-          },
-          "type": "array"
-        },
-        "resources": {
-          "$ref": "#/definitions/ResourceRequirements"
-        },
-        "volumeMounts": {
-          "items": {
-            "$ref": "#/definitions/VolumeMount"
-          },
-          "type": "array"
-        },
-        "volumeDevices": {
-          "items": {
-            "$ref": "#/definitions/VolumeDevice"
-          },
-          "type": "array"
-        },
-        "livenessProbe": {
-          "$ref": "#/definitions/Probe"
-        },
-        "readinessProbe": {
-          "$ref": "#/definitions/Probe"
-        },
-        "startupProbe": {
-          "$ref": "#/definitions/Probe"
-        },
-        "lifecycle": {
-          "$ref": "#/definitions/Lifecycle"
-        },
-        "terminationMessagePath": {
-          "type": "string"
-        },
-        "terminationMessagePolicy": {
-          "type": "string"
-        },
-        "imagePullPolicy": {
-          "type": "string"
-        },
-        "securityContext": {
-          "$ref": "#/definitions/SecurityContext"
-        },
-        "stdin": {
-          "type": "boolean"
-        },
-        "stdinOnce": {
-          "type": "boolean"
-        },
-        "tty": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
     "ContainerPort": {
       "required": [
         "containerPort"
@@ -527,21 +383,6 @@
         },
         "hostIP": {
           "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "ContainerState": {
-      "properties": {
-        "waiting": {
-          "$ref": "#/definitions/ContainerStateWaiting"
-        },
-        "running": {
-          "$ref": "#/definitions/ContainerStateRunning"
-        },
-        "terminated": {
-          "$ref": "#/definitions/ContainerStateTerminated"
         }
       },
       "additionalProperties": false,
@@ -1466,6 +1307,15 @@
         "description": {
           "type": "string"
         },
+        "properties": {
+          "patternProperties": {
+            ".*": {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "$ref": "#/definitions/PropertySpec"
+            }
+          },
+          "type": "object"
+        },
         "default": {
           "oneOf": [
             {
@@ -1745,9 +1595,6 @@
         "resourceName": {
           "type": "string"
         },
-        "resourceRef": {
-          "$ref": "#/definitions/PipelineResourceRef"
-        },
         "type": {
           "type": "integer"
         }
@@ -1824,34 +1671,6 @@
         "status": {
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/PipelineRunStatus"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "PipelineRunChildConditionCheckStatus": {
-      "properties": {
-        "conditionName": {
-          "type": "string"
-        },
-        "status": {
-          "$ref": "#/definitions/ConditionCheckStatus"
-        },
-        "conditionCheckName": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "PipelineRunConditionCheckStatus": {
-      "properties": {
-        "conditionName": {
-          "type": "string"
-        },
-        "status": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/ConditionCheckStatus"
         }
       },
       "additionalProperties": false,
@@ -1961,13 +1780,6 @@
         "serviceAccountName": {
           "type": "string"
         },
-        "serviceAccountNames": {
-          "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/PipelineRunSpecServiceAccountName"
-          },
-          "type": "array"
-        },
         "status": {
           "type": "string"
         },
@@ -1992,18 +1804,6 @@
             "$ref": "#/definitions/PipelineTaskRunSpec"
           },
           "type": "array"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "PipelineRunSpecServiceAccountName": {
-      "properties": {
-        "taskName": {
-          "type": "string"
-        },
-        "serviceAccountName": {
-          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -2092,15 +1892,6 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/TaskRunStatus"
         },
-        "conditionChecks": {
-          "patternProperties": {
-            ".*": {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "$ref": "#/definitions/PipelineRunConditionCheckStatus"
-            }
-          },
-          "type": "object"
-        },
         "whenExpressions": {
           "items": {
             "required": [
@@ -2187,13 +1978,6 @@
           "$schema": "http://json-schema.org/draft-04/schema#",
           "$ref": "#/definitions/TaskSpec"
         },
-        "conditions": {
-          "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/PipelineTaskCondition"
-          },
-          "type": "array"
-        },
         "retries": {
           "type": "integer"
         },
@@ -2209,6 +1993,7 @@
         },
         "params": {
           "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
             "$ref": "#/definitions/Param"
           },
           "type": "array"
@@ -2223,32 +2008,6 @@
         "timeout": {
           "pattern": "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
           "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "PipelineTaskCondition": {
-      "required": [
-        "conditionRef"
-      ],
-      "properties": {
-        "conditionRef": {
-          "type": "string"
-        },
-        "params": {
-          "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/Param"
-          },
-          "type": "array"
-        },
-        "resources": {
-          "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/PipelineTaskInputResource"
-          },
-          "type": "array"
         }
       },
       "additionalProperties": false,
@@ -2296,6 +2055,7 @@
       "properties": {
         "inputs": {
           "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
             "$ref": "#/definitions/PipelineTaskInputResource"
           },
           "type": "array"
@@ -2574,6 +2334,15 @@
         },
         "defaultMode": {
           "type": "integer"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PropertySpec": {
+      "properties": {
+        "type": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -3143,10 +2912,14 @@
     },
     "SkippedTask": {
       "required": [
-        "name"
+        "name",
+        "reason"
       ],
       "properties": {
         "name": {
+          "type": "string"
+        },
+        "reason": {
           "type": "string"
         },
         "whenExpressions": {
@@ -3328,6 +3101,102 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "StepTemplate": {
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "command": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "args": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "workingDir": {
+          "type": "string"
+        },
+        "ports": {
+          "items": {
+            "$ref": "#/definitions/ContainerPort"
+          },
+          "type": "array"
+        },
+        "envFrom": {
+          "items": {
+            "$ref": "#/definitions/EnvFromSource"
+          },
+          "type": "array"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/definitions/EnvVar"
+          },
+          "type": "array"
+        },
+        "resources": {
+          "$ref": "#/definitions/ResourceRequirements"
+        },
+        "volumeMounts": {
+          "items": {
+            "$ref": "#/definitions/VolumeMount"
+          },
+          "type": "array"
+        },
+        "volumeDevices": {
+          "items": {
+            "$ref": "#/definitions/VolumeDevice"
+          },
+          "type": "array"
+        },
+        "livenessProbe": {
+          "$ref": "#/definitions/Probe"
+        },
+        "readinessProbe": {
+          "$ref": "#/definitions/Probe"
+        },
+        "startupProbe": {
+          "$ref": "#/definitions/Probe"
+        },
+        "lifecycle": {
+          "$ref": "#/definitions/Lifecycle"
+        },
+        "terminationMessagePath": {
+          "type": "string"
+        },
+        "terminationMessagePolicy": {
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "type": "string"
+        },
+        "securityContext": {
+          "$ref": "#/definitions/SecurityContext"
+        },
+        "stdin": {
+          "type": "boolean"
+        },
+        "stdinOnce": {
+          "type": "boolean"
+        },
+        "tty": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "StorageOSVolumeSource": {
       "properties": {
         "volumeName": {
@@ -3460,6 +3329,9 @@
         "name": {
           "type": "string"
         },
+        "type": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         }
@@ -3476,8 +3348,21 @@
         "name": {
           "type": "string"
         },
-        "value": {
+        "type": {
           "type": "string"
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
         }
       },
       "additionalProperties": false,
@@ -3596,7 +3481,7 @@
         },
         "stepTemplate": {
           "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/Container"
+          "$ref": "#/definitions/StepTemplate"
         },
         "sidecars": {
           "items": {
@@ -4071,8 +3956,7 @@
     },
     "WorkspacePipelineTaskBinding": {
       "required": [
-        "name",
-        "workspace"
+        "name"
       ],
       "properties": {
         "name": {
