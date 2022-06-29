@@ -67,6 +67,7 @@ import org.intellij.markdown.ast.ASTNode;
 import org.intellij.markdown.flavours.MarkdownFlavourDescriptor;
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor;
 import org.intellij.markdown.html.HtmlGenerator;
+import org.intellij.markdown.html.HtmlGeneratorKt;
 import org.intellij.markdown.parser.MarkdownParser;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -399,7 +400,8 @@ public class HubDetailsPageComponent extends MultiPanel {
 
                 final MarkdownFlavourDescriptor flavour = new GFMFlavourDescriptor();
                 final ASTNode parsedTree1 = new MarkdownParser(flavour).buildMarkdownTreeFromString(text);
-                final String html = new HtmlGenerator(text, parsedTree1, flavour, false).generateHtml();
+                final HtmlGenerator generator = new HtmlGenerator(text, parsedTree1, flavour, false);
+                final String html = generator.generateHtml((HtmlGenerator.TagRenderer) new HtmlGenerator.DefaultTagRenderer(HtmlGeneratorKt.getDUMMY_ATTRIBUTES_CUSTOMIZER(), false));
 
                 updateEditor(item, myDescriptionComponent, html);
             } catch (IOException e) {
