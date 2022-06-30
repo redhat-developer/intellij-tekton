@@ -36,20 +36,16 @@ import com.redhat.devtools.intellij.tektoncd.actions.InstallFromHubAction;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.ResourceVersionData;
 import com.redhat.devtools.intellij.tektoncd.hub.model.Tag;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.event.ItemEvent;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import org.intellij.markdown.ast.ASTNode;
+import org.intellij.markdown.flavours.MarkdownFlavourDescriptor;
+import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor;
+import org.intellij.markdown.html.HtmlGenerator;
+import org.intellij.markdown.html.HtmlGeneratorKt;
+import org.intellij.markdown.parser.MarkdownParser;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.Action;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -63,16 +59,19 @@ import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
-import org.intellij.markdown.ast.ASTNode;
-import org.intellij.markdown.flavours.MarkdownFlavourDescriptor;
-import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor;
-import org.intellij.markdown.html.HtmlGenerator;
-import org.intellij.markdown.html.HtmlGeneratorKt;
-import org.intellij.markdown.parser.MarkdownParser;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Insets;
+import java.awt.event.ItemEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
@@ -219,7 +218,7 @@ public class HubDetailsPageComponent extends MultiPanel {
         HTMLEditorKit kit = UIUtil.getHTMLEditorKit();
         StyleSheet sheet = kit.getStyleSheet();
         sheet.addRule("ul {margin-left: 16px}"); // list-style-type: none;
-        sheet.addRule("a {color: " + ColorUtil.toHtmlColor(JBUI.CurrentTheme.Link.linkColor()) + "}");
+        sheet.addRule("a {color: " + ColorUtil.toHtmlColor(JBUI.CurrentTheme.Link.Foreground.ENABLED) + "}");
         editorPanel.setEditable(false);
         editorPanel.setOpaque(false);
         editorPanel.setBorder(null);
@@ -260,22 +259,9 @@ public class HubDetailsPageComponent extends MultiPanel {
         myPanel.add(bottomTabs, BorderLayout.CENTER);
     }
 
-    /*
-    * 2020.3 introduced an incompatible way of creating LinkPanel so reflection is our saver.
-     */
     @NotNull
     private LinkPanel createLinkPanel(JPanel detailsPanel) {
-        try {
-            return LinkPanel.class.getConstructor(new Class[] { JPanel.class, Boolean.TYPE, Boolean.TYPE, Object.class, Object.class}).newInstance(
-                    detailsPanel, true, false, null, null);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            try {
-                return LinkPanel.class.getConstructor(new Class[] { JPanel.class, Boolean.TYPE, Object.class, Object.class}).newInstance(
-                        detailsPanel, true, null, null);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e1) {
-                return null;
-            }
-        }
+        return new LinkPanel(detailsPanel, true, false, null, null);
     }
 
     @Override
