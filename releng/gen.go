@@ -168,8 +168,6 @@ func main() {
 	dump(&v1alpha1.TaskRunList{}, "tekton.dev/v1alpha1", "TaskRunList")
 	dump(&v1alpha1.ClusterTask{}, "tekton.dev/v1alpha1", "ClusterTask")
 	dump(&v1alpha1.ClusterTaskList{}, "tekton.dev/v1alpha1", "ClusterTaskList")
-	dump(&v1alpha1.Condition{}, "tekton.dev/v1alpha1", "Condition")
-	dump(&v1alpha1.ConditionList{}, "tekton.dev/v1alpha1", "ConditionList")
 	dump(&resource.PipelineResource{}, "tekton.dev/v1alpha1", "PipelineResource")
 	dump(&resource.PipelineResourceList{}, "tekton.dev/v1alpha1", "PipelineResourceList")
 
