@@ -11,12 +11,12 @@
 package com.redhat.devtools.intellij.tektoncd.listener;
 
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
-import javax.swing.JTree;
-import javax.swing.tree.TreePath;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 
+import javax.swing.JTree;
+import javax.swing.tree.TreePath;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -39,7 +39,7 @@ public class TektonTreeDoubleClickListenerTest {
     public void ProcessDoubleClick_OpenTektonResourceInEditor() {
         try (MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             tektonTreeDoubleClickListener.processDoubleClick(treePath);
-            treeHelperMockedStatic.verify(times(1), () -> TreeHelper.openTektonResourceInEditor(any()));
+            treeHelperMockedStatic.verify(() -> TreeHelper.openTektonResourceInEditor(any()), times(1));
         }
     }
 
