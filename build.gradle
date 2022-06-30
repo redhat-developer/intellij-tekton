@@ -23,7 +23,7 @@ intellij {
     version = ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName = 'com.redhat.devtools.intellij.tekton'
     // use '<git repo clone>/build/idea-sandbox/plugins/Telemetry by Red Hat' if working from source
-    plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.2.18", 'com.redhat.devtools.intellij.kubernetes:0.3.0.83']
+    plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.3.33", 'com.redhat.devtools.intellij.kubernetes:0.5.1.148']
     updateSinceUntilBuild = false
 }
 
@@ -36,23 +36,23 @@ runIdeForUiTests {
 }
 
 dependencies {
-    compile 'io.fabric8:openshift-client:5.7.4'
-    compile 'io.fabric8:tekton-client:5.7.4'
-    compile 'com.redhat.devtools.intellij:intellij-common:1.5.0'
+    compile 'io.fabric8:openshift-client:5.12.2'
+    compile 'io.fabric8:tekton-client:5.12.2'
+    compile 'com.redhat.devtools.intellij:intellij-common:1.7.0'
     compile 'com.redhat.devtools.alizer:alizer-api:0.1.0'
-    testCompile 'org.mockito:mockito-inline:3.8.0'
-    compile 'com.github.vlsi.mxgraph:jgraphx:4.1.0'
+    testCompile 'org.mockito:mockito-inline:4.6.1'
+    compile 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
     //Tekton Hub client dependencies
-    compile 'io.swagger:swagger-annotations:1.5.24'
-    compile 'io.gsonfire:gson-fire:1.8.4'
+    compile 'io.swagger:swagger-annotations:1.6.6'
+    compile 'io.gsonfire:gson-fire:1.8.5'
     compile 'com.google.code.findbugs:jsr305:3.0.2'
     //IntelliJ Kubernetes plugin brings old okio so we need
     //to explicitely declare it here. If the Tekton F8 is
     //updated check the version
-    compile 'com.squareup.okio:okio:1.15.0'
+    compile 'com.squareup.okio:okio:3.1.0'
     // telemetry contributes annotations 13.0.0, so we need to declare newer version
-    compile 'org.jetbrains:annotations:16.0.1'
-    testCompile 'com.redhat.devtools.intellij:intellij-common:1.5.0:test'
+    compile 'org.jetbrains:annotations:23.0.0'
+    testCompile 'com.redhat.devtools.intellij:intellij-common:1.7.0:test'
 }
 
 configurations {

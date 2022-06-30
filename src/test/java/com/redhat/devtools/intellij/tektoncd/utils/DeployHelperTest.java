@@ -15,12 +15,12 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.FixtureBaseTest;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCli;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
-import java.io.IOException;
-import java.util.function.Supplier;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 
+import java.io.IOException;
+import java.util.function.Supplier;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
 import static org.junit.Assert.assertEquals;
@@ -62,7 +62,7 @@ public class DeployHelperTest extends FixtureBaseTest {
     public void SaveOnCluster_SkipConfirmationIsTrue_IsSaveConfirmedNotCalled() {
         try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
             DeployHelper.saveOnCluster(null, pipeline_yaml, true);
-            uiHelperMockedStatic.verify(times(0), () -> UIHelper.executeInUI(any(Runnable.class)));
+            uiHelperMockedStatic.verify(() -> UIHelper.executeInUI(any(Runnable.class)), times(0));
         } catch (IOException e) { }
     }
 
@@ -75,7 +75,7 @@ public class DeployHelperTest extends FixtureBaseTest {
                 treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
                 boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, false);
                 assertFalse(returningValue);
-                uiHelperMockedStatic.verify(times(1), () -> UIHelper.executeInUI(any(Supplier.class)));
+                uiHelperMockedStatic.verify(() -> UIHelper.executeInUI(any(Supplier.class)), times(1));
             } catch (IOException e) {
                 e.printStackTrace();
             }

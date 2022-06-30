@@ -24,7 +24,6 @@ import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
-import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.CustomPodOperationsImpl;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.debug.DebugTabPanelFactory;
 import com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage.RefUsage;
 import com.redhat.devtools.intellij.tektoncd.utils.PollingHelper;
@@ -47,6 +46,7 @@ import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetCondition;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetList;
+import io.fabric8.kubernetes.client.ClientContext;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
@@ -57,7 +57,10 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
+import io.fabric8.kubernetes.client.dsl.base.OperationContext;
 import io.fabric8.kubernetes.client.dsl.internal.ExecWebSocketListener;
+import io.fabric8.kubernetes.client.dsl.internal.core.v1.PodOperationsImpl;
+import io.fabric8.kubernetes.client.http.HttpClient;
 import io.fabric8.kubernetes.client.utils.HttpClientUtils;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.openshift.client.OpenShiftClient;
@@ -448,7 +451,7 @@ public class TknCli implements Tkn {
 
     @Override
     public  List<RefUsage> findTaskUsages(String kind, String resource) throws IOException {
-        String jsonPathExpr = "jsonpath=\\\"{range .items[*]}{@.metadata.name}|{range .spec.tasks[*]}{.taskRef.kind},{.taskRef.name}|{end}{end}\\\"";
+        String jsonPathExpr = "jsonpath=\"{range .items[*]}{@.metadata.name}|{range .spec.tasks[*]}{.taskRef.kind},{.taskRef.name}|{end}{end}\"";
         String result = ExecHelper.execute(command, envVars, "pipeline", "ls", "-n", getNamespace(), "-o", jsonPathExpr);
         String[] resultSplitted = result.replace("\"", "").split("\\|");
         List<RefUsage> usages = new ArrayList<>();
@@ -1066,7 +1069,9 @@ public class TknCli implements Tkn {
 
     public ExecWatch customExecCommandInContainer(Pod pod, String containerId, String... command) {
         Config config = new ConfigBuilder().build();
-        CustomPodOperationsImpl podOperations = new CustomPodOperationsImpl(HttpClientUtils.createHttpClient(config), config);
+        HttpClient client = HttpClientUtils.createHttpClient(config);
+        ClientContext context = new OperationContext().withHttpClient(client).withConfig(config);
+        PodOperationsImpl podOperations = new PodOperationsImpl(context);
         return podOperations.inNamespace(pod.getMetadata().getNamespace())
                 .withName(pod.getMetadata().getName())
                 .inContainer(containerId)
