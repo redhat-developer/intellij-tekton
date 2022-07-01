@@ -13,6 +13,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>1.2.0</b></p>
+  <p>Update minimum IDEA version supported - 2021.1</p>
+  <p>The Tekton CLI in use has been upgraded to 0.24.0</p>
+  <p>Schemas for validation and code assist have been updated to Tekton Pipeline 0.37.0 and Tekton Triggers 0.20.1</p>
   <p><b>1.1.0</b></p>
   <p>Leverage the Kubernetes Plugin Push/Pull toolbar</p>
   <p>Enhanced editor content analysis<p>
