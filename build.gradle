@@ -52,7 +52,7 @@ dependencies {
     compile 'com.squareup.okio:okio:3.1.0'
     // telemetry contributes annotations 13.0.0, so we need to declare newer version
     compile 'org.jetbrains:annotations:23.0.0'
-    testCompile 'com.redhat.devtools.intellij:intellij-common:1.7.0:test'
+    testCompile 'com.redhat.devtools.intellij:intellij-common:1.7.1:test'
 }
 
 configurations {
