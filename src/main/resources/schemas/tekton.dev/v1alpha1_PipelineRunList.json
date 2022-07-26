@@ -3322,8 +3322,7 @@
     },
     "TaskResult": {
       "required": [
-        "name",
-        "description"
+        "name"
       ],
       "properties": {
         "name": {
