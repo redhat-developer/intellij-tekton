@@ -1215,11 +1215,24 @@
         "name": {
           "type": "string"
         },
+        "type": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
         "value": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
         }
       },
       "additionalProperties": false,
@@ -2092,6 +2105,22 @@
         },
         "onError": {
           "type": "string"
+        },
+        "stdoutConfig": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/StepOutputConfig"
+        },
+        "stderrConfig": {
+          "$ref": "#/definitions/StepOutputConfig"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "StepOutputConfig": {
+      "properties": {
+        "path": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -2311,6 +2340,14 @@
         },
         "type": {
           "type": "string"
+        },
+        "properties": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/PropertySpec"
+            }
+          },
+          "type": "object"
         },
         "description": {
           "type": "string"
