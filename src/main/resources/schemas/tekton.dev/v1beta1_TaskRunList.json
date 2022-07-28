@@ -2348,6 +2348,22 @@
         },
         "onError": {
           "type": "string"
+        },
+        "stdoutConfig": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/StepOutputConfig"
+        },
+        "stderrConfig": {
+          "$ref": "#/definitions/StepOutputConfig"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "StepOutputConfig": {
+      "properties": {
+        "path": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -2634,6 +2650,14 @@
         "type": {
           "type": "string"
         },
+        "properties": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/PropertySpec"
+            }
+          },
+          "type": "object"
+        },
         "description": {
           "type": "string"
         }
@@ -2829,6 +2853,9 @@
             "$ref": "#/definitions/TaskRunSidecarOverride"
           },
           "type": "array"
+        },
+        "computeResources": {
+          "$ref": "#/definitions/ResourceRequirements"
         }
       },
       "additionalProperties": false,
@@ -3380,6 +3407,12 @@
         },
         "secret": {
           "$ref": "#/definitions/SecretVolumeSource"
+        },
+        "projected": {
+          "$ref": "#/definitions/ProjectedVolumeSource"
+        },
+        "csi": {
+          "$ref": "#/definitions/CSIVolumeSource"
         }
       },
       "additionalProperties": false,

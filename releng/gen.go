@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/iancoleman/orderedmap"
 	"github.com/redhat-developer/tekton-jsongenerator/jsonschema"
-	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	resource "github.com/tektoncd/pipeline/pkg/apis/resource/v1alpha1"
 	triggersv1alpha1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
@@ -20,7 +19,7 @@ import (
 )
 
 func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
-	if (i == reflect.TypeOf(v1alpha1.ArrayOrString{}) || i == reflect.TypeOf(v1beta1.ArrayOrString{})) {
+	if (i == reflect.TypeOf(v1beta1.ArrayOrString{})) {
 		return &jsonschema.Type{
 			OneOf: []*jsonschema.Type{
 				{
@@ -158,16 +157,6 @@ func main() {
 	os.Create("index.properties")
 	os.Mkdir("tekton.dev", os.ModePerm)
 	os.Mkdir("triggers.tekton.dev", os.ModePerm)
-	dump(&v1alpha1.Pipeline{}, "tekton.dev/v1alpha1", "Pipeline")
-	dump(&v1alpha1.PipelineList{}, "tekton.dev/v1alpha1", "PipelineList")
-	dump(&v1alpha1.PipelineRun{}, "tekton.dev/v1alpha1", "PipelineRun")
-	dump(&v1alpha1.PipelineRunList{}, "tekton.dev/v1alpha1", "PipelineRunList")
-	dump(&v1alpha1.Task{}, "tekton.dev/v1alpha1", "Task")
-	dump(&v1alpha1.TaskList{}, "tekton.dev/v1alpha1", "TaskList")
-	dump(&v1alpha1.TaskRun{}, "tekton.dev/v1alpha1", "TaskRun")
-	dump(&v1alpha1.TaskRunList{}, "tekton.dev/v1alpha1", "TaskRunList")
-	dump(&v1alpha1.ClusterTask{}, "tekton.dev/v1alpha1", "ClusterTask")
-	dump(&v1alpha1.ClusterTaskList{}, "tekton.dev/v1alpha1", "ClusterTaskList")
 	dump(&resource.PipelineResource{}, "tekton.dev/v1alpha1", "PipelineResource")
 	dump(&resource.PipelineResourceList{}, "tekton.dev/v1alpha1", "PipelineResourceList")
 
