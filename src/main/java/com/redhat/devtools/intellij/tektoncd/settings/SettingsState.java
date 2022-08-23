@@ -33,6 +33,7 @@ public class SettingsState implements PersistentStateComponent<SettingsState> {
     public boolean displayLogsInEditor = false;
     public boolean displayCleanedYAMLInEditor = false;
     public List<String> bundleList = new ArrayList<>();
+    public String courseVersion = "0.0";
 
     public static SettingsState getInstance() {
         return ServiceManager.getService(SettingsState.class);

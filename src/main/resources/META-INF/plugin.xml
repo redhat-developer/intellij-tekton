@@ -250,6 +250,7 @@
     <intentionAction>
       <className>com.redhat.devtools.intellij.tektoncd.intention.TaskSpecToTaskRefAction</className>
     </intentionAction>
+    <toolWindow id="TektonGettingStarted" anchor="right" factoryClass="com.redhat.devtools.intellij.tektoncd.ui.toolwindow.GettingStartedToolWindow" canCloseContents="false" />
   </extensions>
   <actions>
     <group id="com.redhat.devtools.intellij.tektoncd.tree" popup="true">
@@ -286,6 +287,7 @@
       <action id="com.redhat.devtools.intellij.common.actions.editor.RestoreYAMLClutterAction" class="com.redhat.devtools.intellij.common.actions.editor.RestoreYAMLClutterAction" text="Restore YAML Clutter">
         <add-to-group group-id="EditorPopupMenu" anchor="first"/>
       </action>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.OpenGettingStartedAction" class="com.redhat.devtools.intellij.tektoncd.actions.OpenGettingStartedAction" text="Getting Started" />
     </group>
 
     <group id="com.redhat.devtools.intellij.tektoncd.view.actionsToolbar" popup="true">
