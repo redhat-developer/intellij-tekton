@@ -84,95 +84,105 @@ public class GettingStartedToolWindow implements ToolWindowFactory {
     }
 
     private GettingStartedGroupLessons buildMainTektonLessons() {
-        URL gifTreeLesson = getLessonGif("placeholder.gif");
+        URL gifTreeLesson = getGeneralLessonGif("supportPipelinesAndTriggers.gif");
         GettingStartedLesson supportPipelineAndTriggerLesson = new GettingStartedLesson(
                 "Support for Tekton Configurations, Pipelines and Triggers",
-                "<html><p>Based on the Tekton components installed within the active cluster the user is working on, " +
-                        "the plugin shows the corresponding nodes and actions in the tree.</p>" +
-                        "<p>The installed Pipelines component gives access to the Pipelines, Tasks and *Runs resources, the Triggers " +
-                        "component to EventListeners, TriggerTemplates and TriggerBindings.</p>" +
-                        "<p>The Configurations node is always visible and allows to check the current settings in read-only mode</p></html>",
+                "<html><p>Based on the Tekton components installed and the configuration of the active cluster " +
+                        "which the plugin is connected to, the tree of the Tekton tool window shows the corresponding " +
+                        "nodes and all allowed actions by using the context menu (right-click on a tree node).</p>" +
+                        "<p>The plugin is able to detect remotely two components: the Pipelines component which enables " +
+                        "the Pipelines, Tasks and *Runs resources tree nodes and the Triggers component give access to " +
+                        "EventListeners, TriggerTemplates and TriggerBindings nodes.</p>" +
+                        "<p>The Configurations node is always visible and allows to check the current Tekton settings " +
+                        "in read-only mode</p></html>",
                 Collections.emptyList(),
                 gifTreeLesson
         );
 
-        URL gifNewFuncLesson = getLessonGif("placeholder.gif");
+        URL gifNewFuncLesson = getGeneralLessonGif("createPipeline.gif");
         GettingStartedLesson createPipelineLesson = new GettingStartedLesson(
                 "Create new resource",
                 "<html><p>The plugin provides a smart yaml-code completion support which make it easy to create " +
-                        "any Tekton resource within the IDE's editor.</p>" +
-                        "<p>By executing the `New <resourceName>` action a new editor tab opens up with a snippet " +
-                        "for that resource. E.g. right-click the Pipelines node in the tree and select `New pipeline` in the " +
-                        "context menu </p></html>",
+                        "any Tekton resource by using the IDE editor.</p>" +
+                        "<p>By executing the `New <resource>` action a new editor tab opens up with a snippet " +
+                        "for that specific resource. Right-click on a Kind node (e.g Pipelines) in the tree and select " +
+                        "the New action (e.g `New pipeline`) in the context menu. " +
+                        "Once you have done editing it, click the Push action in the top toolbar or in the " +
+                        "notification bar.</p></html>",
                 Collections.emptyList(),
                 gifNewFuncLesson
         );
 
-        URL gifBuildFuncLesson = getLessonGif("placeholder.gif");
+        URL gifBuildFuncLesson = getGeneralLessonGif("startPipeline.gif");
         GettingStartedLesson startPipelineLesson = new GettingStartedLesson(
                 "Start a pipeline/task",
                 "<html>" +
-                        "<p>After having created/edited your pipeline/task you can start it by executing the `Start Pipeline/Task` " +
-                        "action.</p>" +
-                        "<p>A wizard will pop up leading you through the process of setting all inputs necessary to " +
+                        "<p>After having created/edited your pipeline/task and successfully pushed it on cluster, you can " +
+                        "run it by executing the `Start Pipeline/Task` action. " +
+                        "A wizard will pop up leading you through the process of setting all inputs necessary to " +
                         "get it started (params, workspaces, service accounts, ..). " +
-                        "By default if the pipeline/task has no inputs, it will get started directly " +
-                        "without the wizard step. You can change this behavior by updating the plugin's settings. </p>" +
+                        "<p>N.B: By default if the pipeline/task has no inputs, it will get started directly " +
+                        "without the wizard popping up. You can change this behavior by updating the plugin's settings " +
+                        "(File -> Settings -> Tools -> Tekton Pipelines By Red Hat). </p>" +
                         "<p>If you already run a pipeline/task earlier and wants to run it again with the same inputs " +
                         "you did last time, you can achieve it by executing the `Start Last Run` action from the " +
                         "Pipelines/Tasks context menu nodes</p>" +
-                        "<p>Opposite if you want to start a pipeline/task with the same inputs of an old run, you can do " +
-                        "it by selecting the old pipelinerun/taskrun node and execute the `Mirror Start` action. " +
-                        "This will open up the wizard pre-filled with the inputs used to start that pipeline/task in the past</p>" +
+                        "<p>Opposite, if you want to start a pipeline/task with the same inputs of a specific old run " +
+                        "(not the latest), you can do it by selecting the old pipelinerun/taskrun node and execute the " +
+                        "`Mirror Start` action. This will open up the wizard pre-filled with the inputs used to start " +
+                        "that pipeline/task in the past</p>" +
                         "</html>",
                 Collections.emptyList(),
                 gifBuildFuncLesson
         );
 
-        URL gifDeployFuncLesson = getLessonGif("placeholder.gif");
+        URL gifDeployFuncLesson = getGeneralLessonGif("logsDiagnostic.gif");
         GettingStartedLesson logsLesson = new GettingStartedLesson(
                 "Logs and diagnostic data",
-                "<html><p>Logs are displayed automatically after a pipeline or a task gets started and/or can be retrieved " +
-                        "by using the `Show Logs` and `Follow Logs` actions</p>" +
-                        "<p>However, there are situations when logs are not printed out after starting a pipeline/task " +
-                        "(e.g when creating a pvc with a size larger than the one supported by the cluster) and the only" +
-                        " way to find infos about the failure is to fetch them from resources created by the run itself " +
-                        "(pods, pvc, ..). To do this, you can use the `Show Diagnostic Data` action available when " +
+                "<html><p>Logs are displayed automatically after a pipeline or a task starts and/or can be " +
+                        "retrieved by using the `Show Logs` and `Follow Logs` actions.</p>" +
+                        "<p>In case logs are not enough to identify the issue or they are not printed out at all " +
+                        "(e.g a pvc with a size larger than the one supported by the cluster is needed and the pipelinerun/" +
+                        "taskrun fails at starting) you can fetch additional data from the resources created by the operator " +
+                        "(pods, pvc, ..). " +
+                        "To do this, just execute the `Show Diagnostic Data` action available when " +
                         "right clicking a pipelinerun or taskrun node.</p></html>",
                 Collections.emptyList(),
                 gifDeployFuncLesson
         );
 
-        URL gifRunFuncLesson = getLessonGif("placeholder.gif");
+        URL gifRunFuncLesson = getGeneralLessonGif("debugTekton.gif");
         GettingStartedLesson debugLesson = new GettingStartedLesson(
                 "Debug in Tekton",
                 "<html><p>When a task fails its execution and looking at the logs it is not enough to identify " +
                         "the issue, you can think at starting it in debug mode. This way the container where the taskrun " +
                         "is executed will be kept running even when the run fails. A terminal connected to the container " +
-                        "will be opened in the IDE so you can interact with it and identify any possible misbehavior/error.</p>" +
-                        "<p>To use the debug feature, you must have access to a Kubernetes or OpenShift cluster with Tekton " +
-                        "installed with a version greater than 0.26.0 and enable alpha mode -> " +
-                        "`enable-api-fields: alpha` in the Features configuration file.</p>" +
-                        "<p>N.B: Debugging is only available for tasks</p></html>",
+                        "will be opened in the IDE allowing you to interact with it and identify any possible misbehavior/error " +
+                        "in the environment (e.g some dependencies not downloaded correctly in the previous steps).</p>" +
+                        "<p>`Start in Debug mode` action is enabled and visible for Task and TaskRun nodes if and only if the " +
+                        "version of the Tekton operator installed on cluster is greater than 0.26.0 and its alpha mode is enabled. " +
+                        "To verify it, check that the `enable-api-fields` property is set to `alpha` in the Features configuration " +
+                        "file.</p></html>",
                 Collections.emptyList(),
                 gifRunFuncLesson
         );
 
-        URL gifTektonHubLesson = getLessonGif("placeholder.gif");
+        URL gifTektonHubLesson = getGeneralLessonGif("tektonHub.gif");
         GettingStartedLesson tektonHubLesson = new GettingStartedLesson(
                 "Tekton Hub",
-                "<html><p>The plugin provides a direct access to the Tekton Hub to search and import reusable pipelines and " +
-                        "tasks from the IDE.</p>" +
+                "<html><p>The plugin provides a direct access to the Tekton Hub to search and import reusable " +
+                        "pipelines and tasks from the IDE.</p>" +
                         "<p>The Recommended view suggests pipelines and tasks based on the active project" +
-                        "opened in the IDE.</p>" +
+                        "opened in JetBrains.</p>" +
                         "<p>Each resource has its own version and the newest one is always installed by default. " +
-                        "It is also possible to import an older version by selecting it in the Hub wizard. " +
+                        "It is also possible to import an older version by selecting it in the Hub wizard when " +
+                        "clicking on the hub resource name you want to install. " +
                         "</p></html>",
                 Collections.emptyList(),
                 gifTektonHubLesson
         );
 
-        GettingStartedGroupLessons groupLessons = new GettingStartedGroupLessons(
+        return new GettingStartedGroupLessons(
                 "Tekton Pipelines and Triggers",
                 "Create, deploy and manage your Tekton resources without leaving your preferred IDE",
                 supportPipelineAndTriggerLesson,
@@ -181,38 +191,37 @@ public class GettingStartedToolWindow implements ToolWindowFactory {
                 logsLesson,
                 debugLesson,
                 tektonHubLesson);
-        return groupLessons;
     }
 
     private GettingStartedGroupLessons buildTektonCodeCompletionLessons() {
-        URL gifTreeLesson = getLessonGif("placeholder.gif");
+        URL gifTreeLesson = getCodeCompletionLessonGif("taskRef.gif");
         GettingStartedLesson taskRefLesson = new GettingStartedLesson(
                 "List all tasks for taskRef field",
-                "<html><p>When creating or editing a pipeline step, you can make the plugin import all params, workspaces and " +
-                        "resources of a task without typing them by hand.</p>" +
+                "<html><p>When creating or editing a pipeline step, you can make the plugin import all params, " +
+                        "workspaces and resources of a task without typing them by hand.</p>" +
                         "<p>In the pipeline yaml type the `name:` keyword below the `taskRef:` section. " +
                         "A list of all tasks will be shown and by selecting one of them, the pipeline will be filled accordingly. " +
-                        "If a task input has a default value it will be copied in the pipeline." +
+                        "If a task input has a default value it will also be imported in the pipeline." +
                         "</p></html>",
                 Collections.emptyList(),
                 gifTreeLesson
         );
 
-        URL gifNewFuncLesson = getLessonGif("placeholder.gif");
+        URL gifNewFuncLesson = getCodeCompletionLessonGif("runAfter.gif");
         GettingStartedLesson runAfterLesson = new GettingStartedLesson(
                 "List all tasks in current pipeline for runAfter field",
-                "<html><p>When adding a runAfter clause to a step, the plugin provides the list of all tasks" +
-                        "available in the pipeline to select the ones wanted easily.</p>" +
+                "<html><p>When adding a runAfter clause to a step, the plugin provides the list of all tasks " +
+                        "available in the pipeline to select the ones needed.</p>" +
                         "</html>",
                 Collections.emptyList(),
                 gifNewFuncLesson
         );
 
-        URL gifBuildFuncLesson = getLessonGif("placeholder.gif");
+        URL gifBuildFuncLesson = getCodeCompletionLessonGif("inputCompletion.gif");
         GettingStartedLesson inputsCompletionLesson = new GettingStartedLesson(
                 "Suggest inputs for step resources",
                 "<html>" +
-                        "<p>When filling the params, workspaces, resources needed by a task step, the plugin shows up the " +
+                        "<p>When filling the params, workspaces, resources field in a task step, the plugin shows up the " +
                         "list of pipeline inputs that can be used within the step.</p>" +
                         "<p>Also the when clause and the old conditions CRD are supported</p>" +
                         "</html>",
@@ -220,16 +229,23 @@ public class GettingStartedToolWindow implements ToolWindowFactory {
                 gifBuildFuncLesson
         );
 
-        GettingStartedGroupLessons groupLessons = new GettingStartedGroupLessons(
+        return new GettingStartedGroupLessons(
                 "Tekton Code Completion",
                 "Creating or editing a Tekton resource is made easier",
                 taskRefLesson,
                 runAfterLesson,
                 inputsCompletionLesson);
-        return groupLessons;
+    }
+
+    private URL getGeneralLessonGif(String name) {
+        return getLessonGif("tekton-general/" + name);
+    }
+
+    private URL getCodeCompletionLessonGif(String name) {
+        return getLessonGif("tekton-codecompletion/" + name);
     }
 
     private URL getLessonGif(String name) {
-        return GettingStartedToolWindow.class.getResource("/gettingstarted/tekton-general/" + name);
+        return GettingStartedToolWindow.class.getResource("/gettingstarted/" + name);
     }
 }
