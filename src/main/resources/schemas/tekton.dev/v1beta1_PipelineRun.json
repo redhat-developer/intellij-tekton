@@ -1071,6 +1071,18 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "Matrix": {
+      "properties": {
+        "params": {
+          "items": {
+            "$ref": "#/definitions/Param"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "NFSVolumeSource": {
       "required": [
         "server",
@@ -1559,10 +1571,10 @@
         "resolver": {
           "type": "string"
         },
-        "resource": {
+        "params": {
           "items": {
             "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/ResolverParam"
+            "$ref": "#/definitions/Param"
           },
           "type": "array"
         }
@@ -1901,6 +1913,10 @@
             "$ref": "#/definitions/ChildStatusReference"
           },
           "type": "array"
+        },
+        "finallyStartTime": {
+          "type": "string",
+          "format": "data-time"
         }
       },
       "additionalProperties": false,
@@ -2048,16 +2064,13 @@
         },
         "params": {
           "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
             "$ref": "#/definitions/Param"
           },
           "type": "array"
         },
         "matrix": {
-          "items": {
-            "$ref": "#/definitions/Param"
-          },
-          "type": "array"
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/Matrix"
         },
         "workspaces": {
           "items": {
@@ -2516,22 +2529,6 @@
         },
         "readOnly": {
           "type": "boolean"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "ResolverParam": {
-      "required": [
-        "name",
-        "value"
-      ],
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -3385,9 +3382,9 @@
         "resolver": {
           "type": "string"
         },
-        "resource": {
+        "params": {
           "items": {
-            "$ref": "#/definitions/ResolverParam"
+            "$ref": "#/definitions/Param"
           },
           "type": "array"
         }
