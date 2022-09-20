@@ -16,9 +16,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.redhat.devtools.intellij.common.kubernetes.ClusterHelper;
 import com.redhat.devtools.intellij.common.kubernetes.ClusterInfo;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.MetadataClutter;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
@@ -92,6 +94,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,6 +102,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -111,10 +116,17 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUN
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SKIP_OPTIONAL_WORKSPACES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_ALPHA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_BETA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.IS_OPENSHIFT;
@@ -1115,6 +1127,53 @@ public class TknCli implements Tkn {
             data = "message:" + message;
         }
         return data + "\n";
+    }
+
+    public List<String> getResourcesAsYaml(List<Resource> resources) throws IOException {
+        String ns = getNamespace();
+        CompletableFuture[] futures = resources.stream().map(resource -> CompletableFuture.supplyAsync(() -> {
+            try {
+                switch (resource.type()) {
+                    case KIND_PIPELINE: return MetadataClutter.remove(getPipelineYAML(ns, resource.name()), false);
+                    case KIND_TASK: return MetadataClutter.remove(getTaskYAML(ns, resource.name()), false);
+                    case KIND_CLUSTERTASK: return MetadataClutter.remove(getClusterTaskYAML(resource.name()), false);
+                    case KIND_RESOURCE: return MetadataClutter.remove(getResourceYAML(ns, resource.name()), false);
+                    case KIND_TASKRUN: return MetadataClutter.remove(getTaskRunYAML(ns, resource.name()), false);
+                    case KIND_PIPELINERUN: return MetadataClutter.remove(getPipelineRunYAML(ns, resource.name()), false);
+                    case KIND_EVENTLISTENER: return MetadataClutter.remove(getEventListenerYAML(ns, resource.name()), false);
+                    case KIND_TRIGGERBINDING: return MetadataClutter.remove(getTriggerBindingYAML(ns, resource.name()), false);
+                    case KIND_TRIGGERTEMPLATE: return MetadataClutter.remove(getTriggerTemplateYAML(ns, resource.name()), false);
+                    case KIND_CLUSTERTRIGGERBINDING: return MetadataClutter.remove(getClusterTriggerBindingYAML(resource.name()), false);
+                }
+            } catch (IOException ignored) {}
+            return "";
+        })).toArray(CompletableFuture[]::new);
+
+        try {
+            CompletableFuture.allOf(futures).join();
+        } catch (Exception e) {
+            throw new IOException(e.getLocalizedMessage(), e);
+        }
+
+        List<String> resourcesAsYaml = new ArrayList<>();
+        for (CompletableFuture future: futures) {
+            try {
+                resourcesAsYaml.add(future.get().toString());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new IOException(e.getLocalizedMessage(), e);
+            }
+        }
+        return resourcesAsYaml;
+    }
+
+    public void deployBundle(String image, List<String> resources) throws IOException {
+        String res = String.join("---\n", resources);
+        VirtualFile file = VirtualFileHelper.createVirtualFile("bundle-" + LocalDateTime.now() + ".yaml", res, false);
+        try {
+            ExecHelper.execute(command, envVars, "bundle", "push", image, "-f", file.getPath());
+        } finally {
+            //file.delete(this);
+        }
     }
 
     @Override

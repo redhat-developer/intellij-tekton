@@ -47,11 +47,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class TektonTreeStructure extends AbstractTreeStructure implements MutableModel<Object>, ConfigWatcher.Listener {
     private final Project project;
     private Config config;
-    private TektonRootNode root;
+    protected TektonRootNode root;
 
-    private static final String ERROR = "Please log in to the cluster";
+    protected static final String ERROR = "Please log in to the cluster";
 
-    private static final String NO_TEKTON = "Tekton not installed on the cluster";
+    protected static final String NO_TEKTON = "Tekton not installed on the cluster";
 
     private static final Icon CLUSTER_ICON = IconLoader.findIcon("/images/cluster.png", TektonTreeStructure.class);
 
@@ -211,7 +211,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         }
     }
 
-    private Object[] getConditions(ConditionsNode element) {
+    protected Object[] getConditions(ConditionsNode element) {
         List<Object> conditions = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
@@ -222,7 +222,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return conditions.toArray(new Object[conditions.size()]);
     }
 
-    private Object[] getEventListenersNode(EventListenersNode element) {
+    protected Object[] getEventListenersNode(EventListenersNode element) {
         List<Object> eventListeners = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
@@ -233,7 +233,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return eventListeners.toArray(new Object[eventListeners.size()]);
     }
 
-    private Object[] getClusterTriggerBindingsNode(ClusterTriggerBindingsNode element) {
+    protected Object[] getClusterTriggerBindingsNode(ClusterTriggerBindingsNode element) {
         List<Object> ctbs = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
@@ -244,7 +244,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return ctbs.toArray(new Object[ctbs.size()]);
     }
 
-    private Object[] getTriggerBindings(TriggerBindingsNode element) {
+    protected Object[] getTriggerBindings(TriggerBindingsNode element) {
         List<Object> triggerBindings = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
@@ -255,7 +255,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return triggerBindings.toArray(new Object[triggerBindings.size()]);
     }
 
-    private Object[] getTriggerTemplates(TriggerTemplatesNode element) {
+    protected Object[] getTriggerTemplates(TriggerTemplatesNode element) {
         List<Object> triggerTemplates = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
@@ -357,7 +357,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return pipelineRuns.toArray(new Object[pipelineRuns.size()]);
     }
 
-    private Object[] getResources(ResourcesNode element) {
+    protected Object[] getResources(ResourcesNode element) {
         List<Object> resources = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
@@ -368,7 +368,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return resources.toArray(new Object[resources.size()]);
     }
 
-    private Object[] getClusterTasks(ClusterTasksNode element) {
+    protected Object[] getClusterTasks(ClusterTasksNode element) {
         List<Object> tasks = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
@@ -380,7 +380,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return tasks.toArray(new Object[tasks.size()]);
     }
 
-    private Object[] getPipelines(PipelinesNode element) {
+    protected Object[] getPipelines(PipelinesNode element) {
         List<Object> pipelines = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();
@@ -392,7 +392,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
         return pipelines.toArray(new Object[pipelines.size()]);
     }
 
-    private Object[] getTasks(TasksNode element) {
+    protected Object[] getTasks(TasksNode element) {
         List<Object> tasks = new ArrayList<>();
         try {
             Tkn tkn = element.getRoot().getTkn();

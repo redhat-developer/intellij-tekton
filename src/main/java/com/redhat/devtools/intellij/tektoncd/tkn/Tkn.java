@@ -861,6 +861,10 @@ public interface Tkn {
      */
     String getPipelineYAMLFromHub(String pipeline, String version) throws IOException;
 
+    List<String> getResourcesAsYaml(List<Resource> resources) throws IOException;
+
+    void deployBundle(String image, List<String> resources) throws IOException;
+
     URL getMasterUrl();
 
     <T> T getClient(Class<T> clazz);

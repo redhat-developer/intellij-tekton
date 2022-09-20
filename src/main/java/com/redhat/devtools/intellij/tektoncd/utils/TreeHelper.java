@@ -45,16 +45,16 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.tree.TreePath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
@@ -163,6 +163,33 @@ public class TreeHelper {
             UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
         }
         return yamlAndKind;
+    }
+
+    public static String getKindFromNode(ParentableNode<?> node) {
+        if (node instanceof PipelineNode) {
+            return KIND_PIPELINE;
+        } else if (node instanceof ResourceNode) {
+            return KIND_RESOURCE;
+        } else if (node instanceof TaskNode) {
+            return KIND_TASK;
+        } else if (node instanceof ClusterTaskNode) {
+            return KIND_CLUSTERTASK;
+        } else if (node instanceof ConditionNode) {
+            return KIND_CONDITION;
+        } else if (node instanceof TriggerTemplateNode) {
+            return KIND_TRIGGERTEMPLATE;
+        } else if (node instanceof TriggerBindingNode) {
+            return KIND_TRIGGERBINDING;
+        } else if (node instanceof ClusterTriggerBindingNode) {
+            return KIND_CLUSTERTRIGGERBINDING;
+        } else if (node instanceof EventListenerNode) {
+            return KIND_EVENTLISTENER;
+        } else if (node instanceof TaskRunNode) {
+            return KIND_TASKRUN;
+        } else if (node instanceof PipelineRunNode) {
+            return KIND_PIPELINERUN;
+        }
+        return "";
     }
 
     public static void openTektonResourceInEditor(TreePath path) {

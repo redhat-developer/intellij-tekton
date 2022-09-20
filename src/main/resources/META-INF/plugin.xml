@@ -286,6 +286,7 @@
       <action id="com.redhat.devtools.intellij.common.actions.editor.RestoreYAMLClutterAction" class="com.redhat.devtools.intellij.common.actions.editor.RestoreYAMLClutterAction" text="Restore YAML Clutter">
         <add-to-group group-id="EditorPopupMenu" anchor="first"/>
       </action>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateBundleAction" class="com.redhat.devtools.intellij.tektoncd.actions.CreateBundleAction" text="Create Bundle"/>
     </group>
   </actions>
 
