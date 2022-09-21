@@ -16,10 +16,12 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.ui.Divider;
+import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.OnePixelSplitter;
@@ -49,6 +51,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.TEKTON_TOOLBAR_ACTION_GROUP_ID;
+import static com.redhat.devtools.intellij.tektoncd.Constants.TOOLBAR_PLACE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
 
 public class WindowToolFactory implements ToolWindowFactory {
@@ -77,7 +81,9 @@ public class WindowToolFactory implements ToolWindowFactory {
                         .withInstalled()
                         .build(Optional.empty());
 
-                OnePixelSplitter tabPanel = createTabPanel(new JBScrollPane(tree), hubItemsListPanel);
+                SimpleToolWindowPanel panel = createPanelWithTree(tree);
+                addToolbarMenuToPanel(panel);
+                OnePixelSplitter tabPanel = createTabPanel(panel, hubItemsListPanel);
 
                 toolWindow.getContentManager().addContent(contentFactory.createContent(tabPanel, "", false));
                 executeOnProjectClosing(project, () -> {
@@ -88,6 +94,18 @@ public class WindowToolFactory implements ToolWindowFactory {
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             throw new RuntimeException((e));
         }
+    }
+
+    private SimpleToolWindowPanel createPanelWithTree(Tree tree) {
+        SimpleToolWindowPanel panel = new SimpleToolWindowPanel(true, true);
+        panel.setContent(new JBScrollPane(tree));
+        return panel;
+    }
+
+    private void addToolbarMenuToPanel(SimpleToolWindowPanel panel) {
+        ActionManager actionManager = ActionManager.getInstance();
+        ActionToolbar actionToolbar = actionManager.createActionToolbar(TOOLBAR_PLACE, (ActionGroup) actionManager.getAction(TEKTON_TOOLBAR_ACTION_GROUP_ID), true);
+        panel.setToolbar(actionToolbar.getComponent());
     }
 
     private OnePixelSplitter createTabPanel(JComponent firstComp, JComponent secondComp) {

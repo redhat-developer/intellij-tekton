@@ -13,8 +13,10 @@ package com.redhat.devtools.intellij.tektoncd.ui.bundle;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Divider;
@@ -29,6 +31,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.JBUI;
 import com.redhat.devtools.intellij.common.tree.LabelAndIconDescriptor;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.tkn.Bundle;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
@@ -74,6 +77,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
@@ -319,22 +323,28 @@ public class CreateBundleDialog extends DialogWrapper {
             try {
                 List<String> yamlOfResources = tkn.getResourcesAsYaml(resources);
                 deployResources(imageName, yamlOfResources);
-                ApplicationManager.getApplication().invokeLater(super::doOKAction);
+                Notification notification = new Notification(NOTIFICATION_ID, "Bundle deployed successful", imageName + " has been successfully deployed!", NotificationType.INFORMATION);
+                Notifications.Bus.notify(notification);
+                UIHelper.executeInUI(super::doOKAction);
             } catch (IOException e) {
-                if (e.getLocalizedMessage().toLowerCase().contains("unauthorized")) {
-                    // TODO ask for username/psw when issue in cli is fixed
-                    //  now show message to inform user needs to add configuration to docker config.json or podman auth.json
-                    //UIHelper.executeInUI(() -> {
-                    lblGeneralError.setText("<html>The plugin does not support dynamic authentication. Please set up the docker.config " +
-                                        "and/or podman's auth.json in your home directory to deploy to your registry and try again</html>");
+                // TODO ask for username/psw when issue in cli is fixed
+                //  now show message to inform user needs to add configuration to docker config.json or podman auth.json
+                String message = !e.getLocalizedMessage().toLowerCase().contains("unauthorized") ?
+                        e.getLocalizedMessage() :
+                        "The plugin does not support dynamic authentication. Please set up the docker.config " +
+                                "and/or podman's auth.json in your home directory to deploy to your registry and try again";
+                UIHelper.executeInUI(() -> {
+                    lblGeneralError.setText("<html>" + message + "</html>");
                     lblGeneralError.setVisible(true);
-                    new Timer().schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            lblGeneralError.setVisible(false);
-                        }
-                    }, 30000);
-                }
+                    ExecHelper.submit(() -> {
+                        new Timer().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                lblGeneralError.setVisible(false);
+                            }
+                        }, 30000);
+                    });
+                });
             }
         });
     }

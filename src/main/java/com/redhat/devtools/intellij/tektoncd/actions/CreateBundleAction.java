@@ -11,25 +11,29 @@
 package com.redhat.devtools.intellij.tektoncd.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.DumbAwareAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.ui.bundle.CreateBundleDialog;
+import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.tree.TreePath;
-
-public class CreateBundleAction extends TektonAction {
+public class CreateBundleAction extends DumbAwareAction {
     private static final Logger logger = LoggerFactory.getLogger(AddTriggerAction.class);
 
-    public CreateBundleAction() { super(PipelineNode.class, TaskNode.class); }
+    public CreateBundleAction() { }
 
     @Override
-    public void actionPerformed(AnActionEvent anActionEvent, TreePath path, Object selected, Tkn tkncli) {
+    public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
+        Tkn tkncli = TreeHelper.getTkn(anActionEvent.getProject());
+        if (tkncli == null) {
+            return;
+        }
         //TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "add trigger");
 
         CreateBundleDialog dialog = new CreateBundleDialog(anActionEvent.getProject(), tkncli);
+        dialog.setModal(false);
         dialog.show();
     }
 }

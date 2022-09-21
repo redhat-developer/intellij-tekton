@@ -71,6 +71,9 @@ public class Constants {
     public static final String TRIGGER_BETA1_API_VERSION = "triggers.tekton.dev/v1beta1";
     public static final String TRIGGER_ALPHA1_API_VERSION = "triggers.tekton.dev/v1alpha1";
 
+    public static final String TOOLBAR_PLACE = Constants.class.getPackage().getName() + ".view.toolbar";
+    public static final String TEKTON_TOOLBAR_ACTION_GROUP_ID = "com.redhat.devtools.intellij.tektoncd.view.actionsToolbar";
+
     public static final String API_VERSION_PLACEHOLDER = "#apiversion";
 
     public enum InstallStatus {

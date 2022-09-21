@@ -15,6 +15,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -90,8 +91,13 @@ public class TreeHelper {
         ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow("Tekton");
         Content content = window.getContentManager().findContent("");
         if (content != null && content.getComponent() instanceof JBSplitter) {
-            JBScrollPane pane = ((JBScrollPane)((JBSplitter)content.getComponent()).getFirstComponent());
-            return (Tree) pane.getViewport().getView();
+            JBSplitter splitter = (JBSplitter)content.getComponent();
+            if (splitter.getFirstComponent() instanceof SimpleToolWindowPanel) {
+                SimpleToolWindowPanel simpleToolWindowPanel = (SimpleToolWindowPanel) splitter.getFirstComponent();
+                if (simpleToolWindowPanel != null && simpleToolWindowPanel.getContent() instanceof JBScrollPane) {
+                    return (Tree) ((JBScrollPane)simpleToolWindowPanel.getContent()).getViewport().getView();
+                }
+            }
         }
         return null;
     }
