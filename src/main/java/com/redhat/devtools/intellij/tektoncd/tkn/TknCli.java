@@ -1177,6 +1177,25 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public List<Resource> listResourceFromBundle(String bundle) throws IOException {
+        String output = ExecHelper.execute(command, envVars, "bundle", "list", bundle);
+        return Arrays.stream(output.split("\n"))
+                .filter(item -> !item.isEmpty())
+                .map(item -> {
+                    String[] kindName = item.split("/");
+                    String kind = kindName[0].contains("pipeline") ? KIND_PIPELINE :
+                                  kindName[0].contains("task") ? KIND_TASK :
+                                  KIND_CLUSTERTASK;
+                    return new Resource(kindName[1], kind);
+                }).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getBundleResourceYAML(String bundle, Resource resource) throws IOException {
+        return ExecHelper.execute(command, envVars, "bundle", "list", bundle, resource.type(), resource.name(), "-o", "yaml");
+    }
+
+    @Override
     public URL getMasterUrl() {
         return client.getMasterUrl();
     }
