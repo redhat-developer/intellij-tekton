@@ -10,9 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -22,6 +24,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
+import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
@@ -51,6 +54,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -314,5 +319,26 @@ public class TreeHelper {
                 resourcesByClass.computeIfAbsent(element.getClass(), value -> new ArrayList<>())
                         .add(element));
         return resourcesByClass;
+    }
+
+    /**
+     * Build the model through reflection as StructureTreeModel does not have a stable API.
+     *
+     * @param structure the structure to associate
+     * @param project the IJ project
+     * @return the build model
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     * @throws InstantiationException
+     * @throws NoSuchMethodException
+     */
+    public static StructureTreeModel buildModel(TektonTreeStructure structure, Project project) throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
+        try {
+            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class});
+            return constructor.newInstance(structure);
+        } catch (NoSuchMethodException e) {
+            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class, Disposable.class});
+            return constructor.newInstance(structure, project);
+        }
     }
 }

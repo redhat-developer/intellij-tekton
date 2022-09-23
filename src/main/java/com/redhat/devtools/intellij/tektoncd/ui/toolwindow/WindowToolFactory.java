@@ -10,9 +10,7 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.toolwindow;
 
-import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ide.util.treeView.NodeRenderer;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
@@ -42,11 +40,11 @@ import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDetailsDialog;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItem;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemPanelsBoard;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
+import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -62,7 +60,7 @@ public class WindowToolFactory implements ToolWindowFactory {
             ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
             TektonTreeStructure structure = new TektonTreeStructure(project);
-            StructureTreeModel<TektonTreeStructure> model = buildModel(structure, project);
+            StructureTreeModel<TektonTreeStructure> model = TreeHelper.buildModel(structure, project);
             new MutableTektonModelSynchronizer<>(model, structure, structure);
             Tree tree = new Tree(new AsyncTreeModel(model, project));
             tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
@@ -136,26 +134,5 @@ public class WindowToolFactory implements ToolWindowFactory {
             dialog.setModal(false);
             dialog.show(item, callback);
         };
-    }
-
-    /**
-     * Build the model through reflection as StructureTreeModel does not have a stable API.
-     *
-     * @param structure the structure to associate
-     * @param project the IJ project
-     * @return the build model
-     * @throws IllegalAccessException
-     * @throws InvocationTargetException
-     * @throws InstantiationException
-     * @throws NoSuchMethodException
-     */
-    private StructureTreeModel buildModel(TektonTreeStructure structure, Project project) throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
-        try {
-            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class});
-            return constructor.newInstance(structure);
-        } catch (NoSuchMethodException e) {
-            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class, Disposable.class});
-            return constructor.newInstance(structure, project);
-        }
     }
 }
