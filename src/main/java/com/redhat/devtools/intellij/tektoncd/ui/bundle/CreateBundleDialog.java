@@ -13,9 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.ui.bundle;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ide.util.treeView.NodeRenderer;
-import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -49,6 +47,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonBundleResourceTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
+import com.redhat.devtools.intellij.tektoncd.utils.NotificationHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -68,6 +67,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -77,7 +77,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
@@ -319,13 +318,19 @@ public class CreateBundleDialog extends DialogWrapper {
             showWarning("Please add atleast one Tekton resource to create a valid bundle (max 10 resources)", layers);
         }
 
+        enableLoadingState();
         ExecHelper.submit(() -> {
             try {
                 List<String> yamlOfResources = tkn.getResourcesAsYaml(resources);
                 deployResources(imageName, yamlOfResources);
-                Notification notification = new Notification(NOTIFICATION_ID, "Bundle deployed successful", imageName + " has been successfully deployed!", NotificationType.INFORMATION);
-                Notifications.Bus.notify(notification);
-                UIHelper.executeInUI(super::doOKAction);
+                NotificationHelper.notify(project, "Bundle deployed successful",
+                        imageName + " has been successfully deployed!",
+                        NotificationType.INFORMATION,
+                        true);
+                UIHelper.executeInUI(() -> {
+                    disableLoadingState();
+                    super.doOKAction();
+                });
             } catch (IOException e) {
                 // TODO ask for username/psw when issue in cli is fixed
                 //  now show message to inform user needs to add configuration to docker config.json or podman auth.json
@@ -334,6 +339,7 @@ public class CreateBundleDialog extends DialogWrapper {
                         "The plugin does not support dynamic authentication. Please set up the docker.config " +
                                 "and/or podman's auth.json in your home directory to deploy to your registry and try again";
                 UIHelper.executeInUI(() -> {
+                    disableLoadingState();
                     lblGeneralError.setText("<html>" + message + "</html>");
                     lblGeneralError.setVisible(true);
                     ExecHelper.submit(() -> {
@@ -374,5 +380,18 @@ public class CreateBundleDialog extends DialogWrapper {
                 }
             }
         }, 5000);
+    }
+
+    private void enableLoadingState() {
+        updateLoadingState(new Cursor(Cursor.WAIT_CURSOR));
+    }
+
+    private void disableLoadingState() {
+        updateLoadingState(Cursor.getDefaultCursor());
+    }
+
+    private void updateLoadingState(Cursor cursor) {
+        tree.setCursor(cursor);
+        layers.setCursor(cursor);
     }
 }

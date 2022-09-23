@@ -20,15 +20,11 @@ import com.intellij.openapi.ui.Divider;
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.NlsSafe;
-import com.intellij.ui.AnActionButton;
-import com.intellij.ui.AnActionButtonRunnable;
-import com.intellij.ui.AnActionButtonUpdater;
 import com.intellij.ui.CollectionListModel;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.JBUI;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
@@ -37,8 +33,9 @@ import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Bundle;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -46,19 +43,25 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
 
 public class ListBundlesDialog extends DialogWrapper {
+    private static final Logger logger = LoggerFactory.getLogger(ListBundlesDialog.class);
 
-    private Tree tree;
+    private JPanel wrapper;
     private JBList<Resource> layers;
     private JBList<String> bundles;
     private JTextArea txtBundleResourceYAML;
@@ -66,8 +69,11 @@ public class ListBundlesDialog extends DialogWrapper {
     private Project project;
     private Bundle bundle;
     private JPanel buildListBundlesPanel;
+    private JBScrollPane scrollBundleResourceAreaPane;
     private JLabel warning, lblGeneralError;
     private Tkn tkn;
+    private Map<String, List<Resource>> bundleCache = new HashMap<>();
+    private Map<String, String> bundleResourceCache = new HashMap<>();
 
     public ListBundlesDialog(@Nullable Project project, Tkn tkn) {
         super(project, true);
@@ -75,7 +81,7 @@ public class ListBundlesDialog extends DialogWrapper {
         this.tkn = tkn;
         this.bundle = new Bundle();
         this.bundleList = SettingsState.getInstance().bundleList;
-        setOKButtonText("Close");
+        setTitle("Import Bundle Resources");
         super.init();
     }
 
@@ -90,13 +96,13 @@ public class ListBundlesDialog extends DialogWrapper {
     }
 
     private JPanel createErrorSouthPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(JBUI.Borders.emptyTop(10));
+        wrapper = new JPanel(new BorderLayout());
+        wrapper.setBorder(JBUI.Borders.emptyTop(10));
         lblGeneralError = new JLabel("");
         lblGeneralError.setForeground(RED);
         lblGeneralError.setVisible(false);
-        panel.add(lblGeneralError, BorderLayout.CENTER);
-        return panel;
+        wrapper.add(lblGeneralError, BorderLayout.CENTER);
+        return wrapper;
     }
 
     private JPanel createDescriptionPanel() {
@@ -148,19 +154,18 @@ public class ListBundlesDialog extends DialogWrapper {
         txtBundleResourceYAML = new JTextArea(15, 35);
         txtBundleResourceYAML.setEditable(false);
         txtBundleResourceYAML.setText("");
-       // txtBundleResourceYAML.setFont(new JLabel().getFont());
         txtBundleResourceYAML.setLineWrap(true);
-        //txtBundleResourceYAML.setBackground(JBColor.BLACK);
+        Font curFont = txtBundleResourceYAML.getFont();
+        txtBundleResourceYAML.setFont(curFont.deriveFont(12f));
 
-        JBScrollPane scrollBundleResourceAreaPane = new JBScrollPane(txtBundleResourceYAML);
-       // Dimension sizeTextAreaNewTriggerBinding = txtBundleResourceYAML.getPreferredScrollableViewportSize();
-        //txtBundleResourceYAML.setPreferredSize(new Dimension(sizeTextAreaNewTriggerBinding.width, sizeTextAreaNewTriggerBinding.height + 10));
+        scrollBundleResourceAreaPane = new JBScrollPane(txtBundleResourceYAML);
         return scrollBundleResourceAreaPane;
     }
 
     private JComponent buildBundleLayersPanel() {
         JPanel bundleLayer = new JPanel(new BorderLayout());
         layers = new JBList<>();
+        layers.setBorder(JBUI.Borders.empty(5, 10));
         layers.setEmptyText("No bundle selected");
         layers.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> new JLabel(value.name(), value.getIcon(), SwingConstants.LEFT));
         final ToolbarDecorator decorator = ToolbarDecorator.createDecorator(layers)
@@ -171,53 +176,88 @@ public class ListBundlesDialog extends DialogWrapper {
                 .setActionGroup(new ActionGroup() {
                     @Override
                     public AnAction[] getChildren(@Nullable AnActionEvent e) {
-                        return new AnAction[] { new ImportBundleResourceAction("import bundle resource", "", AllIcons.ToolbarDecorator.Import, layers, tkn)};
+                        return new AnAction[] { new ImportBundleResourceAction(
+                                "Import bundle resource",
+                                "",
+                                AllIcons.ToolbarDecorator.Import,
+                                bundles,
+                                layers,
+                                bundleResourceCache,
+                                tkn)};
                     }
                 });
-        layers.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                Resource resource = layers.getSelectedValue();
-                String bundleName = bundles.getSelectedValue();
-                try {
-                    String yaml = tkn.getBundleResourceYAML(bundleName, resource);
-                    txtBundleResourceYAML.setText(yaml);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+        layers.addListSelectionListener(e -> {
+            Resource resource = layers.getSelectedValue();
+            String bundleName = bundles.getSelectedValue();
+            if (bundleName == null || resource == null) {
+                txtBundleResourceYAML.setText("");
+                return;
             }
+            String keyCache = BundleUtils.createCacheKey(bundleName, resource);
+            String yaml = bundleResourceCache.getOrDefault(keyCache, "");
+            if (!yaml.isEmpty()) {
+                txtBundleResourceYAML.setText(yaml);
+                return;
+            }
+            enableLoadingState();
+            ExecHelper.submit(() -> {
+                try {
+                    String updated = tkn.getBundleResourceYAML(bundleName, resource);
+                    bundleResourceCache.put(keyCache, updated);
+                    UIHelper.executeInUI(() -> {
+                        disableLoadingState();
+                        txtBundleResourceYAML.setText(updated);
+                        txtBundleResourceYAML.setSelectionStart(0);
+                        txtBundleResourceYAML.setSelectionEnd(0);
+                    });
+                } catch (IOException ex) {
+                    logger.warn(ex.getLocalizedMessage(), ex);
+                    UIHelper.executeInUI(() -> {
+                        disableLoadingState();
+                        txtBundleResourceYAML.setText("");
+                        lblGeneralError.setText(ex.getLocalizedMessage());
+                        lblGeneralError.setVisible(true);
+                        ExecHelper.submit(() -> {
+                            new Timer().schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    UIHelper.executeInUI(() -> lblGeneralError.setVisible(false));
+                                }
+                            }, 10000);
+                        });
+                    });
+                }
+            });
         });
+
+
+
         JPanel innerPanel = decorator.createPanel();
         bundleLayer.add(innerPanel, BorderLayout.CENTER);
         return bundleLayer;
     }
 
     private JComponent buildListBundlesPanel() {
-
         buildListBundlesPanel = new JPanel(new BorderLayout());
-
 
         bundles = new JBList<>();
         bundles.setModel(new CollectionListModel<>(bundleList));
         bundles.setEmptyText("No bundle added");
+        bundles.setBorder(JBUI.Borders.empty(10, 5));
         bundles.setCellRenderer((list, value, index, isSelected, cellHasFocus) ->  new JLabel(value));
-        bundles.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting()) {
-                    loadResourcesFromBundle();
-                }
-               // loadResourcesFromBundle();
+        bundles.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                loadResourcesFromBundle();
             }
         });
         final ToolbarDecorator decorator = ToolbarDecorator.createDecorator(bundles)
                 .disableUpAction()
                 .disableDownAction()
                 .setAddAction(button -> {
-                    String newBundle = Messages.showInputDialog(project, "Add the name of the bundle to import", "Add Bundle", AllIcons.General.Add, null, new InputValidator() {
+                    String newBundle = Messages.showInputDialog(project, "Add the name of the bundle to import (e.g quay.io/myrepo/mybundle:latest)", "Add Bundle", null, null, new InputValidator() {
                         @Override
                         public boolean checkInput(@NlsSafe String inputString) {
-                            return true;
+                            return !inputString.isEmpty();
                         }
 
                         @Override
@@ -234,20 +274,18 @@ public class ListBundlesDialog extends DialogWrapper {
                         loadResourcesFromBundle();
                     }
                 })
-                .setRemoveAction(new AnActionButtonRunnable() {
-                    @Override
-                    public void run(AnActionButton anActionButton) {
-
+                .setRemoveAction(anActionButton -> {
+                    String selected = bundles.getSelectedValue();
+                    int result = Messages.showOkCancelDialog("Remove " + selected + "?", "Remove Bundle", "Ok", "Cancel", null);
+                    if (result == OK_EXIT_CODE) {
+                        bundleList.remove(selected);
+                        bundleCache.remove(selected);
+                        bundles.setModel(new CollectionListModel<>(bundleList));
+                        bundles.invalidate();
+                        loadResourcesFromBundle();
                     }
-
-
                 })
-                .setRemoveActionUpdater(new AnActionButtonUpdater() {
-                    @Override
-                    public boolean isEnabled(@NotNull AnActionEvent e) {
-                        return true;
-                    }
-                });
+                .setRemoveActionUpdater(e -> bundles.getSelectedValue() != null);
         JPanel innerPanel = decorator.createPanel();
         buildListBundlesPanel.add(innerPanel, BorderLayout.CENTER);
         return buildListBundlesPanel;
@@ -255,20 +293,57 @@ public class ListBundlesDialog extends DialogWrapper {
 
     private void loadResourcesFromBundle() {
         String bundleName = bundles.getSelectedValue();
+        if (bundleName == null) {
+            layers.removeAll();
+            layers.setModel(new CollectionListModel<>());
+            layers.invalidate();
+            return;
+        }
+        enableLoadingState();
         ExecHelper.submit(() -> {
             try {
-                List<Resource> resources = tkn.listResourceFromBundle(bundleName);
+                List<Resource> resources = bundleCache.getOrDefault(bundleName, new ArrayList<>());
+                if(resources.isEmpty()) {
+                    resources = tkn.listResourceFromBundle(bundleName);
+                    bundleCache.put(bundleName, resources);
+                }
+                List<Resource> finalResources = resources;
                 UIHelper.executeInUI(() -> {
+                    disableLoadingState();
                     layers.removeAll();
-                    layers.setModel(new CollectionListModel<>(resources));
+                    layers.setModel(new CollectionListModel<>(finalResources));
                     layers.invalidate();
                 });
             } catch (IOException e) {
-                // print error
-                e.printStackTrace();
+                logger.warn(e.getLocalizedMessage(), e);
+                UIHelper.executeInUI(() -> {
+                    disableLoadingState();
+                    lblGeneralError.setText(e.getLocalizedMessage());
+                    lblGeneralError.setVisible(true);
+                    ExecHelper.submit(() -> {
+                        new Timer().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                UIHelper.executeInUI(() -> lblGeneralError.setVisible(false));
+                            }
+                        }, 30000);
+                    });
+                });
             }
-
         });
+    }
 
+    private void enableLoadingState() {
+        updateLoadingState(new Cursor(Cursor.WAIT_CURSOR));
+    }
+
+    private void disableLoadingState() {
+        updateLoadingState(Cursor.getDefaultCursor());
+    }
+
+    private void updateLoadingState(Cursor cursor) {
+        bundles.setCursor(cursor);
+        layers.setCursor(cursor);
+        txtBundleResourceYAML.setCursor(cursor);
     }
 }

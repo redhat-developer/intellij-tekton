@@ -12,7 +12,6 @@ package com.redhat.devtools.intellij.tektoncd.tree;
 
 import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import org.apache.commons.lang.ArrayUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,24 +30,11 @@ public class TektonBundleResourceTreeStructure extends TektonTreeStructure {
                 return getFirstLevelNodes((TektonRootNode) element);
             }
             if (element instanceof NamespaceNode) {
-                Object[] generalNodes = new Object[]{
+                return new Object[]{
                         new PipelinesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new TasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                        new ClusterTasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                        new ResourcesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                        new ConditionsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
+                        new ClusterTasksNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
-                if (!tkn.isTektonTriggersAware()) {
-                    return generalNodes;
-                }
-                Object[] triggersNode = new Object[] {
-                        new TriggerTemplatesNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                        new TriggerBindingsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                        new ClusterTriggerBindingsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
-                        new EventListenersNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
-                };
-                return ArrayUtils.addAll(generalNodes, triggersNode);
-
             }
             if (element instanceof PipelinesNode) {
                 return getPipelines((PipelinesNode) element);
@@ -58,24 +44,6 @@ public class TektonBundleResourceTreeStructure extends TektonTreeStructure {
             }
             if (element instanceof ClusterTasksNode) {
                 return getClusterTasks((ClusterTasksNode) element);
-            }
-            if (element instanceof ResourcesNode) {
-                return getResources((ResourcesNode) element);
-            }
-            if (element instanceof ConditionsNode) {
-                return getConditions((ConditionsNode)element);
-            }
-            if (element instanceof TriggerTemplatesNode) {
-                return getTriggerTemplates((TriggerTemplatesNode) element);
-            }
-            if (element instanceof TriggerBindingsNode) {
-                return getTriggerBindings((TriggerBindingsNode) element);
-            }
-            if (element instanceof ClusterTriggerBindingsNode) {
-                return getClusterTriggerBindingsNode((ClusterTriggerBindingsNode) element);
-            }
-            if (element instanceof EventListenersNode) {
-                return getEventListenersNode((EventListenersNode) element);
             }
         }
         return new Object[0];
@@ -96,6 +64,4 @@ public class TektonBundleResourceTreeStructure extends TektonTreeStructure {
         }
         return namespaces.toArray(new Object[namespaces.size()]);
     }
-
-
 }
