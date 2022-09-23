@@ -61,12 +61,17 @@ public class ListBundlesDialog extends BundleDialog {
     private JBList<Resource> layersListPanel;
     private JBList<String> bundlesListPanel;
     private JTextArea txtBundleResourceYAML;
-    private List<String> bundleList = SettingsState.getInstance().bundleList;
+    private List<String> bundleList;
     private Map<String, List<Resource>> bundleCache = new HashMap<>();
     private Map<String, String> bundleResourceCache = new HashMap<>();
 
     public ListBundlesDialog(@Nullable Project project, Tkn tkn) {
         super(project, "Import Bundle Resources", tkn);
+    }
+
+    @Override
+    protected void preInit() {
+        bundleList = SettingsState.getInstance().bundleList;
     }
 
     @Override

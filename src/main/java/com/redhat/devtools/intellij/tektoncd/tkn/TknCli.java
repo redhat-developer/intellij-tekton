@@ -13,6 +13,7 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -22,6 +23,7 @@ import com.redhat.devtools.intellij.common.kubernetes.ClusterInfo;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.MetadataClutter;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
@@ -117,16 +119,11 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SKIP_OPTIONAL
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_ALPHA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_BETA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.IS_OPENSHIFT;
@@ -1134,16 +1131,15 @@ public class TknCli implements Tkn {
         CompletableFuture[] futures = resources.stream().map(resource -> CompletableFuture.supplyAsync(() -> {
             try {
                 switch (resource.type()) {
-                    case KIND_PIPELINE: return MetadataClutter.remove(getPipelineYAML(ns, resource.name()), false);
-                    case KIND_TASK: return MetadataClutter.remove(getTaskYAML(ns, resource.name()), false);
-                    case KIND_CLUSTERTASK: return MetadataClutter.remove(getClusterTaskYAML(resource.name()), false);
-                    case KIND_RESOURCE: return MetadataClutter.remove(getResourceYAML(ns, resource.name()), false);
-                    case KIND_TASKRUN: return MetadataClutter.remove(getTaskRunYAML(ns, resource.name()), false);
-                    case KIND_PIPELINERUN: return MetadataClutter.remove(getPipelineRunYAML(ns, resource.name()), false);
-                    case KIND_EVENTLISTENER: return MetadataClutter.remove(getEventListenerYAML(ns, resource.name()), false);
-                    case KIND_TRIGGERBINDING: return MetadataClutter.remove(getTriggerBindingYAML(ns, resource.name()), false);
-                    case KIND_TRIGGERTEMPLATE: return MetadataClutter.remove(getTriggerTemplateYAML(ns, resource.name()), false);
-                    case KIND_CLUSTERTRIGGERBINDING: return MetadataClutter.remove(getClusterTriggerBindingYAML(resource.name()), false);
+                    case KIND_PIPELINE: {
+                        return cleanYaml(getPipelineYAML(ns, resource.name()));
+                    }
+                    case KIND_TASK: {
+                        return cleanYaml(getTaskYAML(ns, resource.name()));
+                    }
+                    case KIND_CLUSTERTASK: {
+                        return cleanYaml(getClusterTaskYAML(resource.name()));
+                    }
                 }
             } catch (IOException ignored) {}
             return "";
@@ -1164,6 +1160,20 @@ public class TknCli implements Tkn {
             }
         }
         return resourcesAsYaml;
+    }
+
+    private String cleanYaml(String yaml) throws IOException {
+        if (yaml.isEmpty()) {
+            return yaml;
+        }
+        ObjectNode contentNode = (ObjectNode) YAMLHelper.YAMLToJsonNode(yaml);
+        ObjectNode metadata = contentNode.has("metadata") ? (ObjectNode) contentNode.get("metadata") : null;
+        if (metadata != null) {
+            metadata.remove("namespace");
+            contentNode.set("metadata", metadata);
+            yaml = YAMLHelper.JSONToYAML(contentNode, false);
+        }
+        return MetadataClutter.remove(yaml, false);
     }
 
     public void deployBundle(String image, List<String> resources) throws IOException {

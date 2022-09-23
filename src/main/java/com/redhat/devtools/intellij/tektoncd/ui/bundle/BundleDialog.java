@@ -57,6 +57,7 @@ public abstract class BundleDialog extends DialogWrapper {
         this.tkn = tkn;
         setTitle(title);
         setOKButtonText(OkButton);
+        preInit();
         super.init();
     }
 
@@ -166,6 +167,7 @@ public abstract class BundleDialog extends DialogWrapper {
         }, 5000);
     }
 
+    protected abstract void preInit();
     protected abstract String getTopDescriptionText();
     protected abstract String getTopDescriptionTooltip();
     protected abstract JComponent buildLeftPanel();

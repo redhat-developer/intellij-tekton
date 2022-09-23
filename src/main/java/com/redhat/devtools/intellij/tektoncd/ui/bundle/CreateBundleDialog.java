@@ -67,13 +67,19 @@ public class CreateBundleDialog extends BundleDialog {
     private static final Logger logger = LoggerFactory.getLogger(CreateBundleDialog.class);
     private Tree tree;
     private JBList<Resource> layers;
-    private Bundle bundle = new Bundle();;
+    private Bundle bundle;
     private JPanel bundleBodyPanel;
     private JButton moveToBundle, leaveFromBundle;
     private JTextField txtValueParam;
 
     public CreateBundleDialog(@Nullable Project project, Tkn tkn) {
         super(project, "Create and deploy new bundle", "Deploy", tkn);
+    }
+
+
+    @Override
+    protected void preInit() {
+        bundle = new Bundle();;
     }
 
     @Override
