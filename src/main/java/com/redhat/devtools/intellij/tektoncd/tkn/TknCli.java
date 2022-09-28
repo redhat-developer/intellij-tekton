@@ -96,7 +96,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1178,12 +1178,8 @@ public class TknCli implements Tkn {
 
     public void deployBundle(String image, List<String> resources) throws IOException {
         String res = String.join("---\n", resources);
-        VirtualFile file = VirtualFileHelper.createVirtualFile("bundle-" + LocalDateTime.now() + ".yaml", res, false);
-        try {
-            ExecHelper.execute(command, envVars, "bundle", "push", image, "-f", file.getPath());
-        } finally {
-            //file.delete(this);
-        }
+        VirtualFile file = VirtualFileHelper.createVirtualFile("bundle-" + Instant.now().toEpochMilli() + ".yaml", res, false);
+        ExecHelper.execute(command, envVars, "bundle", "push", image, "-f", file.getPath());
     }
 
     @Override

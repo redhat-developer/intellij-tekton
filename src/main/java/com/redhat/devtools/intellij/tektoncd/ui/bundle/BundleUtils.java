@@ -12,9 +12,21 @@ package com.redhat.devtools.intellij.tektoncd.ui.bundle;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class BundleUtils {
 
     public static String createCacheKey(String bundle, Resource resource) {
         return bundle + "-" + resource.type() + "-" + resource.name();
+    }
+
+    public static String cleanImage(String image) {
+        Pattern pattern = Pattern.compile(":.+$");
+        Matcher matcher = pattern.matcher(image);
+        if (!matcher.find()) {
+            return image + ":latest";
+        }
+        return image;
     }
 }

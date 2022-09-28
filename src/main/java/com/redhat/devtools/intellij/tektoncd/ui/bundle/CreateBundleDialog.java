@@ -55,9 +55,12 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeSelectionModel;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -71,6 +74,8 @@ public class CreateBundleDialog extends BundleDialog {
     private JPanel bundleBodyPanel;
     private JButton moveToBundle, leaveFromBundle;
     private JTextField txtValueParam;
+    private MoveToBundleAction moveToBundleAction;
+    private RemoveFromBundleAction removeFromBundleAction;
 
     public CreateBundleDialog(@Nullable Project project, Tkn tkn) {
         super(project, "Create and deploy new bundle", "Deploy", tkn);
@@ -102,23 +107,11 @@ public class CreateBundleDialog extends BundleDialog {
     }
 
     private JComponent buildSwitchButtonsPanel() {
-        moveToBundle = createButton(new MoveToBundleAction(bundle,
-                        () -> {
-                            if (!bundle.hasSpace()) {
-                                showWarning("The bundle already contain 10 Tekton objects. Please remove one layer before to add a new one.", null);
-                            } else {
-                                warning.setVisible(false);
-                            }
-                        },
-                        updateBundlePanel(),
-                        () -> tree.getLastSelectedPathComponent()),
+        initActions();
+
+        moveToBundle = createButton(moveToBundleAction,
                 AllIcons.Actions.ArrowExpand);
-
-
-        leaveFromBundle = createButton(new RemoveFromBundleAction(bundle,
-                        () -> warning.setVisible(false),
-                        updateBundlePanel(),
-                        () -> layers.getSelectedValue()),
+        leaveFromBundle = createButton(removeFromBundleAction,
                 AllIcons.Actions.ArrowCollapse);
 
         JPanel switchPanel = new JPanel();
@@ -126,6 +119,24 @@ public class CreateBundleDialog extends BundleDialog {
         switchPanel.add(moveToBundle);
         switchPanel.add(leaveFromBundle);
         return switchPanel;
+    }
+
+    private void initActions() {
+        moveToBundleAction = new MoveToBundleAction(bundle,
+                () -> {
+                    if (!bundle.hasSpace()) {
+                        showWarning("The bundle already contain 10 Tekton objects. Please remove one layer before to add a new one.", null);
+                    } else {
+                        warning.setVisible(false);
+                    }
+                },
+                updateBundlePanel(),
+                () -> tree.getLastSelectedPathComponent());
+
+        removeFromBundleAction = new RemoveFromBundleAction(bundle,
+                () -> warning.setVisible(false),
+                updateBundlePanel(),
+                () -> layers.getSelectedValue());
     }
 
     private Runnable updateBundlePanel() {
@@ -157,6 +168,14 @@ public class CreateBundleDialog extends BundleDialog {
                     leaveFromBundle.setEnabled(selected != null);
                 }
         );
+        layers.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    removeFromBundleAction.actionPerformed(null);
+                }
+            }
+        });
 
         JPanel innerPanel = new JPanel(new BorderLayout());
         innerPanel.setBorder(BorderFactory.createCompoundBorder(new JBScrollPane().getBorder(), JBUI.Borders.empty(10)));
@@ -192,6 +211,7 @@ public class CreateBundleDialog extends BundleDialog {
 
         Tree tree = new Tree(new AsyncTreeModel(model, project));
         tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         tree.setCellRenderer(new NodeRenderer() {
             @Override
             public void customizeCellRenderer(@NotNull JTree tree, @NlsSafe Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -213,6 +233,14 @@ public class CreateBundleDialog extends BundleDialog {
                 }
             }
         });
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    moveToBundleAction.actionPerformed(null);
+                }
+            }
+        });
         tree.setRootVisible(false);
         return tree;
     }
@@ -224,6 +252,7 @@ public class CreateBundleDialog extends BundleDialog {
             showWarning("Please add a valid image name (e.g quay.io/myrepo/mybundle:latest)", txtValueParam);
             return;
         }
+
         List<Resource> resources = bundle.getResources();
         if (resources.isEmpty()) {
             showWarning("Please add atleast one Tekton resource to create a valid bundle (max 10 resources)", layers);
@@ -231,12 +260,13 @@ public class CreateBundleDialog extends BundleDialog {
         }
 
         enableLoadingState();
+        String finalImageName = BundleUtils.cleanImage(imageName);;
         ExecHelper.submit(() -> {
             try {
                 List<String> yamlOfResources = tkn.getResourcesAsYaml(resources);
-                tkn.deployBundle(imageName, yamlOfResources);
+                tkn.deployBundle(finalImageName, yamlOfResources);
                 NotificationHelper.notify(project, "Bundle deployed successful",
-                        imageName + " has been successfully deployed!",
+                        finalImageName + " has been successfully deployed!",
                         NotificationType.INFORMATION,
                         true);
                 UIHelper.executeInUI(() -> {

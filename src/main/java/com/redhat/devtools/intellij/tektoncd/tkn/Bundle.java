@@ -34,7 +34,7 @@ public class Bundle {
     }
 
     public boolean hasSpace() {
-        return resources.size() <= BUNDLE_CAPACITY;
+        return resources.size() < BUNDLE_CAPACITY;
     }
 
     public void removeResource(Resource resource) {
