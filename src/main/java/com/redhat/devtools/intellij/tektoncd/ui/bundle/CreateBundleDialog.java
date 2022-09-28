@@ -168,14 +168,7 @@ public class CreateBundleDialog extends BundleDialog {
                     leaveFromBundle.setEnabled(selected != null);
                 }
         );
-        layers.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    removeFromBundleAction.actionPerformed(null);
-                }
-            }
-        });
+        layers.addMouseListener(createDoubleClickAdapter(() ->  removeFromBundleAction.actionPerformed(null)));
 
         JPanel innerPanel = new JPanel(new BorderLayout());
         innerPanel.setBorder(BorderFactory.createCompoundBorder(new JBScrollPane().getBorder(), JBUI.Borders.empty(10)));
@@ -191,6 +184,17 @@ public class CreateBundleDialog extends BundleDialog {
         registryPanel.setBorder(JBUI.Borders.empty(10, 5, 10, 0));
         bundleBodyPanel.add(registryPanel, BorderLayout.NORTH);
         return bundleBodyPanel;
+    }
+
+    private MouseAdapter createDoubleClickAdapter(Runnable runnable) {
+        return new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    runnable.run();
+                }
+            }
+        };
     }
 
     @Override
@@ -233,14 +237,7 @@ public class CreateBundleDialog extends BundleDialog {
                 }
             }
         });
-        tree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    moveToBundleAction.actionPerformed(null);
-                }
-            }
-        });
+        tree.addMouseListener(createDoubleClickAdapter(() -> moveToBundleAction.actionPerformed(null)));
         tree.setRootVisible(false);
         return tree;
     }

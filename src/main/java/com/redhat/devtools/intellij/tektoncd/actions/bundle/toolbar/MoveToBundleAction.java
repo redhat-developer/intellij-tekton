@@ -13,7 +13,10 @@ package com.redhat.devtools.intellij.tektoncd.actions.bundle.toolbar;
 import com.redhat.devtools.intellij.common.tree.LabelAndIconDescriptor;
 import com.redhat.devtools.intellij.tektoncd.tkn.Bundle;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
+import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
+import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
+import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 
 import javax.swing.AbstractAction;
@@ -38,7 +41,8 @@ public class MoveToBundleAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         LabelAndIconDescriptor descriptor = getLastSelectedNode();
-        if (descriptor != null) {
+        if (descriptor != null &&
+            isActionEnabled((ParentableNode<?>) descriptor.getElement())) {
             updateErrorPanel.run();
             if(!bundle.hasSpace()) {
                 return;
@@ -53,6 +57,12 @@ public class MoveToBundleAction extends AbstractAction {
             bundle.addResource(resource);
             updateBundlePanel.run();
         }
+    }
+
+    private boolean isActionEnabled(ParentableNode element) {
+        return element instanceof PipelineNode ||
+                element instanceof TaskNode ||
+                element instanceof ClusterTaskNode;
     }
 
     private LabelAndIconDescriptor getLastSelectedNode() {
