@@ -22,41 +22,44 @@ import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class MoveToBundleAction extends AbstractAction {
 
     private Bundle bundle;
     private Runnable updateErrorPanel, updateBundlePanel;
-    private Supplier<Object> getLastSelectedPathComponent;
+    private Supplier<TreePath[]> getSelectionPaths;
 
-    public MoveToBundleAction(Bundle bundle, Runnable updateErrorPanel, Runnable updateBundlePanel, Supplier<Object> getLastSelectedPathComponent) {
+    public MoveToBundleAction(Bundle bundle, Runnable updateErrorPanel, Runnable updateBundlePanel, Supplier<TreePath[]> getSelectionPaths) {
         this.bundle = bundle;
         this.updateErrorPanel = updateErrorPanel;
         this.updateBundlePanel = updateBundlePanel;
-        this.getLastSelectedPathComponent = getLastSelectedPathComponent;
+        this.getSelectionPaths = getSelectionPaths;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        LabelAndIconDescriptor descriptor = getLastSelectedNode();
-        if (descriptor != null &&
-            isActionEnabled((ParentableNode<?>) descriptor.getElement())) {
+        List<LabelAndIconDescriptor> labelAndIconDescriptors = getSelectedNodes();
+        if (bundle.getEmptyLayers() < labelAndIconDescriptors.size()) {
             updateErrorPanel.run();
-            if(!bundle.hasSpace()) {
-                return;
-            }
+            return;
+        }
+
+        for (LabelAndIconDescriptor descriptor: labelAndIconDescriptors) {
             String resourceName = descriptor.getName();
             String kind = TreeHelper.getKindFromNode((ParentableNode<?>) descriptor.getElement());
             Icon icon = descriptor.getIcon();
             Resource resource = new Resource(resourceName, kind, icon);
             if(bundle.hasResource(resource)) {
-                return;
+                continue;
             }
             bundle.addResource(resource);
-            updateBundlePanel.run();
         }
+        updateBundlePanel.run();
     }
 
     private boolean isActionEnabled(ParentableNode element) {
@@ -65,12 +68,20 @@ public class MoveToBundleAction extends AbstractAction {
                 element instanceof ClusterTaskNode;
     }
 
-    private LabelAndIconDescriptor getLastSelectedNode() {
-        Object selection = getLastSelectedPathComponent.get();
-        if (!(selection instanceof DefaultMutableTreeNode)) {
-            return null;
+    private List<LabelAndIconDescriptor> getSelectedNodes() {
+        List<LabelAndIconDescriptor> labelAndIconDescriptors = new ArrayList<>();
+        TreePath[] treePaths = getSelectionPaths.get();
+        for (TreePath treePath : treePaths) {
+            Object selection = treePath.getLastPathComponent();
+            if (!(selection instanceof DefaultMutableTreeNode)) {
+                continue;
+            }
+            Object userObject = ((DefaultMutableTreeNode)selection).getUserObject();
+            if (userObject != null &&
+                    isActionEnabled((ParentableNode<?>) ((LabelAndIconDescriptor)userObject).getElement())) {
+                labelAndIconDescriptors.add((LabelAndIconDescriptor) userObject);
+            }
         }
-        Object userObject = ((DefaultMutableTreeNode)selection).getUserObject();
-        return userObject == null ? null : (LabelAndIconDescriptor) userObject;
+        return labelAndIconDescriptors;
     }
 }

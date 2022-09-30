@@ -37,8 +37,12 @@ public class Bundle {
         return resources.size() < BUNDLE_CAPACITY;
     }
 
-    public void removeResource(Resource resource) {
-        resources.remove(resource);
+    public int getEmptyLayers() {
+        return BUNDLE_CAPACITY - resources.size();
+    }
+
+    public void removeResources(List<Resource> resourcesToBeRemoved) {
+        resources.removeAll(resourcesToBeRemoved);
     }
 
     public boolean hasResource(Resource resource) {

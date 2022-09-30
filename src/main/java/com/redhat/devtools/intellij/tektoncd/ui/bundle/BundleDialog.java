@@ -47,6 +47,7 @@ public abstract class BundleDialog extends DialogWrapper {
     protected Project project;
     protected Tkn tkn;
     protected JLabel warning, lblGeneralError;
+    protected FailingComponent lastFailingComponent;
     protected BundleDialog(@Nullable Project project, String title, Tkn tkn) {
         this(project, title, "Ok", tkn);
     }
@@ -145,26 +146,22 @@ public abstract class BundleDialog extends DialogWrapper {
     }
 
     protected void showWarning(String text, JComponent failingComponent) {
-        Border curBorder = null;
         if (failingComponent != null) {
-            curBorder = failingComponent.getBorder();
+            lastFailingComponent = new FailingComponent(failingComponent);
             failingComponent.setBorder(RED_BORDER_SHOW_ERROR);
         }
         warning.setText(text);
         warning.setForeground(RED);
         warning.setVisible(true);
         warning.invalidate();
+    }
 
-        Border finalCurBorder = curBorder;
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                warning.setVisible(false);
-                if (failingComponent != null) {
-                    failingComponent.setBorder(finalCurBorder);
-                }
-            }
-        }, 5000);
+    protected void hideWarning() {
+        warning.setVisible(false);
+        if (lastFailingComponent != null) {
+            lastFailingComponent.getComponent().setBorder(lastFailingComponent.getOriginalBorder());
+            lastFailingComponent = null;
+        }
     }
 
     protected abstract void preInit();
@@ -173,4 +170,22 @@ public abstract class BundleDialog extends DialogWrapper {
     protected abstract JComponent buildLeftPanel();
     protected abstract JComponent buildRightPanel();
     protected abstract void updateLoadingState(Cursor cursor);
+}
+
+class FailingComponent {
+    private JComponent component;
+    private Border originalBorder;
+
+    public FailingComponent(JComponent component) {
+        this.component = component;
+        originalBorder = component.getBorder();
+    }
+
+    public JComponent getComponent() {
+        return component;
+    }
+
+    public Border getOriginalBorder() {
+        return originalBorder;
+    }
 }

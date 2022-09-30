@@ -16,6 +16,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.ui.CollectionListModel;
+import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.tree.AsyncTreeModel;
@@ -54,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.BorderLayout;
@@ -65,6 +67,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CreateBundleDialog extends BundleDialog {
     private static final Logger logger = LoggerFactory.getLogger(CreateBundleDialog.class);
@@ -123,26 +127,22 @@ public class CreateBundleDialog extends BundleDialog {
 
     private void initActions() {
         moveToBundleAction = new MoveToBundleAction(bundle,
-                () -> {
-                    if (!bundle.hasSpace()) {
-                        showWarning("The bundle already contain 10 Tekton objects. Please remove one layer before to add a new one.", null);
-                    } else {
-                        warning.setVisible(false);
-                    }
-                },
+                () -> showWarning("The bundle cannot contain more than 10 Tekton objects. " +
+                        "Please remove some layer before to add new ones.", null),
                 updateBundlePanel(),
-                () -> tree.getLastSelectedPathComponent());
+                () -> tree.getSelectionPaths());
 
         removeFromBundleAction = new RemoveFromBundleAction(bundle,
                 () -> warning.setVisible(false),
                 updateBundlePanel(),
-                () -> layers.getSelectedValue());
+                () -> layers.getSelectedValuesList());
     }
 
     private Runnable updateBundlePanel() {
         return () -> {
             layers.setModel(new CollectionListModel<>(bundle.getResources()));
             bundleBodyPanel.invalidate();
+            hideWarning();
         };
     }
 
@@ -180,6 +180,12 @@ public class CreateBundleDialog extends BundleDialog {
         lblBundleName.setToolTipText("The image must be in the form registry/repository/image:version (e.g. quay.io/myrepo/mybundle:latest");
         registryPanel.add(lblBundleName, BorderLayout.WEST);
         txtValueParam = new JTextField("");
+        txtValueParam.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent e) {
+                hideWarning();
+            }
+        });
         registryPanel.add(txtValueParam, BorderLayout.CENTER);
         registryPanel.setBorder(JBUI.Borders.empty(10, 5, 10, 0));
         bundleBodyPanel.add(registryPanel, BorderLayout.NORTH);
@@ -215,7 +221,7 @@ public class CreateBundleDialog extends BundleDialog {
 
         Tree tree = new Tree(new AsyncTreeModel(model, project));
         tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
-        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         tree.setCellRenderer(new NodeRenderer() {
             @Override
             public void customizeCellRenderer(@NotNull JTree tree, @NlsSafe Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -245,8 +251,8 @@ public class CreateBundleDialog extends BundleDialog {
     @Override
     protected void doOKAction() {
         String imageName = txtValueParam.getText();
-        if (imageName.isEmpty()) {
-            showWarning("Please add a valid image name (e.g quay.io/myrepo/mybundle:latest)", txtValueParam);
+        if (!isNameValid(imageName)) {
+            showWarning("Image name not valid. Please use a valid full image name (e.g quay.io/myrepo/mybundle:latest)", txtValueParam);
             return;
         }
 
@@ -279,10 +285,17 @@ public class CreateBundleDialog extends BundleDialog {
                                 "and/or podman's auth.json in your home directory to deploy to your registry and try again";
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
-                    showTimedErrorMessage("<html>" + message + "</html>");
+                    lblGeneralError.setText("<html>" + message + "</html>");
+                    lblGeneralError.setVisible(true);
                 });
             }
         });
+    }
+
+    private boolean isNameValid(String name) {
+        Pattern rgx = Pattern.compile(".+/.+/[^:]+:.+");
+        Matcher matcher = rgx.matcher(name);
+        return matcher.find();
     }
 
     protected void updateLoadingState(Cursor cursor) {

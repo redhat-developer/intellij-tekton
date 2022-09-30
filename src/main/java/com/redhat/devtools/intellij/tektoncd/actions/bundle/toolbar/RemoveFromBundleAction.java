@@ -15,26 +15,27 @@ import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 
 import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class RemoveFromBundleAction extends AbstractAction {
 
     private Bundle bundle;
     private Runnable updateErrorPanel, updateBundlePanel;
-    private Supplier<Resource> getSelectedLayer;
+    private Supplier<List<Resource>> getSelectedLayers;
 
-    public RemoveFromBundleAction(Bundle bundle, Runnable updateErrorPanel, Runnable updateBundlePanel, Supplier<Resource> getSelectedLayer) {
+    public RemoveFromBundleAction(Bundle bundle, Runnable updateErrorPanel, Runnable updateBundlePanel, Supplier<List<Resource>> getSelectedLayers) {
         this.bundle = bundle;
         this.updateErrorPanel = updateErrorPanel;
         this.updateBundlePanel = updateBundlePanel;
-        this.getSelectedLayer = getSelectedLayer;
+        this.getSelectedLayers = getSelectedLayers;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         updateErrorPanel.run();
-        Resource selected = getSelectedLayer.get();
-        bundle.removeResource(selected);
+        List<Resource> selected = getSelectedLayers.get();
+        bundle.removeResources(selected);
         updateBundlePanel.run();
     }
 }
