@@ -13,13 +13,17 @@ package com.redhat.devtools.intellij.tektoncd.tkn;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.redhat.devtools.intellij.common.kubernetes.ClusterHelper;
 import com.redhat.devtools.intellij.common.kubernetes.ClusterInfo;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.common.utils.MetadataClutter;
 import com.redhat.devtools.intellij.common.utils.NetworkUtils;
+import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
@@ -92,6 +96,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,6 +104,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -111,9 +118,11 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUN
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SKIP_OPTIONAL_WORKSPACES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_TASKSERVICEACCOUNT;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_WORKSPACE;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONFIGMAP;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_ALPHA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_BETA1_API_VERSION;
@@ -1115,6 +1124,81 @@ public class TknCli implements Tkn {
             data = "message:" + message;
         }
         return data + "\n";
+    }
+
+    public List<String> getResourcesAsYaml(List<Resource> resources) throws IOException {
+        String ns = getNamespace();
+        CompletableFuture[] futures = resources.stream().map(resource -> CompletableFuture.supplyAsync(() -> {
+            try {
+                switch (resource.type()) {
+                    case KIND_PIPELINE: {
+                        return cleanYaml(getPipelineYAML(ns, resource.name()));
+                    }
+                    case KIND_TASK: {
+                        return cleanYaml(getTaskYAML(ns, resource.name()));
+                    }
+                    case KIND_CLUSTERTASK: {
+                        return cleanYaml(getClusterTaskYAML(resource.name()));
+                    }
+                }
+            } catch (IOException ignored) {}
+            return "";
+        })).toArray(CompletableFuture[]::new);
+
+        try {
+            CompletableFuture.allOf(futures).join();
+        } catch (Exception e) {
+            throw new IOException(e.getLocalizedMessage(), e);
+        }
+
+        List<String> resourcesAsYaml = new ArrayList<>();
+        for (CompletableFuture future: futures) {
+            try {
+                resourcesAsYaml.add(future.get().toString());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new IOException(e.getLocalizedMessage(), e);
+            }
+        }
+        return resourcesAsYaml;
+    }
+
+    private String cleanYaml(String yaml) throws IOException {
+        if (yaml.isEmpty()) {
+            return yaml;
+        }
+        ObjectNode contentNode = (ObjectNode) YAMLHelper.YAMLToJsonNode(yaml);
+        ObjectNode metadata = contentNode.has("metadata") ? (ObjectNode) contentNode.get("metadata") : null;
+        if (metadata != null) {
+            metadata.remove("namespace");
+            contentNode.set("metadata", metadata);
+            yaml = YAMLHelper.JSONToYAML(contentNode, false);
+        }
+        return MetadataClutter.remove(yaml, false);
+    }
+
+    public void deployBundle(String image, List<String> resources) throws IOException {
+        String res = String.join("---\n", resources);
+        VirtualFile file = VirtualFileHelper.createVirtualFile("bundle-" + Instant.now().toEpochMilli() + ".yaml", res, false);
+        ExecHelper.execute(command, envVars, "bundle", "push", image, "-f", file.getPath());
+    }
+
+    @Override
+    public List<Resource> listResourceFromBundle(String bundle) throws IOException {
+        String output = ExecHelper.execute(command, envVars, "bundle", "list", bundle);
+        return Arrays.stream(output.split("\n"))
+                .filter(item -> !item.isEmpty())
+                .map(item -> {
+                    String[] kindName = item.split("/");
+                    String kind = kindName[0].contains("pipeline") ? KIND_PIPELINE :
+                                  kindName[0].contains("task") ? KIND_TASK :
+                                  KIND_CLUSTERTASK;
+                    return new Resource(kindName[1], kind);
+                }).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getBundleResourceYAML(String bundle, Resource resource) throws IOException {
+        return ExecHelper.execute(command, envVars, "bundle", "list", bundle, resource.type(), resource.name(), "-o", "yaml");
     }
 
     @Override

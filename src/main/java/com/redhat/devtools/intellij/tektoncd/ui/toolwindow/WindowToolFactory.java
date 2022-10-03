@@ -10,16 +10,16 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.toolwindow;
 
-import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ide.util.treeView.NodeRenderer;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.ui.Divider;
+import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.OnePixelSplitter;
@@ -40,15 +40,17 @@ import com.redhat.devtools.intellij.tektoncd.ui.hub.HubDetailsDialog;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItem;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemPanelsBoard;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
+import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.TEKTON_TOOLBAR_ACTION_GROUP_ID;
+import static com.redhat.devtools.intellij.tektoncd.Constants.TOOLBAR_PLACE;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
 
 public class WindowToolFactory implements ToolWindowFactory {
@@ -58,7 +60,7 @@ public class WindowToolFactory implements ToolWindowFactory {
             ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
             TektonTreeStructure structure = new TektonTreeStructure(project);
-            StructureTreeModel<TektonTreeStructure> model = buildModel(structure, project);
+            StructureTreeModel<TektonTreeStructure> model = TreeHelper.buildModel(structure, project);
             new MutableTektonModelSynchronizer<>(model, structure, structure);
             Tree tree = new Tree(new AsyncTreeModel(model, project));
             tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
@@ -77,7 +79,9 @@ public class WindowToolFactory implements ToolWindowFactory {
                         .withInstalled()
                         .build(Optional.empty());
 
-                OnePixelSplitter tabPanel = createTabPanel(new JBScrollPane(tree), hubItemsListPanel);
+                SimpleToolWindowPanel panel = createPanelWithTree(tree);
+                addToolbarMenuToPanel(panel);
+                OnePixelSplitter tabPanel = createTabPanel(panel, hubItemsListPanel);
 
                 toolWindow.getContentManager().addContent(contentFactory.createContent(tabPanel, "", false));
                 executeOnProjectClosing(project, () -> {
@@ -88,6 +92,18 @@ public class WindowToolFactory implements ToolWindowFactory {
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
             throw new RuntimeException((e));
         }
+    }
+
+    private SimpleToolWindowPanel createPanelWithTree(Tree tree) {
+        SimpleToolWindowPanel panel = new SimpleToolWindowPanel(true, true);
+        panel.setContent(new JBScrollPane(tree));
+        return panel;
+    }
+
+    private void addToolbarMenuToPanel(SimpleToolWindowPanel panel) {
+        ActionManager actionManager = ActionManager.getInstance();
+        ActionToolbar actionToolbar = actionManager.createActionToolbar(TOOLBAR_PLACE, (ActionGroup) actionManager.getAction(TEKTON_TOOLBAR_ACTION_GROUP_ID), true);
+        panel.setToolbar(actionToolbar.getComponent());
     }
 
     private OnePixelSplitter createTabPanel(JComponent firstComp, JComponent secondComp) {
@@ -118,26 +134,5 @@ public class WindowToolFactory implements ToolWindowFactory {
             dialog.setModal(false);
             dialog.show(item, callback);
         };
-    }
-
-    /**
-     * Build the model through reflection as StructureTreeModel does not have a stable API.
-     *
-     * @param structure the structure to associate
-     * @param project the IJ project
-     * @return the build model
-     * @throws IllegalAccessException
-     * @throws InvocationTargetException
-     * @throws InstantiationException
-     * @throws NoSuchMethodException
-     */
-    private StructureTreeModel buildModel(TektonTreeStructure structure, Project project) throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
-        try {
-            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class});
-            return constructor.newInstance(structure);
-        } catch (NoSuchMethodException e) {
-            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class, Disposable.class});
-            return constructor.newInstance(structure, project);
-        }
     }
 }

@@ -10,17 +10,21 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
+import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
+import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
@@ -45,16 +49,18 @@ import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.tree.TreePath;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.tree.TreePath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
@@ -90,8 +96,13 @@ public class TreeHelper {
         ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow("Tekton");
         Content content = window.getContentManager().findContent("");
         if (content != null && content.getComponent() instanceof JBSplitter) {
-            JBScrollPane pane = ((JBScrollPane)((JBSplitter)content.getComponent()).getFirstComponent());
-            return (Tree) pane.getViewport().getView();
+            JBSplitter splitter = (JBSplitter)content.getComponent();
+            if (splitter.getFirstComponent() instanceof SimpleToolWindowPanel) {
+                SimpleToolWindowPanel simpleToolWindowPanel = (SimpleToolWindowPanel) splitter.getFirstComponent();
+                if (simpleToolWindowPanel != null && simpleToolWindowPanel.getContent() instanceof JBScrollPane) {
+                    return (Tree) ((JBScrollPane)simpleToolWindowPanel.getContent()).getViewport().getView();
+                }
+            }
         }
         return null;
     }
@@ -163,6 +174,33 @@ public class TreeHelper {
             UIHelper.executeInUI(() -> Messages.showErrorDialog("Error: " + e.getLocalizedMessage(), "Error"));
         }
         return yamlAndKind;
+    }
+
+    public static String getKindFromNode(ParentableNode<?> node) {
+        if (node instanceof PipelineNode) {
+            return KIND_PIPELINE;
+        } else if (node instanceof ResourceNode) {
+            return KIND_RESOURCE;
+        } else if (node instanceof TaskNode) {
+            return KIND_TASK;
+        } else if (node instanceof ClusterTaskNode) {
+            return KIND_CLUSTERTASK;
+        } else if (node instanceof ConditionNode) {
+            return KIND_CONDITION;
+        } else if (node instanceof TriggerTemplateNode) {
+            return KIND_TRIGGERTEMPLATE;
+        } else if (node instanceof TriggerBindingNode) {
+            return KIND_TRIGGERBINDING;
+        } else if (node instanceof ClusterTriggerBindingNode) {
+            return KIND_CLUSTERTRIGGERBINDING;
+        } else if (node instanceof EventListenerNode) {
+            return KIND_EVENTLISTENER;
+        } else if (node instanceof TaskRunNode) {
+            return KIND_TASKRUN;
+        } else if (node instanceof PipelineRunNode) {
+            return KIND_PIPELINERUN;
+        }
+        return "";
     }
 
     public static void openTektonResourceInEditor(TreePath path) {
@@ -281,5 +319,26 @@ public class TreeHelper {
                 resourcesByClass.computeIfAbsent(element.getClass(), value -> new ArrayList<>())
                         .add(element));
         return resourcesByClass;
+    }
+
+    /**
+     * Build the model through reflection as StructureTreeModel does not have a stable API.
+     *
+     * @param structure the structure to associate
+     * @param project the IJ project
+     * @return the build model
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     * @throws InstantiationException
+     * @throws NoSuchMethodException
+     */
+    public static StructureTreeModel buildModel(TektonTreeStructure structure, Project project) throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
+        try {
+            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class});
+            return constructor.newInstance(structure);
+        } catch (NoSuchMethodException e) {
+            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class, Disposable.class});
+            return constructor.newInstance(structure, project);
+        }
     }
 }

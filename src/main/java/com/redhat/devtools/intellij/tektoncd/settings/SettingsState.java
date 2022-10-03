@@ -18,6 +18,9 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @State(
         name = "com.redhat.devtools.intellij.tektoncd.settings.AppSettingsState",
         storages = {@Storage("TektonSettingsPlugin.xml")}
@@ -29,6 +32,7 @@ public class SettingsState implements PersistentStateComponent<SettingsState> {
     public boolean showStartWizardWithNoInputs = true;
     public boolean displayLogsInEditor = false;
     public boolean displayCleanedYAMLInEditor = false;
+    public List<String> bundleList = new ArrayList<>();
 
     public static SettingsState getInstance() {
         return ServiceManager.getService(SettingsState.class);

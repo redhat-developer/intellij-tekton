@@ -287,6 +287,17 @@
         <add-to-group group-id="EditorPopupMenu" anchor="first"/>
       </action>
     </group>
+
+    <group id="com.redhat.devtools.intellij.tektoncd.view.actionsToolbar" popup="true">
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateBundleAction"
+              class="com.redhat.devtools.intellij.tektoncd.actions.CreateBundleAction"
+              text="Create Bundle"
+              icon="AllIcons.Actions.InSelection"/>
+      <action id="com.redhat.devtools.intellij.tektoncd.actions.ListBundlesAction"
+              class="com.redhat.devtools.intellij.tektoncd.actions.ListBundlesAction"
+              text="List Bundles"
+              icon="AllIcons.Actions.ListFiles"/>
+    </group>
   </actions>
 
 </idea-plugin>
