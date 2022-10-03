@@ -17,13 +17,14 @@ import java.util.regex.Pattern;
 
 public class BundleUtils {
 
+    private static final Pattern TAG_PATTERN = Pattern.compile(":.+$");
+
     public static String createCacheKey(String bundle, Resource resource) {
         return bundle + "-" + resource.type() + "-" + resource.name();
     }
 
     public static String cleanImage(String image) {
-        Pattern pattern = Pattern.compile(":.+$");
-        Matcher matcher = pattern.matcher(image);
+        Matcher matcher = TAG_PATTERN.matcher(image);
         if (!matcher.find()) {
             return image + ":latest";
         }

@@ -266,7 +266,8 @@ public class ListBundlesDialog extends BundleDialog {
                 logger.warn(e.getLocalizedMessage(), e);
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
-                    showTimedErrorMessage(e.getLocalizedMessage());
+                    lblGeneralError.setText(e.getLocalizedMessage());
+                    lblGeneralError.setVisible(true);
                 });
             }
         });

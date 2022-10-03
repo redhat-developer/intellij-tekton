@@ -18,8 +18,6 @@ import com.intellij.ui.CollectionListModel;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.ui.JBUI;
-import com.redhat.devtools.intellij.common.utils.ExecHelper;
-import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,8 +33,6 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED_BORDER_SHOW_ERROR;
@@ -118,19 +114,6 @@ public abstract class BundleDialog extends DialogWrapper {
 
     protected void disableLoadingState() {
         updateLoadingState(Cursor.getDefaultCursor());
-    }
-
-    protected void showTimedErrorMessage(String error) {
-        lblGeneralError.setText(error);
-        lblGeneralError.setVisible(true);
-        ExecHelper.submit(() -> {
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    UIHelper.executeInUI(() -> lblGeneralError.setVisible(false));
-                }
-            }, 30000);
-        });
     }
 
     protected <T> JBList<T> initJBList(JBList<T> listPanel, List<T> values, String emptyText, Border border,

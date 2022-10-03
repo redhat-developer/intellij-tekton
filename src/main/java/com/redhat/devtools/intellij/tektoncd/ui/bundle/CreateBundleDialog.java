@@ -93,7 +93,7 @@ public class CreateBundleDialog extends BundleDialog {
 
     @Override
     protected String getTopDescriptionText() {
-        return "Publish a new Tekton Bundle to a registry by passing in a set (max 10) of Tekton objects";
+        return "Publish a new Tekton Bundle to a registry by passing in a set (max 10) of Tekton resources";
     }
 
     @Override
@@ -127,8 +127,8 @@ public class CreateBundleDialog extends BundleDialog {
 
     private void initActions() {
         moveToBundleAction = new MoveToBundleAction(bundle,
-                () -> showWarning("The bundle cannot contain more than 10 Tekton objects. " +
-                        "Please remove some layer before to add new ones.", null),
+                () -> showWarning("The bundle cannot contain more than 10 Tekton resources. " +
+                        "Please remove one or several Tekton resources from the bundle before adding new ones.", null),
                 updateBundlePanel(),
                 () -> tree.getSelectionPaths());
 
