@@ -83,6 +83,7 @@ public class CreateBundleDialog extends BundleDialog {
 
     public CreateBundleDialog(@Nullable Project project, Tkn tkn) {
         super(project, "Create and deploy new bundle", "Deploy", tkn);
+        setOKActionEnabled(false);
     }
 
 
@@ -141,6 +142,7 @@ public class CreateBundleDialog extends BundleDialog {
     private Runnable updateBundlePanel() {
         return () -> {
             layers.setModel(new CollectionListModel<>(bundle.getResources()));
+            updateOKAction();
             bundleBodyPanel.invalidate();
             hideWarning();
         };
@@ -183,6 +185,7 @@ public class CreateBundleDialog extends BundleDialog {
         txtValueParam.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent e) {
+                updateOKAction();
                 hideWarning();
             }
         });
@@ -290,6 +293,15 @@ public class CreateBundleDialog extends BundleDialog {
                 });
             }
         });
+    }
+
+    @Override
+    public boolean isOKActionEnabled() {
+        return !txtValueParam.getText().isEmpty() && !bundle.getResources().isEmpty();
+    }
+
+    private void updateOKAction() {
+        setOKActionEnabled(isOKActionEnabled());
     }
 
     private boolean isNameValid(String name) {
