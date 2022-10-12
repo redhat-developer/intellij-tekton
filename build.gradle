@@ -36,23 +36,28 @@ runIdeForUiTests {
 }
 
 dependencies {
-    compile 'io.fabric8:openshift-client:5.12.2'
-    compile 'io.fabric8:tekton-client:5.12.2'
-    compile 'com.redhat.devtools.intellij:intellij-common:1.8.0-SNAPSHOT'
-    compile 'com.redhat.devtools.alizer:alizer-api:0.1.0'
-    testCompile 'org.mockito:mockito-inline:4.6.1'
-    compile 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
-    //Tekton Hub client dependencies
-    compile 'io.swagger:swagger-annotations:1.6.6'
-    compile 'io.gsonfire:gson-fire:1.8.5'
-    compile 'com.google.code.findbugs:jsr305:3.0.2'
-    //IntelliJ Kubernetes plugin brings old okio so we need
-    //to explicitely declare it here. If the Tekton F8 is
-    //updated check the version
-    compile 'com.squareup.okio:okio:3.1.0'
-    // telemetry contributes annotations 13.0.0, so we need to declare newer version
-    compile 'org.jetbrains:annotations:23.0.0'
-    testCompile 'com.redhat.devtools.intellij:intellij-common:1.7.1:test'
+    implementation(
+            'io.fabric8:openshift-client:5.12.2',
+            'io.fabric8:tekton-client:5.12.2',
+            'com.redhat.devtools.intellij:intellij-common:1.8.0-SNAPSHOT',
+            'com.redhat.devtools.alizer:alizer-api:0.1.0',
+            'com.github.vlsi.mxgraph:jgraphx:4.2.2',
+            //Tekton Hub client dependencies
+            'io.swagger:swagger-annotations:1.6.6',
+            'io.gsonfire:gson-fire:1.8.5',
+            'com.google.code.findbugs:jsr305:3.0.2',
+            //IntelliJ Kubernetes plugin brings old okio so we need
+            //to explicitely declare it here. If the Tekton F8 is
+            //updated check the version
+            'com.squareup.okio:okio:3.1.0',
+            // telemetry contributes annotations 13.0.0, so we need to declare newer version
+            'org.jetbrains:annotations:23.0.0'
+    )
+    testImplementation(
+            'org.mockito:mockito-inline:4.6.1',
+            'com.redhat.devtools.intellij:intellij-common:1.7.1:test'
+    )
+
 }
 
 configurations {
@@ -67,7 +72,7 @@ sourceSets {
     integrationTest {
         java.srcDir file('src/it/java')
         resources.srcDir file('src/it/resources')
-        compileClasspath += sourceSets.main.output + configurations.testRuntime
+        compileClasspath += sourceSets.main.output + configurations.runtimeClasspath
         runtimeClasspath += output + compileClasspath
     }
     main {
