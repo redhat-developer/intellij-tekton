@@ -61,7 +61,7 @@ dependencies {
 }
 
 configurations {
-    compile {
+    implementation {
         exclude group: 'org.slf4j', module: 'slf4j-api'
     }
     integrationTestImplementation.extendsFrom testImplementation
