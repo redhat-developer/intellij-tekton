@@ -86,7 +86,6 @@ public class CreateBundleDialog extends BundleDialog {
         setOKActionEnabled(false);
     }
 
-
     @Override
     protected void preInit() {
         bundle = new Bundle();;
@@ -189,6 +188,11 @@ public class CreateBundleDialog extends BundleDialog {
                 hideWarning();
             }
         });
+        JLabel lblImagePanelDescription = new JLabel("Use the schema registry/repository/image:version");
+        lblImagePanelDescription.setEnabled(false);
+        lblImagePanelDescription.setFont(lblImagePanelDescription.getFont().deriveFont(11f));
+        lblImagePanelDescription.setBorder(JBUI.Borders.emptyLeft(100));
+        registryPanel.add(lblImagePanelDescription, BorderLayout.SOUTH);
         registryPanel.add(txtValueParam, BorderLayout.CENTER);
         registryPanel.setBorder(JBUI.Borders.empty(10, 5, 10, 0));
         bundleBodyPanel.add(registryPanel, BorderLayout.NORTH);
@@ -297,7 +301,7 @@ public class CreateBundleDialog extends BundleDialog {
 
     @Override
     public boolean isOKActionEnabled() {
-        return !txtValueParam.getText().isEmpty() && !bundle.getResources().isEmpty();
+        return !bundle.getResources().isEmpty() && isNameValid(txtValueParam.getText());
     }
 
     private void updateOKAction() {
