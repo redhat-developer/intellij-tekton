@@ -83,8 +83,8 @@ public class CreateBundleDialog extends BundleDialog {
 
     public CreateBundleDialog(@Nullable Project project, Tkn tkn) {
         super(project, "Create and deploy new bundle", "Deploy", tkn);
+        setOKActionEnabled(false);
     }
-
 
     @Override
     protected void preInit() {
@@ -141,6 +141,7 @@ public class CreateBundleDialog extends BundleDialog {
     private Runnable updateBundlePanel() {
         return () -> {
             layers.setModel(new CollectionListModel<>(bundle.getResources()));
+            updateOKAction();
             bundleBodyPanel.invalidate();
             hideWarning();
         };
@@ -183,9 +184,15 @@ public class CreateBundleDialog extends BundleDialog {
         txtValueParam.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent e) {
+                updateOKAction();
                 hideWarning();
             }
         });
+        JLabel lblImagePanelDescription = new JLabel("Use the schema registry/repository/image:version");
+        lblImagePanelDescription.setEnabled(false);
+        lblImagePanelDescription.setFont(lblImagePanelDescription.getFont().deriveFont(11f));
+        lblImagePanelDescription.setBorder(JBUI.Borders.emptyLeft(100));
+        registryPanel.add(lblImagePanelDescription, BorderLayout.SOUTH);
         registryPanel.add(txtValueParam, BorderLayout.CENTER);
         registryPanel.setBorder(JBUI.Borders.empty(10, 5, 10, 0));
         bundleBodyPanel.add(registryPanel, BorderLayout.NORTH);
@@ -290,6 +297,15 @@ public class CreateBundleDialog extends BundleDialog {
                 });
             }
         });
+    }
+
+    @Override
+    public boolean isOKActionEnabled() {
+        return !bundle.getResources().isEmpty() && isNameValid(txtValueParam.getText());
+    }
+
+    private void updateOKAction() {
+        setOKActionEnabled(isOKActionEnabled());
     }
 
     private boolean isNameValid(String name) {
