@@ -41,9 +41,9 @@
       "metadata:",
       "  name: app-deploy",
       "spec:",
-      "  resources:",
-      "    - name: pipeline-resource-type",
-      "      type: pipeline-type",
+      "  params:",
+      "    - name: param-1",
+      "      description: this is my param",
       "  tasks:",
       "    - name: foo",
       "      taskRef:",
@@ -78,53 +78,12 @@
     "body": [
       "params:",
       "- name: name",
-      "  value: value",
-      "resources:",
-      "  inputs:",
-      "    - name: source",
-      "      resource: app-source",
-      "  outputs:",
-      "    - name: builtImage",
-      "      resource: app-image"
+      "  value: value"
     ],
     "description": "Tekton Pipeline Task Reference Inputs, Parameters and Outputs",
     "keywords": [
       "pipelinetaskreferenceinput",
-      "params",
-      "resources"
-    ]
-  },
-  "Tekton: PipelineResource": {
-    "prefix": "Tekton: PipelineResource",
-    "body": [
-      "apiVersion: tekton.dev/v1alpha1",
-      "kind: PipelineResource",
-      "metadata:",
-      "  name: git-source",
-      "spec:",
-      "  type: git",
-      "  params:",
-      "    - name: url",
-      "      value: https://github.com/git-source/git-source.git",
-      "  ## Check https://github.com/tektoncd/pipeline/blob/master/docs/resources.md#pipelineresources for more applicable parameters"
-    ],
-    "description": "Create a PipelineResource Resource",
-    "keywords": [
-      "pipelineresource",
-      "apiversion"
-    ]
-  },
-  "Tekton: PipelineResourceType": {
-    "prefix": "Tekton: PipelineResourceType",
-    "body": [
-      "- name: app-source",
-      "  type: git"
-    ],
-    "description": "Create a PipelineResource Type Resource",
-    "keywords": [
-      "pipelineresourcetype",
-      "- name",
-      "name"
+      "params"
     ]
   },
   "Tekton: PipelineRun": {
@@ -178,13 +137,6 @@
       "      type: string",
       "      description: The path to the dockerfile to build",
       "      default: /workspace/workspace/Dockerfile",
-      "  resources:",
-      "    inputs:",
-      "    - name: workspace",
-      "      type: git",
-      "    outputs:",
-      "    - name: buildImage",
-      "      type: image",
       "  steps:",
       "    - name: build-sources",
       "      image: fedora",
@@ -206,15 +158,6 @@
       "  description: Parameter description",
       "  default: default value",
       "  type: string",
-      "resources:",
-      "  inputs:",
-      "  - name: source",
-      "    type: git",
-      "  outputs:",
-      "  - name: builtImage",
-      "    outputImageDir: path/to/image",
-      "    targetPath: \"\"",
-      "    type: image",
       "steps:"
     ],
     "description": "Tekton Task Inputs, Parameters and Outputs",
@@ -274,44 +217,6 @@
       "taskstep",
       "- name",
       "name"
-    ]
-  },
-  "Tekton: Condition": {
-    "prefix": "Tekton: Condition",
-    "body": [
-      "apiVersion: tekton.dev/v1alpha1",
-      "kind: Condition",
-      "metadata:",
-      "  name: file-exists",
-      "spec:",
-      "  params:",
-      "    - name: path",
-      "  resources:",
-      "    - name: workspace",
-      "      type: git",
-      "  check:",
-      "    image: alpine",
-      "    script: 'test -f $(resources.workspace.path)/$(params.path)'"
-    ],
-    "description": "Tekton Condition",
-    "keywords": [
-      "condition",
-      "apiVersion"
-    ]
-  },
-  "Tekton: ConditionReference": {
-    "prefix": "Tekton: ConditionReference",
-    "body": [
-      "conditions:",
-      "  - conditionRef: condition_name",
-      "  params:",
-      "    - name: path",
-      "    value: $(params.path)"
-    ],
-    "description": "Tekton Condition Reference",
-    "keywords": [
-      "conditions",
-      "conditionRef"
     ]
   },
   "Tekton: TriggerTemplate": {

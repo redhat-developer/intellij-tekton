@@ -256,8 +256,6 @@
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreatePipelineAction" class="com.redhat.devtools.intellij.tektoncd.actions.pipeline.CreatePipelineAction" text="New Pipeline"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTaskAction" class="com.redhat.devtools.intellij.tektoncd.actions.task.CreateTaskAction" text="New Task"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateClusterTaskAction" class="com.redhat.devtools.intellij.tektoncd.actions.clustertask.CreateClusterTaskAction" text="New ClusterTask"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateResourceAction" class="com.redhat.devtools.intellij.tektoncd.actions.resource.CreateResourceAction" text="New Pipeline Resource"/>
-      <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateConditionAction" class="com.redhat.devtools.intellij.tektoncd.actions.condition.CreateConditionAction" text="New Condition"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTriggerTemplateAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateTriggerTemplateAction" text="New TriggerTemplate"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateTriggerBindingAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateTriggerBindingAction" text="New TriggerBinding"/>
       <action id="com.redhat.devtools.intellij.tektoncd.actions.CreateClusterTriggerBindingAction" class="com.redhat.devtools.intellij.tektoncd.actions.triggers.CreateClusterTriggerBindingAction" text="New ClusterTriggerBinding"/>
