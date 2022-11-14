@@ -320,6 +320,26 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "ConfigSource": {
+      "properties": {
+        "uri": {
+          "type": "string"
+        },
+        "digest": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "entryPoint": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "ContainerPort": {
       "required": [
         "containerPort"
@@ -1142,9 +1162,6 @@
           },
           "type": "array"
         },
-        "clusterName": {
-          "type": "string"
-        },
         "managedFields": {
           "items": {
             "$schema": "http://json-schema.org/draft-04/schema#",
@@ -1729,6 +1746,16 @@
       "properties": {
         "type": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "Provenance": {
+      "properties": {
+        "configSource": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/ConfigSource"
         }
       },
       "additionalProperties": false,
@@ -2924,6 +2951,10 @@
         },
         "taskSpec": {
           "$ref": "#/definitions/TaskSpec"
+        },
+        "provenance": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$ref": "#/definitions/Provenance"
         }
       },
       "additionalProperties": false,
@@ -3123,6 +3154,21 @@
         },
         "labelSelector": {
           "$ref": "#/definitions/LabelSelector"
+        },
+        "minDomains": {
+          "type": "integer"
+        },
+        "nodeAffinityPolicy": {
+          "type": "string"
+        },
+        "nodeTaintsPolicy": {
+          "type": "string"
+        },
+        "matchLabelKeys": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "additionalProperties": false,
