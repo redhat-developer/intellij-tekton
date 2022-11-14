@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.actions.debug;
 import com.redhat.devtools.intellij.tektoncd.actions.StartAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
@@ -53,14 +52,12 @@ public class DebugTaskAction extends StartAction {
         String serviceAccount = model.getServiceAccount();
         Map<String, Input> params = model.getParams().stream().collect(Collectors.toMap(Input::name, param -> param));
         Map<String, Workspace> workspaces = model.getWorkspaces();
-        Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(Input::name, Input::value));
-        Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(Output::name, Output::value));
         String runPrefixName = model.getRunPrefixName();
         String run = null;
         if (model.getKind().equalsIgnoreCase(KIND_TASK)) {
-            run = tkncli.createRunFromTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+            run = tkncli.createRunFromTask(namespace, model.getName(), params, serviceAccount, workspaces, runPrefixName);
         } else if (model.getKind().equalsIgnoreCase(KIND_CLUSTERTASK)) {
-            run = tkncli.createRunFromClusterTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+            run = tkncli.createRunFromClusterTask(namespace, model.getName(), params, serviceAccount, workspaces, runPrefixName);
         }
         return run;
     }

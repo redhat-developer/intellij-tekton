@@ -203,19 +203,9 @@ public class StartWizard extends BaseWizard {
     public List<BaseStep> getSteps() {
         List<BaseStep> steps = new ArrayList<>();
         boolean hasParams = !model.getParams().isEmpty();
-        boolean hasInputResources = !model.getInputResources().isEmpty();
-        boolean hasOutputResources = !model.getOutputResources().isEmpty();
         boolean hasWorkspaces = !model.getWorkspaces().isEmpty();
         if (hasParams) {
             steps.add(buildStepWithListener(new ParametersStep(model)));
-        }
-
-        if (hasInputResources) {
-            steps.add(buildStepWithListener(new InputResourcesStep(model)));
-        }
-
-        if (hasOutputResources) {
-            steps.add(buildStepWithListener(new OutputResourcesStep(model)));
         }
 
         if (hasWorkspaces) {

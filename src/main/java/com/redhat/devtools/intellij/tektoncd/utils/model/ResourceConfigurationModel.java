@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.utils.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 
 import java.io.IOException;
@@ -29,10 +28,6 @@ public abstract class ResourceConfigurationModel extends ConfigurationModel {
     }
 
     public abstract List<Input> getParams();
-
-    public abstract List<Input> getInputResources();
-
-    public abstract List<Output> getOutputResources();
 
     public abstract List<Workspace> getWorkspaces();
 

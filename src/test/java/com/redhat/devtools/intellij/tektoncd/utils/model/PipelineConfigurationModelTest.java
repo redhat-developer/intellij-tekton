@@ -29,8 +29,6 @@ public class PipelineConfigurationModelTest extends BaseTest {
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Pipeline");
         assertTrue(model.getParams().isEmpty());
-        assertTrue(model.getInputResources().isEmpty());
-        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
@@ -43,8 +41,6 @@ public class PipelineConfigurationModelTest extends BaseTest {
         assertEquals(model.getKind(), "Pipeline");
         assertTrue(model.getParams().size() == 1);
         assertEquals(model.getParams().get(0).name(), "param1");
-        assertTrue(model.getInputResources().isEmpty());
-        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
@@ -56,10 +52,6 @@ public class PipelineConfigurationModelTest extends BaseTest {
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Pipeline");
         assertTrue(model.getParams().isEmpty());
-        assertTrue(model.getInputResources().size() == 1);
-        assertEquals(model.getInputResources().get(0).name(), "resource1");
-        assertEquals(model.getInputResources().get(0).type(), "git");
-        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
@@ -71,8 +63,6 @@ public class PipelineConfigurationModelTest extends BaseTest {
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Pipeline");
         assertTrue(model.getParams().isEmpty());
-        assertTrue(model.getInputResources().isEmpty());
-        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().size() == 2);
         assertEquals(model.getWorkspaces().get(0).getName(), "password-vault");
         assertEquals(model.getWorkspaces().get(1).getName(), "recipe-store");
@@ -87,10 +77,6 @@ public class PipelineConfigurationModelTest extends BaseTest {
         assertEquals(model.getKind(), "Pipeline");
         assertTrue(model.getParams().size() == 1);
         assertEquals(model.getParams().get(0).name(), "path");
-        assertTrue(model.getInputResources().size() == 1);
-        assertEquals(model.getInputResources().get(0).name(), "source-repo");
-        assertEquals(model.getInputResources().get(0).type(), "git");
-        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().size() == 2);
         assertEquals(model.getWorkspaces().get(0).getName(), "password-vault");
         assertEquals(model.getWorkspaces().get(1).getName(), "recipe-store");

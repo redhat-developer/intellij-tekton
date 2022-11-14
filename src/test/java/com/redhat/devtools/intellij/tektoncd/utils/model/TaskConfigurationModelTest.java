@@ -29,8 +29,6 @@ public class TaskConfigurationModelTest extends BaseTest {
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Task");
         assertTrue(model.getParams().isEmpty());
-        assertTrue(model.getInputResources().isEmpty());
-        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
@@ -43,8 +41,6 @@ public class TaskConfigurationModelTest extends BaseTest {
         assertEquals(model.getKind(), "Task");
         assertTrue(model.getParams().size() == 1);
         assertEquals(model.getParams().get(0).name(), "parm1");
-        assertTrue(model.getInputResources().isEmpty());
-        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
@@ -56,12 +52,6 @@ public class TaskConfigurationModelTest extends BaseTest {
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Task");
         assertTrue(model.getParams().isEmpty());
-        assertTrue(model.getInputResources().size() == 2);
-        assertEquals(model.getInputResources().get(0).name(), "resource1");
-        assertEquals(model.getInputResources().get(0).type(), "git");
-        assertEquals(model.getInputResources().get(1).name(), "resource2");
-        assertEquals(model.getInputResources().get(1).type(), "git");
-        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
@@ -73,12 +63,6 @@ public class TaskConfigurationModelTest extends BaseTest {
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Task");
         assertTrue(model.getParams().isEmpty());
-        assertTrue(model.getInputResources().isEmpty());
-        assertTrue(model.getOutputResources().size() == 2);
-        assertEquals(model.getOutputResources().get(0).name(), "resource1");
-        assertEquals(model.getOutputResources().get(0).type(), "image");
-        assertEquals(model.getOutputResources().get(1).name(), "resource2");
-        assertEquals(model.getOutputResources().get(1).type(), "image");
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
@@ -90,8 +74,6 @@ public class TaskConfigurationModelTest extends BaseTest {
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Task");
         assertTrue(model.getParams().isEmpty());
-        assertTrue(model.getInputResources().isEmpty());
-        assertTrue(model.getOutputResources().isEmpty());
         assertTrue(model.getWorkspaces().size() == 2);
         assertEquals(model.getWorkspaces().get(0).getName(), "write-allowed");
         assertEquals(model.getWorkspaces().get(1).getName(), "write-disallowed");
@@ -106,14 +88,6 @@ public class TaskConfigurationModelTest extends BaseTest {
         assertEquals(model.getKind(), "Task");
         assertTrue(model.getParams().size() == 1);
         assertEquals(model.getParams().get(0).name(), "parm1");
-        assertTrue(model.getInputResources().size() == 1);
-        assertEquals(model.getInputResources().get(0).name(), "resource1");
-        assertEquals(model.getInputResources().get(0).type(), "git");
-        assertTrue(model.getOutputResources().size() == 2);
-        assertEquals(model.getOutputResources().get(0).name(), "resource1");
-        assertEquals(model.getOutputResources().get(0).type(), "image");
-        assertEquals(model.getOutputResources().get(1).name(), "resource2");
-        assertEquals(model.getOutputResources().get(1).type(), "image");
         assertTrue(model.getWorkspaces().size() == 2);
         assertEquals(model.getWorkspaces().get(0).getName(), "write-allowed");
         assertEquals(model.getWorkspaces().get(1).getName(), "write-disallowed");

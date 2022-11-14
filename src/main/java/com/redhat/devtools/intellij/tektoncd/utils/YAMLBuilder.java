@@ -62,16 +62,6 @@ public class YAMLBuilder {
             rootNode.set("params", paramsNode);
         }
 
-        ArrayNode inputResourcesNode = createInputResourcesNode(model.getInputResources());
-        if (inputResourcesNode.size() > 0) {
-            rootNode.set("resources", inputResourcesNode);
-        }
-
-        ArrayNode outputResourcesNode = createOutputResourcesNode(model.getOutputResources());
-        if (outputResourcesNode.size() > 0) {
-            rootNode.set("outputs", outputResourcesNode);
-        }
-
         return new YAMLMapper().writeValueAsString(rootNode);
     }
 
@@ -290,8 +280,6 @@ public class YAMLBuilder {
             } else {
                 spec = createTaskRunSpec(actionModel.getResource().getName(),
                         actionModel.getParams(),
-                        actionModel.getInputResources(),
-                        actionModel.getOutputResources(),
                         actionModel.getWorkspaces(),
                         actionModel.getServiceAccount().isEmpty() ? null : actionModel.getServiceAccount(),
                         toDebug
@@ -305,8 +293,6 @@ public class YAMLBuilder {
             });
             spec = createTaskRunSpec(model.getName(),
                     ((TaskConfigurationModel)model).getParams(),
-                    ((TaskConfigurationModel)model).getInputResources(),
-                    ((TaskConfigurationModel)model).getOutputResources(),
                     workspaces,
                     "",
                     toDebug);
@@ -339,11 +325,6 @@ public class YAMLBuilder {
             specNode.set("params", paramsNode);
         }
 
-        ArrayNode inputResourcesNode = createInputResourcesNode(model.getInputResources());
-        if (inputResourcesNode.size() > 0) {
-            specNode.set("resources", inputResourcesNode);
-        }
-
         ArrayNode workspacesNode = createWorkspaceNode(model.getWorkspaces());
         if (workspacesNode.size() > 0) {
             specNode.set("workspaces", workspacesNode);
@@ -352,7 +333,7 @@ public class YAMLBuilder {
         return specNode;
     }
 
-    private static ObjectNode createTaskRunSpec(String name, List<Input> params, List<Input> inputResources, List<Output> outputs, Map<String, Workspace> workspaces, String serviceAccount, boolean toDebug) {
+    private static ObjectNode createTaskRunSpec(String name, List<Input> params, Map<String, Workspace> workspaces, String serviceAccount, boolean toDebug) {
         ObjectNode specNode = YAML_MAPPER.createObjectNode();
 
         if (toDebug) {
@@ -372,22 +353,6 @@ public class YAMLBuilder {
         ArrayNode paramsNode = createParamsNodeFromInput(params);
         if (paramsNode.size() > 0) {
             specNode.set("params", paramsNode);
-        }
-
-        ObjectNode resourcesNode = YAML_MAPPER.createObjectNode();
-
-        ArrayNode inputResourcesNode = createInputResourcesNode(inputResources);
-        if (inputResourcesNode.size() > 0) {
-            resourcesNode.set("inputs", inputResourcesNode);
-        }
-
-        ArrayNode outputResourcesNode = createOutputResourcesNode(outputs);
-        if (outputResourcesNode.size() > 0) {
-            resourcesNode.set("outputs", outputResourcesNode);
-        }
-
-        if (resourcesNode.size() > 0) {
-            specNode.set("resources", resourcesNode);
         }
 
         ArrayNode workspacesNode = createWorkspaceNode(workspaces);

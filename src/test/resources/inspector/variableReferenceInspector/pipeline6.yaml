@@ -6,9 +6,6 @@ spec:
   params:
     - name: p1
       default: value1
-  resources:
-    - name: source-repo
-      type: git
   workspaces:
     - name: password-vault
   tasks:

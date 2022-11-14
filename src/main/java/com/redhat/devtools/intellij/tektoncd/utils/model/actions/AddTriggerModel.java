@@ -10,8 +10,8 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils.model.actions;
 
-import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TriggerBindingConfigurationModel;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,8 +23,8 @@ public class AddTriggerModel extends ActionToRunModel {
     private Map<String, String> bindingsSelectedByUser;
     private Map<String, String> bindingsAvailableOnCluster;
 
-    public AddTriggerModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, Map<String, String> bindingsAvailableOnCluster) {
-        super(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
+    public AddTriggerModel(String configuration, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, Map<String, String> bindingsAvailableOnCluster) {
+        super(configuration, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
         this.bindingsAvailableOnCluster = bindingsAvailableOnCluster;
         this.bindingsSelectedByUser = new HashMap<>();
     }

@@ -23,7 +23,6 @@ import io.fabric8.kubernetes.api.model.NamedAuthInfo;
 import io.fabric8.kubernetes.api.model.NamedCluster;
 import io.fabric8.kubernetes.api.model.NamedContext;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ConditionCheckStatus;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRunConditionCheckStatus;
@@ -106,80 +105,6 @@ public class TektonTreeStructureTest {
         when(tkn.getWatchHandler()).thenReturn(watchHandler);
         when(watchHandler.canBeWatched(any())).thenReturn(false);
 
-    }
-
-    /*  ////////////////////////////////////////////////////////////
-     *                          CONDITIONS
-     *  ////////////////////////////////////////////////////////////
-     */
-
-    @Test
-    public void checkNoConditionReturnEmptyArray() throws IOException {
-        List<Condition> resultConditions = new ArrayList<>();
-        when(tkn.getConditions(anyString())).thenReturn(resultConditions);
-
-        ConditionsNode node = new ConditionsNode(root, parent);
-        Object[] conditions = structure.getChildElements(node);
-
-        assertTrue(conditions.length == 0);
-    }
-
-    @Test
-    public void checkSingleConditionReturnOneElementArray() throws IOException {
-        Condition condition = new Condition();
-        condition.setMetadata(metadata1);
-
-        List<Condition> resultConditions = new ArrayList<>();
-        resultConditions.add(condition);
-
-        when(tkn.getConditions(anyString())).thenReturn(resultConditions);
-
-        ConditionsNode node = new ConditionsNode(root, parent);
-        Object[] conditions = structure.getChildElements(node);
-
-        assertTrue(conditions.length == 1);
-        assertEquals(((ParentableNode) conditions[0]).getName(), "test1");
-    }
-
-    @Test
-    public void checkMultipleConditionReturnMultipleItemsArray() throws IOException {
-        Condition condition1 = new Condition();
-        condition1.setMetadata(metadata1);
-
-        Condition condition2 = new Condition();
-        condition2.setMetadata(metadata2);
-
-        Condition condition3 = new Condition();
-        condition3.setMetadata(metadata3);
-
-        List<Condition> resultConditions = new ArrayList<>();
-        resultConditions.add(condition1);
-        resultConditions.add(condition2);
-        resultConditions.add(condition3);
-
-        when(tkn.getConditions(anyString())).thenReturn(resultConditions);
-
-        ConditionsNode node = new ConditionsNode(root, parent);
-        Object[] conditions = structure.getChildElements(node);
-
-        assertTrue(conditions.length == 3);
-        assertEquals(((ParentableNode) conditions[0]).getName(), "test1");
-        assertEquals(((ParentableNode) conditions[1]).getName(), "test2");
-        assertEquals(((ParentableNode) conditions[2]).getName(), "test3");
-    }
-
-    @Test
-    public void checkFailTknConditionsCallReturnMessageNode() throws IOException {
-        List<Condition> resultConditions = new ArrayList<>();
-        when(tkn.getConditions(anyString())).thenReturn(resultConditions);
-        when(tkn.getConditions(anyString())).thenThrow(new IOException());
-
-        ConditionsNode node = new ConditionsNode(root, parent);
-        Object[] conditions = structure.getChildElements(node);
-
-        assertTrue(conditions.length == 1);
-        assertTrue(conditions[0] instanceof MessageNode);
-        assertEquals(((MessageNode)conditions[0]).getName(), "Failed to load conditions");
     }
 
     /*  ////////////////////////////////////////////////////////////

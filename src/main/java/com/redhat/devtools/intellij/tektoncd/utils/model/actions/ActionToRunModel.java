@@ -13,22 +13,19 @@ package com.redhat.devtools.intellij.tektoncd.utils.model.actions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
-import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ResourceConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 
@@ -40,14 +37,12 @@ public abstract class ActionToRunModel extends ConfigurationModel {
     protected Map<String, Workspace> workspaces;
     protected Map<String, String> taskServiceAccountNames;
     protected String globalServiceAccount;
-    protected List<Resource> pipelineResources;
     protected List<String> serviceAccounts, secrets, configMaps, persistentVolumeClaims;
 
-    public ActionToRunModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
+    public ActionToRunModel(String configuration, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
         super(configuration);
         this.errorMessage = "Tekton configuration has an invalid format:\n";
         this.serviceAccounts = serviceAccounts;
-        this.pipelineResources = resources;
         this.secrets = secrets;
         this.configMaps = configMaps;
         this.persistentVolumeClaims = persistentVolumeClaims;
@@ -84,8 +79,6 @@ public abstract class ActionToRunModel extends ConfigurationModel {
             if (resource instanceof PipelineConfigurationModel) {
                 initTaskServiceAccounts(configuration);
             }
-            // if for a specific input/output type (git, image, ...) only a resource exists, set that resource as default value for input/output
-            setDefaultValueResources();
         }
     }
 
@@ -99,10 +92,6 @@ public abstract class ActionToRunModel extends ConfigurationModel {
 
     public String getErrorMessage() {
         return this.errorMessage;
-    }
-
-    public List<Resource> getPipelineResources() {
-        return this.pipelineResources;
     }
 
     public List<String> getServiceAccounts() {
@@ -123,14 +112,6 @@ public abstract class ActionToRunModel extends ConfigurationModel {
 
     public List<Input> getParams() {
         return resource.getParams();
-    }
-
-    public List<Input> getInputResources() {
-        return resource.getInputResources();
-    }
-
-    public List<Output> getOutputResources() {
-        return resource.getOutputResources();
     }
 
     public Map<String, Workspace> getWorkspaces() {
@@ -175,42 +156,5 @@ public abstract class ActionToRunModel extends ConfigurationModel {
             }
         }
     }
-
-    private void setDefaultValueResources() {
-        if (this.pipelineResources == null || this.pipelineResources.isEmpty()) {
-            if (!this.getInputResources().isEmpty() || !this.getOutputResources().isEmpty()) {
-                errorMessage += " * The " + this.kind + " requires resources to be started but no resources were found in the cluster.\n";
-                isValid = false;
-            }
-        }
-
-        // set the first resource for a specific type (git, image, ...) as the default value for input/output
-        Map<String, List<Resource>> resourceGroupedByType = pipelineResources.stream().collect(Collectors.groupingBy(Resource::type));
-
-        if (!this.resource.getInputResources().isEmpty()) {
-            for (Input input: this.resource.getInputResources()) {
-                List<Resource> resourcesByInputType = resourceGroupedByType.get(input.type());
-                if (resourcesByInputType == null) {
-                    errorMessage += " * The input " + input.name() + " requires a resource of type " + input.type() + " but no resource of that type was found in the cluster.\n";
-                    isValid = false;
-                    continue;
-                }
-                input.setValue(resourcesByInputType.get(0).name());
-            }
-        }
-
-        if (!this.resource.getOutputResources().isEmpty()) {
-            for (Output output: this.resource.getOutputResources()) {
-                List<Resource> resourcesByOutputType = resourceGroupedByType.get(output.type());
-                if (resourcesByOutputType == null) {
-                    errorMessage += " * The output " + output.name() + " requires a resource of type " + output.type() + " but no resource of that type was found in the cluster.\n";
-                    isValid = false;
-                    continue;
-                }
-                output.setValue(resourcesByOutputType.get(0).name());
-            }
-        }
-    }
-
 
 }

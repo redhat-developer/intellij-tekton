@@ -11,10 +11,9 @@
 package com.redhat.devtools.intellij.tektoncd.utils.model.resources;
 
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ResourceConfigurationModel;
-import java.util.Collections;
+
 import java.util.List;
 
 public class PipelineConfigurationModel extends ResourceConfigurationModel {
@@ -32,16 +31,6 @@ public class PipelineConfigurationModel extends ResourceConfigurationModel {
     @Override
     public List<Input> getParams() {
         return this.params;
-    }
-
-    @Override
-    public List<Input> getInputResources() {
-        return this.inputResource;
-    }
-
-    @Override
-    public List<Output> getOutputResources() {
-        return Collections.emptyList();
     }
 
     @Override

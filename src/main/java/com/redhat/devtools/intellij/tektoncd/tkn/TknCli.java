@@ -69,7 +69,6 @@ import io.fabric8.kubernetes.client.utils.HttpClientUtils;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.tekton.client.TektonClient;
-import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTaskList;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
@@ -80,7 +79,6 @@ import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskList;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRunList;
-import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
 import io.fabric8.tekton.triggers.v1alpha1.ClusterTriggerBinding;
 import io.fabric8.tekton.triggers.v1alpha1.EventListener;
 import io.fabric8.tekton.triggers.v1alpha1.TriggerBinding;
@@ -109,9 +107,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCEPIPELINE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_INPUTRESOURCETASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_OUTPUTRESOURCE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PARAMETER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_PREFIXNAME;
 import static com.redhat.devtools.intellij.tektoncd.Constants.FLAG_SERVICEACCOUNT;
@@ -330,12 +325,6 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public List<Resource> getResources(String namespace) throws IOException {
-        String json = ExecHelper.execute(command, envVars, "resource", "ls", "-n", namespace, "-o", "json");
-        return getCustomCollection(json, Resource.class);
-    }
-
-    @Override
     public List<Task> getTasks(String namespace) throws IOException {
         try {
             TaskList tasks = client.adapt(TektonClient.class).v1beta1().tasks().inNamespace(namespace).list();
@@ -368,12 +357,6 @@ public class TknCli implements Tkn {
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }
-    }
-
-    @Override
-    public List<Condition> getConditions(String namespace) throws IOException, NullPointerException {
-        String conditionListJson = ExecHelper.execute(command, envVars, "conditions", "ls", "-n", namespace, "-o", "json");
-        return getCustomCollection(conditionListJson, Condition.class);
     }
 
     private <T> List<T> getCustomCollection(String json, Class<T> customClass) throws IOException {
@@ -419,11 +402,6 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getResourceYAML(String namespace, String resource) throws IOException {
-        return ExecHelper.execute(command, envVars, "resource", "describe", resource, "-n", namespace, "-o", "yaml");
-    }
-
-    @Override
     public String getTaskYAML(String namespace, String task) throws IOException {
         return ExecHelper.execute(command, envVars, "task", "describe", task, "-n", namespace, "-o", "yaml");
     }
@@ -431,11 +409,6 @@ public class TknCli implements Tkn {
     @Override
     public String getClusterTaskYAML(String task) throws IOException {
         return ExecHelper.execute(command, envVars, "clustertask", "describe", task, "-o", "yaml");
-    }
-
-    @Override
-    public String getConditionYAML(String namespace, String condition) throws IOException {
-        return ExecHelper.execute(command, envVars, "condition", "describe", condition, "-n", namespace, "-o", "yaml");
     }
 
     @Override
@@ -520,16 +493,6 @@ public class TknCli implements Tkn {
     @Override
     public void deleteTaskRuns(String namespace, List<String> trs) throws IOException {
         ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "tr", trs));
-    }
-
-    @Override
-    public void deleteResources(String namespace, List<String> resources) throws IOException {
-        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "resource", resources));
-    }
-
-    @Override
-    public void deleteConditions(String namespace, List<String> conditions) throws IOException {
-        ExecHelper.execute(command, envVars, getDeleteArgs(namespace, "conditions", conditions));
     }
 
     @Override
@@ -656,7 +619,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String startPipeline(String namespace, String pipeline, Map<String, Input> parameters, Map<String, String> resources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    public String startPipeline(String namespace, String pipeline, Map<String, Input> parameters, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("pipeline", "start", pipeline, "-n", namespace));
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
@@ -664,7 +627,6 @@ public class TknCli implements Tkn {
         args.addAll(argsToList(taskServiceAccount, FLAG_TASKSERVICEACCOUNT));
         args.addAll(workspaceArgsToList(workspaces));
         args.addAll(paramsToArgsList(parameters, FLAG_PARAMETER));
-        args.addAll(argsToList(resources, FLAG_INPUTRESOURCEPIPELINE));
         if (!runPrefixName.isEmpty()) {
             args.add(FLAG_PREFIXNAME + "=" + runPrefixName);
         }
@@ -679,36 +641,34 @@ public class TknCli implements Tkn {
         return this.getTektonRunName(output);
     }
 
-    public String startTask(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    public String startTask(String namespace, String task, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace));
-        return startTaskAndGetRunName(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+        return startTaskAndGetRunName(args, parameters, serviceAccount, workspaces, runPrefixName);
     }
 
     @Override
-    public String createRunFromTask(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    public String createRunFromTask(String namespace, String task, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("task", "start", task, "-n", namespace, "--dry-run"));
-        return startTask(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+        return startTask(args, parameters, serviceAccount, workspaces, runPrefixName);
     }
 
-    public String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    public String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("clustertask", "start", clusterTask, "-n", namespace)); // -n is used to retreive input/output resources
-        return startTaskAndGetRunName(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+        return startTaskAndGetRunName(args, parameters, serviceAccount, workspaces, runPrefixName);
     }
 
     @Override
-    public String createRunFromClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    public String createRunFromClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         List<String> args = new ArrayList<>(Arrays.asList("clustertask", "start", clusterTask, "-n", namespace, "--dry-run")); // -n is used to retreive input/output resources
-        return startTask(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+        return startTask(args, parameters, serviceAccount, workspaces, runPrefixName);
     }
 
-    private String startTask(List<String> args, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+    private String startTask(List<String> args, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
         if (!serviceAccount.isEmpty()) {
             args.add(FLAG_SERVICEACCOUNT + "=" + serviceAccount);
         }
         args.addAll(workspaceArgsToList(workspaces));
         args.addAll(paramsToArgsList(parameters, FLAG_PARAMETER));
-        args.addAll(argsToList(inputResources, FLAG_INPUTRESOURCETASK));
-        args.addAll(argsToList(outputResources, FLAG_OUTPUTRESOURCE));
         if (!runPrefixName.isEmpty()) {
             args.add(FLAG_PREFIXNAME + "=" + runPrefixName);
         }
@@ -716,8 +676,8 @@ public class TknCli implements Tkn {
         return ExecHelper.execute(command, envVars, args.toArray(new String[0]));
     }
 
-    private String startTaskAndGetRunName(List<String> args, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
-        String output = startTask(args, parameters, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+    private String startTaskAndGetRunName(List<String> args, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException {
+        String output = startTask(args, parameters, serviceAccount, workspaces, runPrefixName);
         return getTektonRunName(output);
     }
 
@@ -943,27 +903,9 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public Watch watchPipelineResources(String namespace, Watcher<PipelineResource> watcher) throws IOException {
-        try {
-            return client.adapt(TektonClient.class).v1alpha1().pipelineResources().inNamespace(namespace).watch(watcher);
-        } catch (KubernetesClientException e) {
-            throw new IOException(e);
-        }
-    }
-
-    @Override
     public Watch watchClusterTasks(Watcher<ClusterTask> watcher) throws IOException {
         try {
             return client.adapt(TektonClient.class).v1beta1().clusterTasks().watch(watcher);
-        } catch (KubernetesClientException e) {
-            throw new IOException(e);
-        }
-    }
-
-    @Override
-    public Watch watchConditions(String namespace, Watcher<io.fabric8.tekton.pipeline.v1alpha1.Condition> watcher) throws IOException {
-        try {
-            return client.adapt(TektonClient.class).v1alpha1().conditions().inNamespace(namespace).watch(watcher);
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }

@@ -39,15 +39,6 @@ public class VariableReferenceInspectorTest extends InspectorTest{
     }
 
     @Test
-    public void testPipelineHighlightWithUnusedResource() {
-        myFixture.configureByFile("pipeline2.yaml");
-        List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
-        assertEquals(hightlightInfo.size(), 2);
-        assertTrue(hightlightInfo.get(0).getDescription().equals("Variable source-repo is never used"));
-        assertTrue(hightlightInfo.get(1).getDescription().equals("Variable web-image is never used"));
-    }
-
-    @Test
     public void testPipelineHighlightWithUnusedWorkspace() {
         myFixture.configureByFile("pipeline3.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -59,28 +50,18 @@ public class VariableReferenceInspectorTest extends InspectorTest{
     public void testPipelineHighlightWithUnusedVariables() {
         myFixture.configureByFile("pipeline4.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
-        assertEquals(hightlightInfo.size(), 3);
+        assertEquals(hightlightInfo.size(), 2);
         assertTrue(hightlightInfo.get(0).getDescription().equals("Variable p1 is never used"));
-        assertTrue(hightlightInfo.get(1).getDescription().equals("Variable source-repo is never used"));
-        assertTrue(hightlightInfo.get(2).getDescription().equals("Variable password-vault is never used"));
-    }
-
-    @Test
-    public void testPipelineHighlightWithUnusedVariablesWithQuotes() {
-        myFixture.configureByFile("pipeline5.yaml");
-        List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
-        assertEquals(hightlightInfo.size(), 1);
-        assertTrue(hightlightInfo.get(0).getDescription().equals("Variable source-repo is never used"));
+        assertTrue(hightlightInfo.get(1).getDescription().equals("Variable password-vault is never used"));
     }
 
     @Test
     public void testPipelineHighlightWithNotExactMatchingWords() {
         myFixture.configureByFile("pipeline6.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
-        assertEquals(hightlightInfo.size(), 3);
+        assertEquals(hightlightInfo.size(), 2);
         assertTrue(hightlightInfo.get(0).getDescription().equals("Variable p1 is never used"));
-        assertTrue(hightlightInfo.get(1).getDescription().equals("Variable source-repo is never used"));
-        assertTrue(hightlightInfo.get(2).getDescription().equals("Variable password-vault is never used"));
+        assertTrue(hightlightInfo.get(1).getDescription().equals("Variable password-vault is never used"));
     }
 
     @Test
@@ -89,22 +70,6 @@ public class VariableReferenceInspectorTest extends InspectorTest{
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
         assertEquals(hightlightInfo.size(), 1);
         assertTrue(hightlightInfo.get(0).getDescription().equals("Variable parm1 is never used"));
-    }
-
-    @Test
-    public void testTaskHighlightWithUnusedInputResource() {
-        myFixture.configureByFile("task2.yaml");
-        List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
-        assertEquals(hightlightInfo.size(), 1);
-        assertTrue(hightlightInfo.get(0).getDescription().equals("Variable resource1 is never used"));
-    }
-
-    @Test
-    public void testTaskHighlightWithUnusedOutputResource() {
-        myFixture.configureByFile("task3.yaml");
-        List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
-        assertEquals(hightlightInfo.size(), 1);
-        assertTrue(hightlightInfo.get(0).getDescription().equals("Variable resource1 is never used"));
     }
 
     @Test
@@ -120,11 +85,9 @@ public class VariableReferenceInspectorTest extends InspectorTest{
     public void testTaskHighlightWithUnusedVariables() {
         myFixture.configureByFile("task5.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
-        assertEquals(hightlightInfo.size(), 4);
+        assertEquals(hightlightInfo.size(), 2);
         assertTrue(hightlightInfo.get(0).getDescription().equals("Variable write-allowed is never used"));
         assertTrue(hightlightInfo.get(1).getDescription().equals("Variable parm1 is never used"));
-        assertTrue(hightlightInfo.get(2).getDescription().equals("Variable resource2 is never used"));
-        assertTrue(hightlightInfo.get(3).getDescription().equals("Variable resource1 is never used"));
 
     }
 

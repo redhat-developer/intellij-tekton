@@ -111,8 +111,6 @@ public class StartAction extends TektonAction {
 
     protected boolean canBeStarted(Project project, ParentableNode element, StartResourceModel model) {
         boolean hasNoInputs = model.getParams().isEmpty()
-                && model.getInputResources().isEmpty()
-                && model.getOutputResources().isEmpty()
                 && model.getWorkspaces().isEmpty();
         boolean showWizard = SettingsState.getInstance().showStartWizardWithNoInputs || !hasNoInputs;
 
@@ -137,12 +135,11 @@ public class StartAction extends TektonAction {
     private StartResourceModel createModel(Tkn tkncli, ParentableNode element, String namespace) {
         StartResourceModel model = null;
         try {
-            List<Resource> resources = tkncli.getResources(namespace);
             List<String> serviceAccounts = tkncli.getServiceAccounts(namespace);
             List<String> secrets = tkncli.getSecrets(namespace);
             List<String> configMaps = tkncli.getConfigMaps(namespace);
             List<String> persistentVolumeClaims = tkncli.getPersistentVolumeClaim(namespace);
-            model = createModel(element, namespace, tkncli, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
+            model = createModel(element, namespace, tkncli, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
         } catch (IOException e) {
             String errorMessage = element.getName() + " in namespace " + namespace + " failed to start. An error occurred while retrieving information.\n" + e.getLocalizedMessage();
             UIHelper.executeInUI(() -> {
@@ -158,7 +155,7 @@ public class StartAction extends TektonAction {
         return model;
     }
 
-    protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
+    protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "";
         List<? extends HasMetadata> runs = new ArrayList<>();
         if (element instanceof PipelineNode) {
@@ -173,7 +170,7 @@ public class StartAction extends TektonAction {
             telemetry.property(PROP_RESOURCE_KIND, KIND_CLUSTERTASK);
             configuration = tkncli.getClusterTaskYAML(element.getName());
         }
-        return new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
+        return new StartResourceModel(configuration, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
     }
 
     private void refreshTreeNode(AnActionEvent anActionEvent, ParentableNode element) {
@@ -189,16 +186,14 @@ public class StartAction extends TektonAction {
         Map<String, String> taskServiceAccount = model.getTaskServiceAccounts();
         Map<String, Input> params = model.getParams().stream().collect(Collectors.toMap(Input::name, param -> param));
         Map<String, Workspace> workspaces = model.getWorkspaces();
-        Map<String, String> inputResources = model.getInputResources().stream().collect(Collectors.toMap(Input::name, Input::value));
-        Map<String, String> outputResources = model.getOutputResources().stream().collect(Collectors.toMap(Output::name, Output::value));
         String runPrefixName = model.getRunPrefixName();
         String runName = null;
         if (model.getKind().equalsIgnoreCase(KIND_PIPELINE)) {
-            runName = tkncli.startPipeline(namespace, model.getName(), params, inputResources, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
+            runName = tkncli.startPipeline(namespace, model.getName(), params, serviceAccount, taskServiceAccount, workspaces, runPrefixName);
         } else if (model.getKind().equalsIgnoreCase(KIND_TASK)) {
-            runName = tkncli.startTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+            runName = tkncli.startTask(namespace, model.getName(), params, serviceAccount, workspaces, runPrefixName);
         } else if (model.getKind().equalsIgnoreCase(KIND_CLUSTERTASK)) {
-            runName = tkncli.startClusterTask(namespace, model.getName(), params, inputResources, outputResources, serviceAccount, workspaces, runPrefixName);
+            runName = tkncli.startClusterTask(namespace, model.getName(), params, serviceAccount, workspaces, runPrefixName);
         }
         return runName;
     }

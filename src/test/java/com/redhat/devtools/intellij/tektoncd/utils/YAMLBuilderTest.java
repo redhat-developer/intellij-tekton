@@ -15,11 +15,11 @@ import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import org.junit.Test;
-
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_BETA1_API_VERSION;
 import static org.junit.Assert.assertEquals;
@@ -37,7 +37,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkPipelineRunCreatedWithNoInputs() throws IOException {
         String content = load("pipeline1.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
@@ -55,7 +55,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkPipelineRunCreatedHasServiceAccount() throws IOException {
         String content = load("pipeline1.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         model.setServiceAccount("sa");
 
         ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
@@ -74,7 +74,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkPipelineRunCreatedHasParams() throws IOException {
         String content = load("pipeline3.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
@@ -93,7 +93,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkPipelineRunCreatedHasResource() throws IOException {
         String content = load("pipeline4.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
@@ -104,15 +104,13 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountName"));
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(pipelineRunNode.get("spec").has("params"));
-        assertTrue(pipelineRunNode.get("spec").has("resources"));
-        assertEquals(pipelineRunNode.get("spec").get("resources").get(0).get("name").asText(), "resource1");
         assertFalse(pipelineRunNode.get("spec").has("workspaces"));
     }
 
     @Test
     public void checkPipelineRunCreatedHasWorkspace() throws IOException {
         String content = load("pipeline5.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         if (model.getWorkspaces().containsKey("password-vault")) {
             model.getWorkspaces().put("password-vault", new Workspace("foo1", Workspace.Kind.EMPTYDIR, "foo"));
         }
@@ -142,7 +140,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkTaskRunCreatedWithNoInputs() throws IOException {
         String content = load("task1.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
@@ -160,7 +158,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkTaskRunCreatedHasServiceAccount() throws IOException {
         String content = load("task1.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         model.setServiceAccount("sa");
 
         ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
@@ -179,7 +177,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkTaskRunCreatedHasParams() throws IOException {
         String content = load("task3.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
@@ -198,7 +196,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkTaskRunCreatedHasInputResource() throws IOException {
         String content = load("task6.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
@@ -209,16 +207,13 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(taskRunNode.get("spec").has("serviceAccountName"));
         assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(taskRunNode.get("spec").has("params"));
-        assertTrue(taskRunNode.get("spec").has("resources"));
-        assertEquals(taskRunNode.get("spec").get("resources").get("inputs").get(0).get("name").asText(), "resource1");
-        assertFalse(taskRunNode.get("spec").get("resources").has("outputs"));
         assertFalse(taskRunNode.get("spec").has("workspaces"));
     }
 
     @Test
     public void checkTaskRunCreatedHasOutputResource() throws IOException {
         String content = load("task8.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
 
@@ -229,16 +224,13 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(taskRunNode.get("spec").has("serviceAccountName"));
         assertFalse(taskRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(taskRunNode.get("spec").has("params"));
-        assertTrue(taskRunNode.get("spec").has("resources"));
-        assertFalse(taskRunNode.get("spec").get("resources").has("inputs"));
-        assertEquals(taskRunNode.get("spec").get("resources").get("outputs").get(0).get("name").asText(), "resource1");
         assertFalse(taskRunNode.get("spec").has("workspaces"));
     }
 
     @Test
     public void checkTaskRunCreatedHasWorkspace() throws IOException {
         String content = load("task10.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         if (model.getWorkspaces().containsKey("write-allowed")) {
             model.getWorkspaces().put("write-allowed", new Workspace("foo1", Workspace.Kind.EMPTYDIR, "foo"));
         }
@@ -312,7 +304,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkTriggerTemplateCreatedWithNoInputs() throws IOException {
         String content = load("task1.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
         ObjectNode triggerTemplateNode = YAMLBuilder.createTriggerTemplate("template", TRIGGER_BETA1_API_VERSION, Collections.emptyList(), Arrays.asList(taskRunNode));
@@ -327,7 +319,7 @@ public class YAMLBuilderTest extends BaseTest {
     @Test
     public void checkTriggerTemplateCreatedWithInputs() throws IOException {
         String content = load("task1.yaml");
-        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+        AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode taskRunNode = YAMLBuilder.createTaskRun(model);
         ObjectNode triggerTemplateNode = YAMLBuilder.createTriggerTemplate("template", TRIGGER_BETA1_API_VERSION, Arrays.asList("param1", "param2"), Arrays.asList(taskRunNode));

@@ -34,13 +34,11 @@ import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ConfigurationNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
@@ -66,16 +64,12 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITION;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
@@ -138,18 +132,12 @@ public class TreeHelper {
             if (node instanceof PipelineNode) {
                 content = tkncli.getPipelineYAML(namespace, node.getName());
                 kind = KIND_PIPELINES;
-            } else if (node instanceof ResourceNode) {
-                content = tkncli.getResourceYAML(namespace, node.getName());
-                kind = KIND_RESOURCES;
             } else if (node instanceof TaskNode) {
                 content = tkncli.getTaskYAML(namespace, node.getName());
                 kind = KIND_TASKS;
             } else if (node instanceof ClusterTaskNode) {
                 content = tkncli.getClusterTaskYAML(node.getName());
                 kind = KIND_CLUSTERTASKS;
-            } else if (node instanceof ConditionNode) {
-                content = tkncli.getConditionYAML(namespace, node.getName());
-                kind = KIND_CONDITIONS;
             } else if (node instanceof TriggerTemplateNode) {
                 content = tkncli.getTriggerTemplateYAML(namespace, node.getName());
                 kind = KIND_TRIGGERTEMPLATES;
@@ -179,14 +167,10 @@ public class TreeHelper {
     public static String getKindFromNode(ParentableNode<?> node) {
         if (node instanceof PipelineNode) {
             return KIND_PIPELINE;
-        } else if (node instanceof ResourceNode) {
-            return KIND_RESOURCE;
         } else if (node instanceof TaskNode) {
             return KIND_TASK;
         } else if (node instanceof ClusterTaskNode) {
             return KIND_CLUSTERTASK;
-        } else if (node instanceof ConditionNode) {
-            return KIND_CONDITION;
         } else if (node instanceof TriggerTemplateNode) {
             return KIND_TRIGGERTEMPLATE;
         } else if (node instanceof TriggerBindingNode) {
@@ -288,12 +272,6 @@ public class TreeHelper {
             }
             case KIND_CLUSTERTASK: {
                 return KIND_CLUSTERTASKS;
-            }
-            case KIND_CONDITION: {
-                return KIND_CONDITIONS;
-            }
-            case KIND_RESOURCE: {
-                return KIND_RESOURCES;
             }
             case KIND_TRIGGERTEMPLATE: {
                 return KIND_TRIGGERTEMPLATES;

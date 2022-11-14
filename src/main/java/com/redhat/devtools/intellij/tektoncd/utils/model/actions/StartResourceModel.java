@@ -10,13 +10,11 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils.model.actions;
 
-import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.model.RunConfigurationModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.runs.PipelineRunConfigurationModel;
-import com.redhat.devtools.intellij.tektoncd.utils.model.runs.TaskRunConfigurationModel;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+
 import java.util.List;
 
 public class StartResourceModel extends ActionToRunModel {
@@ -24,13 +22,13 @@ public class StartResourceModel extends ActionToRunModel {
     private List<? extends HasMetadata> runs;
     private String runPrefixName;
 
-    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
-        super(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
+    public StartResourceModel(String configuration, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) {
+        super(configuration, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
         this.runPrefixName = "";
     }
 
-    public StartResourceModel(String configuration, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<? extends HasMetadata> runs) {
-        this(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
+    public StartResourceModel(String configuration, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims, List<? extends HasMetadata> runs) {
+        this(configuration, serviceAccounts, secrets, configMaps, persistentVolumeClaims);
         this.runs = runs;
     }
 
@@ -58,32 +56,6 @@ public class StartResourceModel extends ActionToRunModel {
                 input.setDefaultValue(value);
             }
         });
-
-        this.resource.getInputResources().forEach(input -> {
-            // for each input, update its defaultValue/Value with the value taken from the *run model
-            String value = null;
-            if (model instanceof PipelineRunConfigurationModel) {
-                if (((PipelineRunConfigurationModel) model).getResources().containsKey(input.name())) {
-                    value = ((PipelineRunConfigurationModel) model).getResources().get(input.name());
-                }
-            } else {
-                if (((TaskRunConfigurationModel) model).getInputResources().containsKey(input.name())) {
-                    value = ((TaskRunConfigurationModel) model).getInputResources().get(input.name());
-                }
-            }
-            if (value != null) {
-                input.setValue(value);
-            }
-        });
-
-        // update output resource if its a taskrun
-        if (model instanceof TaskRunConfigurationModel) {
-            this.resource.getOutputResources().stream().forEach(output -> {
-                if (((TaskRunConfigurationModel) model).getOutputResources().containsKey(output.name())) {
-                    output.setValue(((TaskRunConfigurationModel) model).getOutputResources().get(output.name()));
-                }
-            });
-        }
 
         // update workspaces
         this.workspaces.keySet().forEach(workspaceName -> {
