@@ -91,7 +91,7 @@ public class GettingStartedToolWindow implements ToolWindowFactory {
                         "which the plugin is connected to, the tree of the Tekton tool window shows the corresponding " +
                         "nodes and all allowed actions by using the context menu (right-click on a tree node).</p>" +
                         "<p>The plugin is able to detect remotely two components: the Pipelines component which enables " +
-                        "the Pipelines, Tasks and *Runs resources tree nodes and the Triggers component give access to " +
+                        "the Pipelines, Tasks and Runs resources tree nodes and the Triggers component give access to " +
                         "EventListeners, TriggerTemplates and TriggerBindings nodes.</p>" +
                         "<p>The Configurations node is always visible and allows to check the current Tekton settings " +
                         "in read-only mode</p></html>",
@@ -102,12 +102,12 @@ public class GettingStartedToolWindow implements ToolWindowFactory {
         URL gifNewFuncLesson = getGeneralLessonGif("createPipeline.gif");
         GettingStartedLesson createPipelineLesson = new GettingStartedLesson(
                 "Create new resource",
-                "<html><p>The plugin provides a smart yaml-code completion support which make it easy to create " +
-                        "any Tekton resource by using the IDE editor.</p>" +
-                        "<p>By executing the `New <resource>` action a new editor tab opens up with a snippet " +
+                "<html><p>The plugin provides smart YAML code completion support which makes it easy to create " +
+                        "any Tekton resource directly from the IDE.</p>" +
+                        "<p>By executing the `New <resource>` action, a new editor tab opens up with a snippet " +
                         "for that specific resource. Right-click on a Kind node (e.g Pipelines) in the tree and select " +
                         "the New action (e.g `New pipeline`) in the context menu. " +
-                        "Once you have done editing it, click the Push action in the top toolbar or in the " +
+                        "Once you are done with the editing, click the Push action in the top toolbar or in the " +
                         "notification bar.</p></html>",
                 Collections.emptyList(),
                 gifNewFuncLesson
@@ -115,19 +115,19 @@ public class GettingStartedToolWindow implements ToolWindowFactory {
 
         URL gifBuildFuncLesson = getGeneralLessonGif("startPipeline.gif");
         GettingStartedLesson startPipelineLesson = new GettingStartedLesson(
-                "Start a pipeline/task",
+                "Start a Pipeline/Task",
                 "<html>" +
                         "<p>After having created/edited your pipeline/task and successfully pushed it on cluster, you can " +
                         "run it by executing the `Start Pipeline/Task` action. " +
                         "A wizard will pop up leading you through the process of setting all inputs necessary to " +
-                        "get it started (params, workspaces, service accounts, ..). " +
-                        "<p>N.B: By default if the pipeline/task has no inputs, it will get started directly " +
-                        "without the wizard popping up. You can change this behavior by updating the plugin's settings " +
+                        "get it started (params, workspaces, service accounts). " +
+                        "<p>Note: By default, the pipeline/task gets started directly if it has no inputs. " +
+                        "You can change this behavior by updating the plugin's settings " +
                         "(File -> Settings -> Tools -> Tekton Pipelines By Red Hat). </p>" +
-                        "<p>If you already run a pipeline/task earlier and wants to run it again with the same inputs " +
+                        "<p>If you have already run a pipeline/task earlier and want to run it again with the same inputs " +
                         "you did last time, you can achieve it by executing the `Start Last Run` action from the " +
                         "Pipelines/Tasks context menu nodes</p>" +
-                        "<p>Opposite, if you want to start a pipeline/task with the same inputs of a specific old run " +
+                        "<p>And similarly, if you want to start a pipeline/task with the same inputs of a specific old run " +
                         "(not the latest), you can do it by selecting the old pipelinerun/taskrun node and execute the " +
                         "`Mirror Start` action. This will open up the wizard pre-filled with the inputs used to start " +
                         "that pipeline/task in the past</p>" +
@@ -154,8 +154,8 @@ public class GettingStartedToolWindow implements ToolWindowFactory {
         URL gifRunFuncLesson = getGeneralLessonGif("debugTekton.gif");
         GettingStartedLesson debugLesson = new GettingStartedLesson(
                 "Debug in Tekton",
-                "<html><p>When a task fails its execution and looking at the logs it is not enough to identify " +
-                        "the issue, you can think at starting it in debug mode. This way the container where the taskrun " +
+                "<html><p>When a task fails its execution and the logs are not enough to identify " +
+                        "the issue, you can start it in debug mode. This way the container where the taskrun " +
                         "is executed will be kept running even when the run fails. A terminal connected to the container " +
                         "will be opened in the IDE allowing you to interact with it and identify any possible misbehavior/error " +
                         "in the environment (e.g some dependencies not downloaded correctly in the previous steps).</p>" +
@@ -198,7 +198,7 @@ public class GettingStartedToolWindow implements ToolWindowFactory {
         GettingStartedLesson taskRefLesson = new GettingStartedLesson(
                 "List all tasks for taskRef field",
                 "<html><p>When creating or editing a pipeline step, you can make the plugin import all params, " +
-                        "workspaces and resources of a task without typing them by hand.</p>" +
+                        "workspaces and resources of a task automatically.</p>" +
                         "<p>In the pipeline yaml type the `name:` keyword below the `taskRef:` section. " +
                         "A list of all tasks will be shown and by selecting one of them, the pipeline will be filled accordingly. " +
                         "If a task input has a default value it will also be imported in the pipeline." +
@@ -231,7 +231,7 @@ public class GettingStartedToolWindow implements ToolWindowFactory {
 
         return new GettingStartedGroupLessons(
                 "Tekton Code Completion",
-                "Creating or editing a Tekton resource is made easier",
+                "Simplified Creating or Editing a Tekton resource",
                 taskRefLesson,
                 runAfterLesson,
                 inputsCompletionLesson);
