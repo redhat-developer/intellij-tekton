@@ -10,11 +10,9 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.utils;
 
-import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -24,7 +22,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
-import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.common.actions.StructureTreeAction;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
@@ -32,21 +29,7 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
-import com.redhat.devtools.intellij.tektoncd.tree.ClusterTaskNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ConditionNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ConfigurationNode;
-import com.redhat.devtools.intellij.tektoncd.tree.EventListenerNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
-import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
-import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ResourceNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TaskRunNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
-import com.redhat.devtools.intellij.tektoncd.tree.TriggerBindingNode;
-import com.redhat.devtools.intellij.tektoncd.tree.TriggerTemplateNode;
+import com.redhat.devtools.intellij.tektoncd.tree.*;
 import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import org.slf4j.Logger;
@@ -54,37 +37,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreePath;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDING;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITION;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENER;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUNS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDING;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATE;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERTEMPLATES;
-import static com.redhat.devtools.intellij.tektoncd.Constants.NOTIFICATION_ID;
+import static com.redhat.devtools.intellij.tektoncd.Constants.*;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
@@ -319,26 +274,5 @@ public class TreeHelper {
                 resourcesByClass.computeIfAbsent(element.getClass(), value -> new ArrayList<>())
                         .add(element));
         return resourcesByClass;
-    }
-
-    /**
-     * Build the model through reflection as StructureTreeModel does not have a stable API.
-     *
-     * @param structure the structure to associate
-     * @param project the IJ project
-     * @return the build model
-     * @throws IllegalAccessException
-     * @throws InvocationTargetException
-     * @throws InstantiationException
-     * @throws NoSuchMethodException
-     */
-    public static StructureTreeModel buildModel(TektonTreeStructure structure, Project project) throws IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException {
-        try {
-            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class});
-            return constructor.newInstance(structure);
-        } catch (NoSuchMethodException e) {
-            Constructor<StructureTreeModel> constructor = StructureTreeModel.class.getConstructor(new Class[] {AbstractTreeStructure.class, Disposable.class});
-            return constructor.newInstance(structure, project);
-        }
     }
 }
