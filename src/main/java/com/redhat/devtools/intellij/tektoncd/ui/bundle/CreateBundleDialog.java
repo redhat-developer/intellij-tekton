@@ -218,15 +218,10 @@ public class CreateBundleDialog extends BundleDialog {
 
     private Tree createTree() {
         TektonBundleResourceTreeStructure structure = new TektonBundleResourceTreeStructure(project);
-        StructureTreeModel<TektonBundleResourceTreeStructure> model = null;
-        try {
-            model = TreeHelper.buildModel(structure, project);
-        } catch (IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
-            logger.warn(e.getLocalizedMessage(), e);
-        }
+        StructureTreeModel<TektonBundleResourceTreeStructure> model = new StructureTreeModel<>(structure, myDisposable);
         new MutableTektonModelSynchronizer<>(model, structure, structure);
 
-        Tree tree = new Tree(new AsyncTreeModel(model, project));
+        Tree tree = new Tree(new AsyncTreeModel(model, myDisposable));
         tree.putClientProperty(Constants.STRUCTURE_PROPERTY, structure);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         tree.setCellRenderer(new NodeRenderer() {
