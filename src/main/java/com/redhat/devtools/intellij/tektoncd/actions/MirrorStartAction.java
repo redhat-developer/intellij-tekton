@@ -13,7 +13,6 @@ package com.redhat.devtools.intellij.tektoncd.actions;
 import com.intellij.openapi.util.Pair;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
-import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
@@ -37,7 +36,7 @@ public class MirrorStartAction extends StartAction {
     }
 
     @Override
-    protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<Resource> resources, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
+    protected StartResourceModel createModel(ParentableNode element, String namespace, Tkn tkncli, List<String> serviceAccounts, List<String> secrets, List<String> configMaps, List<String> persistentVolumeClaims) throws IOException {
         String configuration = "", runConfiguration = "";
         List<? extends HasMetadata> runs = new ArrayList<>();
         if (element instanceof PipelineRunNode) {
@@ -54,7 +53,7 @@ public class MirrorStartAction extends StartAction {
             configuration = taskNameAndConfiguration.getSecond();
             runs = tkncli.getTaskRuns(namespace, taskNameAndConfiguration.getFirst());
         }
-        StartResourceModel model = new StartResourceModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
+        StartResourceModel model = new StartResourceModel(configuration, serviceAccounts, secrets, configMaps, persistentVolumeClaims, runs);
         model.adaptsToRun(runConfiguration);
         return model;
     }

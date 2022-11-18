@@ -21,12 +21,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import com.redhat.devtools.intellij.common.utils.YAMLHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModelFactory;
-import com.redhat.devtools.intellij.tektoncd.utils.model.resources.ConditionConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
 import io.fabric8.kubernetes.client.utils.Serialization;
@@ -40,10 +38,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.NAMESPACE;
@@ -115,8 +111,6 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
                 return getLookupsPipeline(parameters, model, prefix, completionPrefix, insertOffset);
             case  "task":
                 return getLookupsTask(model, prefix, completionPrefix, insertOffset);
-            case "condition":
-                return getLookupsCondition(model, prefix, completionPrefix, insertOffset);
             default:
                 return Collections.emptyList();
         }
@@ -166,41 +160,8 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
         // get lookups for params
         lookups.addAll(getParamLookups(((TaskConfigurationModel)model).getParams(), prefix, completionPrefix, insertOffset));
 
-        // get lookups for resources
-        String headPrefix_19 = prefix.length() > 19 ? prefix.substring(0, 19) : prefix;
-        if ("$(resources.inputs.".contains(headPrefix_19)) {
-            lookups.addAll(getInputResourceLookups(((TaskConfigurationModel)model).getInputResources(), "resources.inputs", prefix, completionPrefix, insertOffset));
-        }
-
-        // get lookups for output resources
-        String headPrefix_20 = prefix.length() > 20 ? prefix.substring(0, 20) : prefix;
-        if ("$(resources.outputs.".contains(headPrefix_20)) {
-            lookups.addAll(getOutputResourceLookups(((TaskConfigurationModel)model).getOutputResources(), "resources.outputs", prefix, completionPrefix, insertOffset));
-        }
         // get lookups for workspaces
         lookups.addAll(getWorkspaceLookups(((TaskConfigurationModel)model).getWorkspaces(), prefix, completionPrefix, insertOffset));
-
-        return lookups;
-    }
-
-    /**
-     * Get lookups for the opened condition configuration
-     *
-     * @param model the model built by the configuration
-     * @param prefix the prefix we are really using. E.g the line we are in is "value: test -f $(params." -> the prefix is "$(params."
-     * @param completionPrefix the prefix we need to add to the lookup to make it be shown by IJ. E.g the line we are in is "value: test -f $(params." -> the completionPrefix is "test -f $(params."
-     * @param insertOffset the position where the lookup has to be copied on
-     * @return
-     */
-    private List<LookupElementBuilder> getLookupsCondition(ConfigurationModel model, String prefix, String completionPrefix, int insertOffset) {
-        List<LookupElementBuilder> lookups = new ArrayList<>();
-
-        lookups.addAll(getParamLookups(((ConditionConfigurationModel)model).getParams(), prefix, completionPrefix, insertOffset));
-
-        String headPrefix_12 = prefix.length() > 12 ? prefix.substring(0, 12) : prefix;
-        if ("$(resources.".contains(headPrefix_12)) {
-            lookups.addAll(getInputResourceLookups(((ConditionConfigurationModel)model).getInputResources(), "resources", prefix, completionPrefix, insertOffset));
-        }
 
         return lookups;
     }
@@ -220,69 +181,6 @@ public class GeneralCompletionProvider extends BaseCompletionProvider {
         if ("$(params.".contains(headPrefix)) {
             params.stream().forEach(param -> {
                 lookups.add(createInnerLookup("params." + param.name(), completionPrefix, insertOffset));
-            });
-        }
-        return lookups;
-    }
-
-    /**
-     * Get lookups for input resources
-     *
-     * @param resources input resources found in the configuration
-     * @param typeLabel label representing the resource type (e.g resource/resource.input)
-     * @param prefix the prefix we are really using. E.g the line we are in is "value: test -f $(params." -> the prefix is "$(params."
-     * @param completionPrefix the prefix we need to add to the lookup to make it be shown by IJ. E.g the line we are in is "value: test -f $(params." -> the completionPrefix is "test -f $(params."
-     * @param insertOffset the position where the lookup has to be copied on
-     * @return
-     */
-    private List<LookupElementBuilder> getInputResourceLookups(List<Input> resources, String typeLabel, String prefix, String completionPrefix, int insertOffset) {
-        // check if a resource has already been picked up and we need to show specific resource completion (path, name, ...) - e.g $(resources.inputs.foo.
-        String resourceInput = getResource(typeLabel, prefix);
-        Optional<String> type = Optional.empty();
-        if (resourceInput != null) {
-            type = resources.stream().filter(input -> input.name().equals(resourceInput)).map(input -> input.type()).findFirst();
-        }
-        return getInnerResourceLookups(resources.stream().map(resource -> resource.name()).collect(Collectors.toList()), typeLabel, type, resourceInput, completionPrefix, insertOffset);
-    }
-
-    /**
-     * Get lookups for output resources
-     *
-     * @param resources input resources found in the configuration
-     * @param typeLabel label representing the resource type (e.g resource/resource.input)
-     * @param prefix the prefix we are really using. E.g the line we are in is "value: test -f $(params." -> the prefix is "$(params."
-     * @param completionPrefix the prefix we need to add to the lookup to make it be shown by IJ. E.g the line we are in is "value: test -f $(params." -> the completionPrefix is "test -f $(params."
-     * @param insertOffset the position where the lookup has to be copied on
-     * @return
-     */
-    private List<LookupElementBuilder> getOutputResourceLookups(List<Output> resources, String typeLabel, String prefix, String completionPrefix, int insertOffset) {
-        // check if a resource has already been picked up and we need to show specific resource completion (path, name, ...) - e.g $(resources.outputs.foo.
-        String resourceOutput = getResource(typeLabel, prefix);
-        Optional<String> type = Optional.empty();
-        if (resourceOutput != null) {
-            type = resources.stream().filter(output -> output.name().equals(resourceOutput)).map(output -> output.type()).findFirst();
-        }
-        return getInnerResourceLookups(resources.stream().map(resource -> resource.name()).collect(Collectors.toList()), typeLabel, type, resourceOutput, completionPrefix, insertOffset);
-    }
-
-    /**
-     * inner function to build resource lookups
-     *
-     * @param resources list of resources names found in configuration
-     * @param typeLabel label representing the resource type (e.g resource/resource.input/resources.output)
-     * @param type resource type if already added by the user
-     * @param resourceName resource name if already added by the user
-     * @param completionPrefix the prefix we need to add to the lookup to make it be shown by IJ. E.g the line we are in is "value: test -f $(params." -> the completionPrefix is "test -f $(params."
-     * @param insertOffset the position where the lookup has to be copied on
-     * @return
-     */
-    private List<LookupElementBuilder> getInnerResourceLookups(List<String> resources, String typeLabel, Optional<String> type, String resourceName, String completionPrefix, int insertOffset) {
-        List<LookupElementBuilder> lookups = new ArrayList<>();
-        if (type.isPresent()) {
-            lookups.addAll(getLookupsByResource(typeLabel + "." + resourceName, type.get(), completionPrefix, insertOffset));
-        } else {
-            resources.stream().forEach(resource -> {
-                lookups.add(createInnerLookup(typeLabel + "." + resource, completionPrefix, insertOffset));
             });
         }
         return lookups;

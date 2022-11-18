@@ -28,11 +28,9 @@ import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTASKS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CLUSTERTRIGGERBINDINGS;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_CONDITIONS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_EVENTLISTENERS;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
-import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_RESOURCES;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TRIGGERBINDINGS;
@@ -97,14 +95,10 @@ public class TektonVirtualFileManager {
         String content = "";
         if (kind.equalsIgnoreCase(KIND_PIPELINE)) {
             content = tkncli.getPipelineYAML(namespace, resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_RESOURCES)) {
-            content = tkncli.getResourceYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_TASK)) {
             content = tkncli.getTaskYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_CLUSTERTASKS)) {
             content = tkncli.getClusterTaskYAML(resourceName);
-        } else if (kind.equalsIgnoreCase(KIND_CONDITIONS)) {
-            content = tkncli.getConditionYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_TRIGGERTEMPLATES)) {
             content = tkncli.getTriggerTemplateYAML(namespace, resourceName);
         } else if (kind.equalsIgnoreCase(KIND_TRIGGERBINDINGS)) {

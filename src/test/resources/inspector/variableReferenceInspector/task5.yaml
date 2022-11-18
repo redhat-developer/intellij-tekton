@@ -9,13 +9,6 @@ spec:
   params:
     - name: parm1
       type: string
-  resources:
-    inputs:
-      - name: resource2
-        type: git
-    outputs:
-      - name: resource1
-        type: image
   steps:
     - args:
         - -c

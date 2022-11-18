@@ -173,14 +173,13 @@ public class AddTriggerAction extends TektonAction {
     }
 
     protected AddTriggerModel createModel(ParentableNode element, String namespace, Tkn tkncli) throws IOException {
-        List<Resource> resources = tkncli.getResources(namespace);
         List<String> serviceAccounts = tkncli.getServiceAccounts(namespace);
         List<String> secrets = tkncli.getSecrets(namespace);
         List<String> configMaps = tkncli.getConfigMaps(namespace);
         List<String> persistentVolumeClaims = tkncli.getPersistentVolumeClaim(namespace);
         Map<String, String> triggerBindings = getTriggerBindings(namespace, tkncli);
         String configuration = getConfiguration(element, namespace, tkncli);
-        return new AddTriggerModel(configuration, resources, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
+        return new AddTriggerModel(configuration, serviceAccounts, secrets, configMaps, persistentVolumeClaims, triggerBindings);
     }
 
     private String getConfiguration(ParentableNode element, String namespace, Tkn tkncli) throws IOException {

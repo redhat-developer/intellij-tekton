@@ -169,25 +169,10 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startPipeline("ns", "name", params, Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
+        tkn.startPipeline("ns", "name", params, "", Collections.emptyMap(), Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
-        exec.close();
-    }
-
-    @Test
-    public void checkRightArgsWhenStartingPipelineWithResources() throws IOException {
-        Map<String, String> resources = new HashMap<>();
-        resources.put("res1", "value1");
-        resources.put("res2", "value2");
-        MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
-        exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
-
-        tkn.startPipeline("ns", "name", Collections.emptyMap(), resources, "", Collections.emptyMap(), Collections.emptyMap(), "");
-        exec.verify(() ->
-                ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-r"), eq("res1=value1"), eq("-r"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -201,7 +186,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startPipeline("ns", "name", Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), workspaces, "");
+        tkn.startPipeline("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), workspaces, "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-w"), eq("name=work2,config=value2"), eq("-w"), eq("name=work1,claimName=value1"),
@@ -217,7 +202,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startPipeline("ns", "name", Collections.emptyMap(), Collections.emptyMap(), "sa", taskServiceAccount, Collections.emptyMap(), "");
+        tkn.startPipeline("ns", "name", Collections.emptyMap(), "sa", taskServiceAccount, Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-s=sa"), eq("--task-serviceaccount"), eq("task1=value1"), eq("--task-serviceaccount"), eq("task2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
@@ -229,7 +214,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startPipeline("ns", "name", Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "prefix");
+        tkn.startPipeline("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "prefix");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
@@ -240,9 +225,6 @@ public class TknCliTest {
     public void checkRightArgsWhenStartingPipelineWithMultipleInputs() throws IOException {
         Map<String, Input> params = new HashMap<>();
         params.put("param1", new Input("param1", "string", Input.Kind.PARAMETER, "value1", Optional.empty(), Optional.empty()));
-        Map<String, String> resources = new HashMap<>();
-        resources.put("res1", "value1");
-        resources.put("res2", "value2");
         Map<String, String> taskServiceAccount = new HashMap<>();
         taskServiceAccount.put("task1", "value1");
         Map<String, Workspace> workspaces = new HashMap<>();
@@ -251,14 +233,13 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startPipeline("ns", "name", params, resources, "sa", taskServiceAccount, workspaces, "prefix");
+        tkn.startPipeline("ns", "name", params, "sa", taskServiceAccount, workspaces, "prefix");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-s=sa"),
                         eq("--task-serviceaccount"), eq("task1=value1"),
                         eq("-w"), eq("name=work2,secret=value2"), eq("-w"), eq("name=work1,claimName=value1"),
                         eq("-p"), eq("param1=value1"),
-                        eq("-r"), eq("res1=value1"), eq("-r"), eq("res2=value2"),
                         eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
@@ -268,7 +249,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("run:foo");
 
-        String output = tkn.startPipeline("ns", "name", Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
+        String output = tkn.startPipeline("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
@@ -280,7 +261,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        String output = tkn.startPipeline("ns", "name", Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
+        String output = tkn.startPipeline("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("pipeline"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
@@ -295,7 +276,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startTask("ns", "name", params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        tkn.startTask("ns", "name", params, "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
@@ -304,31 +285,25 @@ public class TknCliTest {
 
     @Test
     public void checkRightArgsWhenStartingTaskWithInputResources() throws IOException {
-        Map<String, String> resources = new HashMap<>();
-        resources.put("res1", "value1");
-        resources.put("res2", "value2");
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startTask("ns", "name", Collections.emptyMap(), resources, Collections.emptyMap(), "", Collections.emptyMap(), "");
+        tkn.startTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
+                        eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
     @Test
     public void checkRightArgsWhenStartingTaskWithOutputResources() throws IOException {
-        Map<String, String> resources = new HashMap<>();
-        resources.put("res1", "value1");
-        resources.put("res2", "value2");
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), resources, "", Collections.emptyMap(), "");
+        tkn.startTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-o"), eq("res1=value1"), eq("-o"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
+                        eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -342,7 +317,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", workspaces, "");
+        tkn.startTask("ns", "name", Collections.emptyMap(), "", workspaces, "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-w"), eq("name=work2,config=value2"), eq("-w"), eq("name=work1,claimName=value1"),
@@ -355,7 +330,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "sa", Collections.emptyMap(), "");
+        tkn.startTask("ns", "name", Collections.emptyMap(), "sa", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq("-s=sa"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
@@ -366,7 +341,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "prefix");
+        tkn.startTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "prefix");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
@@ -377,25 +352,18 @@ public class TknCliTest {
     public void checkRightArgsWhenStartingTaskWithMultipleInputs() throws IOException {
         Map<String, Input> params = new HashMap<>();
         params.put("param1", new Input("param1", "string", Input.Kind.PARAMETER, "value1", Optional.empty(), Optional.empty()));
-        Map<String, String> inputResources = new HashMap<>();
-        inputResources.put("res1", "value1");
-        inputResources.put("res2", "value2");
-        Map<String, String> outputResources = new HashMap<>();
-        outputResources.put("out1", "value1");
         Map<String, Workspace> workspaces = new HashMap<>();
         workspaces.put("work1", new Workspace("work1", Workspace.Kind.PVC, "value1"));
         workspaces.put("work2", new Workspace("work2", Workspace.Kind.SECRET, "value2"));
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startTask("ns", "name", params, inputResources, outputResources, "sa", workspaces, "prefix");
+        tkn.startTask("ns", "name", params, "sa", workspaces, "prefix");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-s=sa"),
                         eq("-w"), eq("name=work2,secret=value2"), eq("-w"), eq("name=work1,claimName=value1"),
                         eq("-p"), eq("param1=value1"),
-                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2"),
-                        eq("-o"), eq("out1=value1"),
                         eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
@@ -405,7 +373,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("run:foo");
 
-        String output = tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        String output = tkn.startTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
@@ -417,7 +385,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        String output = tkn.startTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        String output = tkn.startTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("task"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
@@ -432,7 +400,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startClusterTask("ns", "name", params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        tkn.startClusterTask("ns", "name", params, "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-p"), eq("param1=value1"), eq("-p"), eq("param2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
@@ -441,31 +409,25 @@ public class TknCliTest {
 
     @Test
     public void checkRightArgsWhenStartingClusterTaskWithInputResources() throws IOException {
-        Map<String, String> resources = new HashMap<>();
-        resources.put("res1", "value1");
-        resources.put("res2", "value2");
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startClusterTask("ns", "name", Collections.emptyMap(), resources, Collections.emptyMap(), "", Collections.emptyMap(), "");
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
+                        eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
     @Test
     public void checkRightArgsWhenStartingClusterTaskWithOutputResources() throws IOException {
-        Map<String, String> resources = new HashMap<>();
-        resources.put("res1", "value1");
-        resources.put("res2", "value2");
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), resources, "", Collections.emptyMap(), "");
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
-                        eq("-o"), eq("res1=value1"), eq("-o"), eq("res2=value2"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
+                        eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
 
@@ -479,7 +441,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", workspaces, "");
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), "", workspaces, "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-w"), eq("name=work2,config=value2"), eq("-w"), eq("name=work1,claimName=value1"),
@@ -492,7 +454,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "sa", Collections.emptyMap(), "");
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), "sa", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq("-s=sa"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
@@ -503,7 +465,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "prefix");
+        tkn.startClusterTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "prefix");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
@@ -514,25 +476,18 @@ public class TknCliTest {
     public void checkRightArgsWhenStartingClusterTaskWithMultipleInputs() throws IOException {
         Map<String, Input> params = new HashMap<>();
         params.put("param1", new Input("param1", "string", Input.Kind.PARAMETER, "value1", Optional.empty(), Optional.empty()));
-        Map<String, String> inputResources = new HashMap<>();
-        inputResources.put("res1", "value1");
-        inputResources.put("res2", "value2");
-        Map<String, String> outputResources = new HashMap<>();
-        outputResources.put("out1", "value1");
         Map<String, Workspace> workspaces = new HashMap<>();
         workspaces.put("work1", new Workspace("work1", Workspace.Kind.PVC, "value1"));
         workspaces.put("work2", new Workspace("work2", Workspace.Kind.SECRET, "value2"));
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        tkn.startClusterTask("ns", "name", params, inputResources, outputResources, "sa", workspaces, "prefix");
+        tkn.startClusterTask("ns", "name", params, "sa", workspaces, "prefix");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"),
                         eq("-s=sa"),
                         eq("-w"), eq("name=work2,secret=value2"), eq("-w"), eq("name=work1,claimName=value1"),
                         eq("-p"), eq("param1=value1"),
-                        eq("-i"), eq("res1=value1"), eq("-i"), eq("res2=value2"),
-                        eq("-o"), eq("out1=value1"),
                         eq("--prefix-name=prefix"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
     }
@@ -542,7 +497,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("run:foo");
 
-        String output = tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        String output = tkn.startClusterTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();
@@ -554,7 +509,7 @@ public class TknCliTest {
         MockedStatic<ExecHelper> exec  = mockStatic(ExecHelper.class);
         exec.when(() -> ExecHelper.execute(anyString(), anyMap(), any())).thenReturn("");
 
-        String output = tkn.startClusterTask("ns", "name", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        String output = tkn.startClusterTask("ns", "name", Collections.emptyMap(), "", Collections.emptyMap(), "");
         exec.verify(() ->
                 ExecHelper.execute(anyString(), anyMap(), eq("clustertask"), eq("start"), eq("name"), eq("-n"), eq("ns"), eq(FLAG_SKIP_OPTIONAL_WORKSPACES)));
         exec.close();

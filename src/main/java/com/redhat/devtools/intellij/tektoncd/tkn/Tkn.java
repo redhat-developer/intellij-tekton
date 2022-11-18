@@ -24,13 +24,12 @@ import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
-import io.fabric8.tekton.pipeline.v1alpha1.Condition;
 import io.fabric8.tekton.pipeline.v1beta1.ClusterTask;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1beta1.Task;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
-import io.fabric8.tekton.resource.v1alpha1.PipelineResource;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -131,15 +130,6 @@ public interface Tkn {
     List<PipelineRun> getPipelineRuns(String namespace, String pipeline) throws IOException;
 
     /**
-     * Return the list of resources that can be used in a pipeline
-     *
-     * @param namespace the namespace to use
-     * @return the list of resources
-     * @throws IOException if communication errored
-     */
-    List<Resource> getResources(String namespace) throws IOException;
-
-    /**
      * Return the names of Tekton tasks for a namespace.
      *
      * @param namespace the namespace to use
@@ -165,15 +155,6 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     List<TaskRun> getTaskRuns(String namespace, String task) throws IOException;
-
-    /**
-     * Return the list of conditions for a namespace.
-     *
-     * @param namespace the namespace of the task
-     * @return the list of conditions
-     * @throws IOException if communication errored
-     */
-    List<Condition> getConditions(String namespace) throws IOException;
 
     /**
      * Return the list of triggertemplate in a namespace
@@ -229,15 +210,6 @@ public interface Tkn {
     String getPipelineYAML(String namespace, String pipeline) throws IOException;
 
     /**
-     * Get pipeline resource configuration in YAML
-     *
-     * @param namespace the namespace of the task
-     * @param resource the pipeline resource to use
-     * @throws IOException if communication errored
-     */
-    String getResourceYAML(String namespace, String resource) throws IOException;
-
-    /**
      * Get task configuration in YAML
      *
      * @param namespace the namespace of the task
@@ -253,15 +225,6 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     String getClusterTaskYAML(String task) throws IOException;
-
-    /**
-     * Get condition configuration in YAML
-     *
-     * @param namespace the namespace of the condition
-     * @param condition the condition to use
-     * @throws IOException if communication errored
-     */
-    String getConditionYAML(String namespace, String condition) throws IOException ;
 
     /**
      *
@@ -359,24 +322,6 @@ public interface Tkn {
     void deleteTaskRuns(String namespace, List<String> trs) throws IOException;
 
     /**
-     * Delete a list of resources
-     *
-     * @param namespace the namespace to use
-     * @param resources the list of resources to delete
-     * @throws IOException if communication errored
-     */
-    void deleteResources(String namespace, List<String> resources) throws IOException;
-
-    /**
-     * Delete a list of conditions
-     *
-     * @param namespace the namespace to use
-     * @param conditions the list of conditions to delete
-     * @throws IOException if communication errored
-     */
-    void deleteConditions(String namespace, List<String> conditions) throws IOException;
-
-    /**
      * Delete a list of triggerTemplates
      *
      * @param namespace the namespace to use
@@ -469,7 +414,6 @@ public interface Tkn {
      * @param namespace the namespace of the pipeline
      * @param pipeline the pipeline that has to be run
      * @param parameters the parameters to start pipeline
-     * @param inputResources the input resources to start pipeline
      * @param serviceAccount the service account to use when running the pipeline
      * @param taskServiceAccount the service account corresponding to the task
      * @param workspaces the workspaces to start pipeline
@@ -477,7 +421,7 @@ public interface Tkn {
      * @throws IOException if communication errored
      * @return PipelineRun name
      */
-    String startPipeline(String namespace, String pipeline, Map<String, Input> parameters, Map<String, String> inputResources, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
+    String startPipeline(String namespace, String pipeline, Map<String, Input> parameters, String serviceAccount, Map<String, String> taskServiceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Re-run the pipeline using last pipelinerun values
@@ -495,15 +439,13 @@ public interface Tkn {
      * @param namespace the namespace of the task
      * @param task the task that has to be run
      * @param parameters the parameters to start task
-     * @param inputResources the input resources to start task
-     * @param outputResources the output resources to start task
      * @param serviceAccount the service account to use when running the task
      * @param workspaces the workspaces to start the task
      * @param runPrefixName the name to use as a prefix for the taskrun
      * @throws IOException if communication errored
      * @return TaskRun name
      */
-    String startTask(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
+    String startTask(String namespace, String task, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Preview the TaskRun without running it
@@ -511,15 +453,13 @@ public interface Tkn {
      * @param namespace the namespace of the task
      * @param task the task that has to be run
      * @param parameters the parameters to start task
-     * @param inputResources the input resources to start task
-     * @param outputResources the output resources to start task
      * @param serviceAccount the service account to use when running the task
      * @param workspaces the workspaces to start the task
      * @param runPrefixName the name to use as a prefix for the taskrun
      * @throws IOException if communication errored
      * @return TaskRun
      */
-    String createRunFromTask(String namespace, String task, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
+    String createRunFromTask(String namespace, String task, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Start the execution of a task
@@ -527,15 +467,13 @@ public interface Tkn {
      * @param namespace the namespace where to run the clusterTask, useful to retrieve the input/output resources
      * @param clusterTask the task that has to be run
      * @param parameters the parameters to start task
-     * @param inputResources the input resources to start task
-     * @param outputResources the output resources to start task
      * @param serviceAccount the service account to use when running the task
      * @param workspaces the workspaces to start the task
      * @param runPrefixName the name to use as a prefix for the taskrun
      * @throws IOException if communication errored
      * @return TaskRun name
      */
-    String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
+    String startClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Preview the ClusterTaskRun without running it
@@ -543,15 +481,13 @@ public interface Tkn {
      * @param namespace the namespace where to run the clusterTask, useful to retrieve the input/output resources
      * @param clusterTask the task that has to be run
      * @param parameters the parameters to start task
-     * @param inputResources the input resources to start task
-     * @param outputResources the output resources to start task
      * @param serviceAccount the service account to use when running the task
      * @param workspaces the workspaces to start the task
      * @param runPrefixName the name to use as a prefix for the taskrun
      * @throws IOException if communication errored
      * @return ClusterTaskRun
      */
-    String createRunFromClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, Map<String, String> inputResources, Map<String, String> outputResources, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
+    String createRunFromClusterTask(String namespace, String clusterTask, Map<String, Input> parameters, String serviceAccount, Map<String, Workspace> workspaces, String runPrefixName) throws IOException;
 
     /**
      * Re-run the task using last taskrun values
@@ -707,16 +643,6 @@ public interface Tkn {
     Watch watchTaskRuns(String namespace, Watcher<TaskRun> watcher) throws IOException;
 
     /**
-     * Set a watch on PipelineResource resources
-     *
-     * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
-     * @return the watch object
-     * @throws IOException if communication errored
-     */
-    Watch watchPipelineResources(String namespace, Watcher<PipelineResource> watcher) throws IOException;
-
-    /**
      * Set a watch on ClusterTask resources
      *
      * @param watcher the watcher to call when a new event is received
@@ -724,16 +650,6 @@ public interface Tkn {
      * @throws IOException if communication errored
      */
     Watch watchClusterTasks(Watcher<ClusterTask> watcher) throws IOException;
-
-    /**
-     * Set a watch on Condition resources
-     *
-     * @param namespace the namespace to use
-     * @param watcher the watcher to call when a new event is received
-     * @return the watch object
-     * @throws IOException if communication errored
-     */
-    Watch watchConditions(String namespace, Watcher<io.fabric8.tekton.pipeline.v1alpha1.Condition> watcher) throws IOException;
 
     /**
      * Set a watch on TriggerTemplate resources

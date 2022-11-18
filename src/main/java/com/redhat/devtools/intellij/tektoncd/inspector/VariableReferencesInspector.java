@@ -20,7 +20,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.redhat.devtools.intellij.common.utils.StringHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Input;
-import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Output;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.ConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
@@ -57,30 +56,27 @@ public class VariableReferencesInspector extends BaseInspector {
 
     private List<PsiElement> highlightInPipeline(PsiFile file, PipelineConfigurationModel model) {
         List<Input> params = model.getParams();
-        List<Input> inputResources = model.getInputResources();
         List<Workspace> workspaces = model.getWorkspaces();
 
-        if (params.isEmpty() && inputResources.isEmpty() && workspaces.isEmpty()) {
+        if (params.isEmpty() && workspaces.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return findUnusedVariables(file, params, inputResources, Collections.emptyList(), workspaces);
+        return findUnusedVariables(file, params, workspaces);
     }
 
     private List<PsiElement> highlightInTask(PsiFile file, TaskConfigurationModel model) {
         List<Input> params = model.getParams();
-        List<Input> inputResources = model.getInputResources();
-        List<Output> outputResources = model.getOutputResources();
         List<Workspace> workspaces = model.getWorkspaces();
 
-        if (params.isEmpty() && inputResources.isEmpty() && outputResources.isEmpty() && workspaces.isEmpty()) {
+        if (params.isEmpty() && workspaces.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return findUnusedVariables(file, params, inputResources, outputResources, workspaces);
+        return findUnusedVariables(file, params, workspaces);
     }
 
-    private List<PsiElement> findUnusedVariables(PsiFile file, List<Input> params, List<Input> inputResource, List<Output> outputResources, List<Workspace> workspaces) {
+    private List<PsiElement> findUnusedVariables(PsiFile file, List<Input> params, List<Workspace> workspaces) {
         if (!file.getText().contains("\nspec:")) {
             return Collections.emptyList();
         }
@@ -92,32 +88,6 @@ public class VariableReferencesInspector extends BaseInspector {
             List<Integer> variableUsageIndexes = indexesOfByPattern(Pattern.compile("\\$\\(params\\." + param.name()), spec);
             if (variableUsageIndexes.isEmpty()) {
                 PsiElement psiNode = getVariablePsiElement(file, "params:", param.name());
-                if (psiNode != null) {
-                    unusedPsiElements.add(psiNode);
-                }
-            }
-        });
-
-        inputResource.forEach(resource -> {
-            Pattern pattern = isPipeline(file) ? Pattern.compile("resource:\\s*[\"\']?" + resource.name() + "(?=\\s|\"|')") : Pattern.compile("\\$\\(resources\\.inputs\\." + resource.name());
-            List<Integer> variableUsageIndexes = indexesOfByPattern(pattern, spec);
-            if (variableUsageIndexes.isEmpty()) {
-                PsiElement psiNode;
-                if (isPipeline(file)) {
-                    psiNode = getVariablePsiElement(file, "resources:", resource.name());
-                } else {
-                    psiNode = getVariablePsiElement(file, "inputs:", resource.name());
-                }
-                if (psiNode != null) {
-                    unusedPsiElements.add(psiNode);
-                }
-            }
-        });
-
-        outputResources.forEach(resource -> {
-            List<Integer> variableUsageIndexes = indexesOfByPattern(Pattern.compile("\\$\\(resources\\.outputs\\." + resource.name()), spec);
-            if (variableUsageIndexes.isEmpty()) {
-                PsiElement psiNode = getVariablePsiElement(file, "outputs:", resource.name());
                 if (psiNode != null) {
                     unusedPsiElements.add(psiNode);
                 }

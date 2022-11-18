@@ -11,12 +11,11 @@
 package com.redhat.devtools.intellij.tektoncd.utils.model;
 
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
-import com.redhat.devtools.intellij.tektoncd.utils.model.resources.ConditionConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
-import java.io.IOException;
 import org.junit.Test;
 
+import java.io.IOException;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -35,13 +34,6 @@ public class ConfigurationModelFactoryTest extends BaseTest {
         String configuration = load("pipeline1.yaml");
         ConfigurationModel model = ConfigurationModelFactory.getModel(configuration);
         assertTrue(model instanceof PipelineConfigurationModel);
-    }
-
-    @Test
-    public void checkConditionModelIsReturned() throws IOException {
-        String configuration = load("condition1.yaml");
-        ConfigurationModel model = ConfigurationModelFactory.getModel(configuration);
-        assertTrue(model instanceof ConditionConfigurationModel);
     }
 
     @Test

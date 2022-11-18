@@ -22,9 +22,7 @@ public class Constants {
 
     public static final String KIND_CLUSTERTASKS = "clustertasks";
     public static final String KIND_PIPELINES = "pipelines";
-    public static final String KIND_RESOURCES = "pipelineresources";
     public static final String KIND_TASKS = "tasks";
-    public static final String KIND_CONDITIONS = "conditions";
     public static final String KIND_TRIGGERTEMPLATES = "triggertemplates";
     public static final String KIND_TRIGGERBINDINGS = "triggerbindings";
     public static final String KIND_CLUSTERTRIGGERBINDINGS = "clustertriggerbindings";
@@ -37,8 +35,6 @@ public class Constants {
     public static final String KIND_TASK = "task";
     public static final String KIND_CLUSTERTASK = "clustertask";
     public static final String KIND_TASKRUN = "taskrun";
-    public static final String KIND_CONDITION = "condition";
-    public static final String KIND_RESOURCE = "pipelineresource";
     public static final String KIND_TRIGGERTEMPLATE = "triggertemplate";
     public static final String KIND_TRIGGERBINDING = "triggerbinding";
     public static final String KIND_CLUSTERTRIGGERBINDING = "clustertriggerbinding";
@@ -54,9 +50,6 @@ public class Constants {
     public static final String FLAG_SERVICEACCOUNT = "-s";
     public static final String FLAG_TASKSERVICEACCOUNT = "--task-serviceaccount";
     public static final String FLAG_PARAMETER = "-p";
-    public static final String FLAG_INPUTRESOURCEPIPELINE = "-r";
-    public static final String FLAG_INPUTRESOURCETASK = "-i";
-    public static final String FLAG_OUTPUTRESOURCE = "-o";
     public static final String FLAG_WORKSPACE = "-w";
     public static final String FLAG_PREFIXNAME = "--prefix-name";
     public static final String FLAG_SKIP_OPTIONAL_WORKSPACES = "--skip-optional-workspace";

@@ -14,17 +14,16 @@ import com.intellij.openapi.project.Project;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.AuthenticationStep;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.BaseStep;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.BaseWizard;
-import com.redhat.devtools.intellij.tektoncd.ui.wizard.InputResourcesStep;
-import com.redhat.devtools.intellij.tektoncd.ui.wizard.OutputResourcesStep;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.ParametersStep;
 import com.redhat.devtools.intellij.tektoncd.ui.wizard.WorkspacesStep;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
+import org.jetbrains.annotations.Nullable;
+
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.jetbrains.annotations.Nullable;
 
 public class AddTriggerWizard extends BaseWizard {
 
@@ -41,22 +40,12 @@ public class AddTriggerWizard extends BaseWizard {
     public List<BaseStep> getSteps() {
         List<BaseStep> steps = new ArrayList<>();
         boolean hasParams = !model.getParams().isEmpty();
-        boolean hasInputResources = !model.getInputResources().isEmpty();
-        boolean hasOutputResources = false;
         boolean hasWorkspaces = !model.getWorkspaces().isEmpty();
 
         steps.add(buildStepWithListener(new TriggerStep((AddTriggerModel) model, this.triggerBindingTemplates)));
 
         if (hasParams) {
             steps.add(buildStepWithListener(new ParametersStep(model)));
-        }
-
-        if (hasInputResources) {
-            steps.add(buildStepWithListener(new InputResourcesStep(model)));
-        }
-
-        if (hasOutputResources) {
-            steps.add(buildStepWithListener(new OutputResourcesStep(model)));
         }
 
         if (hasWorkspaces) {

@@ -18,14 +18,12 @@ import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTriggerBindingsNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ConditionsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.EventListenersNode;
 import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
-import com.redhat.devtools.intellij.tektoncd.tree.ResourcesNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskRunsNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TasksNode;
@@ -172,8 +170,6 @@ public class WatchHandler {
             } else if (element instanceof PipelineRunNode) {
                 // we are expanding a single pipelinerun node and we want it to refresh if its children (taskruns) change
                 watch = tkn.watchTaskRuns(namespace, watcher);
-            } else if (element instanceof ResourcesNode) {
-                watch = tkn.watchPipelineResources(namespace, watcher);
             } else if (element instanceof TasksNode) {
                 watch = tkn.watchTasks(namespace, watcher);
             } else if (element instanceof TaskNode) {
@@ -183,8 +179,6 @@ public class WatchHandler {
                 watch = tkn.watchTaskRuns(namespace, watcher);
             } else if (element instanceof ClusterTasksNode) {
                 watch = tkn.watchClusterTasks(watcher);
-            } else if (element instanceof ConditionsNode) {
-                watch = tkn.watchConditions(namespace, watcher);
             } else if (element instanceof TriggerTemplatesNode) {
                 watch = tkn.watchTriggerTemplates(namespace, watcher);
             } else if (element instanceof TriggerBindingsNode) {
@@ -267,12 +261,10 @@ public class WatchHandler {
                element instanceof PipelineNode ||
                element instanceof PipelineRunsNode ||
                element instanceof PipelineRunNode ||
-               element instanceof ResourcesNode ||
                element instanceof TasksNode ||
                element instanceof TaskNode ||
                element instanceof TaskRunsNode ||
                element instanceof ClusterTasksNode ||
-               element instanceof ConditionsNode ||
                element instanceof TriggerTemplatesNode ||
                element instanceof TriggerBindingsNode ||
                element instanceof ClusterTriggerBindingsNode ||

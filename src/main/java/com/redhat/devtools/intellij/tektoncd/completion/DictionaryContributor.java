@@ -17,10 +17,6 @@ import org.jetbrains.yaml.psi.YAMLPsiElement;
 
 public class DictionaryContributor extends CompletionContributor {
     public DictionaryContributor() {
-        // conditions
-        extend(CompletionType.BASIC,
-                YamlElementPatternHelper.getSingleLineScalarKey("conditionRef"),
-                new ConditionCompletionProvider());
         // tasks
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getAfterParentScalarKey("taskRef", "name"),
@@ -33,10 +29,6 @@ public class DictionaryContributor extends CompletionContributor {
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getAfterParentScalarKeyInSequence("operator", "when"),
                 new OperatorInWhenClauseCodeCompletion());
-        // resource in pipeline
-        extend(CompletionType.BASIC,
-                YamlElementPatternHelper.getAfterParentScalarKeyInSequence("resource", "resources", "inputs", "outputs"),
-                new ResourceInPipelineCompletionProvider());
         // single input task
         extend(CompletionType.BASIC,
                 YamlElementPatternHelper.getAfterParentScalarKeyInSequenceFromRoot("name", "tasks", "params", "resources", "workspaces"),

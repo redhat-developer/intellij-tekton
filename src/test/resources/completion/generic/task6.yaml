@@ -11,15 +11,6 @@ spec:
   params:
     - name: param1
       type: string
-  resources:
-    inputs:
-      - name: resource1
-        type: git
-    outputs:
-      - name: resource1
-        type: image
-      - name: resource2
-        type: image
   steps:
     - args:
         - -c

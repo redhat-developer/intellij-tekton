@@ -17,6 +17,8 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,8 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.junit.Test;
-
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -110,7 +110,7 @@ public class TknCliTaskTest extends TknCliTest {
         Map<String, Input> params = new HashMap<>();
         params.put("first", new Input("name", "string", Input.Kind.PARAMETER, "value", Optional.empty(), Optional.empty()));
         params.put("second", new Input("name2", "string", Input.Kind.PARAMETER, "value2", Optional.empty(), Optional.empty()));
-        tkn.startTask(NAMESPACE, TASK_NAME, params, Collections.emptyMap(), Collections.emptyMap(), "", Collections.emptyMap(), "");
+        tkn.startTask(NAMESPACE, TASK_NAME, params, "", Collections.emptyMap(), "");
         final String[] nameTaskRun = {""};
         Watch watch = tkn.getClient(TektonClient.class)
                 .v1beta1().taskRuns().inNamespace(NAMESPACE).withLabel("tekton.dev/task", TASK_NAME)

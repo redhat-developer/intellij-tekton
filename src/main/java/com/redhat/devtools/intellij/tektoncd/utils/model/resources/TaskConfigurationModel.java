@@ -72,16 +72,6 @@ public class TaskConfigurationModel extends ResourceConfigurationModel {
     }
 
     @Override
-    public List<Input> getInputResources() {
-        return this.inputResources;
-    }
-
-    @Override
-    public List<Output> getOutputResources() {
-        return this.outputResources;
-    }
-
-    @Override
     public List<Workspace> getWorkspaces() {
         return this.workspaces;
     }
