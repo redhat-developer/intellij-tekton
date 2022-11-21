@@ -15,9 +15,13 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.ui.bundle.CreateBundleDialog;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.instance;
 
 public class CreateBundleAction extends DumbAwareAction {
     private static final Logger logger = LoggerFactory.getLogger(AddTriggerAction.class);
@@ -31,7 +35,9 @@ public class CreateBundleAction extends DumbAwareAction {
             return;
         }
 
-        CreateBundleDialog dialog = new CreateBundleDialog(anActionEvent.getProject(), tkncli);
+        TelemetryMessageBuilder.ActionMessage telemetry = instance().action(NAME_PREFIX_CRUD + "create bundle");
+
+        CreateBundleDialog dialog = new CreateBundleDialog(anActionEvent.getProject(), tkncli, telemetry);
         dialog.setModal(false);
         dialog.show();
     }

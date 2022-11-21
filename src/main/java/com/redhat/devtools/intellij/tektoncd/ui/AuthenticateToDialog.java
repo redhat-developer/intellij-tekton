@@ -46,6 +46,7 @@ public class AuthenticateToDialog extends DialogWrapper {
         super(null, parent, false, DialogWrapper.IdeModalityType.IDE);
         String registry = getRegistryFromImage(imageName);
         setTitle("Authenticate to " + registry);
+        setOKActionEnabled(false);
         init();
     }
 

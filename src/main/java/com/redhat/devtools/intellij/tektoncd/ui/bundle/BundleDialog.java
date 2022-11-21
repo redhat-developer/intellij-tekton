@@ -22,6 +22,7 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.Authenticator;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.ui.AuthenticateToDialog;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.BoxLayout;
@@ -35,7 +36,6 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.io.IOException;
 import java.util.List;
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED;
@@ -48,14 +48,16 @@ public abstract class BundleDialog extends DialogWrapper {
     protected Tkn tkn;
     protected JLabel warning, lblGeneralError;
     protected FailingComponent lastFailingComponent;
-    protected BundleDialog(@Nullable Project project, String title, Tkn tkn) {
-        this(project, title, "Ok", tkn);
+    protected TelemetryMessageBuilder.ActionMessage telemetry;
+    protected BundleDialog(@Nullable Project project, String title, Tkn tkn, TelemetryMessageBuilder.ActionMessage telemetry) {
+        this(project, title, "Ok", tkn, telemetry);
     }
 
-    protected BundleDialog(@Nullable Project project, String title, String OkButton, Tkn tkn) {
+    protected BundleDialog(@Nullable Project project, String title, String OkButton, Tkn tkn, TelemetryMessageBuilder.ActionMessage telemetry) {
         super(project, true);
         this.project = project;
         this.tkn = tkn;
+        this.telemetry = telemetry;
         setTitle(title);
         setOKButtonText(OkButton);
         preInit();
@@ -149,10 +151,6 @@ public abstract class BundleDialog extends DialogWrapper {
             lastFailingComponent.getComponent().setBorder(lastFailingComponent.getOriginalBorder());
             lastFailingComponent = null;
         }
-    }
-
-    protected void execute() throws IOException {
-
     }
 
     protected Authenticator getRegistryAuthenticationDataFromUser(String bundleName) {

@@ -32,6 +32,7 @@ import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
 import com.redhat.devtools.intellij.tektoncd.tkn.Authenticator;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class ListBundlesDialog extends BundleDialog {
     private static final Logger logger = LoggerFactory.getLogger(ListBundlesDialog.class);
@@ -65,8 +67,8 @@ public class ListBundlesDialog extends BundleDialog {
     private Map<String, BundleCacheItem> bundleCache;
     private Map<String, String> bundleResourceCache;
 
-    public ListBundlesDialog(@Nullable Project project, Tkn tkn) {
-        super(project, "Import Bundle Resources", tkn);
+    public ListBundlesDialog(@Nullable Project project, Tkn tkn, TelemetryMessageBuilder.ActionMessage telemetry) {
+        super(project, "Import Bundle Resources", tkn, telemetry);
     }
 
     @Override
@@ -167,6 +169,7 @@ public class ListBundlesDialog extends BundleDialog {
                 try {
                     String updated = fetchResourceFromBundle(bundleName, resource);
                     bundleResourceCache.put(keyCache, updated);
+                    telemetry.success().send();
                     UIHelper.executeInUI(() -> {
                         disableLoadingState();
                         txtBundleResourceYAML.setText(updated);
@@ -175,6 +178,9 @@ public class ListBundlesDialog extends BundleDialog {
                     });
                 } catch (IOException ex) {
                     logger.warn(ex.getLocalizedMessage(), ex);
+                    telemetry
+                            .error(anonymizeResource(bundleName, null, ex.getLocalizedMessage()))
+                            .send();
                     UIHelper.executeInUI(() -> {
                         disableLoadingState();
                         txtBundleResourceYAML.setText("");
@@ -279,6 +285,7 @@ public class ListBundlesDialog extends BundleDialog {
                     bundleCacheItem = fetchResourcesFromBundle(bundleName);
                     bundleCache.put(bundleName, bundleCacheItem);
                 }
+                telemetry.success().send();
                 BundleCacheItem finalBundleCacheItem = bundleCacheItem;
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
@@ -286,6 +293,9 @@ public class ListBundlesDialog extends BundleDialog {
                 });
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage(), e);
+                telemetry
+                        .error(anonymizeResource(bundleName, null, e.getLocalizedMessage()))
+                        .send();
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
                     lblGeneralError.setText(e.getLocalizedMessage());

@@ -39,6 +39,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonBundleResourceTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.NotificationHelper;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -69,6 +70,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
+
 public class CreateBundleDialog extends BundleDialog {
     private static final Logger logger = LoggerFactory.getLogger(CreateBundleDialog.class);
     private Tree tree;
@@ -80,8 +83,8 @@ public class CreateBundleDialog extends BundleDialog {
     private MoveToBundleAction moveToBundleAction;
     private RemoveFromBundleAction removeFromBundleAction;
 
-    public CreateBundleDialog(@Nullable Project project, Tkn tkn) {
-        super(project, "Create and deploy new bundle", "Deploy", tkn);
+    public CreateBundleDialog(@Nullable Project project, Tkn tkn, TelemetryMessageBuilder.ActionMessage telemetry) {
+        super(project, "Create and deploy new bundle", "Deploy", tkn, telemetry);
         setOKActionEnabled(false);
     }
 
@@ -267,6 +270,7 @@ public class CreateBundleDialog extends BundleDialog {
         ExecHelper.submit(() -> {
             try {
                 deployBundle(BundleUtils.cleanImage(imageName), resources);
+                telemetry.success().send();
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
                     super.doOKAction();
@@ -277,6 +281,9 @@ public class CreateBundleDialog extends BundleDialog {
                         "Error 401 - Unauthorized. The plugin was not able to connect to the registry. Please set up the docker.config " +
                         "and/or podman's auth.json in your home directory to deploy to your registry and try again";
 
+                telemetry
+                        .error(anonymizeResource(imageName, null, e.getMessage()))
+                        .send();
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
                     lblGeneralError.setText("<html>" + message + "</html>");
