@@ -1118,15 +1118,49 @@ public class TknCli implements Tkn {
         return MetadataClutter.remove(yaml, false);
     }
 
-    public void deployBundle(String image, List<String> resources) throws IOException {
+    private List<String> getBundleRegistryAuthenticationCommand(Authenticator authenticator) {
+        List<String> command = new ArrayList<>();
+        if (!authenticator.getUsername().isEmpty() && !authenticator.getPassword().isEmpty()) {
+            command.addAll(Arrays.asList(
+                    "--remote-username",
+                    authenticator.getUsername(),
+                    "--remote-password",
+                    authenticator.getPassword()
+            ));
+        } else if (!authenticator.getToken().isEmpty()) {
+            command.addAll(Arrays.asList(
+                    "--remote-bearer",
+                    authenticator.getToken()
+            ));
+        }
+
+        if (authenticator.isSkipTls()) {
+            command.add("--remote-skip-tls");
+        }
+        return command;
+    }
+
+    public void deployBundle(String image, List<String> resources, Authenticator authenticator) throws IOException {
         String res = String.join("---\n", resources);
         VirtualFile file = VirtualFileHelper.createVirtualFile("bundle-" + Instant.now().toEpochMilli() + ".yaml", res, false);
-        ExecHelper.execute(command, envVars, "bundle", "push", image, "-f", file.getPath());
+        List<String> args = new ArrayList<>(Arrays.asList(
+                "bundle", "push", image, "-f", file.getPath()
+        ));
+        if (authenticator != null) {
+            args.addAll(getBundleRegistryAuthenticationCommand(authenticator));
+        }
+        ExecHelper.execute(command, envVars, args.toArray(new String[0]));
     }
 
     @Override
-    public List<Resource> listResourceFromBundle(String bundle) throws IOException {
-        String output = ExecHelper.execute(command, envVars, "bundle", "list", bundle);
+    public List<Resource> listResourceFromBundle(String bundle, Authenticator authenticator) throws IOException {
+        List<String> args = new ArrayList<>(Arrays.asList(
+                "bundle", "list", bundle
+        ));
+        if (authenticator != null) {
+            args.addAll(getBundleRegistryAuthenticationCommand(authenticator));
+        }
+        String output = ExecHelper.execute(command, envVars, args.toArray(new String[0]));
         return Arrays.stream(output.split("\n"))
                 .filter(item -> !item.isEmpty())
                 .map(item -> {
@@ -1139,8 +1173,14 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public String getBundleResourceYAML(String bundle, Resource resource) throws IOException {
-        return ExecHelper.execute(command, envVars, "bundle", "list", bundle, resource.type(), resource.name(), "-o", "yaml");
+    public String getBundleResourceYAML(String bundle, Resource resource, Authenticator authenticator) throws IOException {
+        List<String> args = new ArrayList<>(Arrays.asList(
+                "bundle", "list", bundle, resource.type(), resource.name(), "-o", "yaml"
+        ));
+        if (authenticator != null) {
+            args.addAll(getBundleRegistryAuthenticationCommand(authenticator));
+        }
+        return ExecHelper.execute(command, envVars, args.toArray(new String[0]));
     }
 
     @Override

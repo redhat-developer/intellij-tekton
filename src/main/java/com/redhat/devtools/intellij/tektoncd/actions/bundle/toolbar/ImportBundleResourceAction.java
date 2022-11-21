@@ -15,8 +15,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.ui.components.JBList;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
+import com.redhat.devtools.intellij.tektoncd.tkn.Authenticator;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.ui.bundle.BundleCacheItem;
 import com.redhat.devtools.intellij.tektoncd.ui.bundle.BundleUtils;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.NotificationHelper;
@@ -35,13 +37,15 @@ public class ImportBundleResourceAction extends DumbAwareAction {
     private Tkn tkn;
     private JBList<String> bundles;
     private JBList<Resource> resourcePanel;
+    Map<String, BundleCacheItem> bundleCache;
     private Map<String, String> cache;
 
-    public ImportBundleResourceAction(String text, String description, Icon icon, JBList<String> bundles, JBList<Resource> resourcePanel, Map<String, String> cache, Tkn tkn) {
+    public ImportBundleResourceAction(String text, String description, Icon icon, JBList<String> bundles, JBList<Resource> resourcePanel, Map<String, BundleCacheItem> bundleCache, Map<String, String> cache, Tkn tkn) {
         super(text, description, icon);
         this.tkn = tkn;
         this.bundles = bundles;
         this.resourcePanel = resourcePanel;
+        this.bundleCache = bundleCache;
         this.cache = cache;
     }
     @Override
@@ -54,7 +58,12 @@ public class ImportBundleResourceAction extends DumbAwareAction {
         ExecHelper.submit(() -> {
             try {
                 if (resourceAsYaml[0].isEmpty()) {
-                        resourceAsYaml[0] = tkn.getBundleResourceYAML(bundleName, resource);
+                    BundleCacheItem item = bundleCache.getOrDefault(bundleName, null);
+                    Authenticator authenticator = null;
+                    if (item != null) {
+                        authenticator = item.getAuthenticator();
+                    }
+                    resourceAsYaml[0] = tkn.getBundleResourceYAML(bundleName, resource, authenticator);
                 }
                 DeployHelper.saveResource(resourceAsYaml[0], tkn.getNamespace(), tkn);
                 NotificationHelper.notify(e.getProject(), "Resource from Bundle imported successfully",

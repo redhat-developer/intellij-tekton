@@ -779,11 +779,33 @@ public interface Tkn {
 
     List<String> getResourcesAsYaml(List<Resource> resources) throws IOException;
 
-    void deployBundle(String image, List<String> resources) throws IOException;
+    /**
+     * Deploy bundle to registry
+     * @param image image name
+     * @param resources resources that are included in the bundle
+     * @param authenticator object which includes registry authentication data
+     * @throws IOException if communication errored
+     */
+    void deployBundle(String image, List<String> resources, Authenticator authenticator) throws IOException;
 
-    List<Resource> listResourceFromBundle(String bundle) throws IOException;
+    /**
+     *
+     * @param bundle bundle name
+     * @param authenticator object which includes registry authentication data
+     * @return list of resources belonging to bundle
+     * @throws IOException if communication errored
+     */
+    List<Resource> listResourceFromBundle(String bundle, Authenticator authenticator) throws IOException;
 
-    String getBundleResourceYAML(String bundle, Resource resource) throws IOException;
+    /**
+     *
+     * @param bundle bundle name
+     * @param resource resource to get the YAML
+     * @param authenticator object which includes registry authentication data
+     * @return resource YAML
+     * @throws IOException if communication errored
+     */
+    String getBundleResourceYAML(String bundle, Resource resource, Authenticator authenticator) throws IOException;
 
     URL getMasterUrl();
 

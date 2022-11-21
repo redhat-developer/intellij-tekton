@@ -18,7 +18,10 @@ import com.intellij.ui.CollectionListModel;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.ui.JBUI;
+import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.tkn.Authenticator;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.tektoncd.ui.AuthenticateToDialog;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.BoxLayout;
@@ -32,6 +35,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.io.IOException;
 import java.util.List;
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.RED;
@@ -145,6 +149,21 @@ public abstract class BundleDialog extends DialogWrapper {
             lastFailingComponent.getComponent().setBorder(lastFailingComponent.getOriginalBorder());
             lastFailingComponent = null;
         }
+    }
+
+    protected void execute() throws IOException {
+
+    }
+
+    protected Authenticator getRegistryAuthenticationDataFromUser(String bundleName) {
+        return UIHelper.executeInUI(() -> {
+            AuthenticateToDialog dialog = new AuthenticateToDialog(null, bundleName);
+            dialog.show();
+            if (dialog.isOK()) {
+                return dialog.getAuthenticator();
+            }
+            return null;
+        });
     }
 
     protected abstract void preInit();

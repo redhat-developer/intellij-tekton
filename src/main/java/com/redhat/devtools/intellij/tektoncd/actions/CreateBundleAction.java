@@ -30,7 +30,6 @@ public class CreateBundleAction extends DumbAwareAction {
         if (tkncli == null) {
             return;
         }
-        //TelemetryMessageBuilder.ActionMessage telemetry = TelemetryService.instance().action(NAME_PREFIX_CRUD + "add trigger");
 
         CreateBundleDialog dialog = new CreateBundleDialog(anActionEvent.getProject(), tkncli);
         dialog.setModal(false);
