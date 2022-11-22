@@ -29,6 +29,7 @@ import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.actions.bundle.toolbar.MoveToBundleAction;
 import com.redhat.devtools.intellij.tektoncd.actions.bundle.toolbar.RemoveFromBundleAction;
+import com.redhat.devtools.intellij.tektoncd.tkn.Authenticator;
 import com.redhat.devtools.intellij.tektoncd.tkn.Bundle;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -38,7 +39,7 @@ import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TaskNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonBundleResourceTreeStructure;
 import com.redhat.devtools.intellij.tektoncd.utils.NotificationHelper;
-import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -64,11 +65,12 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class CreateBundleDialog extends BundleDialog {
     private static final Logger logger = LoggerFactory.getLogger(CreateBundleDialog.class);
@@ -81,8 +83,8 @@ public class CreateBundleDialog extends BundleDialog {
     private MoveToBundleAction moveToBundleAction;
     private RemoveFromBundleAction removeFromBundleAction;
 
-    public CreateBundleDialog(@Nullable Project project, Tkn tkn) {
-        super(project, "Create and deploy new bundle", "Deploy", tkn);
+    public CreateBundleDialog(@Nullable Project project, Tkn tkn, TelemetryMessageBuilder.ActionMessage telemetry) {
+        super(project, "Create and deploy new bundle", "Deploy", tkn, telemetry);
         setOKActionEnabled(false);
     }
 
@@ -265,26 +267,23 @@ public class CreateBundleDialog extends BundleDialog {
         }
 
         enableLoadingState();
-        String finalImageName = BundleUtils.cleanImage(imageName);;
         ExecHelper.submit(() -> {
             try {
-                List<String> yamlOfResources = tkn.getResourcesAsYaml(resources);
-                tkn.deployBundle(finalImageName, yamlOfResources);
-                NotificationHelper.notify(project, "Bundle deployed successful",
-                        finalImageName + " has been successfully deployed!",
-                        NotificationType.INFORMATION,
-                        true);
+                deployBundle(BundleUtils.cleanImage(imageName), resources);
+                telemetry.success().send();
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
                     super.doOKAction();
                 });
             } catch (IOException e) {
-                // TODO ask for username/psw when issue in cli is fixed
-                //  now show message to inform user needs to add configuration to docker config.json or podman auth.json
                 String message = !e.getLocalizedMessage().toLowerCase().contains("unauthorized") ?
                         e.getLocalizedMessage() :
-                        "The plugin does not support dynamic authentication. Please set up the docker.config " +
-                                "and/or podman's auth.json in your home directory to deploy to your registry and try again";
+                        "Error 401 - Unauthorized. The plugin was not able to connect to the registry. Please set up the docker.config " +
+                        "and/or podman's auth.json in your home directory to deploy to your registry and try again";
+
+                telemetry
+                        .error(anonymizeResource(imageName, null, e.getMessage()))
+                        .send();
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
                     lblGeneralError.setText("<html>" + message + "</html>");
@@ -292,6 +291,30 @@ public class CreateBundleDialog extends BundleDialog {
                 });
             }
         });
+    }
+
+    private void deployBundle(String imageName, List<Resource> resources) throws IOException {
+        try {
+            doDeploy(imageName, resources, null);
+            return;
+        } catch(IOException e) {
+            if (!e.getLocalizedMessage().toLowerCase().contains("unauthorized")) {
+                throw e;
+            }
+        }
+
+        // it failed because of an unauthorized error, retry by asking authentication data
+        Authenticator authenticator = getRegistryAuthenticationDataFromUser(imageName);
+        doDeploy(imageName, resources, authenticator);
+    }
+
+    private void doDeploy(String imageName, List<Resource> resources, Authenticator authenticator) throws IOException {
+        List<String> yamlOfResources = tkn.getResourcesAsYaml(resources);
+        tkn.deployBundle(imageName, yamlOfResources, authenticator);
+        NotificationHelper.notify(project, "Bundle deployed successful",
+                imageName + " has been successfully deployed!",
+                NotificationType.INFORMATION,
+                true);
     }
 
     @Override

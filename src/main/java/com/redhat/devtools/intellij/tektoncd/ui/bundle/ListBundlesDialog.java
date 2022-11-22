@@ -29,8 +29,10 @@ import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.actions.bundle.toolbar.ImportBundleResourceAction;
 import com.redhat.devtools.intellij.tektoncd.settings.SettingsState;
+import com.redhat.devtools.intellij.tektoncd.tkn.Authenticator;
 import com.redhat.devtools.intellij.tektoncd.tkn.Resource;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
+import com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,6 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +55,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_BORDER_COLOR;
+import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
 public class ListBundlesDialog extends BundleDialog {
     private static final Logger logger = LoggerFactory.getLogger(ListBundlesDialog.class);
@@ -62,11 +64,11 @@ public class ListBundlesDialog extends BundleDialog {
     private JBList<String> bundlesListPanel;
     private JTextArea txtBundleResourceYAML;
     private List<String> bundleList;
-    private Map<String, List<Resource>> bundleCache;
+    private Map<String, BundleCacheItem> bundleCache;
     private Map<String, String> bundleResourceCache;
 
-    public ListBundlesDialog(@Nullable Project project, Tkn tkn) {
-        super(project, "Import Bundle Resources", tkn);
+    public ListBundlesDialog(@Nullable Project project, Tkn tkn, TelemetryMessageBuilder.ActionMessage telemetry) {
+        super(project, "Import Bundle Resources", tkn, telemetry);
     }
 
     @Override
@@ -140,6 +142,7 @@ public class ListBundlesDialog extends BundleDialog {
                                 AllIcons.ToolbarDecorator.Import,
                                 bundlesListPanel,
                                 layersListPanel,
+                                bundleCache,
                                 bundleResourceCache,
                                 tkn)};
                     }
@@ -164,8 +167,9 @@ public class ListBundlesDialog extends BundleDialog {
             enableLoadingState();
             ExecHelper.submit(() -> {
                 try {
-                    String updated = tkn.getBundleResourceYAML(bundleName, resource);
+                    String updated = fetchResourceFromBundle(bundleName, resource);
                     bundleResourceCache.put(keyCache, updated);
+                    telemetry.success().send();
                     UIHelper.executeInUI(() -> {
                         disableLoadingState();
                         txtBundleResourceYAML.setText(updated);
@@ -174,6 +178,9 @@ public class ListBundlesDialog extends BundleDialog {
                     });
                 } catch (IOException ex) {
                     logger.warn(ex.getLocalizedMessage(), ex);
+                    telemetry
+                            .error(anonymizeResource(bundleName, null, ex.getLocalizedMessage()))
+                            .send();
                     UIHelper.executeInUI(() -> {
                         disableLoadingState();
                         txtBundleResourceYAML.setText("");
@@ -191,6 +198,25 @@ public class ListBundlesDialog extends BundleDialog {
                 }
             });
         };
+    }
+
+    private String fetchResourceFromBundle(String bundleName, Resource resource) throws IOException {
+        BundleCacheItem bundleCacheItem = bundleCache.getOrDefault(bundleName, null);
+        Authenticator authenticator = null;
+        if (bundleCacheItem != null) {
+            authenticator = bundleCacheItem.getAuthenticator();
+        }
+        try {
+            return tkn.getBundleResourceYAML(bundleName, resource, authenticator);
+        } catch(IOException e) {
+            if (!e.getLocalizedMessage().toLowerCase().contains("unauthorized")) {
+                throw e;
+            }
+        }
+
+        // it failed because of an unauthorized error, retry by asking authentication data
+        authenticator = getRegistryAuthenticationDataFromUser(bundleName);
+        return tkn.getBundleResourceYAML(bundleName, resource, authenticator);
     }
 
     @Override
@@ -254,18 +280,22 @@ public class ListBundlesDialog extends BundleDialog {
         enableLoadingState();
         ExecHelper.submit(() -> {
             try {
-                List<Resource> resources = bundleCache.getOrDefault(bundleName, new ArrayList<>());
-                if(resources.isEmpty()) {
-                    resources = tkn.listResourceFromBundle(bundleName);
-                    bundleCache.put(bundleName, resources);
+                BundleCacheItem bundleCacheItem = bundleCache.getOrDefault(bundleName, null);
+                if(bundleCacheItem == null) {
+                    bundleCacheItem = fetchResourcesFromBundle(bundleName);
+                    bundleCache.put(bundleName, bundleCacheItem);
                 }
-                List<Resource> finalResources = resources;
+                telemetry.success().send();
+                BundleCacheItem finalBundleCacheItem = bundleCacheItem;
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
-                    updateLayersModel(finalResources);
+                    updateLayersModel(finalBundleCacheItem.getResources());
                 });
             } catch (IOException e) {
                 logger.warn(e.getLocalizedMessage(), e);
+                telemetry
+                        .error(anonymizeResource(bundleName, null, e.getLocalizedMessage()))
+                        .send();
                 UIHelper.executeInUI(() -> {
                     disableLoadingState();
                     lblGeneralError.setText(e.getLocalizedMessage());
@@ -273,6 +303,22 @@ public class ListBundlesDialog extends BundleDialog {
                 });
             }
         });
+    }
+
+    private BundleCacheItem fetchResourcesFromBundle(String bundleName) throws IOException {
+        try {
+            List<Resource> resources = tkn.listResourceFromBundle(bundleName, null);
+            return new BundleCacheItem(null, resources);
+        } catch(IOException e) {
+            if (!e.getLocalizedMessage().toLowerCase().contains("unauthorized")) {
+                throw e;
+            }
+        }
+
+        // it failed because of an unauthorized error, retry by asking authentication data
+        Authenticator authenticator = getRegistryAuthenticationDataFromUser(bundleName);
+        List<Resource> resources = tkn.listResourceFromBundle(bundleName, authenticator);
+        return new BundleCacheItem(authenticator, resources);
     }
 
     private void updateBundlesModel(List<String> bundles) {
