@@ -74,9 +74,17 @@ public interface Tkn {
      * Return the name of the current active namespace (project for OpenShift).
      *
      * @return the active namespace name
-     * @throws IOException if communication errored
      */
-    String getNamespace() throws IOException;
+    String getNamespace();
+
+    /**
+     * Return the name of the namespace containing the core features of Tekton
+     * openshift-pipelines for Ocp cluster
+     * tekton-pipelines for K8s cluster
+     *
+     * @return the core namespace name
+     */
+    String getTektonCoreNamespace();
 
     /**
      * Return the names of the serviceAccounts for a namespace

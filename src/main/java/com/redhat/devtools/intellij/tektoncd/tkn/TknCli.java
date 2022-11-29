@@ -238,19 +238,20 @@ public class TknCli implements Tkn {
 
     private void updateTektonInfos() {
         try {
-            ConfigMap pipelineInfoMap = getConfigMap("tekton-pipelines", "pipelines-info");
+            String coreNs = getTektonCoreNamespace();
+            ConfigMap pipelineInfoMap = getConfigMap(coreNs, "pipelines-info");
             tektonVersion = pipelineInfoMap.getData().get("version");
-            ConfigMap alphaMap = getConfigMap("tekton-pipelines", "feature-flags");
+            ConfigMap alphaMap = getConfigMap(coreNs, "feature-flags");
             hasAlphaFeaturesEnabled = alphaMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha");
-            initConfigMapWatchers();
+            initConfigMapWatchers(coreNs);
         } catch (Exception e) {
             LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
-    private void initConfigMapWatchers() {
-        initConfigMapWatcher("tekton-pipelines", "pipelines-info", (configMap -> tektonVersion = configMap.getData().get("version")));
-        initConfigMapWatcher("tekton-pipelines", "feature-flags", (configMap -> hasAlphaFeaturesEnabled = configMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha")));
+    private void initConfigMapWatchers(String coreNs) {
+        initConfigMapWatcher(coreNs, "pipelines-info", (configMap -> tektonVersion = configMap.getData().get("version")));
+        initConfigMapWatcher(coreNs, "feature-flags", (configMap -> hasAlphaFeaturesEnabled = configMap.getData().get("enable-api-fields").equalsIgnoreCase("alpha")));
     }
 
     private void initConfigMapWatcher(String namespace, String resource, Consumer<ConfigMap> doUpdate) {
@@ -275,6 +276,14 @@ public class TknCli implements Tkn {
             namespace = "default";
         }
         return namespace;
+    }
+
+    @Override
+    public String getTektonCoreNamespace() {
+        if (this.client.isAdaptable(OpenShiftClient.class)) {
+            return "openshift-pipelines";
+        }
+        return "tekton-pipelines";
     }
 
     @Override
