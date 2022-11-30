@@ -201,12 +201,12 @@ public class TreeHelper {
     private static void openTektonConfigurationInEditor(ParentableNode element) {
         ExecHelper.submit(() -> {
             Tkn tkncli = element.getRoot().getTkn();
-            String namespace = "tekton-pipelines";
+            String coreNs = tkncli.getTektonCoreNamespace();
             String name = element.getName();
-            ConfigMap configMap = tkncli.getConfigMap(namespace, name);
+            ConfigMap configMap = tkncli.getConfigMap(coreNs, name);
             UIHelper.executeInUI(() -> {
                 if (configMap == null) {
-                    Messages.showErrorDialog("No configuration file " + name + " found in namespace " + namespace, "Configuration not Found");
+                    Messages.showErrorDialog("No configuration file " + name + " found in namespace " + coreNs, "Configuration not Found");
                     return;
                 }
                 try {
@@ -215,7 +215,7 @@ public class TreeHelper {
                 } catch (IOException e) {
                     Notification notification = new Notification(NOTIFICATION_ID,
                             "Error",
-                            name + " file in namespace " + namespace + " was not found\n" + e.getLocalizedMessage(),
+                            name + " file in namespace " + coreNs + " was not found\n" + e.getLocalizedMessage(),
                             NotificationType.ERROR);
                     Notifications.Bus.notify(notification);
                     logger.warn("Error: " + e.getLocalizedMessage(), e);
