@@ -23,7 +23,7 @@ intellij {
     version = ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
     pluginName = 'com.redhat.devtools.intellij.tekton'
     // use '<git repo clone>/build/idea-sandbox/plugins/Telemetry by Red Hat' if working from source
-    plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.3.33", 'com.redhat.devtools.intellij.kubernetes:0.5.1.148']
+    plugins = ['terminal', 'yaml', 'markdown', 'com.intellij.kubernetes:' + versionsMap[ideaVersion], "com.redhat.devtools.intellij.telemetry:0.0.3.33", 'com.redhat.devtools.intellij.kubernetes:0.6.2.179']
     updateSinceUntilBuild = false
 }
 
@@ -38,7 +38,7 @@ runIdeForUiTests {
 dependencies {
     compile 'io.fabric8:openshift-client:5.12.4'
     compile 'io.fabric8:tekton-client:5.12.4'
-    compile 'com.redhat.devtools.intellij:intellij-common:1.8.0-SNAPSHOT'
+    compile 'com.redhat.devtools.intellij:intellij-common:1.8.0'
     compile 'com.redhat.devtools.alizer:alizer-api:0.1.0'
     testCompile 'org.mockito:mockito-inline:4.6.1'
     compile 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
@@ -52,7 +52,7 @@ dependencies {
     compile 'com.squareup.okio:okio:3.1.0'
     // telemetry contributes annotations 13.0.0, so we need to declare newer version
     compile 'org.jetbrains:annotations:23.0.0'
-    testCompile 'com.redhat.devtools.intellij:intellij-common:1.7.1:test'
+    testCompile 'com.redhat.devtools.intellij:intellij-common:1.8.0:test'
 }
 
 configurations {

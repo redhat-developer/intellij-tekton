@@ -1,3 +1,16 @@
+## Tekton Bundles
+
+The plugin allows working with bundles. It is possible to create a bundle containing up to 10 Tekton resources and push it to a public/private registry and 
+retrieve/download any existing one. 
+
+![](images/1.3.0/tekton1.gif)
+
+## Getting Started Page
+
+The Getting Started page shows all the features provided by the plugin and explain how to invoke and use them 
+
+![](images/1.3.0/tekton2.gif)
+
 ## Tekton Hub view
 
 The Tekton Hub was integrated through a search dialog that allows users to search to tasks and pipelines from the Tekton Hub to be added to the cluster.
