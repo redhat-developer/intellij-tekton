@@ -30,8 +30,8 @@ For more detail information around specific commands & features, please read the
 ## Tekton Versions
 
 - The minimum IDEA version supported is now 2021.1.
-- The Tekton CLI in use has been upgraded to 0.24.0.
-- Schemas for validation and code assist have been updated to Tekton Pipeline `0.37.0` and Tekton Triggers `0.20.1`.
+- The Tekton CLI in use has been upgraded to 0.27.0.
+- Schemas for validation and code assist have been updated to Tekton Pipeline `0.42.0` and Tekton Triggers `0.22.0`.
 
 Note: We support `v1beta1` API. Previous version `v1alpha1` may work, but we cannot guarantee that all features will work properly. If you have `v1alpha1` pipelines/tasks please use [migrating document](https://github.com/tektoncd/pipeline/blob/main/docs/migrating-v1alpha1-to-v1beta1.md) to migrate to `v1beta1`.
 ### Dependencies
