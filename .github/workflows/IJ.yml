@@ -14,14 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        IJ: [IU-2021.1, IU-2021.2, IU-2021.3, IU-2022.1, IU-2022.2]
+        IJ: [IU-2021.1, IU-2021.2, IU-2021.3, IU-2022.1, IU-2022.2, IU-2022.3]
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: actions/setup-java@v1
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
       with:
-        java-version: 11
+        java-version: 17
+        distribution: 'temurin'
+        cache: 'gradle'
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
