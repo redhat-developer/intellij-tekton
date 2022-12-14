@@ -12,6 +12,8 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>1.3.1</b></p>
+  <p>Make Tekton compatible with 2022.3</p>
   <p><b>1.3.0</b></p>
   <p>Create and download Tekton Bundles</p>
   <p>New getting started page</p>
