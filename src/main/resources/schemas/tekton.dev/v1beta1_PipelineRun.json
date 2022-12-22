@@ -462,6 +462,71 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "CustomRunResult": {
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "CustomRunStatus": {
+      "properties": {
+        "observedGeneration": {
+          "type": "integer"
+        },
+        "conditions": {
+          "items": {
+            "$ref": "#/definitions/Condition"
+          },
+          "type": "array"
+        },
+        "annotations": {
+          "patternProperties": {
+            ".*": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "data-time"
+        },
+        "completionTime": {
+          "type": "string",
+          "format": "data-time"
+        },
+        "results": {
+          "items": {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "$ref": "#/definitions/CustomRunResult"
+          },
+          "type": "array"
+        },
+        "retriesStatus": {
+          "items": {
+            "$ref": "#/definitions/CustomRunStatus"
+          },
+          "type": "array"
+        },
+        "extraFields": {
+          "properties": {},
+          "additionalProperties": true,
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
     "DownwardAPIProjection": {
       "properties": {
         "items": {
@@ -1770,7 +1835,7 @@
         },
         "status": {
           "$schema": "http://json-schema.org/draft-04/schema#",
-          "$ref": "#/definitions/RunStatus"
+          "$ref": "#/definitions/CustomRunStatus"
         },
         "whenExpressions": {
           "items": {
@@ -2615,71 +2680,6 @@
               "$ref": "#/definitions/Quantity"
             }
           },
-          "type": "object"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "RunResult": {
-      "required": [
-        "name",
-        "value"
-      ],
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "type": "object"
-    },
-    "RunStatus": {
-      "properties": {
-        "observedGeneration": {
-          "type": "integer"
-        },
-        "conditions": {
-          "items": {
-            "$ref": "#/definitions/Condition"
-          },
-          "type": "array"
-        },
-        "annotations": {
-          "patternProperties": {
-            ".*": {
-              "type": "string"
-            }
-          },
-          "type": "object"
-        },
-        "startTime": {
-          "type": "string",
-          "format": "data-time"
-        },
-        "completionTime": {
-          "type": "string",
-          "format": "data-time"
-        },
-        "results": {
-          "items": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$ref": "#/definitions/RunResult"
-          },
-          "type": "array"
-        },
-        "retriesStatus": {
-          "items": {
-            "$ref": "#/definitions/RunStatus"
-          },
-          "type": "array"
-        },
-        "extraFields": {
-          "properties": {},
-          "additionalProperties": true,
           "type": "object"
         }
       },
@@ -3699,6 +3699,12 @@
             }
           },
           "type": "object"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/definitions/EnvVar"
+          },
+          "type": "array"
         },
         "tolerations": {
           "items": {
