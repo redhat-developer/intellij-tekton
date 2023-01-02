@@ -2838,6 +2838,9 @@
         "statusMessage": {
           "type": "string"
         },
+        "retries": {
+          "type": "integer"
+        },
         "timeout": {
           "pattern": "^[-+]?([0-9]*(\\.[0-9]*)?(ns|us|µs|μs|ms|s|m|h))+$",
           "type": "string"
@@ -3044,6 +3047,12 @@
             }
           },
           "type": "object"
+        },
+        "env": {
+          "items": {
+            "$ref": "#/definitions/EnvVar"
+          },
+          "type": "array"
         },
         "tolerations": {
           "items": {
