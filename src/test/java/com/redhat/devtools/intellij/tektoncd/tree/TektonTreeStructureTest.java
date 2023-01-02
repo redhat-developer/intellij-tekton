@@ -23,9 +23,7 @@ import io.fabric8.kubernetes.api.model.NamedAuthInfo;
 import io.fabric8.kubernetes.api.model.NamedCluster;
 import io.fabric8.kubernetes.api.model.NamedContext;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.tekton.pipeline.v1beta1.ConditionCheckStatus;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
-import io.fabric8.tekton.pipeline.v1beta1.PipelineRunConditionCheckStatus;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRunStatus;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRunTaskRunStatus;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
@@ -126,7 +124,7 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkifTaskHasOneRunReturnsOneElementArray() throws IOException {
-        TaskRun taskRun = createTaskRun("test", "", Collections.emptyMap());
+        TaskRun taskRun = createTaskRun("test", "");
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun);
@@ -142,9 +140,9 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkIfTaskWithMultipleRunsReturnOrderedMultipleItemsArray() throws IOException {
-        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString(), Collections.emptyMap());
-        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString(), Collections.emptyMap());
-        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString(), Collections.emptyMap());
+        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString());
+        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString());
+        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString());
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
@@ -194,7 +192,7 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkifClusterHasOneRunReturnsOneElementArray() throws IOException {
-        TaskRun taskRun = createTaskRun("test", "", Collections.emptyMap());
+        TaskRun taskRun = createTaskRun("test", "");
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun);
@@ -210,9 +208,9 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkIfClusterWithMultipleRunsReturnOrderedMultipleItemsArray() throws IOException {
-        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString(), Collections.emptyMap());
-        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString(), Collections.emptyMap());
-        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString(), Collections.emptyMap());
+        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString());
+        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString());
+        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString());
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
@@ -251,69 +249,13 @@ public class TektonTreeStructureTest {
      */
     @Test
     public void checkIfTaskRunHasNoTaskRunsReturnsEmptyArray() {
-        TaskRun run = createTaskRun("test", "", Collections.emptyMap());
+        TaskRun run = createTaskRun("test", "");
         TaskRunNode node = new TaskRunNode(root, parent, run);
         Object[] taskruns = structure.getChildElements(node);
 
         assertTrue(taskruns.length == 0);
     }
 
-    @Test
-    public void checkifTaskRunHasOneRunReturnsOneElementArray() {
-        Map<String, PipelineRunConditionCheckStatus> pipelineRunConditionCheckStatuses = new HashMap<>();
-        ConditionCheckStatus conditionCheckStatus = createConditionCheckStatus(
-                Instant.now().minusMillis(1000).toString(),
-                Instant.now().minusMillis(900).toString(),
-                Collections.emptyList());
-        PipelineRunConditionCheckStatus pipelineRunConditionCheckStatus1 = createPipelineRunConditionCheckStatus(
-                "test",
-                conditionCheckStatus);
-        pipelineRunConditionCheckStatuses.put("test", pipelineRunConditionCheckStatus1);
-        TaskRunNode node = createTaskRunNode(pipelineRunConditionCheckStatuses);
-        Object[] taskruns = structure.getChildElements(node);
-
-        assertEquals(1, taskruns.length);
-        assertEquals(((ParentableNode) taskruns[0]).getName(), "test");
-    }
-
-    @Test
-    public void checkIfTaskRunWithMultipleRunsReturnOrderedMultipleItemsArray() {
-        Map<String, PipelineRunConditionCheckStatus> pipelineRunConditionCheckStatuses = new HashMap<>();
-        ConditionCheckStatus conditionCheckStatus1 = createConditionCheckStatus(
-                Instant.now().minusMillis(1000).toString(),
-                Instant.now().minusMillis(900).toString(),
-                Collections.emptyList());
-        PipelineRunConditionCheckStatus pipelineRunConditionCheckStatus1 = createPipelineRunConditionCheckStatus(
-                "test3",
-                conditionCheckStatus1);
-        pipelineRunConditionCheckStatuses.put("test3", pipelineRunConditionCheckStatus1);
-
-        ConditionCheckStatus conditionCheckStatus2 = createConditionCheckStatus(
-                Instant.now().minusMillis(900).toString(),
-                Instant.now().minusMillis(800).toString(),
-                Collections.emptyList());
-        PipelineRunConditionCheckStatus pipelineRunConditionCheckStatus2 = createPipelineRunConditionCheckStatus(
-                "test2",
-                conditionCheckStatus2);
-        pipelineRunConditionCheckStatuses.put("test2", pipelineRunConditionCheckStatus2);
-
-        ConditionCheckStatus conditionCheckStatus3 = createConditionCheckStatus(
-                Instant.now().minusMillis(700).toString(),
-                Instant.now().minusMillis(600).toString(),
-                Collections.emptyList());
-        PipelineRunConditionCheckStatus pipelineRunConditionCheckStatus3 = createPipelineRunConditionCheckStatus(
-                "test1",
-                conditionCheckStatus3);
-        pipelineRunConditionCheckStatuses.put("test1", pipelineRunConditionCheckStatus3);
-
-        TaskRunNode node = createTaskRunNode(pipelineRunConditionCheckStatuses);
-        Object[] taskruns = structure.getChildElements(node);
-
-        assertEquals(3, taskruns.length);
-        assertEquals(((ParentableNode) taskruns[0]).getName(), "test1");
-        assertEquals(((ParentableNode) taskruns[1]).getName(), "test2");
-        assertEquals(((ParentableNode) taskruns[2]).getName(), "test3");
-    }
 
     /*  ////////////////////////////////////////////////////////////
      *                          TASKRUNS
@@ -331,7 +273,7 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkifPipelineRunHasOneRunReturnsOneElementArray() {
-        TaskRun taskRun = createTaskRun("test", "", Collections.emptyMap());
+        TaskRun taskRun = createTaskRun("test", "");
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun);
@@ -345,9 +287,9 @@ public class TektonTreeStructureTest {
 
     @Test
     public void checkIfPipelineRunWithMultipleRunsReturnOrderedMultipleItemsArray() {
-        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString(), Collections.emptyMap());
-        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString(), Collections.emptyMap());
-        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString(), Collections.emptyMap());
+        TaskRun taskRun1 = createTaskRun("test1", Instant.now().minusMillis(1000).toString());
+        TaskRun taskRun2 = createTaskRun("test2", Instant.now().minusMillis(900).toString());
+        TaskRun taskRun3 = createTaskRun("test3", Instant.now().minusMillis(700).toString());
 
         List<TaskRun> resultTaskRuns = new ArrayList<>();
         resultTaskRuns.add(taskRun3);
@@ -454,7 +396,7 @@ public class TektonTreeStructureTest {
         return config;
     }
 
-    private TaskRun createTaskRun(String name, String startTime, Map<String, PipelineRunConditionCheckStatus> pipelineRunConditionCheckStatuses) {
+    private TaskRun createTaskRun(String name, String startTime) {
         TaskRun taskRun = new TaskRun();
 
         TaskRunStatus taskRunStatus = new TaskRunStatus();
@@ -462,8 +404,6 @@ public class TektonTreeStructureTest {
 
         taskRun.setMetadata(createMetadata(name, Collections.emptyMap()));
         taskRun.setStatus(taskRunStatus);
-
-        taskRun.setAdditionalProperty("conditions", pipelineRunConditionCheckStatuses);
 
         return taskRun;
     }
@@ -486,7 +426,6 @@ public class TektonTreeStructureTest {
             when(taskRunStatus.getStartTime()).thenReturn(taskRun.getStatus().getStartTime());
             when(pipelineRunTaskRunStatus.getStatus()).thenReturn(taskRunStatus);
             when(pipelineRunTaskRunStatus.getPipelineTaskName()).thenReturn(taskRun.getMetadata().getName());
-            when(pipelineRunTaskRunStatus.getConditionChecks()).thenReturn(Collections.emptyMap());
             pipelineRunTaskRunStatusMap.put(taskRun.getMetadata().getName(), pipelineRunTaskRunStatus);
         });
         when(pipelineRunStatus.getTaskRuns()).thenReturn(pipelineRunTaskRunStatusMap);
@@ -509,28 +448,13 @@ public class TektonTreeStructureTest {
         return node;
     }
 
-    private TaskRunNode createTaskRunNode(Map<String, PipelineRunConditionCheckStatus> pipelineRunConditionCheckStatuses) {
+    private TaskRunNode createTaskRunNode() {
         TaskRunNode node = mock(TaskRunNode.class);
         when(node.getRoot()).thenReturn(root);
         PipelineRunNode parent = mock(PipelineRunNode.class);
         when(node.getParent()).thenReturn(parent);
-        TaskRun taskRun = createTaskRun("test", Instant.now().minusMillis(1000).toString(), pipelineRunConditionCheckStatuses);
+        TaskRun taskRun = createTaskRun("test", Instant.now().minusMillis(1000).toString());
         when(node.getRun()).thenReturn(taskRun);
         return node;
-    }
-
-    private PipelineRunConditionCheckStatus createPipelineRunConditionCheckStatus(String name, ConditionCheckStatus conditionCheckStatuses) {
-        PipelineRunConditionCheckStatus pipelineRunConditionCheckStatus1 = mock(PipelineRunConditionCheckStatus.class);
-        when(pipelineRunConditionCheckStatus1.getConditionName()).thenReturn("test");
-        when(pipelineRunConditionCheckStatus1.getStatus()).thenReturn(conditionCheckStatuses);
-        return pipelineRunConditionCheckStatus1;
-    }
-
-    private ConditionCheckStatus createConditionCheckStatus(String startTime, String completionTime, List<io.fabric8.knative.internal.pkg.apis.Condition> conditions)  {
-        ConditionCheckStatus conditionCheckStatus = mock(ConditionCheckStatus.class);
-        when(conditionCheckStatus.getStartTime()).thenReturn(startTime);
-        when(conditionCheckStatus.getConditions()).thenReturn(conditions);
-        when(conditionCheckStatus.getCompletionTime()).thenReturn(completionTime);
-        return conditionCheckStatus;
     }
 }

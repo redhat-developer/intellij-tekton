@@ -20,6 +20,7 @@ import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResourceList;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.Client;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
@@ -834,7 +835,7 @@ public interface Tkn {
 
     URL getMasterUrl();
 
-    <T> T getClient(Class<T> clazz);
+    <T extends Client> T getClient(Class<T> clazz);
 
     DebugTabPanelFactory getDebugTabPanelFactory();
 

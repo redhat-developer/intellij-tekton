@@ -50,8 +50,10 @@ import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetCondition;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetList;
-import io.fabric8.kubernetes.client.ClientContext;
-import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.Client;
+import io.fabric8.kubernetes.client.dsl.MixedOperation;
+import io.fabric8.kubernetes.client.dsl.PodResource;
+import io.fabric8.kubernetes.client.impl.KubernetesClientImpl;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -61,11 +63,7 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
-import io.fabric8.kubernetes.client.dsl.base.OperationContext;
 import io.fabric8.kubernetes.client.dsl.internal.ExecWebSocketListener;
-import io.fabric8.kubernetes.client.dsl.internal.core.v1.PodOperationsImpl;
-import io.fabric8.kubernetes.client.http.HttpClient;
-import io.fabric8.kubernetes.client.utils.HttpClientUtils;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.fabric8.tekton.client.TektonClient;
@@ -1082,11 +1080,9 @@ public class TknCli implements Tkn {
     }
 
     public ExecWatch customExecCommandInContainer(Pod pod, String containerId, String... command) {
-        Config config = new ConfigBuilder().build();
-        HttpClient client = HttpClientUtils.createHttpClient(config);
-        ClientContext context = new OperationContext().withHttpClient(client).withConfig(config);
-        PodOperationsImpl podOperations = new PodOperationsImpl(context);
-        return podOperations.inNamespace(pod.getMetadata().getNamespace())
+        String namespace = pod.getMetadata().getNamespace();
+        MixedOperation<Pod, PodList, PodResource> podOperations = new KubernetesClientImpl().pods();
+        return podOperations.inNamespace(namespace)
                 .withName(pod.getMetadata().getName())
                 .inContainer(containerId)
                 .redirectingInput()
@@ -1252,7 +1248,7 @@ public class TknCli implements Tkn {
     }
 
     @Override
-    public <T> T getClient(Class<T> clazz) {
+    public <T extends Client> T getClient(Class<T> clazz) {
         return client.adapt(clazz);
     }
 

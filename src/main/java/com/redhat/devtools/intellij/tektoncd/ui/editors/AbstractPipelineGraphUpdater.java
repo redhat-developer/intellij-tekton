@@ -16,7 +16,6 @@ import com.mxgraph.view.mxGraph;
 import io.fabric8.tekton.pipeline.v1beta1.Param;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineSpec;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTask;
-import io.fabric8.tekton.pipeline.v1beta1.PipelineTaskCondition;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTaskInputResource;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -148,40 +147,9 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
             }
             List<String> whenTasks = getWhenTasks(task);
             whenTasks.forEach(parentName -> addRelation(idPrefix, relations, taskId, parentName));
-            if (task.getConditions() != null) {
-                createTaskConditionNodes(idPrefix, tree, relations, task.getConditions(), taskNode);
-            }
         }
         createChildNodes(tree, relations);
         return tree;
-    }
-
-    private static void createTaskConditionNodes(String idPrefix, Map<String, Node> tree, Map<String, List<String>> relations, List<PipelineTaskCondition> conditions, Node taskNode) {
-        for (PipelineTaskCondition condition : conditions) {
-            if (condition == null
-                    || StringUtils.isBlank(condition.getConditionRef())) {
-                continue;
-            }
-            String conditionId = idPrefix + CONDITION_PREFIX + condition.getConditionRef();
-            Node conditionNode = new Node(Type.CONDITION, conditionId, condition.getConditionRef());
-            conditionNode.children.add(taskNode);
-            tree.put(conditionId, conditionNode);
-            addConditionResourceInputResource(relations, condition, conditionId);
-        }
-    }
-
-    private static void addConditionResourceInputResource(Map<String, List<String>> relations, PipelineTaskCondition condition, String conditionId) {
-        for (PipelineTaskInputResource resource : condition.getResources()) {
-            if (resource == null
-                    || resource.getFrom() == null) {
-                continue;
-            }
-            for (String parentName : resource.getFrom()) {
-                String parentTaskId = TASK_PREFIX + parentName;
-                relations.computeIfAbsent(parentTaskId, k -> new ArrayList<>());
-                relations.get(parentTaskId).add(conditionId);
-            }
-        }
     }
 
     private static void addTaskResourceInputRelations(String idPrefix, Map<String, List<String>> relations, String taskId, List<PipelineTaskInputResource> inputs) {
