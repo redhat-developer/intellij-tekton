@@ -227,6 +227,15 @@ public class TknCli implements Tkn {
     }
 
     @Override
+    public String getTektonPipelinesApiVersionOrDefault(String defaultValue) {
+        try {
+            return getTektonPipelinesApiVersion();
+        } catch (IOException e) {
+            return defaultValue;
+        }
+    }
+
+    @Override
     public String getTektonPipelinesApiVersion() throws IOException {
         if (!this.pipelinesApiVersion.isEmpty()) {
             return this.pipelinesApiVersion;

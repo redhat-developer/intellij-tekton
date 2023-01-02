@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINES;
+import static com.redhat.devtools.intellij.tektoncd.Constants.PIPELINES_BETA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
@@ -46,8 +47,8 @@ public class CreatePipelineAction extends TektonAction {
                 .property(PROP_RESOURCE_KIND, KIND_PIPELINE);
         PipelinesNode item = getElement(selected);
         String namespace = item.getParent().getName();
-        String apiVersion = getPipelinesApiVersion(tkncli);
-        String content = getSnippetWithCustomVersion("Tekton: Pipeline", apiVersion);
+        String apiVersion = tkncli.getTektonPipelinesApiVersionOrDefault(PIPELINES_BETA1_API_VERSION);
+        String content = getSnippet("Tekton: Pipeline", apiVersion);
 
         if (Strings.isNullOrEmpty(content)) {
             telemetry

@@ -28,8 +28,8 @@ public class SnippetHelper {
         return convertJSONBodyToYAML(SnippetHelper.getSnippetJSON(SNIPPETS_URL).get(snippet).get("body"));
     }
 
-    public static String getBodyWithCustomVersion(String snippet, String version) throws IOException {
-        String yaml = convertJSONBodyToYAML(SnippetHelper.getSnippetJSON(SNIPPETS_URL).get(snippet).get("body"));
+    public static String getBody(String snippet, String version) throws IOException {
+        String yaml = getBody(snippet);
         return yaml.replace("<pipelines_api_version>", version);
     }
 

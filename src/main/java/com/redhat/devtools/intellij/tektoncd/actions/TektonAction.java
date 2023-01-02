@@ -79,13 +79,13 @@ public class TektonAction extends StructureTreeAction {
         actionPerformed(anActionEvent, path[0], selected[0], tkn);
     }
 
-    public String getSnippetWithCustomVersion(String snippet, String version) {
+    public String getSnippet(String snippet, String version) {
         String content = null;
         try {
             if (version.isEmpty()) {
                 content = SnippetHelper.getBody(snippet);
             } else {
-                content = SnippetHelper.getBodyWithCustomVersion(snippet, version);
+                content = SnippetHelper.getBody(snippet, version);
             }
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage(), e);
@@ -94,17 +94,7 @@ public class TektonAction extends StructureTreeAction {
     }
 
     public String getSnippet(String snippet) {
-        return getSnippetWithCustomVersion(snippet, "");
-    }
-
-    protected String getPipelinesApiVersion(Tkn tkn) {
-        String apiVersion = PIPELINES_BETA1_API_VERSION;
-        try {
-            apiVersion = tkn.getTektonPipelinesApiVersion();
-        } catch (IOException ignored) {
-
-        }
-        return apiVersion;
+        return getSnippet(snippet, "");
     }
 
     public String getSnippet(String snippet, Map<String, String> replacements) {

@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKS;
+import static com.redhat.devtools.intellij.tektoncd.Constants.PIPELINES_BETA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_KIND;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
@@ -44,8 +45,8 @@ public class CreateTaskAction extends TektonAction {
                 .property(PROP_RESOURCE_KIND, KIND_TASK);
         TasksNode item = getElement(selected);
         String namespace = item.getParent().getName();
-        String apiVersion = getPipelinesApiVersion(tkncli);
-        String content = getSnippetWithCustomVersion("Tekton: Task", apiVersion);
+        String apiVersion = tkncli.getTektonPipelinesApiVersionOrDefault(PIPELINES_BETA1_API_VERSION);
+        String content = getSnippet("Tekton: Task", apiVersion);
         if (Strings.isNullOrEmpty(content)) {
             telemetry
                     .error("snippet content empty")
