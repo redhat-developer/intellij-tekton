@@ -18,7 +18,6 @@ public class Constants {
     public static final Key<String> NAMESPACE = Key.create("com.redhat.devtools.intellij.tektoncd.tekton.namespace");
     public static final Key<String> KIND_PLURAL = Key.create("com.redhat.devtools.intellij.tektoncd.tekton.plural");
     public static final Key<ParentableNode> TARGET_NODE = Key.create("com.redhat.devtools.intellij.tektoncd.tekton.targetnode");
-    public static final String APIVERSION_BETA = "tekton.dev/v1beta1";
 
     public static final String KIND_CLUSTERTASKS = "clustertasks";
     public static final String KIND_PIPELINES = "pipelines";
@@ -61,6 +60,9 @@ public class Constants {
     public static final String APP_K8S_IO_VERSION = "app.kubernetes.io/version";
     public static final String HUB_CATALOG_TAG = "hub.tekton.dev/catalog";
 
+    public static final String PIPELINES_V1_API_VERSION = "tekton.dev/v1";
+    public static final String PIPELINES_BETA1_API_VERSION = "tekton.dev/v1beta1";
+    public static final String PIPELINES_ALPHA1_API_VERSION = "tekton.dev/v1alpha1";
     public static final String TRIGGER_BETA1_API_VERSION = "triggers.tekton.dev/v1beta1";
     public static final String TRIGGER_ALPHA1_API_VERSION = "triggers.tekton.dev/v1alpha1";
 

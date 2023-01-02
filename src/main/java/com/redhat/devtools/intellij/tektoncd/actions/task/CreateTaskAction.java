@@ -44,7 +44,8 @@ public class CreateTaskAction extends TektonAction {
                 .property(PROP_RESOURCE_KIND, KIND_TASK);
         TasksNode item = getElement(selected);
         String namespace = item.getParent().getName();
-        String content = getSnippet("Tekton: Task");
+        String apiVersion = getPipelinesApiVersion(tkncli);
+        String content = getSnippetWithCustomVersion("Tekton: Task", apiVersion);
         if (Strings.isNullOrEmpty(content)) {
             telemetry
                     .error("snippet content empty")

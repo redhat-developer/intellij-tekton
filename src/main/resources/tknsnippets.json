@@ -36,7 +36,7 @@
   "Tekton: Pipeline": {
     "prefix": "Tekton: Pipeline",
     "body": [
-      "apiVersion: tekton.dev/v1beta1",
+      "apiVersion: <pipelines_api_version>",
       "kind: Pipeline",
       "metadata:",
       "  name: app-deploy",
@@ -89,7 +89,7 @@
   "Tekton: PipelineRun": {
     "prefix": "Tekton: PipelineRun",
     "body": [
-      "apiVersion: tekton.dev/v1beta1",
+      "apiVersion: <pipelines_api_version>",
       "kind: PipelineRun",
       "metadata:",
       "  name: foo-run",
@@ -127,7 +127,7 @@
   "Tekton: Task": {
     "prefix": "Tekton: Task",
     "body": [
-      "apiVersion: tekton.dev/v1beta1",
+      "apiVersion: <pipelines_api_version>",
       "kind: Task",
       "metadata:",
       "  name: foo",
@@ -187,7 +187,7 @@
   "Tekton: TaskRun": {
     "prefix": "Tekton: TaskRun",
     "body": [
-      "apiVersion: tekton.dev/v1beta1",
+      "apiVersion: <pipelines_api_version>",
       "kind: TaskRun",
       "metadata:",
       "  name: echo-hello-world-run",
