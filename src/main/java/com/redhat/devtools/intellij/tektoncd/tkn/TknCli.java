@@ -119,6 +119,9 @@ import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUN;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASKRUN;
+import static com.redhat.devtools.intellij.tektoncd.Constants.PIPELINES_ALPHA1_API_VERSION;
+import static com.redhat.devtools.intellij.tektoncd.Constants.PIPELINES_BETA1_API_VERSION;
+import static com.redhat.devtools.intellij.tektoncd.Constants.PIPELINES_V1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_ALPHA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_BETA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.IS_OPENSHIFT;
@@ -144,6 +147,9 @@ public class TknCli implements Tkn {
     private volatile String tektonVersion = "0.0.0";
     private volatile boolean hasAlphaFeaturesEnabled = false;
 
+    private volatile String pipelinesApiVersion = "";
+    private volatile String triggersApiVersion = "";
+
     TknCli(Project project, String command) {
         this.command = command;
         this.project = project;
@@ -156,6 +162,8 @@ public class TknCli implements Tkn {
         }
         this.watchHandler = new WatchHandler(this);
         this.pollingHelper = new PollingHelper(this);
+        initTektonPipelinesApiVersion();
+        initTektonTriggersApiVersion();
         reportTelemetry();
         updateTektonInfos();
     }
@@ -212,16 +220,62 @@ public class TknCli implements Tkn {
         }
     }
 
-    @Override
-    public String getTektonTriggersApiVersion() throws IOException {
+    private void initTektonPipelinesApiVersion() {
         try {
-            if (client.rootPaths().getPaths().stream().anyMatch(path -> path.endsWith("triggers.tekton.dev/v1beta1"))) {
-                return TRIGGER_BETA1_API_VERSION;
+            this.pipelinesApiVersion = getTektonPipelinesApiVersion();
+        } catch (IOException ignored) {}
+    }
+
+    @Override
+    public String getTektonPipelinesApiVersionOrDefault(String defaultValue) {
+        try {
+            return getTektonPipelinesApiVersion();
+        } catch (IOException e) {
+            return defaultValue;
+        }
+    }
+
+    @Override
+    public String getTektonPipelinesApiVersion() throws IOException {
+        if (!this.pipelinesApiVersion.isEmpty()) {
+            return this.pipelinesApiVersion;
+        }
+        try {
+            List<String> paths = client.rootPaths().getPaths();
+            if (paths.stream().anyMatch(path -> path.endsWith("tekton.dev/v1"))) {
+                this.pipelinesApiVersion = PIPELINES_V1_API_VERSION;
+            } else if (paths.stream().anyMatch(path -> path.endsWith("tekton.dev/v1beta1"))) {
+                this.pipelinesApiVersion = PIPELINES_BETA1_API_VERSION;
+            } else {
+                this.pipelinesApiVersion = PIPELINES_ALPHA1_API_VERSION;
             }
-            return TRIGGER_ALPHA1_API_VERSION;
         } catch (KubernetesClientException e) {
             throw new IOException(e);
         }
+        return this.pipelinesApiVersion;
+    }
+
+    private void initTektonTriggersApiVersion() {
+        try {
+            this.triggersApiVersion = getTektonTriggersApiVersion();
+        } catch (IOException ignored) {}
+    }
+
+    @Override
+    public String getTektonTriggersApiVersion() throws IOException {
+        if (!this.triggersApiVersion.isEmpty()) {
+            return this.triggersApiVersion;
+        }
+        try {
+            if (client.rootPaths().getPaths().stream().anyMatch(path -> path.endsWith("triggers.tekton.dev/v1beta1"))) {
+                this.triggersApiVersion = TRIGGER_BETA1_API_VERSION;
+            } else {
+                this.triggersApiVersion = TRIGGER_ALPHA1_API_VERSION;
+            }
+        } catch (KubernetesClientException e) {
+            throw new IOException(e);
+        }
+        return this.triggersApiVersion;
     }
 
     @Override

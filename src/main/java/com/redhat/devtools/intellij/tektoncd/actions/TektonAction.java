@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_VCT;
+import static com.redhat.devtools.intellij.tektoncd.Constants.PIPELINES_BETA1_API_VERSION;
 
 public class TektonAction extends StructureTreeAction {
     Logger logger = LoggerFactory.getLogger(TektonAction.class);
@@ -78,14 +79,22 @@ public class TektonAction extends StructureTreeAction {
         actionPerformed(anActionEvent, path[0], selected[0], tkn);
     }
 
-    public String getSnippet(String snippet) {
+    public String getSnippet(String snippet, String version) {
         String content = null;
         try {
-            content = SnippetHelper.getBody(snippet);
+            if (version.isEmpty()) {
+                content = SnippetHelper.getBody(snippet);
+            } else {
+                content = SnippetHelper.getBody(snippet, version);
+            }
         } catch (IOException e) {
             logger.warn("Error: " + e.getLocalizedMessage(), e);
         }
         return content;
+    }
+
+    public String getSnippet(String snippet) {
+        return getSnippet(snippet, "");
     }
 
     public String getSnippet(String snippet, Map<String, String> replacements) {

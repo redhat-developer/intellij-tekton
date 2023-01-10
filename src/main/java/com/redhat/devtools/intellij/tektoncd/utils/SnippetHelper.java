@@ -28,6 +28,11 @@ public class SnippetHelper {
         return convertJSONBodyToYAML(SnippetHelper.getSnippetJSON(SNIPPETS_URL).get(snippet).get("body"));
     }
 
+    public static String getBody(String snippet, String version) throws IOException {
+        String yaml = getBody(snippet);
+        return yaml.replace("<pipelines_api_version>", version);
+    }
+
     private static String convertJSONBodyToYAML(JsonNode snippetBody) throws IOException {
         String yaml = YAMLHelper.JSONToYAML(snippetBody, false);
         return yaml.replaceAll("\"\n", "\n").replaceAll("- \"", "");

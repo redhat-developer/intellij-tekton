@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.redhat.devtools.intellij.common.utils.ExecHelper;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
+import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.utils.CRDHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.DeployHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.TreeHelper;
@@ -43,7 +44,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-import static com.redhat.devtools.intellij.tektoncd.Constants.APIVERSION_BETA;
+import static com.redhat.devtools.intellij.tektoncd.Constants.PIPELINES_BETA1_API_VERSION;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.ROW_DIMENSION;
 import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.TIMES_PLAIN_12;
 
@@ -88,7 +89,8 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
         if (getName().isEmpty()) {
             return false;
         }
-        CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(APIVERSION_BETA, TreeHelper.getPluralKind(getKind()));
+        String taskApiVersion = getPipelinesApiVersion();
+        CustomResourceDefinitionContext crdContext = CRDHelper.getCRDContext(taskApiVersion, TreeHelper.getPluralKind(getKind()));
         if (crdContext == null) {
             return false;
         }
@@ -97,6 +99,19 @@ public class CreateTaskFromTaskSpecDialog extends DialogWrapper {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    private String getPipelinesApiVersion() {
+        String apiVersion = PIPELINES_BETA1_API_VERSION;
+        try {
+            Tkn tkn = TreeHelper.getTkn(project);
+            if (tkn != null) {
+                apiVersion = tkn.getTektonPipelinesApiVersion();
+            }
+        } catch (IOException ignored) {
+
+        }
+        return apiVersion;
     }
 
     public String getName() {

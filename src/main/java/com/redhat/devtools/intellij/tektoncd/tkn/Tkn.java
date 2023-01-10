@@ -51,6 +51,23 @@ public interface Tkn {
     boolean isTektonTriggersAware();
 
     /**
+     * Return the newest apiVersion for tekton pipelines or the default value
+     *
+     * @param defaultValue default value to be returned if unable to retrieve api version from cluster
+     * @return the newest tekton pipelines apiVersion or the default value
+     * @throws IOException if communication errored
+     */
+    String getTektonPipelinesApiVersionOrDefault(String defaultValue);
+
+    /**
+     * Return the newest apiVersion for tekton pipelines
+     *
+     * @return the newest tekton pipelines apiVersion
+     * @throws IOException if communication errored
+     */
+    String getTektonPipelinesApiVersion() throws IOException;
+
+    /**
      * Return the newest apiVersion for tekton triggers
      *
      * @return the newest tekton triggers apiVersion
