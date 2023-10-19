@@ -1,0 +1,34 @@
+name: Publish reports
+
+on:
+  workflow_run:
+    workflows: ["Java CI with Gradle"]
+    types:
+      - completed
+
+jobs:
+  publish:
+    name: Publish Test Report
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+
+      # only needed for private repository
+      contents: read
+
+      # only needed for private repository
+      issues: read
+    if: always()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@ca89ad036b5fcd524c1017287fb01b5139908408 #v2.11.0
+        with:
+          files: "artifacts/**/*.xml"
