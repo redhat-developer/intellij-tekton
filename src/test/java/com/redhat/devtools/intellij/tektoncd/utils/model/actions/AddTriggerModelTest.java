@@ -11,7 +11,6 @@
 package com.redhat.devtools.intellij.tektoncd.utils.model.actions;
 
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -19,16 +18,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 public class AddTriggerModelTest extends BaseTest {
 
     private final static String MODEL_ACTIONS_FOLDER = "utils/model/actions/";
 
-    @Test
-    public void checkNoVariablesIfNoBindings() throws IOException {
+    public void testCheckNoVariablesIfNoBindings() throws IOException {
         Map<String, String> bindingsAvailableOnCluster = new HashMap<>();
         String content = load("task1.yaml");
 
@@ -39,8 +33,7 @@ public class AddTriggerModelTest extends BaseTest {
         assertTrue(variables.isEmpty());
     }
 
-    @Test
-    public void checkVariablesAreExtractedFromBinding() throws IOException {
+    public void testCheckVariablesAreExtractedFromBinding() throws IOException {
         Map<String, String> bindingsAvailableOnCluster = new HashMap<>();
         String content = load("task1.yaml");
         String binding1 = load(MODEL_ACTIONS_FOLDER + "binding1.yaml");
@@ -56,8 +49,7 @@ public class AddTriggerModelTest extends BaseTest {
         assertTrue(variables.contains("gitrepositoryurl"));
     }
 
-    @Test
-    public void checkVariablesAreExtractedFromTwoBindings() throws IOException {
+    public void testCheckVariablesAreExtractedFromTwoBindings() throws IOException {
         Map<String, String> bindingsAvailableOnCluster = new HashMap<>();
         String content = load("task1.yaml");
         String binding1 = load(MODEL_ACTIONS_FOLDER + "binding1.yaml");
@@ -76,8 +68,7 @@ public class AddTriggerModelTest extends BaseTest {
         assertTrue(variables.contains("contenttype"));
     }
 
-    @Test
-    public void checkVariablesAreExtractedFromTwoBindingsAndNewAdded() throws IOException {
+    public void testCheckVariablesAreExtractedFromTwoBindingsAndNewAdded() throws IOException {
         Map<String, String> bindingsAvailableOnCluster = new HashMap<>();
         String content = load("task1.yaml");
         String binding1 = load(MODEL_ACTIONS_FOLDER + "binding1.yaml");

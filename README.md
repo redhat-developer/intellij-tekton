@@ -1,8 +1,8 @@
 
 [![JetBrains Marketplace](https://img.shields.io/jetbrains/plugin/v/14096-tekton-pipelines-by-red-hat?label=Jet%20Brains%20Marketplace&style=for-the-badge)](https://plugins.jetbrains.com/plugin/14096-tekton-pipelines-by-red-hat)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/14096-tekton-pipelines-by-red-hat?logo=jetbrains&style=for-the-badge)](https://plugins.jetbrains.com/plugin/14096-tekton-pipelines-by-red-hat)
-[![Java CI with Gradle](https://img.shields.io/github/workflow/status/redhat-developer/intellij-tekton/Java%20CI%20with%20Gradle?label=Java%20CI%20with%20Gradle&style=for-the-badge)](https://github.com/redhat-developer/intellij-tekton/actions/workflows/ci.yml?query=workflow%3ACI)
-[![Validate against IJ versions](https://img.shields.io/github/workflow/status/redhat-developer/intellij-tekton/Validate%20against%20IJ%20versions?label=IJ%20Versions&style=for-the-badge)](https://github.com/redhat-developer/intellij-tekton/actions/workflows/IJ.yml)
+[![Java CI with Gradle](https://img.shields.io/github/actions/workflow/status/redhat-developer/intellij-tekton/ci.yml?label=Java%20CI%20with%20Gradle&style=for-the-badge)](https://github.com/redhat-developer/intellij-tekton/actions/workflows/ci.yml?query=workflow%3ACI)
+[![Validate against IJ versions](https://img.shields.io/github/actions/workflow/status/redhat-developer/intellij-tekton/IJ.yml?label=IJ%20Versions&style=for-the-badge)](https://github.com/redhat-developer/intellij-tekton/actions/workflows/IJ.yml)
 [![License](https://img.shields.io/github/license/redhat-developer/intellij-tekton?style=for-the-badge)](https://github.com/redhat-developer/intellij-tekton/blob/main/LICENSE)
 
 # IntelliJ Tekton

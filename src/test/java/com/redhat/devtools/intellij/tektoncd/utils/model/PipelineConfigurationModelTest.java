@@ -21,8 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 public class PipelineConfigurationModelTest extends BaseTest {
 
-    @Test
-    public void checkEmptyPipelineModel() throws IOException {
+    public void testCheckEmptyPipelineModel() throws IOException {
         String configuration = load("pipeline1.yaml");
         PipelineConfigurationModel model = (PipelineConfigurationModel) ConfigurationModelFactory.getModel(configuration);
         assertEquals(model.getName(), "foo");
@@ -32,20 +31,18 @@ public class PipelineConfigurationModelTest extends BaseTest {
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
-    @Test
-    public void checkPipelineModelWithParams() throws IOException {
+    public void testCheckPipelineModelWithParams() throws IOException {
         String configuration = load("pipeline3.yaml");
         PipelineConfigurationModel model = (PipelineConfigurationModel) ConfigurationModelFactory.getModel(configuration);
         assertEquals(model.getName(), "foo");
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Pipeline");
-        assertTrue(model.getParams().size() == 1);
+        assertEquals(1, model.getParams().size());
         assertEquals(model.getParams().get(0).name(), "param1");
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
-    @Test
-    public void checkPipelineModelWithInputResources() throws IOException {
+    public void testCheckPipelineModelWithInputResources() throws IOException {
         String configuration = load("pipeline4.yaml");
         PipelineConfigurationModel model = (PipelineConfigurationModel) ConfigurationModelFactory.getModel(configuration);
         assertEquals(model.getName(), "foo");
@@ -55,29 +52,27 @@ public class PipelineConfigurationModelTest extends BaseTest {
         assertTrue(model.getWorkspaces().isEmpty());
     }
 
-    @Test
-    public void checkPipelineModelWithWorkspaces() throws IOException {
+    public void testCheckPipelineModelWithWorkspaces() throws IOException {
         String configuration = load("pipeline5.yaml");
         PipelineConfigurationModel model = (PipelineConfigurationModel) ConfigurationModelFactory.getModel(configuration);
         assertEquals(model.getName(), "foo");
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Pipeline");
         assertTrue(model.getParams().isEmpty());
-        assertTrue(model.getWorkspaces().size() == 2);
+        assertEquals(2, model.getWorkspaces().size());
         assertEquals(model.getWorkspaces().get(0).getName(), "password-vault");
         assertEquals(model.getWorkspaces().get(1).getName(), "recipe-store");
     }
 
-    @Test
-    public void checkPipelineModelWithMultipleInputs() throws IOException {
+    public void testCheckPipelineModelWithMultipleInputs() throws IOException {
         String configuration = load("pipeline6.yaml");
         PipelineConfigurationModel model = (PipelineConfigurationModel) ConfigurationModelFactory.getModel(configuration);
         assertEquals(model.getName(), "foo");
         assertEquals(model.getNamespace(), "tekton");
         assertEquals(model.getKind(), "Pipeline");
-        assertTrue(model.getParams().size() == 1);
+        assertEquals(1, model.getParams().size());
         assertEquals(model.getParams().get(0).name(), "path");
-        assertTrue(model.getWorkspaces().size() == 2);
+        assertEquals(2, model.getWorkspaces().size());
         assertEquals(model.getWorkspaces().get(0).getName(), "password-vault");
         assertEquals(model.getWorkspaces().get(1).getName(), "recipe-store");
     }

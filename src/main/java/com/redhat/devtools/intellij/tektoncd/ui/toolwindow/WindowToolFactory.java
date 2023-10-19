@@ -30,6 +30,7 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
+import com.redhat.devtools.intellij.common.utils.IDEAContentFactory;
 import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.Constants;
 import com.redhat.devtools.intellij.tektoncd.listener.TektonTreeDoubleClickListener;
@@ -55,7 +56,7 @@ import static com.redhat.devtools.intellij.tektoncd.ui.UIConstants.SEARCH_FIELD_
 public class WindowToolFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        ContentFactory contentFactory = IDEAContentFactory.getInstance();
         SimpleToolWindowPanel panel = new SimpleToolWindowPanel(true, true);
         Content content = contentFactory.createContent(panel, "", false);
 

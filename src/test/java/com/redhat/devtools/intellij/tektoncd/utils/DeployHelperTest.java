@@ -12,7 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
-import com.redhat.devtools.intellij.tektoncd.FixtureBaseTest;
+import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCli;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import org.junit.Before;
@@ -23,9 +23,6 @@ import java.io.IOException;
 import java.util.function.Supplier;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -34,7 +31,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class DeployHelperTest extends FixtureBaseTest {
+public class DeployHelperTest extends BaseTest {
 
     private static final String RESOURCE_PATH = "utils/deployHelper/";
     private String pipeline_yaml;
@@ -48,8 +45,7 @@ public class DeployHelperTest extends FixtureBaseTest {
         pipeline_yaml = load(RESOURCE_PATH + "pipeline.yaml");
     }
 
-    @Test
-    public void SaveOnCluster_CannotRetrieveTkn_False() throws IOException {
+    public void testSaveOnCluster_CannotRetrieveTkn_False() throws IOException {
         String yaml = load(RESOURCE_PATH + "pipeline.yaml");
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(null);
