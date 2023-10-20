@@ -1,0 +1,45 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: IntelliJ Platform Plugin Compatibility
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        IJ: ['ideaIC:2018.2', 'ideaIC:2018.3', 'ideaIC:2019.1', 'ideaIC:2019.2', 'ideaIC:2019.3', 'ideaIC:2020.1',
+             'ideaIC:LATEST-EAP-SNAPSHOT',
+             'ideaIU:2018.2', 'ideaIU:2018.3', 'ideaIU:2019.1', 'ideaIU:2019.2', 'ideaIU:2019.3', 'ideaIU:2020.1',
+             'ideaIU:LATEST-EAP-SNAPSHOT',
+             'pycharmPC:2018.2', 'pycharmPC:2018.3', 'pycharmPC:2019.1', 'pycharmPC:2019.2', 'pycharmPC:2019.3',
+             'pycharmPC:2020.1', 'pycharmPC:LATEST-EAP-SNAPSHOT',
+             'goland:2018.2', 'goland:2018.3', 'goland:2019.1', 'goland:2019.2', 'goland:2019.3', 'goland:2020.1',
+             'goland:LATEST-EAP-SNAPSHOT']
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Build with Gradle
+      run: ./gradlew build
+    - name: Verify Plugin on IntelliJ Platforms
+      id: verify
+      uses: ChrisCarini/intellij-platform-plugin-verifier-action@v0.0.1
+      with:
+        ide-versions: ${{ matrix.IJ }}
+    - uses: actions/upload-artifact@v1
+      with:
+        name: verification-${{ matrix.IJ }}.log
+        path: ${{steps.verify.outputs.verification-output-log-filename}}
+
+
