@@ -24,34 +24,32 @@ import static org.junit.Assert.assertTrue;
 public class TknCliTriggerTemplateTest extends TknCliTest {
     private static final String TT_PLURAL = "triggertemplates";
 
-    @Test
-    public void verifyCreateTriggerTemplateAndDelete() throws IOException {
+    public void testVerifyCreateTriggerTemplateAndDelete() throws IOException {
         final String TT_NAME = "ttfirst";
         String resourceBody = TestUtils.load("triggertemplate1.yaml").replace("ttfoo", TT_NAME);
-        TestUtils.saveResource(tkn, resourceBody, NAMESPACE, TT_PLURAL);
+        TestUtils.saveResource(getTkn(), resourceBody, NAMESPACE, TT_PLURAL);
         // verify tt has been created
-        List<String> tts = tkn.getTriggerTemplates(NAMESPACE);
+        List<String> tts = getTkn().getTriggerTemplates(NAMESPACE);
         assertTrue(tts.contains(TT_NAME));
         // clean up and verify cleaning succeed
-        tkn.deleteTriggerTemplates(NAMESPACE, tts.stream().filter(tt -> tt.equalsIgnoreCase(TT_NAME)).collect(Collectors.toList()));
-        tts = tkn.getTriggerTemplates(NAMESPACE);
+        getTkn().deleteTriggerTemplates(NAMESPACE, tts.stream().filter(tt -> tt.equalsIgnoreCase(TT_NAME)).collect(Collectors.toList()));
+        tts = getTkn().getTriggerTemplates(NAMESPACE);
         assertFalse(tts.contains(TT_NAME));
     }
 
-    @Test
-    public void verifyTriggerTemplateYAMLIsReturnedCorrectly() throws IOException {
+    public void testVerifyTriggerTemplateYAMLIsReturnedCorrectly() throws IOException {
         final String TT_NAME = "ttsecond";
         String resourceBody = TestUtils.load("triggertemplate1.yaml").replace("ttfoo", TT_NAME);
-        TestUtils.saveResource(tkn, resourceBody, NAMESPACE, TT_PLURAL);
+        TestUtils.saveResource(getTkn(), resourceBody, NAMESPACE, TT_PLURAL);
         // verify tt has been created
-        List<String> tts = tkn.getTriggerTemplates(NAMESPACE);
+        List<String> tts = getTkn().getTriggerTemplates(NAMESPACE);
         assertTrue(tts.contains(TT_NAME));
         // get YAML from cluster and verify is the same uploaded
-        String resourceBodyFromCluster = tkn.getTriggerTemplateYAML(NAMESPACE, TT_NAME);
+        String resourceBodyFromCluster = getTkn().getTriggerTemplateYAML(NAMESPACE, TT_NAME);
         assertEquals(TestUtils.getSpecFromResource(resourceBody), TestUtils.getSpecFromResource(resourceBodyFromCluster));
         /// clean up and verify cleaning succeed
-        tkn.deleteTriggerTemplates(NAMESPACE, tts.stream().filter(tt -> tt.equalsIgnoreCase(TT_NAME)).collect(Collectors.toList()));
-        tts = tkn.getTriggerTemplates(NAMESPACE);
+        getTkn().deleteTriggerTemplates(NAMESPACE, tts.stream().filter(tt -> tt.equalsIgnoreCase(TT_NAME)).collect(Collectors.toList()));
+        tts = getTkn().getTriggerTemplates(NAMESPACE);
         assertFalse(tts.contains(TT_NAME));
     }
 }

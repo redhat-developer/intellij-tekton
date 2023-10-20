@@ -103,7 +103,7 @@ sourceSets {
     integrationTest {
         java.srcDir file('src/it/java')
         resources.srcDir file('src/it/resources')
-        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
         runtimeClasspath += output + compileClasspath
     }
     main {
@@ -111,13 +111,13 @@ sourceSets {
     }
 }
 
-task integrationTest(type: Test) {
+tasks.register('integrationTest', Test) {
     description = 'Runs the integration tests.'
     group = 'verification'
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
     outputs.upToDateWhen { false }
-    mustRunAfter test
+    jvmArgs "-Djava.awt.headless=true"
 }
 
 publishPlugin {

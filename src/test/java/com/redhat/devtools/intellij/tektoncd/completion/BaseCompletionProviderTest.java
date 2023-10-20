@@ -20,7 +20,6 @@ import java.util.List;
 
 public abstract class BaseCompletionProviderTest extends BasePlatformTestCase {
 
-    @Before
     public void setup() throws Exception {
         VfsRootAccessHelper.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
     }

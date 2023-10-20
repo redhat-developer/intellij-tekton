@@ -11,30 +11,30 @@
 package com.redhat.devtools.intellij.tektoncd.tkn;
 
 import com.intellij.openapi.ui.TestDialog;
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.redhat.devtools.intellij.common.utils.MessagesHelper;
-import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import io.fabric8.kubernetes.client.Watch;
 import org.apache.commons.lang.time.StopWatch;
-import org.junit.After;
-import org.junit.Before;
 
 import java.util.function.Supplier;
 
-public class TknCliTest extends BaseTest {
+public class TknCliTest extends BasePlatformTestCase {
 
-    protected Tkn tkn;
+    private Tkn tkn;
     protected static final String NAMESPACE = "testns";
     private TestDialog previousTestDialog;
 
-    @Before
-    public void init() throws Exception {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
         previousTestDialog = MessagesHelper.setTestDialog(message -> 0);
-        tkn = TknCliFactory.getInstance().getTkn(project).get();
+        tkn = TknCliFactory.getInstance().getTkn(getProject()).get();
     }
 
-    @After
-    public void shutdown() {
+    @Override
+    public void tearDown() throws Exception {
         MessagesHelper.setTestDialog(previousTestDialog);
+        super.tearDown();
     }
 
     protected static void stopAndWaitOnConditionOrTimeout(Watch watch, Supplier<Boolean> condition) throws InterruptedException {
@@ -48,5 +48,9 @@ public class TknCliTest extends BaseTest {
         }
         stopWatch.stop();
         watch.close();
+    }
+
+    protected Tkn getTkn(){
+        return tkn;
     }
 }

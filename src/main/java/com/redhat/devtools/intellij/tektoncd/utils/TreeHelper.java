@@ -252,38 +252,18 @@ public class TreeHelper {
     }
 
     public static String getPluralKind(String kind) {
-        switch(kind.toLowerCase()) {
-            case KIND_PIPELINE: {
-                return KIND_PIPELINES;
-            }
-            case KIND_PIPELINERUN: {
-                return KIND_PIPELINERUNS;
-            }
-            case KIND_TASK: {
-                return KIND_TASKS;
-            }
-            case KIND_TASKRUN: {
-                return KIND_TASKRUNS;
-            }
-            case KIND_CLUSTERTASK: {
-                return KIND_CLUSTERTASKS;
-            }
-            case KIND_TRIGGERTEMPLATE: {
-                return KIND_TRIGGERTEMPLATES;
-            }
-            case KIND_TRIGGERBINDING: {
-                return KIND_TRIGGERBINDINGS;
-            }
-            case KIND_CLUSTERTRIGGERBINDING: {
-                return KIND_CLUSTERTRIGGERBINDINGS;
-            }
-            case KIND_EVENTLISTENER: {
-                return KIND_EVENTLISTENERS;
-            }
-            default: {
-                return kind;
-            }
-        }
+        return switch (kind.toLowerCase()) {
+            case KIND_PIPELINE -> KIND_PIPELINES;
+            case KIND_PIPELINERUN -> KIND_PIPELINERUNS;
+            case KIND_TASK -> KIND_TASKS;
+            case KIND_TASKRUN -> KIND_TASKRUNS;
+            case KIND_CLUSTERTASK -> KIND_CLUSTERTASKS;
+            case KIND_TRIGGERTEMPLATE -> KIND_TRIGGERTEMPLATES;
+            case KIND_TRIGGERBINDING -> KIND_TRIGGERBINDINGS;
+            case KIND_CLUSTERTRIGGERBINDING -> KIND_CLUSTERTRIGGERBINDINGS;
+            case KIND_EVENTLISTENER -> KIND_EVENTLISTENERS;
+            default -> kind;
+        };
     }
 
     public static Map<Class, List<ParentableNode>> getResourcesByClass(ParentableNode[] elements) {

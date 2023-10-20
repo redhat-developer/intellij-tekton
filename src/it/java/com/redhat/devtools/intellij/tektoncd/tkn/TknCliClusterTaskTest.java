@@ -23,34 +23,32 @@ import static org.junit.Assert.assertTrue;
 
 public class TknCliClusterTaskTest extends TknCliTest {
 
-    @Test
-    public void verifyCreateClusterTaskAndDelete() throws IOException {
+    public void testVerifyCreateClusterTaskAndDelete() throws IOException {
         final String TASK_NAME = "ctfirst";
         String resourceBody = TestUtils.load("clustertask1.yaml").replace("ctfoo", TASK_NAME);
-        TestUtils.saveResource(tkn, resourceBody, "", "clustertasks");
+        TestUtils.saveResource(getTkn(), resourceBody, "", "clustertasks");
         // verify task has been created
-        List<String> tasks = tkn.getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
+        List<String> tasks = getTkn().getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertTrue(tasks.contains(TASK_NAME));
         // clean up and verify cleaning succeed
-        tkn.deleteClusterTasks(tasks, false);
-        tasks = tkn.getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
+        getTkn().deleteClusterTasks(tasks, false);
+        tasks = getTkn().getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
         assertFalse(tasks.contains(TASK_NAME));
     }
 
-    @Test
-    public void verifyClusterTaskYAMLIsReturnedCorrectly() throws IOException {
+    public void testVerifyClusterTaskYAMLIsReturnedCorrectly() throws IOException {
         final String TASK_NAME = "ctsecond";
         String resourceBody = TestUtils.load("clustertask1.yaml").replace("ctfoo", TASK_NAME);
-        TestUtils.saveResource(tkn, resourceBody, "", "clustertasks");
+        TestUtils.saveResource(getTkn(), resourceBody, "", "clustertasks");
         // verify pipeline has been created
-        List<String> tasks = tkn.getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());;
+        List<String> tasks = getTkn().getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());;
         assertTrue(tasks.contains(TASK_NAME));
         // get YAML from cluster and verify is the same uploaded
-        String resourceBodyFromCluster = tkn.getClusterTaskYAML(TASK_NAME);
+        String resourceBodyFromCluster = getTkn().getClusterTaskYAML(TASK_NAME);
         assertEquals(TestUtils.getSpecFromResource(resourceBody), TestUtils.getSpecFromResource(resourceBodyFromCluster));
         // clean up and verify cleaning succeed
-        tkn.deleteClusterTasks(tasks, false);
-        tasks = tkn.getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());;
+        getTkn().deleteClusterTasks(tasks, false);
+        tasks = getTkn().getClusterTasks().stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());;
         assertFalse(tasks.contains(TASK_NAME));
     }
 }

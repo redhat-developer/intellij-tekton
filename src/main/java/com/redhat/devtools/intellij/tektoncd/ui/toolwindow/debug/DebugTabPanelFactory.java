@@ -16,6 +16,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
+import com.redhat.devtools.intellij.common.utils.IDEAContentFactory;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.utils.model.debug.DebugModel;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
@@ -45,7 +46,7 @@ public class DebugTabPanelFactory {
 
     public void addContent(DebugModel model) {
         DebugTabPanel debugTabPanel = resourceXTab.getOrDefault(model.getResource(), null);
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        ContentFactory contentFactory = IDEAContentFactory.getInstance();
         Content panel = getResourceDebugPanel(model.getResource());
 
         if (debugTabPanel != null) {
