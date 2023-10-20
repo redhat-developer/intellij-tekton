@@ -17,7 +17,6 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,15 +30,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 public class TknCliPipelineTest extends TknCliTest {
 
     public void testVerifyCreatePipelineAndDelete() throws IOException {
         final String PIPELINE_NAME = "first";
-        String pipelineConfig = TestUtils.load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
+        String pipelineConfig = TestUtils.load("it_pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
         TestUtils.saveResource(getTkn(), pipelineConfig, NAMESPACE, "pipelines");
         // verify pipeline has been created
         List<String> pipelines = getTkn().getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());
@@ -52,7 +47,7 @@ public class TknCliPipelineTest extends TknCliTest {
 
     public void testVerifyPipelineYAMLIsReturnedCorrectly() throws IOException {
         final String PIPELINE_NAME = "second";
-        String pipelineConfig = TestUtils.load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
+        String pipelineConfig = TestUtils.load("it_pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME);
         TestUtils.saveResource(getTkn(), pipelineConfig, NAMESPACE, "pipelines");
         // verify pipeline has been created
         List<String> pipelines = getTkn().getPipelines(NAMESPACE).stream().map(pp -> pp.getMetadata().getName()).collect(Collectors.toList());;
@@ -70,8 +65,8 @@ public class TknCliPipelineTest extends TknCliTest {
         final String TASK_NAME = "forpptest3";
         final String PIPELINE_NAME = "third";
         final String PIPELINE_RUN_NAME = "run-third";
-        String taskConfig = TestUtils.load("task1.yaml").replace("taskfoo", TASK_NAME);
-        String pipelineConfig = TestUtils.load("pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME).replace("taskfoo", TASK_NAME);
+        String taskConfig = TestUtils.load("it_task1.yaml").replace("taskfoo", TASK_NAME);
+        String pipelineConfig = TestUtils.load("it_pipeline1.yaml").replace("pipelinefoo", PIPELINE_NAME).replace("taskfoo", TASK_NAME);
         String pipelineRunConfig = TestUtils.load("pipelinerun1.yaml").replace("pipelinerunfoo", PIPELINE_RUN_NAME).replace("pipelinefoo", PIPELINE_NAME);
 
         TestUtils.saveResource(getTkn(), taskConfig, NAMESPACE, "tasks");

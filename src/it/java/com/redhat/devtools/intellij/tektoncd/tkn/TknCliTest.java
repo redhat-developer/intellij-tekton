@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 public class TknCliTest extends BasePlatformTestCase {
 
     private Tkn tkn;
-    protected static final String NAMESPACE = "testns";
+    public static final String NAMESPACE = "testns";
     private TestDialog previousTestDialog;
 
     @Override

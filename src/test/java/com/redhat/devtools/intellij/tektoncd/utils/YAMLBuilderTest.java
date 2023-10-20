@@ -36,10 +36,10 @@ public class YAMLBuilderTest extends BaseTest {
 
         ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
-        assertEquals(pipelineRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
-        assertEquals(pipelineRunNode.get("kind").asText(), "PipelineRun");
-        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "foo-");
-        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "foo");
+        assertEquals("tekton.dev/v1beta1", pipelineRunNode.get("apiVersion").asText());
+        assertEquals("PipelineRun", pipelineRunNode.get("kind").asText());
+        assertEquals("foo-", pipelineRunNode.get("metadata").get("generateName").asText());
+        assertEquals("foo", pipelineRunNode.get("spec").get("pipelineRef").get("name").asText());
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountName"));
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(pipelineRunNode.get("spec").has("params"));

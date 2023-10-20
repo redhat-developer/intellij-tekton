@@ -17,7 +17,6 @@ import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -29,15 +28,11 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 public class TknCliTaskTest extends TknCliTest {
 
     public void testVerifyCreateTaskAndDelete() throws IOException {
         final String TASK_NAME = "first";
-        String resourceBody = TestUtils.load("task1.yaml").replace("taskfoo", TASK_NAME);
+        String resourceBody = TestUtils.load("it_task1.yaml").replace("taskfoo", TASK_NAME);
         TestUtils.saveResource(getTkn(), resourceBody, NAMESPACE, "tasks");
         // verify task has been created
         List<String> tasks = getTkn().getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
@@ -50,7 +45,7 @@ public class TknCliTaskTest extends TknCliTest {
 
     public void testVerifyTaskYAMLIsReturnedCorrectly() throws IOException {
         final String TASK_NAME = "second";
-        String resourceBody = TestUtils.load("task1.yaml").replace("taskfoo", TASK_NAME);
+        String resourceBody = TestUtils.load("it_task1.yaml").replace("taskfoo", TASK_NAME);
         TestUtils.saveResource(getTkn(), resourceBody, NAMESPACE, "tasks");
         // verify pipeline has been created
         List<String> tasks = getTkn().getTasks(NAMESPACE).stream().map(task -> task.getMetadata().getName()).collect(Collectors.toList());
@@ -67,7 +62,7 @@ public class TknCliTaskTest extends TknCliTest {
     public void testVerifyCreateTaskAndTaskRunAndDeleteAll() throws IOException, InterruptedException {
         final String TASK_NAME = "third-task-test";
         final String TASK_RUN_NAME = "run-third-task-test";
-        String taskConfig = TestUtils.load("task1.yaml").replace("taskfoo", TASK_NAME);
+        String taskConfig = TestUtils.load("it_task1.yaml").replace("taskfoo", TASK_NAME);
         String taskRunConfig = TestUtils.load("taskrun1.yaml").replace("taskfoo", TASK_NAME).replace("taskrunfoo", TASK_RUN_NAME);
         TestUtils.saveResource(getTkn(), taskConfig, NAMESPACE, "tasks");
         TestUtils.saveResource(getTkn(), taskRunConfig, NAMESPACE, "taskruns");
