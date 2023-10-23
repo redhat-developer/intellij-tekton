@@ -50,7 +50,7 @@ intellij {
             'terminal',
             'yaml',
             'markdown',
-            'com.redhat.devtools.intellij.telemetry:0.0.3.33',
+            'com.redhat.devtools.intellij.telemetry:1.0.0.44',
             'com.intellij.kubernetes:' + versionsMap[ideaVersion],
             'com.redhat.devtools.intellij.kubernetes:1.2.0.271'
     ]
@@ -65,13 +65,16 @@ runIdeForUiTests {
     systemProperties['com.redhat.devtools.intellij.telemetry.mode'] = 'debug'
 }
 
+//with this option enabled, build will fail about IDEA expiration builds
+buildSearchableOptions.enabled = false
+
 dependencies {
     implementation 'io.fabric8:openshift-client:6.4.1'
     implementation 'io.fabric8:tekton-client:6.4.1'
     implementation 'com.redhat.devtools.intellij:intellij-common:1.9.1'
     implementation 'com.redhat.devtools.alizer:alizer-api:0.1.0'
-    testImplementation 'org.mockito:mockito-inline:4.6.1'
     implementation 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
+    testImplementation 'org.mockito:mockito-inline:4.6.1'
     //Tekton Hub client dependencies
     implementation 'io.swagger:swagger-annotations:1.6.11'
     implementation 'io.gsonfire:gson-fire:1.8.5'
