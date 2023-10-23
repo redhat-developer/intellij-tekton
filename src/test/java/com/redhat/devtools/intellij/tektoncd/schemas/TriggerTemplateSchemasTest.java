@@ -14,7 +14,6 @@ import org.junit.Test;
 
 public class TriggerTemplateSchemasTest extends SchemasTest {
 
-    @Test
     public void testTriggerTemplate() {
         myFixture.configureByFile("schemas/trigger-template1.yaml");
         myFixture.checkHighlighting();

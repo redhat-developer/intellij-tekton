@@ -17,7 +17,6 @@ import static com.intellij.testFramework.UsefulTestCase.assertOrderedEquals;
 
 public class OperatorInWhenClauseCodeCompletionTest extends BaseCompletionProviderTest{
 
-    @Test
     public void testCompletionOperatorInWhenClause() {
         assertOrderedEquals(getSuggestionsForFile("pipeline1.yaml"), "in", "notin");
     }

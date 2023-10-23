@@ -29,7 +29,7 @@ public class VirtualFileHelperTest extends BaseTest {
         assertFalse(vf.isWritable());
     }
 
-    public void testCreateVirtualFile_IsNotReadOnly_TempFile() {
+    public void testCreateVirtualFile_IsNotReadOnly_TempFile() throws IOException {
         try(MockedStatic<com.redhat.devtools.intellij.common.utils.VirtualFileHelper> virtualFileHelperMockedStatic = mockStatic(com.redhat.devtools.intellij.common.utils.VirtualFileHelper.class)) {
             virtualFileHelperMockedStatic
                     .when(() -> com.redhat.devtools.intellij.common.utils.VirtualFileHelper.createTempFile(anyString(), anyString()))
@@ -37,7 +37,7 @@ public class VirtualFileHelperTest extends BaseTest {
             VirtualFileHelper.createVirtualFile("name", "content", false);
             virtualFileHelperMockedStatic
                     .verify(() -> com.redhat.devtools.intellij.common.utils.VirtualFileHelper.createTempFile(anyString(), anyString()), times(1));
-        } catch (IOException e) { }
+        }
     }
 
     public void testCreateVirtualFile_IsNotReadOnlyAndFails_Throws() {

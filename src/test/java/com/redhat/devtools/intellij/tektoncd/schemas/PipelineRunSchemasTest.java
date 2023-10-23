@@ -14,7 +14,6 @@ import org.junit.Test;
 
 public class PipelineRunSchemasTest extends SchemasTest {
 
-    @Test
     public void testPipelineRunWithTimes() {
         myFixture.configureByFile("schemas/pipelinerun1.yaml");
         myFixture.checkHighlighting();

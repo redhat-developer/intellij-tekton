@@ -19,8 +19,7 @@ import java.io.File;
 
 public abstract class SchemasTest extends BasePlatformTestCase {
 
-    @Before
-    public void setup() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         myFixture.enableInspections(YamlJsonSchemaHighlightingInspection.class);
         VfsRootAccessHelper.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());

@@ -27,7 +27,6 @@ public class TaskReferencesInspectorTest extends InspectorTest {
         myFixture.enableInspections(TaskReferencesInspector.class);
     }
 
-    @Test
     public void testPipelineWithTaskNotFoundOnCluster() {
         myFixture.configureByFile("pipeline1.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -35,7 +34,6 @@ public class TaskReferencesInspectorTest extends InspectorTest {
         assertEquals("No task named foo found on cluster.", hightlightInfo.get(0).getDescription());
     }
 
-    @Test
     public void testPipelineWithTaskNotFoundOnClusterWithInvertedKindName() {
         myFixture.configureByFile("pipeline2.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -43,7 +41,6 @@ public class TaskReferencesInspectorTest extends InspectorTest {
         assertEquals("No task named foo found on cluster.", hightlightInfo.get(0).getDescription());
     }
 
-    @Test
     public void testPipelineWithTaskNotFoundOnClusterWithoutKind() {
         myFixture.configureByFile("pipeline3.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -51,7 +48,6 @@ public class TaskReferencesInspectorTest extends InspectorTest {
         assertEquals("No task named foo found on cluster.", hightlightInfo.get(0).getDescription());
     }
 
-    @Test
     public void testPipelineWithMultipleTasksNotFoundOnCluster() {
         myFixture.configureByFile("pipeline4.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -60,7 +56,6 @@ public class TaskReferencesInspectorTest extends InspectorTest {
         assertEquals("No task named foo1 found on cluster.", hightlightInfo.get(1).getDescription());
     }
 
-    @Test
     public void testPipelineWithClusterTaskNotFoundOnCluster() {
         myFixture.configureByFile("pipeline5.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -68,7 +63,6 @@ public class TaskReferencesInspectorTest extends InspectorTest {
         assertEquals("No task named foo found on cluster.", hightlightInfo.get(0).getDescription());
     }
 
-    @Test
     public void testPipelineWithMultipleTasksAndClusterTasksNotFoundOnCluster() {
         myFixture.configureByFile("pipeline6.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -77,7 +71,6 @@ public class TaskReferencesInspectorTest extends InspectorTest {
         assertEquals("No task named foo1 found on cluster.", hightlightInfo.get(1).getDescription());
     }
 
-    @Test
     public void testPipelineWithQuotedTaskNotFoundOnCluster() {
         myFixture.configureByFile("pipeline7.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -85,7 +78,6 @@ public class TaskReferencesInspectorTest extends InspectorTest {
         assertEquals("No task named foo found on cluster.", hightlightInfo.get(0).getDescription());
     }
 
-    @Test
     public void testPipelineWithSingleQuotedTaskNotFoundOnCluster() {
         myFixture.configureByFile("pipeline8.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();

@@ -14,7 +14,6 @@ import org.junit.Test;
 
 public class TaskSchemasTest extends SchemasTest {
 
-    @Test
     public void testTaskWithManagedFields() {
         myFixture.configureByFile("schemas/task-with-managedfields.yaml");
         myFixture.checkHighlighting();
