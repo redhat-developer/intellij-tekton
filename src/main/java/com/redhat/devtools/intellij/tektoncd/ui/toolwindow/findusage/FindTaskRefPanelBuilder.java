@@ -27,6 +27,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.redhat.devtools.intellij.common.tree.LabelAndIconDescriptor;
+import com.redhat.devtools.intellij.common.utils.IDEAContentFactory;
 import com.redhat.devtools.intellij.tektoncd.utils.TektonVirtualFileManager;
 import com.redhat.devtools.intellij.tektoncd.utils.VirtualFileHelper;
 import java.awt.BorderLayout;
@@ -75,7 +76,7 @@ public class FindTaskRefPanelBuilder {
     public void build(Project project, String kind, String task, List<RefUsage> usages) {
         ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(FINDTASKREFTOOLWINDOW_ID);
 
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        ContentFactory contentFactory = IDEAContentFactory.getInstance();
         Content panel = contentFactory.createContent(buildTabPanel(project, usages), "Usages of " + kind + " " + task, true);
         panel.setCloseable(true);
         window.getContentManager().addContent(panel);

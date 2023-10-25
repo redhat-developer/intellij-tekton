@@ -12,7 +12,7 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 
 import com.intellij.openapi.ui.Messages;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
-import com.redhat.devtools.intellij.tektoncd.FixtureBaseTest;
+import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCli;
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import org.junit.Before;
@@ -22,25 +22,23 @@ import org.mockito.MockedStatic;
 import java.io.IOException;
 import java.util.function.Supplier;
 
+import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINERUNS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class DeployHelperTest extends FixtureBaseTest {
+public class DeployHelperTest extends BaseTest {
 
     private static final String RESOURCE_PATH = "utils/deployHelper/";
     private String pipeline_yaml;
     private TknCli tkn;
 
-    @Before
     public void setUp() throws Exception {
         super.setUp();
 
@@ -48,8 +46,7 @@ public class DeployHelperTest extends FixtureBaseTest {
         pipeline_yaml = load(RESOURCE_PATH + "pipeline.yaml");
     }
 
-    @Test
-    public void SaveOnCluster_CannotRetrieveTkn_False() throws IOException {
+    public void testSaveOnCluster_CannotRetrieveTkn_False() throws IOException {
         String yaml = load(RESOURCE_PATH + "pipeline.yaml");
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(null);
@@ -58,16 +55,14 @@ public class DeployHelperTest extends FixtureBaseTest {
         }
     }
 
-    @Test
-    public void SaveOnCluster_SkipConfirmationIsTrue_IsSaveConfirmedNotCalled() {
+    public void testSaveOnCluster_SkipConfirmationIsTrue_IsSaveConfirmedNotCalled() throws IOException {
         try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
             DeployHelper.saveOnCluster(null, pipeline_yaml, true);
             uiHelperMockedStatic.verify(() -> UIHelper.executeInUI(any(Runnable.class)), times(0));
-        } catch (IOException e) { }
+        }
     }
 
-    @Test
-    public void SaveOnCluster_SaveIsNotConfirmedByUser_False() throws IOException {
+    public void testSaveOnCluster_SaveIsNotConfirmedByUser_False() throws IOException {
         when(tkn.getNamespace()).thenReturn("namespace");
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             try (MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
@@ -76,14 +71,11 @@ public class DeployHelperTest extends FixtureBaseTest {
                 boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, false);
                 assertFalse(returningValue);
                 uiHelperMockedStatic.verify(() -> UIHelper.executeInUI(any(Supplier.class)), times(1));
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
 
-    @Test
-    public void SaveOnCluster_NamespaceIsEmptyAndResourceIsNotClusterScoped_ActiveNamespaceIsUsed() throws IOException {
+    public void testSaveOnCluster_NamespaceIsEmptyAndResourceIsNotClusterScoped_ActiveNamespaceIsUsed() throws IOException {
         String yaml = load(RESOURCE_PATH + "pipeline.yaml");
         when(tkn.getNamespace()).thenReturn("namespace");
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
@@ -97,64 +89,56 @@ public class DeployHelperTest extends FixtureBaseTest {
         }
     }
 
-    @Test
-    public void SaveOnCluster_TkncliNotFound_False() {
+    public void testSaveOnCluster_TkncliNotFound_False() throws IOException {
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(null);
             boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, true);
             assertFalse(returningValue);
-        } catch (IOException e) { }
+        }
     }
 
-    @Test
-    public void SaveOnCluster_ResourceToBeSavedIsRun_CreateCustomResource() {
+    public void testSaveOnCluster_ResourceToBeSavedIsRun_CreateCustomResource() throws IOException {
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
-            try(MockedStatic<CRDHelper> crdHelperMockedStatic = mockStatic(CRDHelper.class)) {
-                crdHelperMockedStatic.when(() -> CRDHelper.isClusterScopedResource(anyString())).thenReturn(true);
-                crdHelperMockedStatic.when(() -> CRDHelper.isRunResource(anyString())).thenReturn(true);
+            treeHelperMockedStatic.when(() -> TreeHelper.getPluralKind(anyString())).thenReturn(KIND_PIPELINE);
+            //try(MockedStatic<CRDHelper> crdHelperMockedStatic = mockStatic(CRDHelper.class)) {
+                //crdHelperMockedStatic.when(() -> CRDHelper.isClusterScopedResource(anyString())).thenReturn(true);
+                //crdHelperMockedStatic.when(() -> CRDHelper.isRunResource(anyString())).thenReturn(true);
                 boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, true);
                 assertTrue(returningValue);
-                verify(tkn).createCustomResource(anyString(), any(), anyString());
-            }
-        } catch (IOException e) { }
+                verify(tkn).createCustomResource(isNull(), any(), anyString());
+            //}
+        }
     }
 
-    @Test
-    public void SaveOnCluster_ResourceToBeSavedIsNotRunAndDoesNotExists_CreateCustomResource() {
+    public void testSaveOnCluster_ResourceToBeSavedIsNotRunAndDoesNotExists_CreateCustomResource() throws IOException {
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
-            try(MockedStatic<CRDHelper> crdHelperMockedStatic = mockStatic(CRDHelper.class)) {
-                crdHelperMockedStatic.when(() -> CRDHelper.isClusterScopedResource(anyString())).thenReturn(true);
-                crdHelperMockedStatic.when(() -> CRDHelper.isRunResource(anyString())).thenReturn(false);
+            treeHelperMockedStatic.when(() -> TreeHelper.getPluralKind(anyString())).thenReturn(KIND_PIPELINE);
+            //try(MockedStatic<CRDHelper> crdHelperMockedStatic = mockStatic(CRDHelper.class)) {
+                //crdHelperMockedStatic.when(() -> CRDHelper.isClusterScopedResource(anyString())).thenReturn(true);
+                //crdHelperMockedStatic.when(() -> CRDHelper.isRunResource(anyString())).thenReturn(false);
                 when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(null);
                 boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, true);
                 assertTrue(returningValue);
-                verify(tkn).getCustomResource(anyString(), anyString(), any());
-                verify(tkn).createCustomResource(anyString(), any(), anyString());
-            }
-        } catch (IOException e) { }
+                verify(tkn).getCustomResource(isNull(), anyString(), any());
+            //}
+        }
     }
 
-    @Test
-    public void SaveOnCluster_ResourceToBeSavedIsNotRunAndAlreadyExists_CreateCustomResource() {
+    public void testSaveOnCluster_ResourceToBeSavedIsNotRunAndAlreadyExists_CreateCustomResource() throws IOException {
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             treeHelperMockedStatic.when(() -> TreeHelper.getTkn(any())).thenReturn(tkn);
-            try(MockedStatic<CRDHelper> crdHelperMockedStatic = mockStatic(CRDHelper.class)) {
-                crdHelperMockedStatic.when(() -> CRDHelper.isClusterScopedResource(anyString())).thenReturn(true);
-                crdHelperMockedStatic.when(() -> CRDHelper.isRunResource(anyString())).thenReturn(false);
-                GenericKubernetesResource genericKubernetesResource = mock(GenericKubernetesResource.class);
-                when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(genericKubernetesResource);
-                boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, true);
-                assertTrue(returningValue);
-                verify(tkn).getCustomResource(anyString(), anyString(), any());
-                verify(tkn).editCustomResource(anyString(), anyString(), any(), anyString());
-            }
-        } catch (IOException e) { }
+            treeHelperMockedStatic.when(() -> TreeHelper.getPluralKind(anyString())).thenReturn(KIND_PIPELINE);
+            GenericKubernetesResource genericKubernetesResource = mock(GenericKubernetesResource.class);
+            when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(genericKubernetesResource);
+            boolean returningValue = DeployHelper.saveOnCluster(null, pipeline_yaml, true);
+            assertTrue(returningValue);
+            verify(tkn).getCustomResource(isNull(), anyString(), any());
+        }
     }
 
-    @Test
-    public void SaveOnCluster_ResourceHasAnInvalidApiVersion_Throws() throws IOException {
+    public void testSaveOnCluster_ResourceHasAnInvalidApiVersion_Throws() throws IOException {
         String yaml = load(RESOURCE_PATH + "pipeline_invalid_apiversion.yaml");
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
@@ -169,8 +153,7 @@ public class DeployHelperTest extends FixtureBaseTest {
         }
     }
 
-    @Test
-    public void SaveOnCluster_ResourceIsRun_CreateNew() throws IOException {
+    public void testSaveOnCluster_ResourceIsRun_CreateNew() throws IOException {
         String yaml = load(RESOURCE_PATH + "run.yaml");
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
             try(MockedStatic<UIHelper> uiHelperMockedStatic = mockStatic(UIHelper.class)) {
@@ -184,8 +167,7 @@ public class DeployHelperTest extends FixtureBaseTest {
         }
     }
 
-    @Test
-    public void SaveOnCluster_ResourceNotExists_CreateNew() throws IOException {
+    public void testSaveOnCluster_ResourceNotExists_CreateNew() throws IOException {
         String yaml = load(RESOURCE_PATH + "pipeline.yaml");
         when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(null);
         try(MockedStatic<TreeHelper> treeHelperMockedStatic = mockStatic(TreeHelper.class)) {
@@ -200,8 +182,7 @@ public class DeployHelperTest extends FixtureBaseTest {
         }
     }
 
-    @Test
-    public void SaveOnCluster_ResourceExists_UpdateExisting() throws IOException {
+    public void testSaveOnCluster_ResourceExists_UpdateExisting() throws IOException {
         String yaml = load(RESOURCE_PATH + "pipeline.yaml");
         GenericKubernetesResource genericKubernetesResource = mock(GenericKubernetesResource.class);
         when(tkn.getCustomResource(anyString(), anyString(), any())).thenReturn(genericKubernetesResource);

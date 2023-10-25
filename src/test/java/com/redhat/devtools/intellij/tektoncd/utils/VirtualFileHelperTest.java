@@ -13,29 +13,23 @@ package com.redhat.devtools.intellij.tektoncd.utils;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
-import java.io.IOException;
-import org.junit.Test;
 import org.mockito.MockedStatic;
 
+import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 
 public class VirtualFileHelperTest extends BaseTest {
 
-    @Test
-    public void CreateVirtualFile_IsReadOnly_LightVirtualFile() throws IOException {
+    public void testCreateVirtualFile_IsReadOnly_LightVirtualFile() throws IOException {
         VirtualFile vf = VirtualFileHelper.createVirtualFile("name", "content", true);
         assertTrue(vf instanceof LightVirtualFile);
         assertFalse(vf.isWritable());
     }
 
-    @Test
-    public void CreateVirtualFile_IsNotReadOnly_TempFile() {
+    public void testCreateVirtualFile_IsNotReadOnly_TempFile() throws IOException {
         try(MockedStatic<com.redhat.devtools.intellij.common.utils.VirtualFileHelper> virtualFileHelperMockedStatic = mockStatic(com.redhat.devtools.intellij.common.utils.VirtualFileHelper.class)) {
             virtualFileHelperMockedStatic
                     .when(() -> com.redhat.devtools.intellij.common.utils.VirtualFileHelper.createTempFile(anyString(), anyString()))
@@ -43,11 +37,10 @@ public class VirtualFileHelperTest extends BaseTest {
             VirtualFileHelper.createVirtualFile("name", "content", false);
             virtualFileHelperMockedStatic
                     .verify(() -> com.redhat.devtools.intellij.common.utils.VirtualFileHelper.createTempFile(anyString(), anyString()), times(1));
-        } catch (IOException e) { }
+        }
     }
 
-    @Test
-    public void CreateVirtualFile_IsNotReadOnlyAndFails_Throws() {
+    public void testCreateVirtualFile_IsNotReadOnlyAndFails_Throws() {
         try(MockedStatic<com.redhat.devtools.intellij.common.utils.VirtualFileHelper> virtualFileHelperMockedStatic = mockStatic(com.redhat.devtools.intellij.common.utils.VirtualFileHelper.class)) {
             virtualFileHelperMockedStatic
                     .when(() -> com.redhat.devtools.intellij.common.utils.VirtualFileHelper.createTempFile(anyString(), anyString()))

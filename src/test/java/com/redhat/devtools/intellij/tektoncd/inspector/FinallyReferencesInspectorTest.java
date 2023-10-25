@@ -11,12 +11,8 @@
 package com.redhat.devtools.intellij.tektoncd.inspector;
 
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
-import org.junit.Test;
 
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class FinallyReferencesInspectorTest extends InspectorTest {
 
@@ -30,11 +26,10 @@ public class FinallyReferencesInspectorTest extends InspectorTest {
         myFixture.enableInspections(FinallyReferencesInspector.class);
     }
 
-    @Test
     public void testPipelineWithUnvalidRunAfterSection() {
         myFixture.configureByFile("pipeline1.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
         assertEquals(hightlightInfo.size(), 1);
-        assertTrue(hightlightInfo.get(0).getDescription().equals("No runAfter can be specified in final tasks."));
+        assertEquals("No runAfter can be specified in final tasks.", hightlightInfo.get(0).getDescription());
     }
 }

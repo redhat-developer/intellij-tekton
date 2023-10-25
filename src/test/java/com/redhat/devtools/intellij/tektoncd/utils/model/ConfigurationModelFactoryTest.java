@@ -13,31 +13,24 @@ package com.redhat.devtools.intellij.tektoncd.utils.model;
 import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.PipelineConfigurationModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
-import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 public class ConfigurationModelFactoryTest extends BaseTest {
 
-    @Test
-    public void checkTaskModelIsReturned() throws IOException {
+    public void testCheckTaskModelIsReturned() throws IOException {
         String configuration = load("task1.yaml");
         ConfigurationModel model = ConfigurationModelFactory.getModel(configuration);
         assertTrue(model instanceof TaskConfigurationModel);
     }
 
-    @Test
-    public void checkPipelineModelIsReturned() throws IOException {
+    public void testCheckPipelineModelIsReturned() throws IOException {
         String configuration = load("pipeline1.yaml");
         ConfigurationModel model = ConfigurationModelFactory.getModel(configuration);
         assertTrue(model instanceof PipelineConfigurationModel);
     }
 
-    @Test
-    public void checkNoModelIsReturned() throws IOException {
+    public void testCheckNoModelIsReturned() throws IOException {
         String configuration = load("invalidfile.yaml");
         ConfigurationModel model = ConfigurationModelFactory.getModel(configuration);
         assertNull(model);

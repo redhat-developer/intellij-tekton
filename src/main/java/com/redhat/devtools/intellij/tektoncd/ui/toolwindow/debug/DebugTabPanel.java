@@ -289,7 +289,6 @@ public class DebugTabPanel implements Disposable {
                 return null;
             }
 
-            @Override
             public int getPid() {
                 return 0;
             }

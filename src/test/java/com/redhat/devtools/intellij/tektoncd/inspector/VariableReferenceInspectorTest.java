@@ -30,7 +30,6 @@ public class VariableReferenceInspectorTest extends InspectorTest{
         myFixture.enableInspections(VariableReferencesInspector.class);
     }
 
-    @Test
     public void testPipelineHighlightWithUnusedParameter() {
         myFixture.configureByFile("pipeline1.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -38,7 +37,6 @@ public class VariableReferenceInspectorTest extends InspectorTest{
         assertTrue(hightlightInfo.get(0).getDescription().equals("Variable p1 is never used"));
     }
 
-    @Test
     public void testPipelineHighlightWithUnusedWorkspace() {
         myFixture.configureByFile("pipeline3.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -46,7 +44,6 @@ public class VariableReferenceInspectorTest extends InspectorTest{
         assertTrue(hightlightInfo.get(0).getDescription().equals("Variable password-vault is never used"));
     }
 
-    @Test
     public void testPipelineHighlightWithUnusedVariables() {
         myFixture.configureByFile("pipeline4.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -55,7 +52,6 @@ public class VariableReferenceInspectorTest extends InspectorTest{
         assertTrue(hightlightInfo.get(1).getDescription().equals("Variable password-vault is never used"));
     }
 
-    @Test
     public void testPipelineHighlightWithNotExactMatchingWords() {
         myFixture.configureByFile("pipeline6.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -64,7 +60,6 @@ public class VariableReferenceInspectorTest extends InspectorTest{
         assertTrue(hightlightInfo.get(1).getDescription().equals("Variable password-vault is never used"));
     }
 
-    @Test
     public void testTaskHighlightWithUnusedParameter() {
         myFixture.configureByFile("task1.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -72,7 +67,6 @@ public class VariableReferenceInspectorTest extends InspectorTest{
         assertTrue(hightlightInfo.get(0).getDescription().equals("Variable parm1 is never used"));
     }
 
-    @Test
     public void testTaskHighlightWithUnusedWorkspace() {
         myFixture.configureByFile("task4.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();
@@ -81,7 +75,6 @@ public class VariableReferenceInspectorTest extends InspectorTest{
         assertTrue(hightlightInfo.get(1).getDescription().equals("Variable write-disallowed is never used"));
     }
 
-    @Test
     public void testTaskHighlightWithUnusedVariables() {
         myFixture.configureByFile("task5.yaml");
         List<HighlightInfo> hightlightInfo =  myFixture.doHighlighting();

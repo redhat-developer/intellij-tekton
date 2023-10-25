@@ -10,37 +10,23 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.schemas;
 
-import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
-import com.intellij.testFramework.fixtures.TestFixtureBuilder;
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.redhat.devtools.intellij.common.utils.VfsRootAccessHelper;
 import org.jetbrains.yaml.schema.YamlJsonSchemaHighlightingInspection;
-import org.junit.After;
 import org.junit.Before;
 
 import java.io.File;
 
-public abstract class SchemasTest {
-    protected CodeInsightTestFixture myFixture;
+public abstract class SchemasTest extends BasePlatformTestCase {
 
-    @Before
-    public void setup() throws Exception {
-        IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
-        TestFixtureBuilder<IdeaProjectTestFixture> fixtureBuilder = factory.createLightFixtureBuilder((LightProjectDescriptor) null);
-        IdeaProjectTestFixture fixture = fixtureBuilder.getFixture();
-
-        myFixture = IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(fixture, factory.createTempDirTestFixture());
-
-        myFixture.setTestDataPath("src/test/resources");
-        myFixture.setUp();
+    public void setUp() throws Exception {
+        super.setUp();
         myFixture.enableInspections(YamlJsonSchemaHighlightingInspection.class);
         VfsRootAccessHelper.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
     }
 
-    @After
-    public void tearDown() throws Exception {
-        myFixture.tearDown();
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/resources";
     }
 }

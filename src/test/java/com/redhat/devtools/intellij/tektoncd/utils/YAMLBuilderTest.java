@@ -15,16 +15,12 @@ import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import com.redhat.devtools.intellij.tektoncd.tkn.component.field.Workspace;
 import com.redhat.devtools.intellij.tektoncd.utils.model.actions.AddTriggerModel;
 import com.redhat.devtools.intellij.tektoncd.utils.model.resources.TaskConfigurationModel;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.TRIGGER_BETA1_API_VERSION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class YAMLBuilderTest extends BaseTest {
 
@@ -34,17 +30,16 @@ public class YAMLBuilderTest extends BaseTest {
     ///             CREATE PIPELINERUN
     /////////////////////////////////////////////////////////
 
-    @Test
-    public void checkPipelineRunCreatedWithNoInputs() throws IOException {
+    public void testCheckPipelineRunCreatedWithNoInputs() throws IOException {
         String content = load("pipeline1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
         ObjectNode pipelineRunNode = YAMLBuilder.createPipelineRun(model);
 
-        assertEquals(pipelineRunNode.get("apiVersion").asText(), "tekton.dev/v1beta1");
-        assertEquals(pipelineRunNode.get("kind").asText(), "PipelineRun");
-        assertEquals(pipelineRunNode.get("metadata").get("generateName").asText(), "foo-");
-        assertEquals(pipelineRunNode.get("spec").get("pipelineRef").get("name").asText(), "foo");
+        assertEquals("tekton.dev/v1beta1", pipelineRunNode.get("apiVersion").asText());
+        assertEquals("PipelineRun", pipelineRunNode.get("kind").asText());
+        assertEquals("foo-", pipelineRunNode.get("metadata").get("generateName").asText());
+        assertEquals("foo", pipelineRunNode.get("spec").get("pipelineRef").get("name").asText());
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountName"));
         assertFalse(pipelineRunNode.get("spec").has("serviceAccountNames"));
         assertFalse(pipelineRunNode.get("spec").has("params"));
@@ -52,8 +47,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(pipelineRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkPipelineRunCreatedHasServiceAccount() throws IOException {
+    public void testCheckPipelineRunCreatedHasServiceAccount() throws IOException {
         String content = load("pipeline1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         model.setServiceAccount("sa");
@@ -71,8 +65,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(pipelineRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkPipelineRunCreatedHasParams() throws IOException {
+    public void testCheckPipelineRunCreatedHasParams() throws IOException {
         String content = load("pipeline3.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
@@ -90,8 +83,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(pipelineRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkPipelineRunCreatedHasResource() throws IOException {
+    public void testCheckPipelineRunCreatedHasResource() throws IOException {
         String content = load("pipeline4.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
@@ -107,8 +99,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(pipelineRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkPipelineRunCreatedHasWorkspace() throws IOException {
+    public void testCheckPipelineRunCreatedHasWorkspace() throws IOException {
         String content = load("pipeline5.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         if (model.getWorkspaces().containsKey("password-vault")) {
@@ -137,8 +128,7 @@ public class YAMLBuilderTest extends BaseTest {
     ///             CREATE TASKRUN
     /////////////////////////////////////////////////////////
 
-    @Test
-    public void checkTaskRunCreatedWithNoInputs() throws IOException {
+    public void testCheckTaskRunCreatedWithNoInputs() throws IOException {
         String content = load("task1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
@@ -155,8 +145,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(taskRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkTaskRunCreatedHasServiceAccount() throws IOException {
+    public void testCheckTaskRunCreatedHasServiceAccount() throws IOException {
         String content = load("task1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         model.setServiceAccount("sa");
@@ -174,8 +163,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(taskRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkTaskRunCreatedHasParams() throws IOException {
+    public void testCheckTaskRunCreatedHasParams() throws IOException {
         String content = load("task3.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
@@ -193,8 +181,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(taskRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkTaskRunCreatedHasInputResource() throws IOException {
+    public void testCheckTaskRunCreatedHasInputResource() throws IOException {
         String content = load("task6.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
@@ -210,8 +197,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(taskRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkTaskRunCreatedHasOutputResource() throws IOException {
+    public void testCheckTaskRunCreatedHasOutputResource() throws IOException {
         String content = load("task8.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
@@ -227,8 +213,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(taskRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkTaskRunCreatedHasWorkspace() throws IOException {
+    public void testCheckTaskRunCreatedHasWorkspace() throws IOException {
         String content = load("task10.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
         if (model.getWorkspaces().containsKey("write-allowed")) {
@@ -253,8 +238,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertEquals(taskRunNode.get("spec").get("workspaces").get(1).get("name").asText(), "foo2");
     }
 
-    @Test
-    public void checkTaskRunCreatedWithTaskConfigurationModelWithoutWorkspace() throws IOException {
+    public void testCheckTaskRunCreatedWithTaskConfigurationModelWithoutWorkspace() throws IOException {
         String content = load("task5.yaml");
         TaskConfigurationModel model = new TaskConfigurationModel(content);
 
@@ -273,8 +257,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertFalse(taskRunNode.get("spec").has("workspaces"));
     }
 
-    @Test
-    public void checkTaskRunCreatedWithTaskConfigurationModelWithWorkspace() throws IOException {
+    public void testCheckTaskRunCreatedWithTaskConfigurationModelWithWorkspace() throws IOException {
         String content = load("task10.yaml");
         TaskConfigurationModel model = new TaskConfigurationModel(content);
 
@@ -301,8 +284,7 @@ public class YAMLBuilderTest extends BaseTest {
     ///             CREATE TRIGGERTEMPLATE
     /////////////////////////////////////////////////////////
 
-    @Test
-    public void checkTriggerTemplateCreatedWithNoInputs() throws IOException {
+    public void testCheckTriggerTemplateCreatedWithNoInputs() throws IOException {
         String content = load("task1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
@@ -316,8 +298,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertTrue(triggerTemplateNode.get("spec").has("resourcetemplates"));
     }
 
-    @Test
-    public void checkTriggerTemplateCreatedWithInputs() throws IOException {
+    public void testCheckTriggerTemplateCreatedWithInputs() throws IOException {
         String content = load("task1.yaml");
         AddTriggerModel model = new AddTriggerModel(content, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
 
@@ -337,8 +318,7 @@ public class YAMLBuilderTest extends BaseTest {
     ///             CREATE EVENTLISTENER
     /////////////////////////////////////////////////////////
 
-    @Test
-    public void checkEventListenerCreatedWithNoBindings() {
+    public void testCheckEventListenerCreatedWithNoBindings() {
         ObjectNode eventListenerNode = YAMLBuilder.createEventListener("el", TRIGGER_BETA1_API_VERSION, "sa", Collections.emptyList(), "triggerTemplate");
 
         assertEquals(eventListenerNode.get("apiVersion").asText(), TRIGGER_BETA1_API_VERSION);
@@ -349,8 +329,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertEquals(eventListenerNode.get("spec").get("triggers").get(0).get("template").get("ref").asText(), "triggerTemplate");
     }
 
-    @Test
-    public void checkEventListenerCreatedWithOneBinding() {
+    public void testCheckEventListenerCreatedWithOneBinding() {
         ObjectNode eventListenerNode = YAMLBuilder.createEventListener("el", TRIGGER_BETA1_API_VERSION, "sa", Arrays.asList("binding"), "triggerTemplate");
 
         assertEquals(eventListenerNode.get("apiVersion").asText(), TRIGGER_BETA1_API_VERSION);
@@ -362,8 +341,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertEquals(eventListenerNode.get("spec").get("triggers").get(0).get("template").get("ref").asText(), "triggerTemplate");
     }
 
-    @Test
-    public void checkEventListenerCreatedWithMoreBindings() {
+    public void testCheckEventListenerCreatedWithMoreBindings() {
         ObjectNode eventListenerNode = YAMLBuilder.createEventListener("el", TRIGGER_BETA1_API_VERSION, "sa", Arrays.asList("binding1", "binding2", "binding3"), "triggerTemplate");
 
         assertEquals(eventListenerNode.get("apiVersion").asText(), TRIGGER_BETA1_API_VERSION);
@@ -377,8 +355,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertEquals(eventListenerNode.get("spec").get("triggers").get(0).get("template").get("ref").asText(), "triggerTemplate");
     }
 
-    @Test
-    public void CreateTask_TaskSpecHasMetadataField_ObjectNodeRepresentingTask() throws IOException {
+    public void testCreateTask_TaskSpecHasMetadataField_ObjectNodeRepresentingTask() throws IOException {
         String taskSpec = load(RESOURCE_PATH + "taskSpec1.yaml");
         ObjectNode taskToSave = YAMLBuilder.convertToObjectNode(taskSpec);
         ObjectNode resultingTask = YAMLBuilder.createTask("test", "Task", taskToSave);
@@ -391,8 +368,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertEquals("echo", resultingTask.get("spec").get("steps").get(0).get("name").asText());
     }
 
-    @Test
-    public void CreateTask_TaskSpecHasNotMetadataField_ObjectNodeRepresentingTask() throws IOException {
+    public void testCreateTask_TaskSpecHasNotMetadataField_ObjectNodeRepresentingTask() throws IOException {
         String taskSpec = load(RESOURCE_PATH + "taskSpec2.yaml");
         ObjectNode taskToSave = YAMLBuilder.convertToObjectNode(taskSpec);
         ObjectNode resultingTask = YAMLBuilder.createTask("test", "Task", taskToSave);
@@ -405,8 +381,7 @@ public class YAMLBuilderTest extends BaseTest {
         assertEquals("echo", resultingTask.get("spec").get("steps").get(0).get("name").asText());
     }
 
-    @Test
-    public void CreateTask_TaskSpecHasParamsField_ObjectNodeRepresentingTask() throws IOException {
+    public void testCreateTask_TaskSpecHasParamsField_ObjectNodeRepresentingTask() throws IOException {
         String taskSpec = load(RESOURCE_PATH + "taskSpec3.yaml");
         ObjectNode taskToSave = YAMLBuilder.convertToObjectNode(taskSpec);
         ObjectNode resultingTask = YAMLBuilder.createTask("test", "ClusterTask", taskToSave);
@@ -421,15 +396,13 @@ public class YAMLBuilderTest extends BaseTest {
         assertEquals("echo", resultingTask.get("spec").get("steps").get(0).get("name").asText());
     }
 
-    @Test
-    public void CreateTaskRef_ObjectNodeRepresentingTaskRef() {
+    public void testCreateTaskRef_ObjectNodeRepresentingTaskRef() {
         ObjectNode resultingTaskRef = YAMLBuilder.createTaskRef("test", "kind");
         assertEquals("kind", resultingTaskRef.get("taskRef").get("kind").asText());
         assertEquals("test", resultingTaskRef.get("taskRef").get("name").asText());
     }
 
-    @Test
-    public void CreateVCT_ObjectNodeRepresentingVolumeClaimTemplate() {
+    public void testCreateVCT_ObjectNodeRepresentingVolumeClaimTemplate() {
         ObjectNode vct = YAMLBuilder.createVCT("vct", "mode", "1", "MiB");
         assertTrue(vct.has("metadata"));
         assertTrue(vct.get("metadata").has("name"));

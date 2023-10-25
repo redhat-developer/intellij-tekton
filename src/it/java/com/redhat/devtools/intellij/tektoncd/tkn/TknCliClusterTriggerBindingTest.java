@@ -24,34 +24,32 @@ import static org.junit.Assert.assertTrue;
 public class TknCliClusterTriggerBindingTest extends TknCliTest {
     private static final String CTB_PLURAL = "clustertriggerbindings";
 
-    @Test
-    public void verifyCreateClusterTriggerBindingAndDelete() throws IOException {
+    public void testVerifyCreateClusterTriggerBindingAndDelete() throws IOException {
         final String CTB_NAME = "ctbfirst";
         String resourceBody = TestUtils.load("clustertriggerbinding1.yaml").replace("ctbfoo", CTB_NAME);
-        TestUtils.saveResource(tkn, resourceBody, "", CTB_PLURAL);
+        TestUtils.saveResource(getTkn(), resourceBody, "", CTB_PLURAL);
         // verify ctb has been created
-        List<String> ctbs = tkn.getClusterTriggerBindings();
+        List<String> ctbs = getTkn().getClusterTriggerBindings();
         assertTrue(ctbs.contains(CTB_NAME));
         // clean up and verify cleaning succeed
-        tkn.deleteClusterTriggerBindings(ctbs.stream().filter(ctb -> ctb.equalsIgnoreCase(CTB_NAME)).collect(Collectors.toList()));
-        ctbs = tkn.getClusterTriggerBindings();
+        getTkn().deleteClusterTriggerBindings(ctbs.stream().filter(ctb -> ctb.equalsIgnoreCase(CTB_NAME)).collect(Collectors.toList()));
+        ctbs = getTkn().getClusterTriggerBindings();
         assertFalse(ctbs.contains(CTB_NAME));
     }
 
-    @Test
-    public void verifyClusterTriggerBindingYAMLIsReturnedCorrectly() throws IOException {
+    public void testVerifyClusterTriggerBindingYAMLIsReturnedCorrectly() throws IOException {
         final String CTB_NAME = "ctbsecond";
         String resourceBody = TestUtils.load("clustertriggerbinding1.yaml").replace("ctbfoo", CTB_NAME);
-        TestUtils.saveResource(tkn, resourceBody, "", CTB_PLURAL);
+        TestUtils.saveResource(getTkn(), resourceBody, "", CTB_PLURAL);
         // verify ctb has been created
-        List<String> ctbs = tkn.getClusterTriggerBindings();
+        List<String> ctbs = getTkn().getClusterTriggerBindings();
         assertTrue(ctbs.contains(CTB_NAME));
         // get YAML from cluster and verify is the same uploaded
-        String resourceBodyFromCluster = tkn.getClusterTriggerBindingYAML(CTB_NAME);
+        String resourceBodyFromCluster = getTkn().getClusterTriggerBindingYAML(CTB_NAME);
         assertEquals(TestUtils.getSpecFromResource(resourceBody), TestUtils.getSpecFromResource(resourceBodyFromCluster));
         /// clean up and verify cleaning succeed
-        tkn.deleteClusterTriggerBindings(ctbs.stream().filter(ctb -> ctb.equalsIgnoreCase(CTB_NAME)).collect(Collectors.toList()));
-        ctbs = tkn.getClusterTriggerBindings();
+        getTkn().deleteClusterTriggerBindings(ctbs.stream().filter(ctb -> ctb.equalsIgnoreCase(CTB_NAME)).collect(Collectors.toList()));
+        ctbs = getTkn().getClusterTriggerBindings();
         assertFalse(ctbs.contains(CTB_NAME));
     }
 }

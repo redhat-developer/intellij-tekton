@@ -12,39 +12,24 @@ package com.redhat.devtools.intellij.tektoncd.inspector;
 
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
-import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
-import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import org.junit.After;
-import org.junit.Before;
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 import java.io.File;
 
-public abstract class InspectorTest {
+public abstract class InspectorTest extends BasePlatformTestCase {
 
-    protected CodeInsightTestFixture myFixture;
-
-    @Before
-    public void setup() throws Exception {
-        IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
-        TestFixtureBuilder<IdeaProjectTestFixture> fixtureBuilder = factory.createLightFixtureBuilder((LightProjectDescriptor) null);
-        IdeaProjectTestFixture fixture = fixtureBuilder.getFixture();
-
-        myFixture = IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(fixture, factory.createTempDirTestFixture());
-
-        myFixture.setTestDataPath("src/test/resources/inspector/" + getTestInspectorFolder() + "/");
-        myFixture.setUp();
+    public void setUp() throws Exception {
+        super.setUp();
         enableInspections();
         VfsRootAccess.allowRootAccess(Disposer.newDisposable(), new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
+    }
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/resources/inspector/" + getTestInspectorFolder() + "/";
     }
 
     public abstract String getTestInspectorFolder();
     public abstract void enableInspections();
 
-    @After
-    public void tearDown() throws Exception {
-        myFixture.tearDown();
-    }
 }

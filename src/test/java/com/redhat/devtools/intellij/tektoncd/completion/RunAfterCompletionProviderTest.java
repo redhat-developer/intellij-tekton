@@ -18,22 +18,18 @@ import static org.junit.Assert.assertTrue;
 
 public class RunAfterCompletionProviderTest extends BaseCompletionProviderTest {
 
-    @Test
     public void testCompletionWithASingleLookup() {
         assertOrderedEquals(getSuggestionsForFile("pipeline1.yaml"), "step1");
     }
 
-    @Test
     public void testCompletionWithMultipleLookups() {
         assertOrderedEquals(getSuggestionsForFile("pipeline2.yaml"), "step2", "step3");
     }
 
-    @Test
     public void testCompletionWithMultipleLookupsAndTasksAlreadyUsed() {
         assertOrderedEquals(getSuggestionsForFile("pipeline3.yaml"), "step4", "step5");
     }
 
-    @Test
     public void testCompletionWithNoLookups() {
         assertTrue(getSuggestionsForFile("pipeline4.yaml").isEmpty());
     }

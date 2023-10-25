@@ -13,31 +13,26 @@ package com.redhat.devtools.intellij.tektoncd.schemas;
 import org.junit.Test;
 
 public class EventListenerSchemasTest extends SchemasTest {
-    @Test
     public void testEventListener() {
         myFixture.configureByFile("schemas/eventlistener1.yaml");
         myFixture.checkHighlighting();
     }
 
-    @Test
     public void testEventListenerWithGitHubInterceptor() {
         myFixture.configureByFile("schemas/eventlistener-github-interceptor.yaml");
         myFixture.checkHighlighting();
     }
 
-    @Test
     public void testEventListenerWithGitLabInterceptor() {
         myFixture.configureByFile("schemas/eventlistener-gitlab-interceptor.yaml");
         myFixture.checkHighlighting();
     }
 
-    @Test
     public void testEventListenerWithBitBucketInterceptor() {
         myFixture.configureByFile("schemas/eventlistener-bitbucket-interceptor.yaml");
         myFixture.checkHighlighting();
     }
 
-    @Test
     public void testEventListenerWithCelInterceptor() {
         myFixture.configureByFile("schemas/eventlistener-cel-interceptor.yaml");
         myFixture.checkHighlighting();

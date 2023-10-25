@@ -12,28 +12,21 @@ package com.redhat.devtools.intellij.tektoncd.kubernetes;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiFile;
-import com.redhat.devtools.intellij.tektoncd.FixtureBaseTest;
-import java.io.IOException;
+import com.redhat.devtools.intellij.tektoncd.BaseTest;
 import org.jetbrains.yaml.YAMLFileType;
-import org.junit.Before;
-import org.junit.Test;
 
+import java.io.IOException;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-public class TektonHighlightInfoFilterTest extends FixtureBaseTest {
+public class TektonHighlightInfoFilterTest extends BaseTest {
     private static final String RESOURCE_PATH = "kubernetes/";
     private TektonHighlightInfoFilter tektonHighlightInfoFilter;
 
-    @Before
     public void setUp() throws Exception {
         super.setUp();
         tektonHighlightInfoFilter = new TektonHighlightInfoFilter();
     }
 
-    @Test
-    public void IsCustomFile_FileIsNotTekton_False() throws IOException {
+    public void testIsCustomFile_FileIsNotTekton_False() throws IOException {
         String yaml = load(RESOURCE_PATH + "not_tekton.yaml");
         PsiFile psiFile = myFixture.configureByText(YAMLFileType.YML, yaml);
         ApplicationManager.getApplication().runReadAction(() -> {
@@ -42,8 +35,7 @@ public class TektonHighlightInfoFilterTest extends FixtureBaseTest {
         });
     }
 
-    @Test
-    public void IsCustomFile_FileIsPipelineTekton_True() throws IOException {
+    public void testIsCustomFile_FileIsPipelineTekton_True() throws IOException {
         String yaml = load(RESOURCE_PATH + "pipeline.yaml");
         PsiFile psiFile = myFixture.configureByText(YAMLFileType.YML, yaml);
         ApplicationManager.getApplication().runReadAction(() -> {
@@ -52,8 +44,7 @@ public class TektonHighlightInfoFilterTest extends FixtureBaseTest {
         });
     }
 
-    @Test
-    public void IsCustomFile_FileIsTriggerTekton_True() throws IOException {
+    public void testIsCustomFile_FileIsTriggerTekton_True() throws IOException {
         String yaml = load(RESOURCE_PATH + "eventlistener.yaml");
         PsiFile psiFile = myFixture.configureByText(YAMLFileType.YML, yaml);
         ApplicationManager.getApplication().runReadAction(() -> {

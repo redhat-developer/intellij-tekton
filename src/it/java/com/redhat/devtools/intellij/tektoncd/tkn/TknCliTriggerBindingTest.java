@@ -24,34 +24,32 @@ import static org.junit.Assert.assertTrue;
 public class TknCliTriggerBindingTest extends TknCliTest {
     private static final String TB_PLURAL = "triggerbindings";
 
-    @Test
-    public void verifyCreateTriggerBindingAndDelete() throws IOException {
+    public void testVerifyCreateTriggerBindingAndDelete() throws IOException {
         final String TB_NAME = "tbfirst";
         String resourceBody = TestUtils.load("triggerbinding1.yaml").replace("tbfoo", TB_NAME);
-        TestUtils.saveResource(tkn, resourceBody, NAMESPACE, TB_PLURAL);
+        TestUtils.saveResource(getTkn(), resourceBody, NAMESPACE, TB_PLURAL);
         // verify tb has been created
-        List<String> tbs = tkn.getTriggerBindings(NAMESPACE);
+        List<String> tbs = getTkn().getTriggerBindings(NAMESPACE);
         assertTrue(tbs.contains(TB_NAME));
         // clean up and verify cleaning succeed
-        tkn.deleteTriggerBindings(NAMESPACE, tbs.stream().filter(tb -> tb.equalsIgnoreCase(TB_NAME)).collect(Collectors.toList()));
-        tbs = tkn.getTriggerBindings(NAMESPACE);
+        getTkn().deleteTriggerBindings(NAMESPACE, tbs.stream().filter(tb -> tb.equalsIgnoreCase(TB_NAME)).collect(Collectors.toList()));
+        tbs = getTkn().getTriggerBindings(NAMESPACE);
         assertFalse(tbs.contains(TB_NAME));
     }
 
-    @Test
-    public void verifyTriggerBindingYAMLIsReturnedCorrectly() throws IOException {
+    public void testVerifyTriggerBindingYAMLIsReturnedCorrectly() throws IOException {
         final String TB_NAME = "ctbsecond";
         String resourceBody = TestUtils.load("triggerbinding1.yaml").replace("tbfoo", TB_NAME);
-        TestUtils.saveResource(tkn, resourceBody, NAMESPACE, TB_PLURAL);
+        TestUtils.saveResource(getTkn(), resourceBody, NAMESPACE, TB_PLURAL);
         // verify tb has been created
-        List<String> tbs = tkn.getTriggerBindings(NAMESPACE);
+        List<String> tbs = getTkn().getTriggerBindings(NAMESPACE);
         assertTrue(tbs.contains(TB_NAME));
         // get YAML from cluster and verify is the same uploaded
-        String resourceBodyFromCluster = tkn.getTriggerBindingYAML(NAMESPACE, TB_NAME);
+        String resourceBodyFromCluster = getTkn().getTriggerBindingYAML(NAMESPACE, TB_NAME);
         assertEquals(TestUtils.getSpecFromResource(resourceBody), TestUtils.getSpecFromResource(resourceBodyFromCluster));
         /// clean up and verify cleaning succeed
-        tkn.deleteTriggerBindings(NAMESPACE, tbs.stream().filter(tb -> tb.equalsIgnoreCase(TB_NAME)).collect(Collectors.toList()));
-        tbs = tkn.getTriggerBindings(NAMESPACE);
+        getTkn().deleteTriggerBindings(NAMESPACE, tbs.stream().filter(tb -> tb.equalsIgnoreCase(TB_NAME)).collect(Collectors.toList()));
+        tbs = getTkn().getTriggerBindings(NAMESPACE);
         assertFalse(tbs.contains(TB_NAME));
     }
 }

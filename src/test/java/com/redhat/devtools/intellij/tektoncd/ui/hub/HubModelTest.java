@@ -21,8 +21,6 @@ import com.redhat.devtools.intellij.tektoncd.hub.model.Resources;
 import com.redhat.devtools.intellij.tektoncd.tree.ClusterTasksNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelinesNode;
 import io.fabric8.kubernetes.client.Watch;
-import org.junit.Before;
-import org.junit.Test;
 import org.mockito.MockedConstruction;
 
 import java.io.IOException;
@@ -32,9 +30,6 @@ import java.util.List;
 
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_PIPELINE;
 import static com.redhat.devtools.intellij.tektoncd.Constants.KIND_TASK;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -54,7 +49,7 @@ public class HubModelTest extends BaseTest {
     private ResourceApi resourceApi;
     private Resources resources;
     private Watch watch;
-    @Before
+
     public void setUp() throws Exception {
         super.setUp();
         watch = mock(Watch.class);
@@ -99,8 +94,7 @@ public class HubModelTest extends BaseTest {
         resources.addDataItem(resourceDataGO);
     }
 
-    @Test
-    public void GetAllPipelineHubItems_RemoteHubContainsPipelineResources_ListWithAllPipelines() throws IOException {
+    public void testGetAllPipelineHubItems_RemoteHubContainsPipelineResources_ListWithAllPipelines() throws IOException {
         resources.addDataItem(resourceDataNET);
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
@@ -118,8 +112,7 @@ public class HubModelTest extends BaseTest {
         }
     }
 
-    @Test
-    public void GetAllPipelineHubItems_RemoteHubHasNoPipelineResources_EmptyList() throws IOException {
+    public void testGetAllPipelineHubItems_RemoteHubHasNoPipelineResources_EmptyList() throws IOException {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
             try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
@@ -135,8 +128,7 @@ public class HubModelTest extends BaseTest {
         }
     }
 
-    @Test
-    public void GetAllTaskHubItems_RemoteHubContainsTaskResources_ListWithAllTasks() throws IOException {
+    public void testGetAllTaskHubItems_RemoteHubContainsTaskResources_ListWithAllTasks() throws IOException {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
             try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
@@ -154,8 +146,7 @@ public class HubModelTest extends BaseTest {
         }
     }
 
-    @Test
-    public void GetAllTaskHubItems_RemoteHubHasNoTaskResources_EmptyList() throws IOException {
+    public void testGetAllTaskHubItems_RemoteHubHasNoTaskResources_EmptyList() throws IOException {
         Resources resources = new Resources();
         resources.addDataItem(resourceDataNET);
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
@@ -173,8 +164,7 @@ public class HubModelTest extends BaseTest {
         }
     }
 
-    @Test
-    public void GetRecommendedHubItems_LanguagesHasHubItemsRelated_FilteredList() throws IOException {
+    public void testGetRecommendedHubItems_LanguagesHasHubItemsRelated_FilteredList() throws IOException {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
             try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
@@ -191,8 +181,7 @@ public class HubModelTest extends BaseTest {
         }
     }
 
-    @Test
-    public void GetRecommendedHubItems_LanguagesHasNoHubItemsRelated_EmptyList() throws IOException {
+    public void testGetRecommendedHubItems_LanguagesHasNoHubItemsRelated_EmptyList() throws IOException {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
             try(MockedConstruction<RecognizerFactory> languageRecognizerBuilderMockedConstruction = mockConstruction(RecognizerFactory.class,
@@ -208,8 +197,7 @@ public class HubModelTest extends BaseTest {
         }
     }
 
-    @Test
-    public void GetInstalledHubItems_NoInstalledItems_EmptyList() {
+    public void testGetInstalledHubItems_NoInstalledItems_EmptyList() {
         try(MockedConstruction<ResourceApi> resourceApiMockedConstruction = mockConstruction(ResourceApi.class,
                 (mock, context) -> when(mock.resourceList(anyInt())).thenReturn(resources))) {
             HubModel model = new HubModel(project, tkn, null);
@@ -218,38 +206,32 @@ public class HubModelTest extends BaseTest {
         }
     }
 
-    @Test
-    public void GetIsClusterTaskView_CallerIsNull_False() {
+    public void testGetIsClusterTaskView_CallerIsNull_False() {
         HubModel model = new HubModel(project, tkn, null);
         assertFalse(model.getIsClusterTaskView());
     }
 
-    @Test
-    public void GetIsClusterTaskView_CallerIsNotNullAndNotAClusterTasksNode_False() {
+    public void testGetIsClusterTaskView_CallerIsNotNullAndNotAClusterTasksNode_False() {
         HubModel model = new HubModel(project, tkn, pipelinesNode);
         assertFalse(model.getIsClusterTaskView());
     }
 
-    @Test
-    public void GetIsClusterTaskView_CallerIsAClusterTasksNode_True() {
+    public void testGetIsClusterTaskView_CallerIsAClusterTasksNode_True() {
         HubModel model = new HubModel(project, tkn, clusterTasksNode);
         assertTrue(model.getIsClusterTaskView());
     }
 
-    @Test
-    public void GetIsPipelineView_CallerIsNull_False() {
+    public void testGetIsPipelineView_CallerIsNull_False() {
         HubModel model = new HubModel(project, tkn, null);
         assertFalse(model.getIsPipelineView());
     }
 
-    @Test
-    public void GetIsPipelineView_CallerIsNotNullAndNotAClusterTasksNode_False() {
+    public void testGetIsPipelineView_CallerIsNotNullAndNotAClusterTasksNode_False() {
         HubModel model = new HubModel(project, tkn, clusterTasksNode);
         assertFalse(model.getIsPipelineView());
     }
 
-    @Test
-    public void GetIsPipelineView_CallerIsAClusterTasksNode_True() {
+    public void testGetIsPipelineView_CallerIsAClusterTasksNode_True() {
         HubModel model = new HubModel(project, tkn, pipelinesNode);
         assertTrue(model.getIsPipelineView());
     }

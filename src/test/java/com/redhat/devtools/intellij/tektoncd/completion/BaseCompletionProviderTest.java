@@ -11,38 +11,17 @@
 package com.redhat.devtools.intellij.tektoncd.completion;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
-import com.intellij.testFramework.fixtures.TestFixtureBuilder;
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.redhat.devtools.intellij.common.utils.VfsRootAccessHelper;
-import org.junit.After;
 import org.junit.Before;
 
 import java.io.File;
 import java.util.List;
 
-public abstract class BaseCompletionProviderTest {
+public abstract class BaseCompletionProviderTest extends BasePlatformTestCase {
 
-    private CodeInsightTestFixture myFixture;
-
-    @Before
     public void setup() throws Exception {
-        IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
-        TestFixtureBuilder<IdeaProjectTestFixture> fixtureBuilder = factory.createLightFixtureBuilder((LightProjectDescriptor) null);
-        IdeaProjectTestFixture fixture = fixtureBuilder.getFixture();
-
-        myFixture = IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(fixture, factory.createTempDirTestFixture());
-
-        myFixture.setTestDataPath(getTestDataPath());
-        myFixture.setUp();
         VfsRootAccessHelper.allowRootAccess(new File("src").getAbsoluteFile().getParentFile().getAbsolutePath());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        myFixture.tearDown();
     }
 
     protected List<String> getSuggestionsForFile(String fileName) {
@@ -51,5 +30,4 @@ public abstract class BaseCompletionProviderTest {
         return myFixture.getLookupElementStrings();
     }
 
-    public abstract String getTestDataPath();
 }

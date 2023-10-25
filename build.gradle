@@ -1,13 +1,25 @@
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
-
 buildscript {
-    ext {
-        ijGradlePluginVersion = (DefaultNativePlatform.currentOperatingSystem.isMacOsX() ? "1.7.0" : "1.12.0")
+    /*
+     * for more complex conversion ideaVersion -> sinceIdeaBuild
+     * see https://github.com/rhdunn/xquery-intellij-plugin/blob/master/build.gradle#L1-L47
+     */
+    def since = ideaVersion =~ /I.-20(\d\d)\.([1-3])(\.\d+)?$/
+    if (since.matches()) {
+        ext.sinceIdeaBuild = "${since.group(1)}${since.group(2)}".toInteger()
+    } else {
+        ext.sinceIdeaBuild = 0
+    }
+
+    if (ext.sinceIdeaBuild >= 223) {
+        ext.java_version = "17"
+    } else {
+        ext.java_version = "11"
     }
 }
 
+
 plugins {
-    id "org.jetbrains.intellij" version "${ijGradlePluginVersion}"
+    id "org.jetbrains.intellij" version "1.16.0"
     id "idea"
     id "java"
     id "jacoco"
@@ -21,10 +33,14 @@ repositories {
     maven { url 'https://jitpack.io' }
 }
 
-sourceCompatibility = '11'
-targetCompatibility = '11'
+configurations {
+    compileOptions {
+        sourceCompatibility = java_version
+        targetCompatibility = java_version
+    }
+}
 
-def versionsMap = ['IU-2021.1':'211.6693.108', 'IU-2021.2':'212.4746.57', 'IU-2021.3':'213.5744.122', 'IU-2022.1':'221.5080.1', 'IU-2022.2':'222.3345.16', 'IU-2022.3':'223.7571.175']
+def versionsMap = ['IU-2022.1':'221.5080.1', 'IU-2022.2':'222.3345.16', 'IU-2022.3':'223.7571.175', 'IU-2023.1':'231.8109.91', 'IU-2023.2':'232.8660.158']
 
 intellij {
     version = ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
@@ -34,9 +50,9 @@ intellij {
             'terminal',
             'yaml',
             'markdown',
-            'com.redhat.devtools.intellij.telemetry:0.0.3.33',
+            'com.redhat.devtools.intellij.telemetry:1.0.0.44',
             'com.intellij.kubernetes:' + versionsMap[ideaVersion],
-            'com.redhat.devtools.intellij.kubernetes:0.7.1.208'
+            'com.redhat.devtools.intellij.kubernetes:1.2.0.271'
     ]
     updateSinceUntilBuild = false
 }
@@ -49,24 +65,27 @@ runIdeForUiTests {
     systemProperties['com.redhat.devtools.intellij.telemetry.mode'] = 'debug'
 }
 
+//with this option enabled, build will fail about IDEA expiration builds
+buildSearchableOptions.enabled = false
+
 dependencies {
-    implementation 'io.fabric8:openshift-client:6.4.0'
-    implementation 'io.fabric8:tekton-client:6.4.0'
-    implementation 'com.redhat.devtools.intellij:intellij-common:1.9.0'
+    implementation 'io.fabric8:openshift-client:6.4.1'
+    implementation 'io.fabric8:tekton-client:6.4.1'
+    implementation 'com.redhat.devtools.intellij:intellij-common:1.9.1'
     implementation 'com.redhat.devtools.alizer:alizer-api:0.1.0'
-    testImplementation 'org.mockito:mockito-inline:4.6.1'
     implementation 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
+    testImplementation 'org.mockito:mockito-inline:4.6.1'
     //Tekton Hub client dependencies
-    implementation 'io.swagger:swagger-annotations:1.6.6'
+    implementation 'io.swagger:swagger-annotations:1.6.11'
     implementation 'io.gsonfire:gson-fire:1.8.5'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     //IntelliJ Kubernetes plugin brings old okio so we need
-    //to explicitely declare it here. If the Tekton F8 is
+    //to explicitly declare it here. If the Tekton F8 is
     //updated check the version
     implementation 'com.squareup.okio:okio:3.1.0'
     // telemetry contributes annotations 13.0.0, so we need to declare newer version
     implementation 'org.jetbrains:annotations:23.0.0'
-    testImplementation 'com.redhat.devtools.intellij:intellij-common:1.9.0:test'
+    testImplementation 'com.redhat.devtools.intellij:intellij-common:1.9.1:test'
 }
 
 configurations {
@@ -77,11 +96,17 @@ configurations {
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
+test {
+    // Discover and execute JUnit4-based tests
+    useJUnit()
+    jvmArgs "-Djava.awt.headless=true"
+}
+
 sourceSets {
     integrationTest {
         java.srcDir file('src/it/java')
         resources.srcDir file('src/it/resources')
-        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
         runtimeClasspath += output + compileClasspath
     }
     main {
@@ -89,13 +114,13 @@ sourceSets {
     }
 }
 
-task integrationTest(type: Test) {
+tasks.register('integrationTest', Test) {
     description = 'Runs the integration tests.'
     group = 'verification'
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
     outputs.upToDateWhen { false }
-    mustRunAfter test
+    jvmArgs "-Djava.awt.headless=true"
 }
 
 publishPlugin {

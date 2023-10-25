@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.intellij.ui.treeStructure.Tree;
 import com.redhat.devtools.intellij.tektoncd.tkn.Tkn;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCli;
@@ -18,18 +19,17 @@ import com.redhat.devtools.intellij.tektoncd.tree.ParentableNode;
 import com.redhat.devtools.intellij.tektoncd.tree.PipelineNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonRootNode;
 import com.redhat.devtools.intellij.tektoncd.tree.TektonTreeStructure;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.IOUtils;
+
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BaseTest {
+public abstract class BaseTest extends BasePlatformTestCase {
 
     protected Project project;
     protected Tkn tkn;
@@ -41,8 +41,8 @@ public class BaseTest {
     protected TektonRootNode tektonRootNode;
     protected PipelineNode pipelineNode;
 
-    @Before
     public void setUp() throws Exception {
+        super.setUp();
         project = mock(Project.class);
         tkn = mock(TknCli.class);
         tree = mock(Tree.class);
