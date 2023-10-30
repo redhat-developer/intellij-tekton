@@ -12,6 +12,11 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>1.4.1</b></p>
+  <ul>
+    <li>Support IDEA IU-2023.2</li>
+    <li>Update kubernetes-client to 6.4.1</li>
+  </ul>
   <p><b>1.4.0</b></p>
   <ul>
     <li>Update kubernetes-client to 6.4.0</li>
