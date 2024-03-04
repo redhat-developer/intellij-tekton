@@ -10,7 +10,7 @@ buildscript {
         ext.sinceIdeaBuild = 0
     }
 
-    if (ext.sinceIdeaBuild >= 223) {
+    if (ext.sinceIdeaBuild.toInteger() >= 223) {
         ext.java_version = "17"
     } else {
         ext.java_version = "11"
@@ -40,7 +40,7 @@ configurations {
     }
 }
 
-def versionsMap = ['IU-2022.1':'221.5080.1', 'IU-2022.2':'222.3345.16', 'IU-2022.3':'223.7571.175', 'IU-2023.1':'231.8109.91', 'IU-2023.2':'232.8660.158']
+def versionsMap = ['IU-2022.1':'221.5080.1', 'IU-2022.2':'222.3345.16', 'IU-2022.3':'223.7571.175', 'IU-2023.1':'231.8109.91', 'IU-2023.2':'232.8660.158', 'IU-2023.3':'233.11799.296']
 
 intellij {
     version = ideaVersion //for a full list of IntelliJ IDEA releases please see https://www.jetbrains.com/intellij-repository/releases
@@ -50,9 +50,9 @@ intellij {
             'terminal',
             'yaml',
             'markdown',
-            'com.redhat.devtools.intellij.telemetry:1.0.0.44',
+            'com.redhat.devtools.intellij.telemetry:1.1.0.52',
             'com.intellij.kubernetes:' + versionsMap[ideaVersion],
-            'com.redhat.devtools.intellij.kubernetes:1.2.0.271'
+            'com.redhat.devtools.intellij.kubernetes:1.2.3.294'
     ]
     updateSinceUntilBuild = false
 }
@@ -71,7 +71,7 @@ buildSearchableOptions.enabled = false
 dependencies {
     implementation 'io.fabric8:openshift-client:6.4.1'
     implementation 'io.fabric8:tekton-client:6.4.1'
-    implementation 'com.redhat.devtools.intellij:intellij-common:1.9.1'
+    implementation 'com.redhat.devtools.intellij:intellij-common:1.9.3'
     implementation 'com.redhat.devtools.alizer:alizer-api:0.1.0'
     implementation 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
     testImplementation 'org.mockito:mockito-inline:4.6.1'
@@ -85,7 +85,7 @@ dependencies {
     implementation 'com.squareup.okio:okio:3.1.0'
     // telemetry contributes annotations 13.0.0, so we need to declare newer version
     implementation 'org.jetbrains:annotations:23.0.0'
-    testImplementation 'com.redhat.devtools.intellij:intellij-common:1.9.1:test'
+    testImplementation 'com.redhat.devtools.intellij:intellij-common:1.9.3:test'
 }
 
 configurations {
