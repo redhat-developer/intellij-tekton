@@ -14,7 +14,7 @@ import com.intellij.openapi.ui.TestDialog;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.redhat.devtools.intellij.common.utils.MessagesHelper;
 import io.fabric8.kubernetes.client.Watch;
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.util.function.Supplier;
 
