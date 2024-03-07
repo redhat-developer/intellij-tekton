@@ -12,6 +12,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>1.4.2</b></p>
+  <ul>
+    <li>Support IDEA IU-2023.3</li>
+  </ul>
   <p><b>1.4.1</b></p>
   <ul>
     <li>Support IDEA IU-2023.2</li>
