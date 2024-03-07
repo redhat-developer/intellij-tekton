@@ -11,6 +11,7 @@
 package com.redhat.devtools.intellij.tektoncd.ui.toolwindow.findusage;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorImpl;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.project.Project;
@@ -223,7 +224,7 @@ public class FindTaskRefPanelBuilder {
         try {
             VirtualFile vf = TektonVirtualFileManager.getInstance(project).findResource(usage.getNamespace(), usage.getKind(), usage.getName());
             vf.setWritable(false);
-            PsiAwareTextEditorImpl editor = new PsiAwareTextEditorImpl(project, vf, TextEditorProvider.getInstance());
+            TextEditor editor = new PsiAwareTextEditorImpl(project, vf, TextEditorProvider.getInstance());
             updateEditorPanel(new JBScrollPane(editor.getComponent()));
         } catch (IOException e) {
             logger.warn(e.getLocalizedMessage(), e);
