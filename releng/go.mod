@@ -1,6 +1,8 @@
 module github.com/redhat-developer/tekton-jsongenerator
 
-go 1.19
+go 1.21
+
+toolchain go1.22.0
 
 require (
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0
