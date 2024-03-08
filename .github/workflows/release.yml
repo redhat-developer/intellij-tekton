@@ -46,5 +46,6 @@ jobs:
       - name: Attach zip to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLUGIN_VERSION: ${{ steps.get_version.outputs.VERSION }}
         run: gh release upload ${PLUGIN_VERSION} ./build/distributions/*
 
