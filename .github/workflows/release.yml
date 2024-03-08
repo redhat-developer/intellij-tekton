@@ -7,9 +7,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: 'temurin'
@@ -33,19 +33,18 @@ jobs:
           echo '${{ steps.changelog.outputs.changelog }}'
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
-          release_name: ${{ steps.get_version.outputs.VERSION }}
-          body: ${{ steps.changelog.outputs.changelog }}
+          PLUGIN_VERSION: ${{ steps.get_version.outputs.VERSION }}
+        run: |
+          gh release create ${PLUGIN_VERSION} \
+            --title "${PLUGIN_VERSION}" \
+            --notes "$(cat << 'EOM'
+          ${{ steps.changelog.outputs.changelog }}
+          EOM
+          )"
       - name: Attach zip to release
-        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: '${{ github.workspace }}/build/distributions/com.redhat.devtools.intellij.tekton-${{ steps.get_version.outputs.VERSION }}.zip'
-          asset_name: 'Tekton-Pipelines-by-Red-Hat-${{ steps.get_version.outputs.VERSION }}.zip'
-          asset_content_type: application/zip
+        run: gh release upload ${PLUGIN_VERSION} ./build/distributions/*
+
