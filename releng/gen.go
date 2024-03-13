@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
+	"reflect"
+
 	"github.com/iancoleman/orderedmap"
 	"github.com/redhat-developer/tekton-jsongenerator/jsonschema"
 	pipelinev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
@@ -12,11 +15,10 @@ import (
 	triggersv1alpha1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
 	triggersv1beta1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8sresource "k8s.io/apimachinery/pkg/api/resource"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	knative "knative.dev/pkg/apis"
-	"os"
-	"reflect"
 )
 
 func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
@@ -66,6 +68,7 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 		})
 		properties.Set("operator", &jsonschema.Type{
 			Type: "string",
+			Enum: []interface{}{"in", "notin"},
 		})
 		properties.Set("values", &jsonschema.Type{
 			Type: "array",
@@ -73,11 +76,26 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 				Type: "string",
 			},
 		})
+		celProperties := orderedmap.New()
+		celProperties.Set("cel", &jsonschema.Type{
+			Type: "string",
+		})
 		return &jsonschema.Type{
-			Type:                 "object",
-			AdditionalProperties: []byte("false"),
-			Required:             []string{"input", "operator", "values"},
-			Properties:           properties}
+			OneOf: []*jsonschema.Type{
+				{
+					Type:                 "object",
+					AdditionalProperties: []byte("false"),
+					Required:             []string{"input", "operator", "values"},
+					Properties:           properties,
+				},
+				{
+					Type:                 "object",
+					AdditionalProperties: []byte("false"),
+					Required:             []string{"cel"},
+					Properties:           celProperties,
+				},
+			},
+		}
 	}
 	if (i == reflect.TypeOf(runtime.RawExtension{})) {
 		return &jsonschema.Type{
@@ -128,6 +146,18 @@ func arrayOrStringMapper(i reflect.Type) *jsonschema.Type {
 				},
 				{
 					Type: "null",
+				},
+			},
+		}
+	}
+	if (i == reflect.TypeOf(k8sresource.Quantity{})) {
+		return &jsonschema.Type{
+			OneOf: []*jsonschema.Type{
+				{
+					Type: "string",
+				},
+				{
+					Type: "number",
 				},
 			},
 		}
