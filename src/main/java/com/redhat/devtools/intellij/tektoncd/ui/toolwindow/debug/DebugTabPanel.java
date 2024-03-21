@@ -329,7 +329,7 @@ public class DebugTabPanel implements Disposable {
     private void updateRoot() {
         switch(model.getResourceStatus()) {
             case RUNNING: {
-                setRoot("Running task...", new AnimatedIcon.FS());
+                setRoot("Running task...", new AnimatedIcon.Default());
                 break;
             }
             case DEBUG: {

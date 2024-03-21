@@ -19,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.messages.MessageDialog;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.text.StringUtil;
 import com.redhat.devtools.intellij.common.model.GenericResource;
 import com.redhat.devtools.intellij.common.utils.UIHelper;
 import com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService;
@@ -27,19 +28,12 @@ import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.Status;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import static com.intellij.openapi.ui.Messages.NO_BUTTON;
-import static com.intellij.openapi.ui.Messages.YES_BUTTON;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.NAME_PREFIX_CRUD;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.PROP_RESOURCE_CRUD;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_ABORTED;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_RESOURCE_CRUD_CREATE;
-import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.VALUE_RESOURCE_CRUD_UPDATE;
+import static com.redhat.devtools.intellij.tektoncd.telemetry.TelemetryService.*;
 import static com.redhat.devtools.intellij.telemetry.core.service.TelemetryMessageBuilder.ActionMessage;
 import static com.redhat.devtools.intellij.telemetry.core.util.AnonymizeUtils.anonymizeResource;
 
@@ -127,7 +121,7 @@ public class DeployHelper {
         int resultDialog = UIHelper.executeInUI(() -> {
             MessageDialog messageDialog = new MessageDialog(confirmationMessage,
                     "Save to Cluster",
-                    new String[]{YES_BUTTON, NO_BUTTON},
+                    new String[]{Messages.getYesButton(), Messages.getNoButton()},
                     -1,
                     null);
             messageDialog.show();
@@ -177,7 +171,7 @@ public class DeployHelper {
 
     private static String createErrorMessage(GenericResource resource, KubernetesClientException e) {
         Status errorStatus = e.getStatus();
-        String errorMsg = "An error occurred while saving " + StringUtils.capitalize(resource.getKind()) + " " + resource.getName() + "\n";
+        String errorMsg = "An error occurred while saving " + StringUtil.capitalize(resource.getKind()) + " " + resource.getName() + "\n";
         if (errorStatus != null && !Strings.isNullOrEmpty(errorStatus.getMessage())) {
             errorMsg += errorStatus.getMessage() + "\n";
         }

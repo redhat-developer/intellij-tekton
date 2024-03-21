@@ -30,6 +30,7 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
+import com.redhat.devtools.intellij.common.compat.PopupHandlerAdapter;
 import com.redhat.devtools.intellij.common.utils.IDEAContentFactory;
 import com.redhat.devtools.intellij.common.utils.function.TriConsumer;
 import com.redhat.devtools.intellij.tektoncd.Constants;
@@ -43,9 +44,11 @@ import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItem;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubItemPanelsBoard;
 import com.redhat.devtools.intellij.tektoncd.ui.hub.HubModel;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.event.PopupMenuListener;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -68,7 +71,7 @@ public class WindowToolFactory implements ToolWindowFactory {
         tree.setCellRenderer(new NodeRenderer());
         ActionManager actionManager = ActionManager.getInstance();
         ActionGroup group = (ActionGroup)actionManager.getAction("com.redhat.devtools.intellij.tektoncd.tree");
-        PopupHandler.installPopupHandler(tree, group, ActionPlaces.POPUP, actionManager, new TektonTreePopupMenuListener());
+        PopupHandler.installPopupMenu(tree, group, ActionPlaces.POPUP, new TektonTreePopupMenuListener());
 
         new TektonTreeDoubleClickListener(tree);
 

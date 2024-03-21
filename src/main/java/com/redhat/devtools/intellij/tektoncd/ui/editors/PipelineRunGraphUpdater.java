@@ -10,13 +10,13 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.ui.editors;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.mxgraph.view.mxGraph;
 import com.redhat.devtools.intellij.common.utils.DateHelper;
 import com.redhat.devtools.intellij.tektoncd.tkn.TknCliFactory;
 import io.fabric8.tekton.pipeline.v1beta1.Pipeline;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRunTaskRunStatus;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class PipelineRunGraphUpdater extends AbstractPipelineGraphUpdater<Pipeli
     public void update(PipelineRun content, mxGraph graph) {
         if (content.getStatus() != null && content.getStatus().getPipelineSpec() != null) {
             update(content, content.getStatus().getPipelineSpec(), graph);
-        } else if (content.getSpec() != null && content.getSpec().getPipelineRef() != null && StringUtils.isNotBlank(content.getSpec().getPipelineRef().getName())) {
+        } else if (content.getSpec() != null && content.getSpec().getPipelineRef() != null && !StringUtil.isEmptyOrSpaces(content.getSpec().getPipelineRef().getName())) {
             TknCliFactory.getInstance().getTkn(null).thenAcceptAsync(tkn -> {
                 try {
                     String pipelineYAML = tkn.getPipelineYAML(content.getMetadata().getNamespace(), content.getSpec().getPipelineRef().getName());
@@ -61,8 +61,8 @@ public class PipelineRunGraphUpdater extends AbstractPipelineGraphUpdater<Pipeli
         if (node.type == Type.TASK) {
             Optional<PipelineRunTaskRunStatus> taskStatus = getTaskStatus(content, node.name);
             if (taskStatus.isPresent() && taskStatus.get().getStatus() != null &&
-                    StringUtils.isNotBlank(taskStatus.get().getStatus().getStartTime()) &&
-                    StringUtils.isNotBlank(taskStatus.get().getStatus().getCompletionTime())) {
+                    !StringUtil.isEmptyOrSpaces(taskStatus.get().getStatus().getStartTime()) &&
+                    !StringUtil.isEmptyOrSpaces(taskStatus.get().getStatus().getCompletionTime())) {
                 label += "\n" + DateHelper.humanizeDate(Instant.parse(taskStatus.get().getStatus().getStartTime()),
                         Instant.parse(taskStatus.get().getStatus().getCompletionTime()));
             }

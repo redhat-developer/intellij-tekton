@@ -12,12 +12,12 @@ package com.redhat.devtools.intellij.tektoncd.ui.editors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.intellij.openapi.util.text.StringUtil;
 import com.mxgraph.view.mxGraph;
 import io.fabric8.tekton.pipeline.v1beta1.Param;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineSpec;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTask;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineTaskInputResource;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -128,7 +128,7 @@ public abstract class AbstractPipelineGraphUpdater<T> implements GraphUpdater<T>
         Map<String, List<String>> relations = new HashMap<>();
         for (PipelineTask task : tasks) {
             if (task == null
-                    || StringUtils.isBlank(task.getName())) {
+                    || StringUtil.isEmpty(task.getName())) {
                 continue;
             }
 

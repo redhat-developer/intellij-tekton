@@ -15,6 +15,7 @@ import com.intellij.ide.util.treeView.AbstractTreeStructure;
 import com.intellij.ide.util.treeView.NodeDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.util.ArrayUtil;
 import com.redhat.devtools.intellij.common.tree.LabelAndIconDescriptor;
 import com.redhat.devtools.intellij.common.tree.MutableModel;
 import com.redhat.devtools.intellij.common.tree.MutableModelSupport;
@@ -27,7 +28,6 @@ import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1beta1.PipelineRunTaskRunStatus;
 import io.fabric8.tekton.pipeline.v1beta1.TaskRun;
-import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -131,7 +131,7 @@ public class TektonTreeStructure extends AbstractTreeStructure implements Mutabl
                         new ClusterTriggerBindingsNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element),
                         new EventListenersNode(((NamespaceNode) element).getRoot(), (NamespaceNode) element)
                 };
-                Object[] secondLevelNodes = ArrayUtils.addAll(generalNodes, triggersNode);
+                Object[] secondLevelNodes = ArrayUtil.append(generalNodes, triggersNode);
                 watchNodes(tkn, secondLevelNodes);
                 return secondLevelNodes;
 
