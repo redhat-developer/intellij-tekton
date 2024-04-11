@@ -10,8 +10,13 @@
  ******************************************************************************/
 package com.redhat.devtools.intellij.tektoncd.completion;
 
+import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.testFramework.PlatformLiteFixture;
 import org.junit.Test;
 
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.intellij.testFramework.UsefulTestCase.assertOrderedEquals;
 import static org.junit.Assert.assertTrue;
@@ -51,7 +56,12 @@ public class GenericCompletionProviderTest extends BaseCompletionProviderTest{
     /////////////////////////////////////////////////////////
 
     public void testTaskCompletionWithoutAnyInput() {
-        assertTrue(getSuggestionsForFile("task1.yaml").isEmpty());
+        List<String> suggestions = getSuggestionsForFile("task1.yaml");
+        if (getIDEAVersion() >= 2024.1f) {
+            assertOrderedEquals(suggestions, "apiVersion"); // default completion returns 'apiVersion'
+        } else {
+            assertTrue(suggestions.isEmpty());
+        }
     }
 
     public void testTaskCompletionWithParams() {
@@ -87,4 +97,10 @@ public class GenericCompletionProviderTest extends BaseCompletionProviderTest{
     public String getTestDataPath() {
         return "src/test/resources/completion/generic";
     }
+
+    private Float getIDEAVersion() {
+        String version = ApplicationInfo.getInstance().getFullVersion();
+        return Float.parseFloat(version);
+    }
+
 }
