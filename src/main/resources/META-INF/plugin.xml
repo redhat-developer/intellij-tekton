@@ -1,6 +1,6 @@
 <idea-plugin>
   <id>com.redhat.devtools.intellij.tekton</id>
-  <name>Tekton Pipelines by Red Hat</name>
+  <name>Tekton Pipelines by Red Hat (Deprecated)</name>
   <version>1.0</version>
   <vendor email="developers@redhat.com" url="https://www.redhat.com">Red-Hat</vendor>
 
@@ -12,6 +12,12 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <p><b>1.4.3</b></p>
+  <ul>
+    <li>This extension is now deprecated.</li>
+    <li>Support IDEA IU-2024.1</li>
+    <li>Update Schemas tto Tekton Pipelines 0.56.0 and Triggers to 0.26.0</li>
+  </ul>
   <p><b>1.4.2</b></p>
   <ul>
     <li>Support IDEA IU-2023.3</li>
@@ -225,7 +231,7 @@
 
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="223"/>
+  <idea-version since-build="223"  until-build="241.*"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
