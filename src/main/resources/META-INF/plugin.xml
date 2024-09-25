@@ -14,7 +14,6 @@
   <change-notes><![CDATA[
   <p><b>1.4.3</b></p>
   <ul>
-    <li>This extension is now deprecated.</li>
     <li>Support IDEA IU-2024.1</li>
     <li>Update Schemas to Tekton Pipelines 0.56.0 and Tekton Triggers to 0.26.0</li>
   </ul>
