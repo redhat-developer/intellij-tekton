@@ -2,7 +2,7 @@
   <id>com.redhat.devtools.intellij.tekton</id>
   <name>Tekton Pipelines by Red Hat (Deprecated)</name>
   <version>1.0</version>
-  <vendor email="developers@redhat.com" url="https://www.redhat.com">Red-Hat</vendor>
+  <vendor email="devtools-team@redhat.com" url="https://www.redhat.com">Red-Hat</vendor>
 
   <description><![CDATA[
       <img src="https://raw.githubusercontent.com/redhat-developer/intellij-tekton/main/src/main/resources/images/tekton.png" width="32" height="32"/>
