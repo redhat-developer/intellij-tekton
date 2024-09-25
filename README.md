@@ -7,7 +7,7 @@
 
 # IntelliJ Tekton
 
-## NOTE: This project is no more maintained and marked as deprecated.
+## NOTE: This plugin is no longer maintained and is officially deprecated.
 
 ## Overview
 
