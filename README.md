@@ -6,6 +6,9 @@
 [![License](https://img.shields.io/github/license/redhat-developer/intellij-tekton?style=for-the-badge)](https://github.com/redhat-developer/intellij-tekton/blob/main/LICENSE)
 
 # IntelliJ Tekton
+
+## NOTE: This plugin is no longer maintained and is officially deprecated.
+
 ## Overview
 
 Tekton Pipelines extension provides an end-to-end developer experience for interaction with [Tekton](https://tekton.dev/).
@@ -29,9 +32,10 @@ For more detail information around specific commands & features, please read the
 
 ## Tekton Versions
 
-- The minimum IDEA version supported is now 2021.1.
+- The maximum IDEA version supported is now 2024.1.
+- The minimum IDEA version supported is now 2022.3.
 - The Tekton CLI in use has been upgraded to 0.27.0.
-- Schemas for validation and code assist have been updated to Tekton Pipeline `0.42.0` and Tekton Triggers `0.22.0`.
+- Schemas for validation and code assist have been updated to Tekton Pipeline `0.56.0` and Tekton Triggers `0.26.0`.
 
 Note: We support `v1beta1` API. Previous version `v1alpha1` may work, but we cannot guarantee that all features will work properly. If you have `v1alpha1` pipelines/tasks please use [migrating document](https://github.com/tektoncd/pipeline/blob/main/docs/migrating-v1alpha1-to-v1beta1.md) to migrate to `v1beta1`.
 ### Dependencies
